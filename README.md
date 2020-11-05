@@ -8,7 +8,6 @@ What is included:
 * react-scripts@4.0.0
 * React 16-latest
 * FAST_REFRESH on by default via .env
-* redux, redux-thunk
 * Recoil
 * Bootstrap 4.5 copied
 * Precommit hooks running lint cases
