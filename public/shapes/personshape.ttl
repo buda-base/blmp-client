@@ -46,7 +46,28 @@ bds:PersonShape
   rdfs:label "Person"@en ;
   # persons have one property, which is name:
   sh:property bds:PersonShape-personName ;
+  sh:property bds:CommonShape-prefLabel ;
   sh:targetClass bdo:Person ;
+.
+
+bds:CommonShape-prefLabel
+  a sh:PropertyShape ;
+  # a help message
+  sh:description "preferred label, will be displayed when the person is referred to (in search results, in other records, etc.)"@en ;
+  sh:name "name to display"@en ;
+  # this property is in the name property group
+  sh:group bds:PersonNamePropertyGroup ;
+  # this property should be displayed first in that group
+  sh:order "0"^^xsd:decimal ;
+  # the rdf path of the predicate
+  sh:path skos:prefLabel ;
+  # some constraints and error message
+  sh:message "There must be at least one skos:prefLabel"@en ;
+  sh:minCount 1 ;
+  sh:datatype rdf:langString ;
+  # there are predefined values for the type of editor / form:
+  dash:editor dash:TextAreaWithLangEditor ;
+  dash:singleLine true ;
 .
 
 bds:PersonShape-personName
@@ -57,7 +78,7 @@ bds:PersonShape-personName
   # this property is in the name property group
   sh:group bds:PersonNamePropertyGroup ;
   # this property should be displayed first in that group
-  sh:order "0"^^xsd:decimal ;
+  sh:order "1"^^xsd:decimal ;
   # the rdf path of the predicate
   sh:path bdo:personName ;
   # some constraints and error message
