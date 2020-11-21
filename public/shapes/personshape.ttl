@@ -68,6 +68,7 @@ bds:PersonShape
   sh:property bds:PersonShape-hasStudent ;
   sh:property bds:PersonShape-studentOf ;
   sh:property bds:PersonShape-personEvent ;
+  sh:property bds:PersonShape-note ;
   sh:targetClass bdo:Person ;
 .
 
@@ -89,6 +90,72 @@ bds:CommonShape-prefLabel
   # there are predefined values for the type of editor / form:
   dash:editor dash:TextAreaWithLangEditor ;
   dash:singleLine true ;
+.
+
+bds:PersonShape-note
+  a sh:PropertyShape ;
+  sh:name "notes"@en ;
+  sh:group bds:PersonNotesPropertyGroup ;
+  sh:order "0"^^xsd:decimal ;
+  sh:path bdo:note ;
+  bds:propertyShapeType bds:FacetShape ;
+.
+
+bds:NoteShape
+  a sh:NodeShape ;
+  sh:targetObjectsOf bdo:note ;
+  sh:property bds:NoteShape-type ;
+  sh:property bds:NoteShape-noteText ;
+  sh:property bds:NoteShape-noteSource ;
+  sh:property bds:NoteShape-contentLocationStatement ;
+  sh:targetClass bdo:Note ;
+.
+
+bds:NoteShape-type
+  a sh:PropertyShape ;
+  sh:path rdf:type ;
+  dash:editor dash:EnumSelectEditor ;
+  sh:description "note type"@en ;
+  sh:name "type"@en ;
+  sh:order "0"^^xsd:decimal ;
+  # this is the ordered list of possible values:
+  sh:in ( bdo:Note bdo:ProvenanceNote bdo:GeneralNote ) ;
+  # some constraints and validation error message
+  sh:message "A Note must have at least one rdf:type"@en ;
+  # note that because there's no max count, we could imagine a list where users can select multiple values
+  sh:minCount 1 ;
+.
+
+bds:NoteShape-noteText
+  a sh:PropertyShape ;
+  sh:path bdo:noteText ;
+  sh:datatype rdf:langString ;
+  dash:editor dash:TextAreaWithLangEditor ;
+  # this can be multi line, we could even think of allowing html
+  dash:singleLine false ;
+  sh:name "text"@en ;
+  sh:order "1"^^xsd:decimal ;
+  sh:maxCount 1 ;
+.
+
+bds:NoteShape-noteSource
+  a sh:PropertyShape ;
+  sh:path bdo:noteSource ;
+  sh:datatype rdf:langString ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:name "source"@en ;
+  sh:order "2"^^xsd:decimal ;
+  sh:maxCount 1 ;
+.
+
+bds:contentLocationStatement
+  a sh:PropertyShape ;
+  sh:path bdo:contentLocationStatement ;
+  sh:datatype rdf:string ;
+  dash:editor dash:TextFieldEditor ;
+  dash:singleLine true ;
+  sh:name "location in source"@en ;
+  sh:order "3"^^xsd:decimal ;
 .
 
 bds:PersonShape-studentOf
@@ -458,4 +525,26 @@ bdo:PersonRabByungOrdination
   rdfs:label "Preliminary Ordination"@en ;
   rdfs:label "rab byung"@bo-x-ewts ;
   rdfs:subClassOf bdo:PersonEvent ;
+.
+
+
+bdo:ProvenanceNote
+  a owl:Class ;
+  adm:userTooltip "note indicating the provenance of an information"@en ;
+  rdfs:label "Provenance note"@en ;
+  rdfs:subClassOf bdo:Note ;
+.
+
+bdo:Note
+  a owl:Class ;
+  adm:userTooltip "A comment about the subject resource, possibly with a source Work and a location in the Work"@en ;
+  rdfs:label "Note"@en ;
+  rdfs:subClassOf bdo:Facet ;
+.
+
+bdo:GeneralNote
+  a owl:Class ;
+  adm:userTooltip "A general note contains non-specific information about some resource"@en ;
+  rdfs:label "General note"@en ;
+  rdfs:subClassOf bdo:Note ;
 .
