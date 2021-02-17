@@ -1,7 +1,8 @@
 const config = {
   API_BASEURL: "https://api.msblabs.us/bd/",
   env: process.env.NODE_ENV || "production",
-  SITE_URL: "https://buda-editor.msblabs.us"
+  SITE_URL: "https://buda-editor.msblabs.us",
+  requireAuth: true,
 }
 
 export default config

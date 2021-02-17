@@ -1,6 +1,7 @@
 import React from "react"
 import { Route } from "react-router-dom"
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0 } from "@auth0/auth0-react"
+import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import NavBarContainer from "./NavBarContainer"
@@ -11,10 +12,10 @@ import PersonEditContainer from "../routes/persons/containers/PersonEditContaine
 import PersonView from "../routes/persons/containers/PersonView"
 
 function App(props) {
-  const { isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated, isLoading } = useAuth0()
 
   if (isLoading) return <span>Loading</span>
-  if (!isAuthenticated) return <AuthRequest />
+  if (config.requireAuth && !isAuthenticated) return <AuthRequest />
 
   return (
     <React.Fragment>
