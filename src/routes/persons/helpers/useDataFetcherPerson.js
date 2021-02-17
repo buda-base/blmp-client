@@ -43,7 +43,10 @@ function useDataFetcherPerson(id) {
           }
         })
     }
-    if (idToken && id && is.alphaNumeric(id) && id.length > 1) {
+    // NOTE this allows to query backend without authentication
+    //      but breaks if profile page is visited even when logged
+    //      (see http://localhost:3001/profile)
+    if ((!config.requireAuth || idToken) && id && is.alphaNumeric(id) && id.length > 1) {
       fetchResource(id.toUpperCase())
     }
   }, [id, idToken])
