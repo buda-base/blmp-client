@@ -27,6 +27,8 @@ export const BDG = rdf.Namespace(BDG_uri)
 export const BDA_uri = "http://purl.bdrc.io/admindata/"
 export const BDA = rdf.Namespace(BDA_uri)
 
+const debug = require("debug")("bdrc:rdf:ns")
+
 export const prefixToURI: {[key:string]: string} = {
 	"bdr": BDR_uri,
 	"bdo": BDO_uri,
@@ -58,28 +60,30 @@ export const qname = (uri: string): string => {
 	let j = uri.indexOf('#')
 	if (j < 0)
 		j = uri.lastIndexOf('/')
-    if (j < 0)
-    	throw new Error('Cannot make qname out of <' + uri + '>')
-    
-    const localid = uri.slice(j + 1)
-    const namesp = uri.slice(0, j + 1)
-    let prefix = URItoPrefix[namesp]
-    if (!prefix) 
-    	throw new Error('Cannot make qname out of <' + uri + '>')
+  if (j < 0)
+  	throw new Error('Cannot make qname out of <' + uri + '>')
 
-    return prefix + ':' + localid
+  const localid = uri.slice(j + 1)
+  const namesp = uri.slice(0, j + 1)
+  const prefix = URItoPrefix[namesp]
+  if (!prefix)
+  	throw new Error('Cannot make qname out of <' + uri + '>')
+
+  return prefix + ':' + localid
 }
 
 export const uriFromQname = (qname: string): string => {
-	let j = qname.indexOf(':')
-    if (j < 0)
-    	throw new Error('Cannot make uri out of <' + qname + '>')
-    
-    const localid = qname.slice(j + 1)
-    const prefix = qname.slice(0, j + 1)
-    let uri_base = prefixToURI[prefix]
-    if (!uri_base) 
-    	throw new Error('Cannot make uri out of <' + qname + '>')
+	const j = qname.indexOf(':')
 
-    return uri_base + ':' + localid
+  if (j < 0)
+    throw new Error('Cannot make uri out of <' + qname + '>')
+
+  const localid = qname.slice(j + 1)
+  const prefix = qname.slice(0, j)
+  const uri_base = prefixToURI[prefix]
+
+  if (!uri_base)
+  	throw new Error('Cannot make uri out of <' + qname + '>')
+
+  return uri_base + ':' + localid
 }

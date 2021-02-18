@@ -1,6 +1,9 @@
 import * as rdf from 'rdflib'
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
+import { fetchUrlFromTypeQname } from "./shapes"
+import { RDFResource } from "./types"
+import { getShape } from "./shapes"
 
 const debug = require("debug")("bdrc:rdf:io")
 
@@ -18,38 +21,32 @@ export const loadTtl = async (url: string): Promise<rdf.Store> => {
   return store;
 }
 
-const urlFromType = (type:string): string => {
-  return "/shapes/personpreflabel.ttl"
-}
-
 interface IFetchState {
     status: string;
     error?: string;
 }
 
-interface IStore {
-    store?: rdf.Store
-}
-
-export function ShapeFetcher(type: string) {
+export function ShapeFetcher(typeQname: string) {
   const [loadingState, setLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
-  const [resource, setResource] = useState<IStore>({ store: undefined })
+  const [shape, setShape] = useState<RDFResource>()
 
   const reset = () => {
-    setResource({ store: undefined })
+    setShape(undefined)
     setLoadingState({ status: "idle", error: undefined })
   }
 
   useEffect(() => {
-    async function fetchResource(type: string) {
+    async function fetchResource(typeQname: string) {
       setLoadingState({ status: "fetching", error: undefined })
-      const url = urlFromType(type)
+      const url = fetchUrlFromTypeQname(typeQname)
 
       await loadTtl(url)
-        .then(function (response) {
-          if (response) {
+        .then(function (store: rdf.Store) {
+          if (store) {
+            const shape: RDFResource = getShape(typeQname, store)
+            debug(store)
             setLoadingState({ status: "fetched", error: undefined })
-            setResource({ store: response })
+            setShape(shape)
           } else {
             setLoadingState({ status: "error", error: "can't find shape" })
           }
@@ -62,8 +59,8 @@ export function ShapeFetcher(type: string) {
           }
         })
     }
-    fetchResource(type)
-  }, [type])
+    fetchResource(typeQname)
+  }, [typeQname])
 
-  return { loadingState, resource, reset }
+  return { loadingState, shape, reset }
 }

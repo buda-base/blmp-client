@@ -7,8 +7,8 @@ import i18n from "i18next"
 const debug = require("debug")("bdrc:entity:edit")
 
 function EntityEditContainer(props) {
-  const [type] = useState(props.match.params.type)
-  const { loadingState, resource } = ShapeFetcher(type)
+  const [typeQname] = useState(props.match.params.type)
+  const { loadingState, shape } = ShapeFetcher(typeQname)
 
   if (loadingState.status === "fetching") return <span>{i18n.t("loading")}</span>
   if (loadingState.status === "error") {
@@ -20,7 +20,7 @@ function EntityEditContainer(props) {
     )
   }
 
-  if (!resource) return null
+  if (!shape) return null
 
   return (
     <React.Fragment>
