@@ -56,10 +56,10 @@ function Home() {
       <section className="album">
         <div className="container">
           <div className="row d-flex justify-content-center">
-            <EntryPoint path="/persons" label="Works" icon={<PersonIcon height="50px" />} />
+            <EntryPoint path="/persons" label="Persons" icon={<PersonIcon height="50px" />} />
             <EntryPoint path="/works" label="Works" icon={<WorkIcon height="50px" />} />
-            <EntryPoint path="/places" label="Works" icon={<PlaceIcon height="50px" />} />
-            <EntryPoint path="/versions" label="Works" icon={<VersionIcon height="40px" />} />
+            <EntryPoint path="/places" label="Places" icon={<PlaceIcon height="50px" />} />
+            <EntryPoint path="/versions" label="Versions" icon={<VersionIcon height="40px" />} />
           </div>
         </div>
       </section>
