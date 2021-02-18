@@ -9,6 +9,7 @@ import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import PersonsContainer from "../routes/persons/containers/PersonsContainer"
 import PersonEditContainer from "../routes/persons/containers/PersonEditContainer"
+import EntityEditContainer from "../routes/entity/containers/EntityEditContainer"
 import PersonView from "../routes/persons/containers/PersonView"
 
 function App(props) {
@@ -25,6 +26,7 @@ function App(props) {
         <Route exact path="/profile" component={ProfileContainer} />
         <Route exact path="/persons" component={PersonsContainer} />
         <Route exact path="/person/:id" component={PersonView} />
+        <Route exact path="/new/:type" component={EntityEditContainer} />
         <Route exact path="/person/:id/edit" component={PersonEditContainer} />
       </main>
     </React.Fragment>
