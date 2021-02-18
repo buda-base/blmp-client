@@ -58,7 +58,7 @@
     "max-len": [
       "error",
       {
-        "code": 120,
+        "code": 150,
         "tabWidth": 2,
         "ignoreTemplateLiterals": true,
         "ignorePattern": "^import [\\w|{|,| |}]{1,}\""
