@@ -3,12 +3,16 @@
   "version": "0.23.1-0",
   "homepage": "https://buda-editor.msblabs.us",
   "description": "BUDA Editor",
-  "author": "Ashveen Bucktowar",
-  "private": true,
+  "author": "BDRC and Ashveen Bucktowar",
+  "license": "MIT",
   "dependencies": {
     "@auth0/auth0-react": "^1.1.0",
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.9.53",
+    "@types/react-dom": "^16.9.8",
+    "@types/react-redux": "^7.1.9",
     "airbnb-prop-types": "^2.16.0",
     "axios": "^0.21.0",
     "date-fns": "^2.16.1",
@@ -33,7 +37,9 @@
     "react-toggle": "^4.1.1",
     "react-tooltip": "^4.2.7",
     "recoil": "^0.1.2",
-    "throttle-debounce": "^3.0.1"
+    "throttle-debounce": "^3.0.1",
+    "rdflib": "^2.0.0",
+    "typescript": "^4.0.3"
   },
   "scripts": {
     "build-css": "node-sass-chokidar src/stylesheets -o public/ --output-style compressed",
@@ -51,6 +57,12 @@
     "src/**/*.{js,jsx,json,css}": [
       "prettier --write --config ./.prettierrc",
       "eslint --color --fix"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
     ]
   },
   "devDependencies": {
