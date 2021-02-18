@@ -2,6 +2,8 @@ import React from "react"
 import PropTypes from "prop-types"
 import preval from "preval.macro"
 import { Link } from "react-router-dom"
+import i18n from "i18next"
+
 import { PersonIcon, PlaceIcon, WorkIcon, VersionIcon } from "../layout/icons"
 
 const buildDate = preval`module.exports = new Date().toISOString()`
@@ -46,7 +48,7 @@ function Home() {
       <section className="announcement"></section>
       <section className="jumbotron text-center mb-0">
         <div className="container">
-          <h3 className="jumbotron-heading">BUDA Editor</h3>
+          <h3 className="jumbotron-heading">{i18n.t("home.title")}</h3>
           <p className="small text-muted mt-2">
             {process.env.NODE_ENV || "development"} | Release {process.env.REACT_APP_VERSION} | Build: {buildDate}
           </p>
@@ -56,10 +58,10 @@ function Home() {
       <section className="album">
         <div className="container">
           <div className="row d-flex justify-content-center">
-            <EntryPoint path="/persons" label="Persons" icon={<PersonIcon height="50px" />} />
-            <EntryPoint path="/works" label="Works" icon={<WorkIcon height="50px" />} />
-            <EntryPoint path="/places" label="Places" icon={<PlaceIcon height="50px" />} />
-            <EntryPoint path="/versions" label="Versions" icon={<VersionIcon height="40px" />} />
+            <EntryPoint path="/persons" label={i18n.t("types.person_plural")} icon={<PersonIcon height="50px" />} />
+            <EntryPoint path="/works" label={i18n.t("types.work_plural")} icon={<WorkIcon height="50px" />} />
+            <EntryPoint path="/places" label={i18n.t("types.place_plural")} icon={<PlaceIcon height="50px" />} />
+            <EntryPoint path="/versions" label={i18n.t("types.version_plural")} icon={<VersionIcon height="40px" />} />
           </div>
         </div>
       </section>

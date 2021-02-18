@@ -1,6 +1,9 @@
 import React from "react"
 import { Route } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
+import i18n from "i18next"
+import { useTranslation, initReactI18next } from "react-i18next"
+
 import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
@@ -11,6 +14,24 @@ import PersonsContainer from "../routes/persons/containers/PersonsContainer"
 import PersonEditContainer from "../routes/persons/containers/PersonEditContainer"
 import EntityEditContainer from "../routes/entity/containers/EntityEditContainer"
 import PersonView from "../routes/persons/containers/PersonView"
+
+import enTranslations from "../translations/en"
+
+i18n
+  .use(initReactI18next) // passes i18n down to react-i18next
+  .init({
+    resources: {
+      en: {
+        translation: enTranslations,
+      },
+    },
+    lng: "en",
+    fallbackLng: "en",
+
+    interpolation: {
+      escapeValue: false,
+    },
+  })
 
 function App(props) {
   const { isAuthenticated, isLoading } = useAuth0()

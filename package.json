@@ -18,6 +18,7 @@
     "date-fns": "^2.16.1",
     "debug": "^4.2.0",
     "http-proxy-middleware": "^1.0.6",
+    "i18next": "^19.8.9",
     "is_js": "^0.9.0",
     "jquery": "^3.5.1",
     "jsewts": "^1.0.3",
@@ -25,9 +26,11 @@
     "node-sass-chokidar": "^1.5.0",
     "prop-types": "^15.7.2",
     "query-string": "^6.13.6",
+    "rdflib": "^2.0.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-helmet": "^6.1.0",
+    "react-i18next": "^11.8.7",
     "react-icons": "^3.11.0",
     "react-image": "^4.0.3",
     "react-placeholder": "^4.0.0",
@@ -38,7 +41,6 @@
     "react-tooltip": "^4.2.7",
     "recoil": "^0.1.2",
     "throttle-debounce": "^3.0.1",
-    "rdflib": "^2.0.0",
     "typescript": "^4.0.3"
   },
   "scripts": {
