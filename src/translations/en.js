@@ -11,6 +11,7 @@ const enTranslations = {
     place_plural: "Places",
     version: "Version",
     version_plural: "Versions",
+    loading: "Loading...",
   },
 }
 
