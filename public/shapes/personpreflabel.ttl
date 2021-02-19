@@ -45,7 +45,7 @@ bds:PersonShape
   bds:identifierPrefix "P" ;
   rdfs:label "Person"@en ;
   # persons have one property, which is name:
-  sh:property bds:PersonShape-personName ;
+  sh:property bds:CommonShape-prefLabel ;
   sh:targetClass bdo:Person ;
 .
 
