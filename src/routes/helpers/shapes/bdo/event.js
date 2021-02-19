@@ -4,6 +4,8 @@ import is from "is_js"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
+import i18n from "i18next"
+
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../../helpers/atoms"
 import { entityIdGenerator } from "../../../../helpers/id"
 import { AddIcon, RemoveIcon } from "../../../layout/icons"
@@ -12,25 +14,25 @@ import { MUI_FIELD_SPACER, SectionDivider } from "../../../layout/theme"
 
 const debug = require("debug")("bdrc:atom:event")
 
-const defaultComponentValue= {
+const defaultComponentValue = {
   "@id": "",
   type: "",
   status: "pristine",
-  notAfter: { type: "xsd:gYear", '@value': "" },
-  notBefore: { type: "xsd:gYear", '@value': "" },
-  onDate: { type: "xsd:gYear", '@value': "" },
-  onOrAbout: { type: "xsd:gYear", '@value': "" },
-  onYear: { type: "xsd:gYear", '@value': "" },
-  eventText: { "@language": "en", '@value': "" },
-  eventWhere: '',
-  personEventRole: '',
-  eventWho: []
+  notAfter: { type: "xsd:gYear", "@value": "" },
+  notBefore: { type: "xsd:gYear", "@value": "" },
+  onDate: { type: "xsd:gYear", "@value": "" },
+  onOrAbout: { type: "xsd:gYear", "@value": "" },
+  onYear: { type: "xsd:gYear", "@value": "" },
+  eventText: { "@language": "en", "@value": "" },
+  eventWhere: "",
+  personEventRole: "",
+  eventWho: [],
 }
 
 const family = atomFamily({
-  key: 'event',
-  default: [] // must be iterable for a List component
-});
+  key: "event",
+  default: [], // must be iterable for a List component
+})
 
 /**
  * List component
@@ -46,34 +48,31 @@ function List({ id, initialState, defaultValue = defaultComponentValue, hideEmpt
     } else {
       setList(initialState.map((item) => ({ ...defaultValue, ...item, id: getId(), status: "filled" })))
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialState, setList])
 
   return (
     <React.Fragment>
+      <div className="text-right mb-2 pb-2">
+        <button className="btn btn-sm btn-link" onClick={(e) => setHidden((prevState) => !prevState)}>
+          <u>{hidden ? "Show all properties" : "Hide empty properties"}</u>
+        </button>
+      </div>
+      <div role="main">
+        {list.map((todoItem) => (
+          <Component key={todoItem.id} parentId={id} item={todoItem} hideEmpty={hidden} />
+        ))}
 
-     <div className="text-right mb-2 pb-2">
-      <button className="btn btn-sm btn-link"
-          onClick={e => setHidden(prevState => !prevState)} >
-          <u>{hidden ? 'Show all properties' : 'Hide empty properties'}</u>
-      </button>
-    </div>
-    <div role="main">
-      {list.map((todoItem) => (
-        <Component key={todoItem.id} parentId={id} item={todoItem} hideEmpty={hidden}/>
-      ))}
-
-      <Create parentId={id} defaultValue={defaultValue} hideEmpty={hidden}/>
-    </div>
+        <Create parentId={id} defaultValue={defaultValue} hideEmpty={hidden} />
+      </div>
     </React.Fragment>
-
   )
 }
 
 List.propTypes = {
   id: PropTypes.string.isRequired,
   initialState: PropTypes.array,
-  hideEmpty: PropTypes.bool
+  hideEmpty: PropTypes.bool,
 }
 
 /**
@@ -84,8 +83,7 @@ List.propTypes = {
 function MinimalAddButton({ add }) {
   return (
     <div className="text-right">
-      <button size="small" className="btn btn-link ml-2 px-0"
-        onClick={add} >
+      <button size="small" className="btn btn-link ml-2 px-0" onClick={add}>
         <AddIcon />
       </button>
     </div>
@@ -95,9 +93,10 @@ function MinimalAddButton({ add }) {
 function BlockAddButton({ add }) {
   return (
     <div className="text-center pb-1">
-      <button size="small"
+      <button
+        size="small"
         className="btn btn-sm btn-block btn-outline-primary mb-2 px-0"
-        style= {{ boxShadow: 'none' }}
+        style={{ boxShadow: "none" }}
         onClick={add}
       >
         {constants.AddAnother} <AddIcon />
@@ -115,27 +114,25 @@ function Create({ defaultValue, parentId }) {
       {
         id: getId(),
         ...defaultValue,
-        '@id': entityIdGenerator('EV'),
-        status: "pristine"
+        "@id": entityIdGenerator("EV"),
+        status: "pristine",
       },
     ])
   }
 
-  return (
-    <BlockAddButton add={addItem} />
-  )
+  return <BlockAddButton add={addItem} />
 }
 
 Create.propTypes = {
   parentId: PropTypes.string.isRequired,
-  defaultValue: PropTypes.object.isRequired
+  defaultValue: PropTypes.object.isRequired,
 }
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    '& .MuiFormHelperText-root': {
-      color: theme.palette.secondary.main
-    }
+    "& .MuiFormHelperText-root": {
+      color: theme.palette.secondary.main,
+    },
   },
 }))
 
@@ -143,33 +140,33 @@ const useStyles = makeStyles((theme) => ({
  * Edit component
  */
 function Edit({ value, onChange, hideEmpty = true }) {
-  debug(value.id,value)
+  debug(value.id, value)
   const classes = useStyles()
   return (
     <React.Fragment>
       {value.status === "pristine" ? <SectionDivider text="NEW" /> : null}
-      {!hideEmpty ? <SectionDivider text={value['@id']} className="text-muted" /> : null}
+      {!hideEmpty ? <SectionDivider text={value["@id"]} className="text-muted" /> : null}
 
-      {value.status === "pristine" ?
+      {value.status === "pristine" ? (
         <TextField
           className={classes.root}
-          style = {{ width: 200 }}
+          style={{ width: 200 }}
           label={null}
-          color={'secondary'}
+          color={"secondary"}
           value={value["@id"]}
           onChange={(e) => onChange({ ...value, "@id": e.target.value })}
           helperText="ID"
         />
-      : null}
+      ) : null}
 
-      {value.status === "pristine" ?
+      {value.status === "pristine" ? (
         <TextField
           select
           className="ml-2 mr-2"
           label={null}
           value={value["type"] || ""}
-          style = {{ width: 150 }}
-          onChange={(e) => onChange({ ...value, "type": e.target.value })}
+          style={{ width: 150 }}
+          onChange={(e) => onChange({ ...value, type: e.target.value })}
           helperText="Type"
         >
           {Object.keys(constants.EventTypes).map((option) => (
@@ -178,68 +175,100 @@ function Edit({ value, onChange, hideEmpty = true }) {
             </MenuItem>
           ))}
         </TextField>
-      : null}
+      ) : null}
 
-      {constants.EventDateTypes.map((option) => {
-        if (hideEmpty && (!value[option.value] || !value[option.value]['@value'])) return null;
+      {constants.EventDateTypes.map((option, i) => {
+        if (hideEmpty && (!value[option.value] || !value[option.value]["@value"])) return null
         return (
           <TextField
             key={option.value}
             className={classes.root}
             InputLabelProps={{ shrink: true }}
             label={option.label}
-            value={value[option.value]['@value'] || ""}
-            style = {{ width: 120, marginRight: MUI_FIELD_SPACER }}
-            onChange={(e) => onChange({ ...value, [option.value]: { type: "xsd:gYear", '@value': e.target.value } })}
-            helperText={constants.EventTypes[value.type] || 'n/a'}
+            value={value[option.value]["@value"] || ""}
+            style={{ width: 119, marginRight: i < constants.EventDateTypes.length - 1 ? MUI_FIELD_SPACER : 0 }}
+            onChange={(e) => onChange({ ...value, [option.value]: { type: "xsd:gYear", "@value": e.target.value } })}
+            helperText={constants.EventTypes[value.type] || "n/a"}
           />
-        )}
+        )
+      })}
+
+      {hideEmpty && !value["eventText"]["@value"] ? null : ( // hide empty for now
+        <div className="pt-4">
+          <TextField
+            className={classes.root}
+            label={value.status === "filled" ? value["@id"] : null}
+            style={{ width: "100%", marginRight: MUI_FIELD_SPACER }}
+            value={value["eventText"]["@value"]}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => onChange({ ...value, eventText: { "@value": e.target.value, ...value["eventText"] } })}
+            helperText={constants.EventTypes[value.type] + " (Text)" || "n/a"}
+          />
+        </div>
       )}
 
-      {hideEmpty && !value["personEventRole"] ? null :// hide empty for now
-      <TextField
-        className={classes.root}
-        InputLabelProps={{ shrink: true }}
-        label={value.status === "filled" ? value["@id"] : null }
-        style = {{ width: 150, marginRight: MUI_FIELD_SPACER }}
-        value={value["personEventRole"]}
-        onChange={(e) => onChange({ ...value, "personEventRole": e.target.value })}
-        helperText={constants.EventTypes[value.type] + ' (Role)'|| 'n/a'}
-      />}
+      {hideEmpty && !value["personEventRole"] ? null : ( // hide empty for now
+        <div className="pt-4" style={{ display: "flex", justifyContent: "space-between" }}>
+          <TextField
+            className={classes.root}
+            InputLabelProps={{ shrink: true }}
+            label={value.status === "filled" ? value["@id"] : null}
+            style={{ width: "90%", marginRight: MUI_FIELD_SPACER }}
+            value={value["personEventRole"]}
+            onChange={(e) => onChange({ ...value, personEventRole: e.target.value })}
+            helperText={constants.EventTypes[value.type] + " (Role)" || "n/a"}
+          />
+          <button
+            className="btn btn-sm btn-outline-primary py-3"
+            style={{ boxShadow: "none", alignSelf: "center" }}
+            //onClick={add}
+          >
+            {i18n.t("search.lookup")}
+          </button>
+        </div>
+      )}
 
-      {hideEmpty && !value["eventWhere"] ? null : // hide empty for now
-      <TextField
-        className={classes.root}
-        label={value.status === "filled" ? value["@id"] : null }
-        style = {{ width: 150, marginRight: MUI_FIELD_SPACER }}
-        value={value["eventWhere"]}
-        InputLabelProps={{ shrink: true }}
-        onChange={(e) => onChange({ ...value, "eventWhere": e.target.value })}
-        helperText={constants.EventTypes[value.type] + ' (At)' || 'n/a'}
-      />}
+      {hideEmpty && !value["eventWhere"] ? null : ( // hide empty for now
+        <div className="pt-4" style={{ display: "flex", justifyContent: "space-between" }}>
+          <TextField
+            className={classes.root}
+            label={value.status === "filled" ? value["@id"] : null}
+            style={{ width: "90%", marginRight: MUI_FIELD_SPACER }}
+            value={value["eventWhere"]}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => onChange({ ...value, eventWhere: e.target.value })}
+            helperText={constants.EventTypes[value.type] + " (At)" || "n/a"}
+          />
+          <button
+            className="btn btn-sm btn-outline-primary py-3"
+            style={{ boxShadow: "none", alignSelf: "center" }}
+            //onClick={add}
+          >
+            {i18n.t("search.lookup")}
+          </button>
+        </div>
+      )}
 
-      {value["eventWho"] && value["eventWho"].length ? // hide empty for now // TODO Unpack list
-      <TextField
-        className={classes.root}
-        label={value.status === "filled" ? value["@id"] : null }
-        style = {{ width: 150, marginRight: MUI_FIELD_SPACER }}
-        value={value["eventWho"]}
-        InputLabelProps={{ shrink: true }}
-        onChange={(e) => onChange({ ...value, "eventWho": e.target.value })}
-        helperText={constants.EventTypes[value.type] + ' (With)'|| 'n/a'}
-      /> : null}
-
-      {hideEmpty && !value["eventText"]["@value"] ? null : // hide empty for now
-      <TextField
-        className={classes.root}
-        label={value.status === "filled" ? value["@id"] : null }
-        style = {{ width: 150, marginRight: MUI_FIELD_SPACER }}
-        value={value["eventText"]["@value"]}
-        InputLabelProps={{ shrink: true }}
-        onChange={(e) => onChange({ ...value, "eventText": { '@value': e.target.value, ...value["eventText"] } })}
-        helperText={constants.EventTypes[value.type] + ' (Text)'|| 'n/a'}
-      />}
-
+      {value["eventWho"] && value["eventWho"].length ? ( // hide empty for now // TODO Unpack list
+        <div className="pt-4" style={{ display: "flex", justifyContent: "space-between" }}>
+          <TextField
+            className={classes.root}
+            label={value.status === "filled" ? value["@id"] : null}
+            style={{ width: "90%", marginRight: MUI_FIELD_SPACER }}
+            value={value["eventWho"]}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => onChange({ ...value, eventWho: e.target.value })}
+            helperText={constants.EventTypes[value.type] + " (With)" || "n/a"}
+          />
+          <button
+            className="btn btn-sm btn-outline-primary py-3"
+            style={{ boxShadow: "none", alignSelf: "center" }}
+            //onClick={add}
+          >
+            {i18n.t("search.lookup")}
+          </button>
+        </div>
+      ) : null}
     </React.Fragment>
   )
 }
@@ -247,7 +276,7 @@ function Edit({ value, onChange, hideEmpty = true }) {
 Edit.propTypes = {
   value: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
-  hideEmpty: PropTypes.bool
+  hideEmpty: PropTypes.bool,
 }
 
 /**
@@ -269,7 +298,7 @@ function Component({ item, parentId, hideEmpty }) {
 
   return (
     <div className="pb-4">
-      <Edit value={item} onChange={onChange} hideEmpty={hideEmpty}/>
+      <Edit value={item} onChange={onChange} hideEmpty={hideEmpty} />
       <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
         <RemoveIcon />
       </button>
@@ -279,7 +308,7 @@ function Component({ item, parentId, hideEmpty }) {
 
 Component.propTypes = {
   parentId: PropTypes.string.isRequired,
-  hideEmpty: PropTypes.bool.isRequired
+  hideEmpty: PropTypes.bool.isRequired,
 }
 
 export default List

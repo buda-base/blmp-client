@@ -13,6 +13,9 @@ const enTranslations = {
     version_plural: "Versions",
     loading: "Loading...",
   },
+  search: {
+    lookup: "lookup",
+  },
 }
 
 export default enTranslations
