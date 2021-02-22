@@ -12,6 +12,8 @@ import { AddIcon, RemoveIcon } from "../../../layout/icons"
 import * as constants from "../../vocabulary"
 import { MUI_FIELD_SPACER, SectionDivider } from "../../../layout/theme"
 
+import { Edit as LangEdit } from "../skos/label"
+
 const debug = require("debug")("bdrc:atom:event")
 
 const defaultComponentValue = {
@@ -142,6 +144,8 @@ const useStyles = makeStyles((theme) => ({
 function Edit({ value, onChange, hideEmpty = true }) {
   debug(value.id, value)
   const classes = useStyles()
+  const [languages, setLanguages] = useState({})
+
   return (
     <React.Fragment>
       {value.status === "pristine" ? <SectionDivider text="NEW" /> : null}
@@ -208,18 +212,25 @@ function Edit({ value, onChange, hideEmpty = true }) {
       )}
 
       {hideEmpty && !value["personEventRole"] ? null : ( // hide empty for now
-        <div className="pt-4" style={{ display: "flex", justifyContent: "space-between" }}>
+        <div className="pt-4" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
           <TextField
             className={classes.root}
             InputLabelProps={{ shrink: true }}
             label={value.status === "filled" ? value["@id"] : null}
-            style={{ width: "90%", marginRight: MUI_FIELD_SPACER }}
+            style={{ width: "90%" }}
             value={value["personEventRole"]}
             onChange={(e) => onChange({ ...value, personEventRole: e.target.value })}
             helperText={constants.EventTypes[value.type] + " (Role)" || "n/a"}
           />
+          <LangEdit
+            value={languages["personEventRole"] ? languages["personEventRole"] : { "@language": "bo-x-ewts" }}
+            onChange={(value) => {
+              setLanguages({ ...languages, personEventRole: value })
+            }}
+            langOnly={true}
+          />
           <button
-            className="btn btn-sm btn-outline-primary py-3"
+            className="btn btn-sm btn-outline-primary py-3 ml-2"
             style={{ boxShadow: "none", alignSelf: "center" }}
             //onClick={add}
           >
@@ -229,18 +240,25 @@ function Edit({ value, onChange, hideEmpty = true }) {
       )}
 
       {hideEmpty && !value["eventWhere"] ? null : ( // hide empty for now
-        <div className="pt-4" style={{ display: "flex", justifyContent: "space-between" }}>
+        <div className="pt-4" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
           <TextField
             className={classes.root}
             label={value.status === "filled" ? value["@id"] : null}
-            style={{ width: "90%", marginRight: MUI_FIELD_SPACER }}
+            style={{ width: "90%" }}
             value={value["eventWhere"]}
             InputLabelProps={{ shrink: true }}
             onChange={(e) => onChange({ ...value, eventWhere: e.target.value })}
             helperText={constants.EventTypes[value.type] + " (At)" || "n/a"}
           />
+          <LangEdit
+            value={languages["eventWhere"] ? languages["eventWhere"] : { "@language": "bo-x-ewts" }}
+            onChange={(value) => {
+              setLanguages({ ...languages, eventWhere: value })
+            }}
+            langOnly={true}
+          />
           <button
-            className="btn btn-sm btn-outline-primary py-3"
+            className="btn btn-sm btn-outline-primary py-3 ml-2"
             style={{ boxShadow: "none", alignSelf: "center" }}
             //onClick={add}
           >

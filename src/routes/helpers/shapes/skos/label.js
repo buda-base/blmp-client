@@ -7,12 +7,12 @@ import { TextField, MenuItem } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../../helpers/atoms"
 import { AddIcon, RemoveIcon } from "../../../layout/icons"
 
-const defaultComponentValue= { "@value": "", "@language": "en" }
+const defaultComponentValue = { "@value": "", "@language": "en" }
 
 const family = atomFamily({
-  key: 'label',
-  default: [] // must be iterable for a List component
-});
+  key: "label",
+  default: [], // must be iterable for a List component
+})
 
 /**
  * List component
@@ -52,7 +52,6 @@ function Create({ defaultValue, parentId }) {
   const setList = useSetRecoilState(family(parentId))
 
   const addItem = () => {
-
     setList((oldTodoList) => [
       ...oldTodoList,
       {
@@ -64,10 +63,7 @@ function Create({ defaultValue, parentId }) {
 
   return (
     <div className="text-right">
-      <button size="small"
-        className="btn btn-link ml-2 px-0"
-        onClick={addItem}
-      >
+      <button size="small" className="btn btn-link ml-2 px-0" onClick={addItem}>
         <AddIcon />
       </button>
     </div>
@@ -76,53 +72,47 @@ function Create({ defaultValue, parentId }) {
 
 Create.propTypes = {
   parentId: PropTypes.string.isRequired,
-  defaultValue: PropTypes.object.isRequired
+  defaultValue: PropTypes.object.isRequired,
 }
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-
-  },
+  root: {},
 }))
 
-const lang = [
-  { value: "bo-x-ewts" },
-  { value: "bo" } ,
-  { value: "en" },
-  { value: "zh-hans" },
-  { value: "zh-hant" }
-];
+const lang = [{ value: "bo-x-ewts" }, { value: "bo" }, { value: "en" }, { value: "zh-hans" }, { value: "zh-hant" }]
 
 /**
  * Edit component
  */
-function Edit({ value, onChange }) {
+export function Edit({ value, onChange, langOnly }) {
   const classes = useStyles()
   return (
     <React.Fragment>
+      {!langOnly && (
+        <TextField
+          className={classes.root}
+          label={value["@id"]}
+          style={{ width: 300 }}
+          color={"secondary"}
+          value={value["@value"]}
+          onChange={(e) => onChange({ ...value, "@value": e.target.value })}
+        />
+      )}
       <TextField
-        className={classes.root}
-        label={value["@id"]}
-        style = {{ width: 300 }}
-        color={'secondary'}
-        value={value["@value"]}
-        onChange={(e) => onChange({ ...value, "@value": e.target.value })}
-      />
-      <TextField
-          select
-          className="ml-2"
-          label={value["@id"] ? " ": null }
-          value={value["@language"] || ""}
-          style = {{ width: 120 }}
-          onChange={(e) => onChange({ ...value, "@language": e.target.value })}
-          helperText="Language"
-        >
-          {lang.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.value}
-            </MenuItem>
-          ))}
-        </TextField>
+        select
+        className="ml-2"
+        label={value["@id"] ? " " : null}
+        value={value["@language"] || ""}
+        style={{ width: 120 }}
+        onChange={(e) => onChange({ ...value, "@language": e.target.value })}
+        helperText="Language"
+      >
+        {lang.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.value}
+          </MenuItem>
+        ))}
+      </TextField>
     </React.Fragment>
   )
 }
