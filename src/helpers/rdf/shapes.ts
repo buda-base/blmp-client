@@ -1,5 +1,5 @@
 import * as rdf from 'rdflib'
-import { RDFResource, PropertyGroup } from "./types"
+import { RDFResource, RDFResourceWithLabel, PropertyGroup } from "./types"
 import * as ns from "./ns"
 
 const debug = require("debug")("bdrc:rdf:shapes")
@@ -10,7 +10,7 @@ export const fetchUrlFromTypeQname = (typeQname: string): string => {
 
 export const getShape = (typeQname:string, store: rdf.Store):RDFResource => {
   const uri:string = ns.uriFromQname(typeQname)
-  return { node: rdf.sym(uri), store: store }
+  return new RDFResource(rdf.sym(uri), store); 
 }
 
 export const rdfLitAsNumber = (lit:rdf.Literal):number|null => {
@@ -26,7 +26,7 @@ export const shGroup = ns.SH('group')
 export const shOrder = ns.SH('order') as rdf.NamedNode
 export const prefLabel = ns.SKOS('prefLabel') as rdf.NamedNode
 export const shName = ns.SH('node') as rdf.NamedNode
-export const shpath = ns.SH('path') as rdf.NamedNode
+export const shPath = ns.SH('path') as rdf.NamedNode
 export const dashEditor = ns.DASH('editor') as rdf.NamedNode
 export const shDescription = ns.SH('description') as rdf.NamedNode
 export const shMessage = ns.SH('message') as rdf.NamedNode
@@ -34,7 +34,6 @@ export const shMinCount = ns.SH('minCount') as rdf.NamedNode
 export const shMaxCount = ns.SH('maxCount') as rdf.NamedNode
 export const shDatatype = ns.SH('datatype') as rdf.NamedNode
 export const dashSingleLine = ns.SH('singleLine') as rdf.NamedNode
-
 
 export const sortByPropValue = (nodelist:Array<rdf.NamedNode>, p:rdf.NamedNode, store:rdf.Store): Array<rdf.NamedNode> => {
   const orderedGroupObjs:Record<number,rdf.NamedNode> = {}
@@ -83,8 +82,8 @@ export const getGroups = (shape: RDFResource): Array<PropertyGroup> => {
   }
   grouplist = sortByPropValue(grouplist, shOrder, shape.store)
   for (const group of grouplist) {
-    const prefLabels = getPropValueByLang({ node: group, store: shape.store }, prefLabel)
-    res.push({ node: group, store: shape.store, prefLabels })
+    const prefLabels = getPropValueByLang(new RDFResource(group, shape.store), prefLabel)
+    res.push(new PropertyGroup(group, shape.store, prefLabels))
   }
   return res
 }

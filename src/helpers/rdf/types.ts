@@ -1,7 +1,7 @@
 import * as rdf from 'rdflib'
 import * as shapes from './shapes'
 import * as ns from './ns'
-import {Memoize} from 'typescript-memoize';
+import { Memoize } from 'typescript-memoize';
 
 export class RDFResource {
   node: rdf.NamedNode
@@ -114,6 +114,10 @@ export class Property extends RDFResourceWithLabel {
 }
 
 export class PropertyGroup extends RDFResourceWithLabel {
+
+  constructor(node: rdf.NamedNode, store: rdf.Store, prefLabels?: Record<string,string>) {
+    super(node, store)
+  }
 
   @Memoize()
   public get props(): Array<Property> {
