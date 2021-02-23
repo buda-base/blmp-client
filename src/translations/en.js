@@ -15,6 +15,7 @@ const enTranslations = {
   },
   search: {
     lookup: "lookup",
+    cancel: "cancel",
   },
 }
 
