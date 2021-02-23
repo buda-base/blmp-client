@@ -21,12 +21,22 @@ export const rdfLitAsNumber = (lit:rdf.Literal):number|null => {
   return null
 }
 
-const shProperty = ns.SH('property')
-const shGroup = ns.SH('group')
-const shOrder = ns.SH('order') as rdf.NamedNode
-const prefLabel = ns.SKOS('prefLabel') as rdf.NamedNode
+export const shProperty = ns.SH('property')
+export const shGroup = ns.SH('group')
+export const shOrder = ns.SH('order') as rdf.NamedNode
+export const prefLabel = ns.SKOS('prefLabel') as rdf.NamedNode
+export const shName = ns.SH('node') as rdf.NamedNode
+export const shpath = ns.SH('path') as rdf.NamedNode
+export const dashEditor = ns.DASH('editor') as rdf.NamedNode
+export const shDescription = ns.SH('description') as rdf.NamedNode
+export const shMessage = ns.SH('message') as rdf.NamedNode
+export const shMinCount = ns.SH('minCount') as rdf.NamedNode
+export const shMaxCount = ns.SH('maxCount') as rdf.NamedNode
+export const shDatatype = ns.SH('datatype') as rdf.NamedNode
+export const dashSingleLine = ns.SH('singleLine') as rdf.NamedNode
 
-const sortByPropValue = (nodelist:Array<rdf.NamedNode>, p:rdf.NamedNode, store:rdf.Store): Array<rdf.NamedNode> => {
+
+export const sortByPropValue = (nodelist:Array<rdf.NamedNode>, p:rdf.NamedNode, store:rdf.Store): Array<rdf.NamedNode> => {
   const orderedGroupObjs:Record<number,rdf.NamedNode> = {}
   let orders:Array<number> = []
   for (const node of nodelist) {

@@ -56,7 +56,7 @@ export const setDefaultPrefixes = (s: rdf.Store): void => {
 	}
 }
 
-export const qname = (uri: string): string => {
+export const qnameFromUri = (uri: string): string => {
 	let j = uri.indexOf('#')
 	if (j < 0)
 		j = uri.lastIndexOf('/')
@@ -70,6 +70,16 @@ export const qname = (uri: string): string => {
   	throw new Error('Cannot make qname out of <' + uri + '>')
 
   return prefix + ':' + localid
+}
+
+export const lnameFromUri = (uri: string): string => {
+  let j = uri.indexOf('#')
+  if (j < 0)
+    j = uri.lastIndexOf('/')
+  if (j < 0)
+    throw new Error('Cannot make qname out of <' + uri + '>')
+
+  return uri.slice(j + 1)
 }
 
 export const uriFromQname = (qname: string): string => {

@@ -41,7 +41,8 @@
     "react-tooltip": "^4.2.7",
     "recoil": "^0.1.2",
     "throttle-debounce": "^3.0.1",
-    "typescript": "^4.0.3"
+    "typescript": "^4.0.3",
+    "typescript-memoize": "^1.0.0"
   },
   "scripts": {
     "build-css": "node-sass-chokidar src/stylesheets -o public/ --output-style compressed",
