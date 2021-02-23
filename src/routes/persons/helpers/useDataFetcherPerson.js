@@ -31,7 +31,7 @@ function useDataFetcherPerson(id) {
           },
         })
         .then(function (response) {
-          // debug("%O", response)
+          debug("%O", response)
           setLoadingState({ status: "fetched", error: null })
           if (response.data) setResource(response.data)
         })
