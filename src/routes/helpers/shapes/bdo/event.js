@@ -256,7 +256,10 @@ function Edit({ value, onChange, hideEmpty = true }) {
             </button>
           </div>
           {libraryURL && (
-            <div className="row card px-3 py-3" style={{ position: "absolute", left: "4%", width: "96%", zIndex: 10 }}>
+            <div
+              className="row card px-3 py-3"
+              style={{ position: "absolute", left: "30px", width: "calc(100% - 30px)", zIndex: 10 }}
+            >
               <iframe style={{ border: "none" }} height="400" src={libraryURL} />
             </div>
           )}
