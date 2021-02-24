@@ -5,14 +5,11 @@ import { Link } from "react-router-dom"
 import { FiPower as LogoutIcon } from "react-icons/fi"
 import { InputLabel, Select, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
-import { atom, useRecoilState, useRecoilValue, selectorFamily } from "recoil"
+import { useRecoilState, useRecoilValue, selectorFamily } from "recoil"
+
+import { uiLangState } from "../../atoms/common"
 
 import { useAuth0 } from "@auth0/auth0-react"
-
-const uiLangState = atom({
-  key: "uiLangState",
-  default: "en",
-})
 
 function NavBar(props) {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
