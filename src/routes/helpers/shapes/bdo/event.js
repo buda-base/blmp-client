@@ -13,6 +13,7 @@ import * as constants from "../../vocabulary"
 import { MUI_FIELD_SPACER, SectionDivider } from "../../../layout/theme"
 
 import { Edit as LangEdit } from "../skos/label"
+import config from "../../../../config"
 
 const debug = require("debug")("bdrc:atom:event")
 
@@ -212,7 +213,7 @@ function Edit({ value, onChange, hideEmpty = true }) {
       )}
 
       {hideEmpty && !value["personEventRole"] ? null : ( // hide empty for now
-        <React.Fragment>
+        <div style={{ position: "relative" }}>
           <div className="pt-4" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <TextField
               className={classes.root}
@@ -247,8 +248,9 @@ function Edit({ value, onChange, hideEmpty = true }) {
                   key = '"' + key + '"'
                   if (lang.startsWith("bo")) key = key + "~1"
                   lang = encodeURIComponent(lang)
-                  // TODO move url to config + use dedicated route in library + get type from ontology
-                  setLibraryURL("https://library.bdrc.io/search?q=" + key + "&lg=" + lang + "&t=Role")
+                  // DONE move url to config + use dedicated route in library
+                  // TODO get type from ontology
+                  setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=Role")
                 }
               }}
             >
@@ -256,11 +258,14 @@ function Edit({ value, onChange, hideEmpty = true }) {
             </button>
           </div>
           {libraryURL && (
-            <div className="row card px-3 py-3" style={{ position: "absolute", left: "4%", width: "96%", zIndex: 10 }}>
+            <div
+              className="row card px-3 py-3"
+              style={{ position: "absolute", left: "1rem", width: "100%", zIndex: 10, bottom: "calc(100% - 1.5rem)" }}
+            >
               <iframe style={{ border: "none" }} height="400" src={libraryURL} />
             </div>
           )}
-        </React.Fragment>
+        </div>
       )}
 
       {hideEmpty && !value["eventWhere"] ? null : ( // hide empty for now
