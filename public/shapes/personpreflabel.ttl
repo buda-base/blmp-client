@@ -43,7 +43,7 @@ bds:PersonShape
   a sh:NodeShape ;
   # In case the editor needs to create a new person, it should start with P
   bds:identifierPrefix "P" ;
-  rdfs:label "Person"@en ;
+  skos:prefLabel "Person Template"@en , "Person Template tib"@bo-x-ewts ;
   # persons have one property, which is name:
   sh:property bds:CommonShape-prefLabel ;
   sh:targetClass bdo:Person ;
@@ -53,7 +53,7 @@ bds:CommonShape-prefLabel
   a sh:PropertyShape ;
   # a help message
   sh:description "preferred label, will be displayed when the person is referred to (in search results, in other records, etc.)"@en ;
-  sh:name "name to display"@en ;
+  sh:name "name for display"@en , "name for display tib"@bo-x-ewts ;
   # this property is in the name property group
   sh:group bds:PersonNamePropertyGroup ;
   # this property should be displayed first in that group

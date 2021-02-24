@@ -1,6 +1,7 @@
 const enTranslations = {
   home: {
     title: "BUDA Editor",
+    uilang: "UI Language",
   },
   types: {
     person: "Person",
