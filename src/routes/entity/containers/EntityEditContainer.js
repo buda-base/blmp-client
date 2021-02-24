@@ -3,6 +3,7 @@ import { TimeTravelObserver } from "../../helpers/observer"
 import { ShapeFetcher } from "../../../helpers/rdf/io"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
+import PropertyGroupContainer from "./PropertyGroupContainer"
 
 const debug = require("debug")("bdrc:entity:edit")
 
@@ -22,9 +23,16 @@ function EntityEditContainer(props) {
 
   if (!shape) return null
 
+  debug(shape.groups)
+
   return (
     <React.Fragment>
-      <div role="main">Hello world entity edit</div>
+      <div role="main">Entity shape {shape.qname}</div>
+      <div>
+        {shape.groups.map((group, index) => (
+          <PropertyGroupContainer key={index} group={group} />
+        ))}
+      </div>
     </React.Fragment>
   )
 }

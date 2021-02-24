@@ -47,7 +47,7 @@ export const prefixToURI: {[key:string]: string} = {
 
 export const URItoPrefix: {[key:string]: string} = {}
 for (const [prefix, uri] of Object.entries(prefixToURI)) {
-	URItoPrefix[prefix] = uri
+	URItoPrefix[uri] = prefix
 }
 
 export const setDefaultPrefixes = (s: rdf.Store): void => {
@@ -95,5 +95,5 @@ export const uriFromQname = (qname: string): string => {
   if (!uri_base)
   	throw new Error('Cannot make uri out of <' + qname + '>')
 
-  return uri_base + ':' + localid
+  return uri_base + localid
 }
