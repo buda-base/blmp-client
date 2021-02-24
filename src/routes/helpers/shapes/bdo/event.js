@@ -147,10 +147,21 @@ function Edit({ value, onChange, hideEmpty = true }) {
   const classes = useStyles()
   const [libraryURL, setLibraryURL] = useState()
 
+  // TODO this will better be in dedicated subcomponent + fix keep previous keyword/language searched
   useEffect(() => {
     const handler = (ev) => {
-      const data = JSON.parse(ev.data)
-      debug("received msg: %o", data)
+      try {
+        if (!window.location.href.includes(ev.origin)) {
+          debug("received msg: %o %o", ev, value)
+          const data = JSON.parse(ev.data)
+          if (data["@id"]) {
+            onChange({ ...value, personEventRole: { ...value["personEventRole"], "@id": data["@id"] } })
+            setLibraryURL("")
+          }
+        }
+      } catch (err) {
+        debug("error: %o", err)
+      }
     }
 
     window.addEventListener("message", handler)
@@ -227,47 +238,79 @@ function Edit({ value, onChange, hideEmpty = true }) {
       {hideEmpty && !value["personEventRole"] ? null : ( // hide empty for now
         <div style={{ position: "relative" }}>
           <div className="pt-4" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-            <TextField
-              className={classes.root}
-              InputLabelProps={{ shrink: true }}
-              //label={value.status === "filled" ? value["@id"] : null}
-              style={{ width: "90%" }}
-              value={value["personEventRole"]["@value"] ? value["personEventRole"]["@value"] : ""}
-              onChange={(e) =>
-                onChange({ ...value, personEventRole: { ...value["personEventRole"], "@value": e.target.value } })
-              }
-              helperText={constants.EventTypes[value.type] + " (Role)" || "n/a"}
-            />
-            <LangEdit
-              value={value["personEventRole"]["@language"] ? value["personEventRole"] : { "@language": "bo-x-ewts" }}
-              onChange={(e) =>
-                onChange({ ...value, personEventRole: { ...value["personEventRole"], "@language": e["@language"] } })
-              }
-              langOnly={true}
-            />
-            <button
-              {...(!value["personEventRole"] ? { disabled: "disabled" } : {})}
-              className="btn btn-sm btn-outline-primary py-3 ml-2"
-              style={{ boxShadow: "none", alignSelf: "center" }}
-              onClick={(ev) => {
-                debug("click: %o %o", value["personEventRole"])
-                if (libraryURL) {
-                  setLibraryURL("")
-                } else if (value["personEventRole"]) {
-                  let lang = value["personEventRole"]["@language"]
-                  if (!lang) lang = "bo-x-ewts"
-                  let key = encodeURIComponent(value["personEventRole"]["@value"])
-                  key = '"' + key + '"'
-                  if (lang.startsWith("bo")) key = key + "~1"
-                  lang = encodeURIComponent(lang)
-                  // DONE move url to config + use dedicated route in library
-                  // TODO get type from ontology
-                  setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=Role")
-                }
-              }}
-            >
-              {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
-            </button>
+            {!value["personEventRole"]["@id"] && (
+              <React.Fragment>
+                <TextField
+                  className={classes.root}
+                  InputLabelProps={{ shrink: true }}
+                  //label={value.status === "filled" ? value["@id"] : null}
+                  style={{ width: "90%" }}
+                  value={value["personEventRole"]["@value"] ? value["personEventRole"]["@value"] : ""}
+                  onChange={(e) =>
+                    onChange({ ...value, personEventRole: { ...value["personEventRole"], "@value": e.target.value } })
+                  }
+                  helperText={constants.EventTypes[value.type] + " (Role)" || "n/a"}
+                />
+                <LangEdit
+                  value={
+                    value["personEventRole"]["@language"] ? value["personEventRole"] : { "@language": "bo-x-ewts" }
+                  }
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      personEventRole: { ...value["personEventRole"], "@language": e["@language"] },
+                    })
+                  }
+                  langOnly={true}
+                />
+                <button
+                  {...(!value["personEventRole"]["@value"] ? { disabled: "disabled" } : {})}
+                  className="btn btn-sm btn-outline-primary py-3 ml-2"
+                  style={{ boxShadow: "none", alignSelf: "center" }}
+                  onClick={(ev) => {
+                    debug("click: %o %o", value["personEventRole"])
+                    if (libraryURL) {
+                      setLibraryURL("")
+                    } else if (value["personEventRole"]) {
+                      let lang = value["personEventRole"]["@language"]
+                      if (!lang) lang = "bo-x-ewts"
+                      let key = encodeURIComponent(value["personEventRole"]["@value"])
+                      key = '"' + key + '"'
+                      if (lang.startsWith("bo")) key = key + "~1"
+                      lang = encodeURIComponent(lang)
+                      // DONE move url to config + use dedicated route in library
+                      // TODO get type from ontology
+                      setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=Role")
+                    }
+                  }}
+                >
+                  {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
+                </button>
+              </React.Fragment>
+            )}
+            {value["personEventRole"]["@id"] && (
+              <React.Fragment>
+                <TextField
+                  className={classes.root}
+                  InputLabelProps={{ shrink: true }}
+                  //label={value.status === "filled" ? value["@id"] : null}
+                  style={{ width: "90%" }}
+                  value={value["personEventRole"]["@id"]}
+                  helperText={constants.EventTypes[value.type] + " (Role)" || "n/a"}
+                  disabled
+                />
+                <button
+                  className="btn btn-sm btn-outline-primary py-3 ml-2"
+                  style={{ boxShadow: "none", alignSelf: "center" }}
+                  onClick={(ev) => {
+                    debug("click: %o %o", value["personEventRole"])
+                    onChange({ ...value, personEventRole: { ...value["personEventRole"], "@id": "" } })
+                  }}
+                >
+                  {i18n.t("search.change")}
+                </button>
+              </React.Fragment>
+            )}
           </div>
           {libraryURL && (
             <div
