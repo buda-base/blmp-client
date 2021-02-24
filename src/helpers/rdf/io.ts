@@ -2,7 +2,7 @@ import * as rdf from 'rdflib'
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
 import { fetchUrlFromTypeQname } from "./shapes"
-import { RDFResource } from "./types"
+import { RDFResource, TopShape } from "./types"
 import { getShape } from "./shapes"
 
 const debug = require("debug")("bdrc:rdf:io")
@@ -28,7 +28,7 @@ interface IFetchState {
 
 export function ShapeFetcher(typeQname: string) {
   const [loadingState, setLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
-  const [shape, setShape] = useState<RDFResource>()
+  const [shape, setShape] = useState<TopShape>()
 
   const reset = () => {
     setShape(undefined)
@@ -43,7 +43,7 @@ export function ShapeFetcher(typeQname: string) {
       await loadTtl(url)
         .then(function (store: rdf.Store) {
           if (store) {
-            const shape: RDFResource = getShape(typeQname, store)
+            const shape: TopShape = getShape(typeQname, store)
             debug(store)
             setLoadingState({ status: "fetched", error: undefined })
             setShape(shape)

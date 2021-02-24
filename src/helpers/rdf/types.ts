@@ -3,6 +3,8 @@ import * as shapes from './shapes'
 import * as ns from './ns'
 import { Memoize } from 'typescript-memoize';
 
+const debug = require("debug")("bdrc:rdf:types")
+
 export class RDFResource {
   node: rdf.NamedNode
   store: rdf.Store
@@ -10,6 +12,10 @@ export class RDFResource {
   constructor(node: rdf.NamedNode, store: rdf.Store) {
     this.node = node
     this.store = store
+  }
+
+  public get id(): string {
+    return this.node.value
   }
 
   public get lname(): string {
@@ -115,12 +121,8 @@ export class Property extends RDFResourceWithLabel {
 
 export class PropertyGroup extends RDFResourceWithLabel {
 
-  constructor(node: rdf.NamedNode, store: rdf.Store, prefLabels?: Record<string,string>) {
-    super(node, store)
-  }
-
   @Memoize()
-  public get props(): Array<Property> {
+  public get properties(): Array<Property> {
     const res: Array<Property> = []
     let propsingroup:Array<rdf.NamedNode> = this.store.each(null, shapes.shGroup, this.node) as Array<rdf.NamedNode>
     propsingroup = shapes.sortByPropValue(propsingroup, shapes.shOrder, this.store)
