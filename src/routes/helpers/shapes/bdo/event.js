@@ -147,6 +147,18 @@ function Edit({ value, onChange, hideEmpty = true }) {
   const classes = useStyles()
   const [libraryURL, setLibraryURL] = useState()
 
+  useEffect(() => {
+    const handler = (ev) => {
+      const data = JSON.parse(ev.data)
+      debug("received msg: %o", data)
+    }
+
+    window.addEventListener("message", handler)
+
+    // clean up
+    return () => window.removeEventListener("message", handler)
+  }, []) // empty array => run only once
+
   return (
     <React.Fragment>
       {value.status === "pristine" ? <SectionDivider text="NEW" /> : null}
