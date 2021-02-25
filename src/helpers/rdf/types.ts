@@ -132,6 +132,12 @@ export class PropertyGroup extends RDFResourceWithLabel {
     return res
   }
 
+  // different property for prefLabels, property shapes are using sh:name
+  @Memoize()
+  public get prefLabels(): Record<string,string> {
+    return this.getPropValueByLang(shapes.rdfsLabel)
+  }
+
 }
 
 export class TopShape extends RDFResourceWithLabel {
