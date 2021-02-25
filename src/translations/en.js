@@ -17,6 +17,7 @@ const enTranslations = {
   search: {
     lookup: "lookup",
     cancel: "cancel",
+    change: "change",
   },
 }
 
