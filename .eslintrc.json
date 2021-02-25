@@ -37,6 +37,7 @@
   },
   "parser": "@typescript-eslint/parser",
   "rules": {
+    "@typescript-eslint/no-var-requires": "off",
     "no-console": "error",
     "no-unused-vars": "warn",
     "no-multiple-empty-lines": ["error", { "max": 1 }],
