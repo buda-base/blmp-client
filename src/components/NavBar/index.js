@@ -29,7 +29,7 @@ function NavBar(props) {
       <Select labelId="uilanglabel" id="select" value={uiLang} onChange={uiLangOnChange}>
         <MenuItem value="en">English</MenuItem>
         <MenuItem value="bo">བོད་ཡིག</MenuItem>
-        <MenuItem value="zh">中文</MenuItem>
+        <MenuItem value="zh-Hans">中文</MenuItem>
       </Select>
 
       {isAuthenticated ? (

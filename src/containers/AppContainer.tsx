@@ -1,5 +1,5 @@
 import React from "react"
-import { Route } from "react-router-dom"
+import { BrowserRouter as Router, Route , RouteComponentProps } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import i18n from "i18next"
 import { useTranslation, initReactI18next } from "react-i18next"
@@ -27,13 +27,19 @@ i18n
     },
     lng: "en",
     fallbackLng: "en",
-
     interpolation: {
-      escapeValue: false,
-    },
+      escapeValue: false
+    }
   })
 
-function App(props) {
+export interface IdTypeParams {
+    type?: string,
+    id?: string
+}
+
+export interface AppProps extends RouteComponentProps<IdTypeParams> {}
+
+function App(props: AppProps) {
   const { isAuthenticated, isLoading } = useAuth0()
 
   if (isLoading) return <span>Loading</span>
@@ -43,12 +49,14 @@ function App(props) {
     <React.Fragment>
       <NavBarContainer />
       <main>
-        <Route exact path="/" component={Home} />
-        <Route exact path="/profile" component={ProfileContainer} />
-        <Route exact path="/persons" component={PersonsContainer} />
-        <Route exact path="/person/:id" component={PersonView} />
-        <Route exact path="/new/:type" component={EntityEditContainer} />
-        <Route exact path="/person/:id/edit" component={PersonEditContainer} />
+        <Router>
+          <Route exact path="/" component={Home} />
+          <Route exact path="/profile" component={ProfileContainer} />
+          <Route exact path="/persons" component={PersonsContainer} />
+          <Route exact path="/person/:id" component={PersonView} />
+          <Route exact path="/new/:type" component={EntityEditContainer} />
+          <Route exact path="/person/:id/edit" component={PersonEditContainer} />
+        </Router>
       </main>
     </React.Fragment>
   )
