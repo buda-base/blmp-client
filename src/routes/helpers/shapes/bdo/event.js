@@ -14,6 +14,7 @@ import { MUI_FIELD_SPACER, SectionDivider } from "../../../layout/theme"
 
 import { Edit as LangEdit } from "../skos/label"
 import config from "../../../../config"
+import { uiLangState } from "../../../../atoms/common"
 
 const debug = require("debug")("bdrc:atom:event")
 
@@ -146,16 +147,17 @@ function Edit({ value, onChange, hideEmpty = true }) {
   debug(value.id, value)
   const classes = useStyles()
   const [libraryURL, setLibraryURL] = useState()
+  const [uiLang, setUiLang] = useRecoilState(uiLangState)
 
   // TODO this will better be in dedicated subcomponent + fix keep previous keyword/language searched
   useEffect(() => {
     const handler = (ev) => {
       try {
         if (!window.location.href.includes(ev.origin)) {
-          debug("received msg: %o %o", ev, value)
           const data = JSON.parse(ev.data)
+          debug("received msg: %o %o", data, ev, value)
           if (data["@id"]) {
-            onChange({ ...value, personEventRole: { ...value["personEventRole"], "@id": data["@id"] } })
+            onChange({ ...value, personEventRole: { ...value["personEventRole"], ...data } })
             setLibraryURL("")
           }
         }
@@ -169,6 +171,33 @@ function Edit({ value, onChange, hideEmpty = true }) {
     // clean up
     return () => window.removeEventListener("message", handler)
   }, []) // empty array => run only once
+
+  const updateLibrary = (ev, newlang) => {
+    debug("updLib: %o", value["personEventRole"])
+    if (ev && libraryURL) {
+      setLibraryURL("")
+    } else if (value["personEventRole"]) {
+      let lang = value["personEventRole"]["@language"]
+      if (newlang) lang = newlang
+      else if (!lang) lang = "bo-x-ewts"
+      let key = encodeURIComponent(value["personEventRole"]["@value"])
+      key = '"' + key + '"'
+      if (lang.startsWith("bo")) key = key + "~1"
+      lang = encodeURIComponent(lang)
+      // DONE move url to config + use dedicated route in library
+      // TODO get type from ontology
+      setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=Role")
+    }
+  }
+
+  // TODO use pdl functions
+  const getLocalizedValue = (values) => {
+    let val = values.filter((v) => v["@language"] === uiLang)
+    if (val.length) val = val[0]["@value"]
+    else if (values.length) val = values[0]["@value"]
+    else val = "?"
+    return val
+  }
 
   return (
     <React.Fragment>
@@ -246,43 +275,30 @@ function Edit({ value, onChange, hideEmpty = true }) {
                   //label={value.status === "filled" ? value["@id"] : null}
                   style={{ width: "90%" }}
                   value={value["personEventRole"]["@value"] ? value["personEventRole"]["@value"] : ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     onChange({ ...value, personEventRole: { ...value["personEventRole"], "@value": e.target.value } })
-                  }
+                    if (libraryURL) updateLibrary(e)
+                  }}
                   helperText={constants.EventTypes[value.type] + " (Role)" || "n/a"}
                 />
                 <LangEdit
                   value={
                     value["personEventRole"]["@language"] ? value["personEventRole"] : { "@language": "bo-x-ewts" }
                   }
-                  onChange={(e) =>
+                  onChange={(e) => {
                     onChange({
                       ...value,
                       personEventRole: { ...value["personEventRole"], "@language": e["@language"] },
                     })
-                  }
+                    if (libraryURL) updateLibrary(null, e["@language"])
+                  }}
                   langOnly={true}
                 />
                 <button
                   {...(!value["personEventRole"]["@value"] ? { disabled: "disabled" } : {})}
                   className="btn btn-sm btn-outline-primary py-3 ml-2"
                   style={{ boxShadow: "none", alignSelf: "center" }}
-                  onClick={(ev) => {
-                    debug("click: %o %o", value["personEventRole"])
-                    if (libraryURL) {
-                      setLibraryURL("")
-                    } else if (value["personEventRole"]) {
-                      let lang = value["personEventRole"]["@language"]
-                      if (!lang) lang = "bo-x-ewts"
-                      let key = encodeURIComponent(value["personEventRole"]["@value"])
-                      key = '"' + key + '"'
-                      if (lang.startsWith("bo")) key = key + "~1"
-                      lang = encodeURIComponent(lang)
-                      // DONE move url to config + use dedicated route in library
-                      // TODO get type from ontology
-                      setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=Role")
-                    }
-                  }}
+                  onClick={updateLibrary}
                 >
                   {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
                 </button>
@@ -295,7 +311,11 @@ function Edit({ value, onChange, hideEmpty = true }) {
                   InputLabelProps={{ shrink: true }}
                   //label={value.status === "filled" ? value["@id"] : null}
                   style={{ width: "90%" }}
-                  value={value["personEventRole"]["@id"]}
+                  value={
+                    getLocalizedValue(value["personEventRole"]["skos:prefLabel"]) +
+                    " | " +
+                    value["personEventRole"]["@id"]
+                  }
                   helperText={constants.EventTypes[value.type] + " (Role)" || "n/a"}
                   disabled
                 />
@@ -304,7 +324,14 @@ function Edit({ value, onChange, hideEmpty = true }) {
                   style={{ boxShadow: "none", alignSelf: "center" }}
                   onClick={(ev) => {
                     debug("click: %o %o", value["personEventRole"])
-                    onChange({ ...value, personEventRole: { ...value["personEventRole"], "@id": "" } })
+                    let personEventRole = value["personEventRole"]
+                    if (personEventRole["@id"]) {
+                      personEventRole = { ...personEventRole["tmp:keyword"] }
+                      delete personEventRole["@id"]
+                      delete personEventRole["skos:prefLabel"]
+                      delete personEventRole["tmp:keyword"]
+                    }
+                    onChange({ ...value, personEventRole })
                   }}
                 >
                   {i18n.t("search.change")}

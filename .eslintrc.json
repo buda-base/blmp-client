@@ -37,6 +37,7 @@
   },
   "parser": "@typescript-eslint/parser",
   "rules": {
+    "@typescript-eslint/no-empty-interface": "off", // TODO fix error
     "@typescript-eslint/no-var-requires": "off",
     "no-console": "error",
     "no-unused-vars": "warn",
