@@ -4,7 +4,6 @@ import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
 
-import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../../helpers/atoms"
 import * as constants from "../../vocabulary"
 import { Edit as LangEdit } from "../skos/label"
 import { uiLangState } from "../../../../atoms/common"
@@ -21,53 +20,35 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const family = atomFamily({
-  key: "event",
-  default: [], // must be iterable for a List component
-})
-
+// DONE dedicated subcomponent + keep previous keyword/language searched
 export function ResourceSelector({ value, onChange, propid, type, helperTxt, parentId }) {
   const classes = useStyles()
   const [libraryURL, setLibraryURL] = useState()
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
-  const [list, setList] = useRecoilState(family(parentId))
-  const index = list.findIndex((listItem) => listItem === value)
 
-  const onLocalChange = (value) => {
-    const newList = replaceItemAtIndex(list, index, value)
-    setList(newList)
+  const handler = (ev) => {
+    try {
+      if (!window.location.href.includes(ev.origin)) {
+        debug("message: ", ev, value, JSON.stringify(value))
+
+        const data = JSON.parse(ev.data)
+        if (data["tmp:propid"] === propid && data["@id"]) {
+          debug("received msg: %o %o", propid, data, ev)
+
+          // DONE this erases other changes when handler is defined in useEffect
+          onChange({ ...value, [propid]: { ...value[propid], ...data } })
+
+          setLibraryURL("")
+        }
+      }
+    } catch (err) {
+      debug("error: %o", err)
+    }
   }
 
-  let val = {}
+  window.addEventListener("message", handler)
+
   useEffect(() => {
-    val = { ...list[index] }
-    debug("recoil/update:", val)
-  }, [list])
-
-  // TODO this will better be in dedicated subcomponent + fix keep previous keyword/language searched
-  useEffect(() => {
-    const handler = (ev) => {
-      try {
-        if (!window.location.href.includes(ev.origin)) {
-          debug("message: ", ev, val, JSON.stringify(val))
-
-          const data = JSON.parse(ev.data)
-          if (data["tmp:propid"] === propid && data["@id"]) {
-            debug("received msg: %o %o", propid, data, ev)
-
-            // TODO why does this erase other changes??
-            onLocalChange({ ...val, [propid]: { ...val[propid], ...data } })
-
-            setLibraryURL("")
-          }
-        }
-      } catch (err) {
-        debug("error: %o", err)
-      }
-    }
-
-    window.addEventListener("message", handler)
-
     // clean up
     return () => window.removeEventListener("message", handler)
   }, []) // empty array => run only once
