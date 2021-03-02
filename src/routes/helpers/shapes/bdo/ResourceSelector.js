@@ -4,6 +4,7 @@ import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
 
+import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../../helpers/atoms"
 import * as constants from "../../vocabulary"
 import { Edit as LangEdit } from "../skos/label"
 import { uiLangState } from "../../../../atoms/common"
@@ -20,21 +21,43 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-export function ResourceSelector({ value, onChange, propid, type, helperTxt }) {
+const family = atomFamily({
+  key: "event",
+  default: [], // must be iterable for a List component
+})
+
+export function ResourceSelector({ value, onChange, propid, type, helperTxt, parentId }) {
   const classes = useStyles()
   const [libraryURL, setLibraryURL] = useState()
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
+  const [list, setList] = useRecoilState(family(parentId))
+  const index = list.findIndex((listItem) => listItem === value)
+
+  const onLocalChange = (value) => {
+    const newList = replaceItemAtIndex(list, index, value)
+    setList(newList)
+  }
+
+  let val = {}
+  useEffect(() => {
+    val = { ...list[index] }
+    debug("recoil/update:", val)
+  }, [list])
 
   // TODO this will better be in dedicated subcomponent + fix keep previous keyword/language searched
   useEffect(() => {
     const handler = (ev) => {
-      debug("message: %o", ev)
       try {
         if (!window.location.href.includes(ev.origin)) {
+          debug("message: ", ev, val, JSON.stringify(val))
+
           const data = JSON.parse(ev.data)
           if (data["tmp:propid"] === propid && data["@id"]) {
-            debug("received msg: %o %o", propid, data, ev, value)
-            onChange({ ...value, [propid]: { ...value[propid], ...data } })
+            debug("received msg: %o %o", propid, data, ev)
+
+            // TODO why does this erase other changes??
+            onLocalChange({ ...val, [propid]: { ...val[propid], ...data } })
+
             setLibraryURL("")
           }
         }
@@ -96,10 +119,7 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt }) {
             <LangEdit
               value={value[propid]["@language"] ? value[propid] : { "@language": "bo-x-ewts" }}
               onChange={(e) => {
-                onChange({
-                  ...value,
-                  [propid]: { ...value[propid], "@language": e["@language"] },
-                })
+                onChange({ ...value, [propid]: { ...value[propid], "@language": e["@language"] } })
                 if (libraryURL) updateLibrary(null, e["@language"])
               }}
               langOnly={true}

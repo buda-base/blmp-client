@@ -144,7 +144,7 @@ const useStyles = makeStyles((theme) => ({
 /**
  * Edit component
  */
-function Edit({ value, onChange, hideEmpty = true }) {
+function Edit({ value, onChange, hideEmpty = true, parentId }) {
   debug(value.id, value)
   const classes = useStyles()
 
@@ -220,11 +220,19 @@ function Edit({ value, onChange, hideEmpty = true }) {
           propid={"personEventRole"}
           helperTxt={"Role"}
           type={"Role"}
+          parentId={parentId}
         />
       )}
 
       {hideEmpty && !value["eventWhere"] ? null : ( // hide empty for now
-        <ResourceSelector value={value} onChange={onChange} propid={"eventWhere"} helperTxt={"At"} type={"Place"} />
+        <ResourceSelector
+          value={value}
+          onChange={onChange}
+          propid={"eventWhere"}
+          helperTxt={"At"}
+          type={"Place"}
+          parentId={parentId}
+        />
       )}
 
       {value["eventWho"] && value["eventWho"].length ? ( // hide empty for now // TODO Unpack list
@@ -276,7 +284,7 @@ function Component({ item, parentId, hideEmpty }) {
 
   return (
     <div className="pb-4">
-      <Edit value={item} onChange={onChange} hideEmpty={hideEmpty} />
+      <Edit value={item} onChange={onChange} hideEmpty={hideEmpty} parentId={parentId} />
       <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
         <RemoveIcon />
       </button>
