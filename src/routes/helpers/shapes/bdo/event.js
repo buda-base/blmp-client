@@ -151,7 +151,7 @@ function Edit({ value, onChange, hideEmpty = true, parentId }) {
   return (
     <React.Fragment>
       {value.status === "pristine" ? <SectionDivider text="NEW" /> : null}
-      {!hideEmpty ? <SectionDivider text={value["@id"]} className="text-muted" /> : null}
+      {/* {!hideEmpty ? <SectionDivider text={value["@id"]} className="text-muted" /> : null} */}
 
       {value.status === "pristine" ? (
         <TextField
@@ -283,7 +283,7 @@ function Component({ item, parentId, hideEmpty }) {
   }
 
   return (
-    <div className="pb-4 pt-3 mb-3" style={{ borderTop: "2px solid #eee" }}>
+    <div className="pb-4 pt-3 mb-3 px-2" style={{ borderTop: "2px solid #eee" }}>
       <Edit value={item} onChange={onChange} hideEmpty={hideEmpty} parentId={parentId} />
       <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
         <RemoveIcon />
