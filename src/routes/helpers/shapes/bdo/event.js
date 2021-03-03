@@ -200,7 +200,7 @@ function Edit({ value, onChange, hideEmpty = true, parentId }) {
       })}
 
       {hideEmpty && !value["eventText"]["@value"] ? null : ( // hide empty for now
-        <div className="pt-4">
+        <div className="">
           <TextField
             className={classes.root}
             //label={value.status === "filled" ? value["@id"] : null}
@@ -236,7 +236,7 @@ function Edit({ value, onChange, hideEmpty = true, parentId }) {
       )}
 
       {value["eventWho"] && value["eventWho"].length ? ( // hide empty for now // TODO Unpack list
-        <div className="pt-4" style={{ display: "flex", justifyContent: "space-between" }}>
+        <div className="" style={{ display: "flex", justifyContent: "space-between" }}>
           <TextField
             className={classes.root}
             label={value.status === "filled" ? value["@id"] : null}
@@ -283,7 +283,7 @@ function Component({ item, parentId, hideEmpty }) {
   }
 
   return (
-    <div className="pb-4">
+    <div className="pb-4 pt-3 mb-3" style={{ borderTop: "2px solid #eee" }}>
       <Edit value={item} onChange={onChange} hideEmpty={hideEmpty} parentId={parentId} />
       <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
         <RemoveIcon />

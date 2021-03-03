@@ -29,11 +29,11 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
   const handler = (ev) => {
     try {
       if (!window.location.href.includes(ev.origin)) {
-        debug("message: ", ev, value, JSON.stringify(value))
+        //debug("message: ", ev, value, JSON.stringify(value))
 
         const data = JSON.parse(ev.data)
         if (data["tmp:propid"] === propid && data["@id"]) {
-          debug("received msg: %o %o", propid, data, ev)
+          //debug("received msg: %o %o", propid, data, ev)
 
           // DONE this erases other changes when handler is defined in useEffect
           onChange({ ...value, [propid]: { ...value[propid], ...data } })
@@ -82,8 +82,8 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
 
   return (
     <div style={{ position: "relative" }}>
-      <div className="pt-4" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        {!value[propid]["@id"] && (
+      <div className="pt-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        {typeof value[propid] === "object" && !value[propid]["@id"] && (
           <React.Fragment>
             <TextField
               className={classes.root}
@@ -115,14 +115,18 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
             </button>
           </React.Fragment>
         )}
-        {value[propid]["@id"] && (
+        {(typeof value[propid] === "string" || value[propid]["@id"]) && (
           <React.Fragment>
             <TextField
               className={classes.root}
               InputLabelProps={{ shrink: true }}
               //label={value.status === "filled" ? value["@id"] : null}
               style={{ width: "90%" }}
-              value={getLocalizedValue(value[propid]["skos:prefLabel"]) + " | " + value[propid]["@id"]}
+              value={
+                !value[propid]["@id"]
+                  ? value[propid]
+                  : getLocalizedValue(value[propid]["skos:prefLabel"]) + " | " + value[propid]["@id"]
+              }
               helperText={constants.EventTypes[value.type] + " (" + helperTxt + ")" || "n/a"}
               disabled
             />
@@ -137,6 +141,8 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
                   delete propVal["@id"]
                   delete propVal["skos:prefLabel"]
                   delete propVal["tmp:keyword"]
+                } else {
+                  propVal = { "@value": "", "@language": "" }
                 }
                 onChange({ ...value, [propid]: propVal })
               }}
@@ -149,7 +155,14 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
       {libraryURL && (
         <div
           className="row card px-3 py-3"
-          style={{ position: "absolute", left: "1rem", width: "100%", zIndex: 10, bottom: "calc(100% - 1.5rem)" }}
+          style={{
+            position: "absolute",
+            right: "calc(1rem - 1px)",
+            width: "100%",
+            zIndex: 10,
+            bottom: "calc(100% - 1.5rem)",
+            maxWidth: "800px",
+          }}
         >
           <iframe style={{ border: "none" }} height="400" src={libraryURL} />
         </div>
