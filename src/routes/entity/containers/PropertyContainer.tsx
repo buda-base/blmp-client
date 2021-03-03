@@ -1,5 +1,5 @@
 import React, { useState, FC } from "react"
-import { Property, RDFResource } from "../../../helpers/rdf/types"
+import { Property, RDFResource, LiteralWithId } from "../../../helpers/rdf/types"
 import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState, atomFamily } from "recoil"
@@ -21,6 +21,7 @@ const PropertyContainer: FC<{ property: Property }> = ({ property }) => {
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
   const subject: RDFResource = generateNew("P")
+  const initialstate: Array<LiteralWithId> = []
 
   return (
     <React.Fragment>
@@ -29,7 +30,7 @@ const PropertyContainer: FC<{ property: Property }> = ({ property }) => {
           <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
             <div className="row card my-4">
               <p className="col-4 text-uppercase small my-2">{propLabel}</p>
-              <LitList id="prefLabel" initialState={undefined} />
+              <LitList id="prefLabel" initialState={initialstate} />
             </div>
           </div>
         </section>
