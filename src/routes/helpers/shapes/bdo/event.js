@@ -14,6 +14,8 @@ import { MUI_FIELD_SPACER, SectionDivider } from "../../../layout/theme"
 
 import { Edit as LangEdit } from "../skos/label"
 import config from "../../../../config"
+import { uiLangState } from "../../../../atoms/common"
+import { ResourceSelector } from "./ResourceSelector"
 
 const debug = require("debug")("bdrc:atom:event")
 
@@ -142,33 +144,9 @@ const useStyles = makeStyles((theme) => ({
 /**
  * Edit component
  */
-function Edit({ value, onChange, hideEmpty = true }) {
+function Edit({ value, onChange, hideEmpty = true, parentId }) {
   debug(value.id, value)
   const classes = useStyles()
-  const [libraryURL, setLibraryURL] = useState()
-
-  // TODO this will better be in dedicated subcomponent + fix keep previous keyword/language searched
-  useEffect(() => {
-    const handler = (ev) => {
-      try {
-        if (!window.location.href.includes(ev.origin)) {
-          debug("received msg: %o %o", ev, value)
-          const data = JSON.parse(ev.data)
-          if (data["@id"]) {
-            onChange({ ...value, personEventRole: { ...value["personEventRole"], "@id": data["@id"] } })
-            setLibraryURL("")
-          }
-        }
-      } catch (err) {
-        debug("error: %o", err)
-      }
-    }
-
-    window.addEventListener("message", handler)
-
-    // clean up
-    return () => window.removeEventListener("message", handler)
-  }, []) // empty array => run only once
 
   return (
     <React.Fragment>
@@ -236,121 +214,25 @@ function Edit({ value, onChange, hideEmpty = true }) {
       )}
 
       {hideEmpty && !value["personEventRole"] ? null : ( // hide empty for now
-        <div style={{ position: "relative" }}>
-          <div className="pt-4" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-            {!value["personEventRole"]["@id"] && (
-              <React.Fragment>
-                <TextField
-                  className={classes.root}
-                  InputLabelProps={{ shrink: true }}
-                  //label={value.status === "filled" ? value["@id"] : null}
-                  style={{ width: "90%" }}
-                  value={value["personEventRole"]["@value"] ? value["personEventRole"]["@value"] : ""}
-                  onChange={(e) =>
-                    onChange({ ...value, personEventRole: { ...value["personEventRole"], "@value": e.target.value } })
-                  }
-                  helperText={constants.EventTypes[value.type] + " (Role)" || "n/a"}
-                />
-                <LangEdit
-                  value={
-                    value["personEventRole"]["@language"] ? value["personEventRole"] : { "@language": "bo-x-ewts" }
-                  }
-                  onChange={(e) =>
-                    onChange({
-                      ...value,
-                      personEventRole: { ...value["personEventRole"], "@language": e["@language"] },
-                    })
-                  }
-                  langOnly={true}
-                />
-                <button
-                  {...(!value["personEventRole"]["@value"] ? { disabled: "disabled" } : {})}
-                  className="btn btn-sm btn-outline-primary py-3 ml-2"
-                  style={{ boxShadow: "none", alignSelf: "center" }}
-                  onClick={(ev) => {
-                    debug("click: %o %o", value["personEventRole"])
-                    if (libraryURL) {
-                      setLibraryURL("")
-                    } else if (value["personEventRole"]) {
-                      let lang = value["personEventRole"]["@language"]
-                      if (!lang) lang = "bo-x-ewts"
-                      let key = encodeURIComponent(value["personEventRole"]["@value"])
-                      key = '"' + key + '"'
-                      if (lang.startsWith("bo")) key = key + "~1"
-                      lang = encodeURIComponent(lang)
-                      // DONE move url to config + use dedicated route in library
-                      // TODO get type from ontology
-                      setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=Role")
-                    }
-                  }}
-                >
-                  {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
-                </button>
-              </React.Fragment>
-            )}
-            {value["personEventRole"]["@id"] && (
-              <React.Fragment>
-                <TextField
-                  className={classes.root}
-                  InputLabelProps={{ shrink: true }}
-                  //label={value.status === "filled" ? value["@id"] : null}
-                  style={{ width: "90%" }}
-                  value={value["personEventRole"]["@id"]}
-                  helperText={constants.EventTypes[value.type] + " (Role)" || "n/a"}
-                  disabled
-                />
-                <button
-                  className="btn btn-sm btn-outline-primary py-3 ml-2"
-                  style={{ boxShadow: "none", alignSelf: "center" }}
-                  onClick={(ev) => {
-                    debug("click: %o %o", value["personEventRole"])
-                    onChange({ ...value, personEventRole: { ...value["personEventRole"], "@id": "" } })
-                  }}
-                >
-                  {i18n.t("search.change")}
-                </button>
-              </React.Fragment>
-            )}
-          </div>
-          {libraryURL && (
-            <div
-              className="row card px-3 py-3"
-              style={{ position: "absolute", left: "1rem", width: "100%", zIndex: 10, bottom: "calc(100% - 1.5rem)" }}
-            >
-              <iframe style={{ border: "none" }} height="400" src={libraryURL} />
-            </div>
-          )}
-        </div>
+        <ResourceSelector
+          value={value}
+          onChange={onChange}
+          propid={"personEventRole"}
+          helperTxt={"Role"}
+          type={"Role"}
+          parentId={parentId}
+        />
       )}
 
       {hideEmpty && !value["eventWhere"] ? null : ( // hide empty for now
-        <div className="pt-4" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <TextField
-            className={classes.root}
-            //label={value.status === "filled" ? value["@id"] : null}
-            style={{ width: "100%" }}
-            value={value["eventWhere"]}
-            InputLabelProps={{ shrink: true }}
-            onChange={(e) => onChange({ ...value, eventWhere: e.target.value })}
-            helperText={constants.EventTypes[value.type] + " (At)" || "n/a"}
-          />
-          {/* // TODO let's create a reusable Lookup component from above instead
-          <LangEdit
-            value={languages["eventWhere"] ? languages["eventWhere"] : { "@language": "bo-x-ewts" }}
-            onChange={(value) => {
-              setLanguages({ ...languages, eventWhere: value })
-            }}
-            langOnly={true}
-          />
-          <button
-            className="btn btn-sm btn-outline-primary py-3 ml-2"
-            style={{ boxShadow: "none", alignSelf: "center" }}
-            //onClick={add}
-          >
-            {i18n.t("search.lookup")}
-          </button>
-          */}
-        </div>
+        <ResourceSelector
+          value={value}
+          onChange={onChange}
+          propid={"eventWhere"}
+          helperTxt={"At"}
+          type={"Place"}
+          parentId={parentId}
+        />
       )}
 
       {value["eventWho"] && value["eventWho"].length ? ( // hide empty for now // TODO Unpack list
@@ -402,7 +284,7 @@ function Component({ item, parentId, hideEmpty }) {
 
   return (
     <div className="pb-4">
-      <Edit value={item} onChange={onChange} hideEmpty={hideEmpty} />
+      <Edit value={item} onChange={onChange} hideEmpty={hideEmpty} parentId={parentId} />
       <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
         <RemoveIcon />
       </button>

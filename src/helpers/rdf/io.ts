@@ -1,4 +1,4 @@
-import * as rdf from 'rdflib'
+import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
 import { fetchUrlFromTypeQname } from "./shapes"
@@ -7,23 +7,25 @@ import { getShape } from "./shapes"
 
 const debug = require("debug")("bdrc:rdf:io")
 
-export const debugStore = (s: rdf.Store, debugNs: String) => {
-	const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+export const debugStore = (s: rdf.Store, debugNs: string) => {
+  const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
   const debug = require("debug")(debugNs)
-	rdf.serialize(defaultRef, s, undefined, 'text/turtle', function(err, str) { debug(str); });
+  rdf.serialize(defaultRef, s, undefined, "text/turtle", function (err, str) {
+    debug(str)
+  })
 }
 
 export const loadTtl = async (url: string): Promise<rdf.Store> => {
-  const response = await fetch(url);
-  const body = await response.text();
-  const store: rdf.Store = rdf.graph();
-  rdf.parse(body, store, rdf.Store.defaultGraphURI, 'text/turtle');
-  return store;
+  const response = await fetch(url)
+  const body = await response.text()
+  const store: rdf.Store = rdf.graph()
+  rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
+  return store
 }
 
 interface IFetchState {
-    status: string;
-    error?: string;
+  status: string
+  error?: string
 }
 
 export function ShapeFetcher(typeQname: string) {
