@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { TimeTravelObserver } from "../../helpers/observer"
 import { ShapeFetcher } from "../../../helpers/rdf/io"
-import { RDFResource } from "../../../helpers/rdf/types"
+import { RDFResource, Subject } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
@@ -34,7 +34,7 @@ function EntityEditContainer(props: AppProps) {
   const shapeLabel = lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)
 
   // creating new entity
-  const subject: RDFResource = generateNew("P")
+  const subject: Subject = generateNew("P")
 
   return (
     <React.Fragment>

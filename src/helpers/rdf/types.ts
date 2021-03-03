@@ -3,6 +3,7 @@ import * as shapes from "./shapes"
 import * as ns from "./ns"
 import { idGenerator } from "../id"
 import { Memoize } from "typescript-memoize"
+import { atom, useRecoilState, useRecoilValue, selectorFamily, atomFamily, DefaultValue } from "recoil"
 
 const debug = require("debug")("bdrc:rdf:types")
 
@@ -186,3 +187,49 @@ export class LiteralWithId extends rdf.Literal {
     return new LiteralWithId(this.value, language, this.datatype, this.id)
   }
 }
+
+export class Subject extends RDFResource {
+  propValues: Record<string, Array<LiteralWithId>> = {}
+
+  setPropValues(propertyUri: string, values: Array<LiteralWithId>): void {
+    this.propValues[propertyUri] = values
+  }
+
+  static addIdToLitList = (litList: Array<rdf.Literal>): Array<LiteralWithId> => {
+    return litList.map(
+      (lit: rdf.Literal): LiteralWithId => {
+        return new LiteralWithId(lit.value, lit.language, lit.datatype)
+      }
+    )
+  }
+
+  getPropValues(propertyUri: string): Array<LiteralWithId> {
+    if (propertyUri in this.propValues) {
+      return this.propValues[propertyUri]
+    }
+    const fromRDF: Array<rdf.Literal> = this.getPropLitValues(new rdf.NamedNode(propertyUri))
+    const fromRDFWithID: Array<LiteralWithId> = Subject.addIdToLitList(fromRDF)
+    this.propValues[propertyUri] = fromRDFWithID
+    return fromRDFWithID
+  }
+}
+
+const defaultSubject = new Subject(ns.BDR("DEFAULTSUBJECT") as rdf.NamedNode, rdf.graph())
+
+const subjectAtomByUri = atomFamily<Subject, string>({
+  key: "entity",
+  default: defaultSubject,
+})
+
+const valuesAtomBySubjectPropertyUri = selectorFamily<Array<LiteralWithId>, Array<string>>({
+  key: "getValuesByPropertyUri",
+  get: (subjectUriPropertyUri: Array<string>) => ({ get }) => {
+    return get(subjectAtomByUri(subjectUriPropertyUri[0])).getPropValues(subjectUriPropertyUri[1])
+  },
+  set: (subjectUriPropertyUri: Array<string>) => ({ get }, newValue) => {
+    if (newValue instanceof DefaultValue) {
+      newValue = []
+    }
+    get(subjectAtomByUri(subjectUriPropertyUri[0])).setPropValues(subjectUriPropertyUri[1], newValue)
+  },
+})
