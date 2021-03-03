@@ -1,4 +1,4 @@
-import * as rdf from 'rdflib'
+import * as rdf from "rdflib"
 
 export const BDR_uri = "http://purl.bdrc.io/resource/"
 export const BDR = rdf.Namespace(BDR_uri)
@@ -22,78 +22,71 @@ export const SKOS_uri = "http://www.w3.org/2004/02/skos/core#"
 export const SKOS = rdf.Namespace(SKOS_uri)
 export const XSD_uri = "http://www.w3.org/2001/XMLSchema#"
 export const XSD = rdf.Namespace(XSD_uri)
-export const BDG_uri = "http://purl.bdrc.io/resource/"
+export const BDG_uri = "http://purl.bdrc.io/graph/"
 export const BDG = rdf.Namespace(BDG_uri)
 export const BDA_uri = "http://purl.bdrc.io/admindata/"
 export const BDA = rdf.Namespace(BDA_uri)
 
 const debug = require("debug")("bdrc:rdf:ns")
 
-export const prefixToURI: {[key:string]: string} = {
-	"bdr": BDR_uri,
-	"bdo": BDO_uri,
-	"bds": BDS_uri,
-	"adm": ADM_uri,
-	"dash": DASH_uri,
-	"owl": OWL_uri,
-	"rdfs": RDFS_uri,
-	"sh": SH_uri,
-	"rdf": RDF_uri,
-	"skos": SKOS_uri,
-	"xsd": XSD_uri,
-	"bdg": BDG_uri,
-	"bda": BDA_uri
+export const prefixToURI: { [key: string]: string } = {
+  bdr: BDR_uri,
+  bdo: BDO_uri,
+  bds: BDS_uri,
+  adm: ADM_uri,
+  dash: DASH_uri,
+  owl: OWL_uri,
+  rdfs: RDFS_uri,
+  sh: SH_uri,
+  rdf: RDF_uri,
+  skos: SKOS_uri,
+  xsd: XSD_uri,
+  bdg: BDG_uri,
+  bda: BDA_uri,
 }
 
-export const URItoPrefix: {[key:string]: string} = {}
+export const URItoPrefix: { [key: string]: string } = {}
 for (const [prefix, uri] of Object.entries(prefixToURI)) {
-	URItoPrefix[uri] = prefix
+  URItoPrefix[uri] = prefix
 }
 
 export const setDefaultPrefixes = (s: rdf.Store): void => {
-	for (const [prefix, uri] of Object.entries(prefixToURI)) {
-		s.setPrefixForURI(prefix, uri)
-	}
+  for (const [prefix, uri] of Object.entries(prefixToURI)) {
+    s.setPrefixForURI(prefix, uri)
+  }
 }
 
 export const qnameFromUri = (uri: string): string => {
-	let j = uri.indexOf('#')
-	if (j < 0)
-		j = uri.lastIndexOf('/')
-  if (j < 0)
-  	throw new Error('Cannot make qname out of <' + uri + '>')
+  let j = uri.indexOf("#")
+  if (j < 0) j = uri.lastIndexOf("/")
+  if (j < 0) throw new Error("Cannot make qname out of <" + uri + ">")
 
   const localid = uri.slice(j + 1)
   const namesp = uri.slice(0, j + 1)
   const prefix = URItoPrefix[namesp]
-  if (!prefix)
-  	throw new Error('Cannot make qname out of <' + uri + '>')
+  if (!prefix) throw new Error("Cannot make qname out of <" + uri + ">")
 
-  return prefix + ':' + localid
+  return prefix + ":" + localid
 }
 
 export const lnameFromUri = (uri: string): string => {
-  let j = uri.indexOf('#')
-  if (j < 0)
-    j = uri.lastIndexOf('/')
-  if (j < 0)
-    throw new Error('Cannot make qname out of <' + uri + '>')
+  let j = uri.indexOf("#")
+  if (j < 0) j = uri.lastIndexOf("/")
+  if (j < 0) throw new Error("Cannot make qname out of <" + uri + ">")
 
   return uri.slice(j + 1)
 }
 
 export const uriFromQname = (qname: string): string => {
-	const j = qname.indexOf(':')
+  const j = qname.indexOf(":")
 
-  if (j < 0)
-    throw new Error('Cannot make uri out of <' + qname + '>')
+  if (j < 0) throw new Error("Cannot make uri out of <" + qname + ">")
 
   const localid = qname.slice(j + 1)
   const prefix = qname.slice(0, j)
   const uri_base = prefixToURI[prefix]
 
-  if (!uri_base)
-  	throw new Error('Cannot make uri out of <' + qname + '>')
+  if (!uri_base) throw new Error("Cannot make uri out of <" + qname + ">")
 
   return uri_base + localid
 }

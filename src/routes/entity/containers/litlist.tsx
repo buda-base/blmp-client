@@ -13,7 +13,7 @@ const generateDefault = (property?: Property): LiteralWithId => {
 }
 
 const family = atomFamily<Array<LiteralWithId>, string>({
-  key: "label",
+  key: "literals",
   default: [], // must be iterable for a List component
 })
 
@@ -79,7 +79,7 @@ export const Edit: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => 
     <React.Fragment>
       <TextField
         className={classes.root}
-        label={lit.id}
+        //label={lit.id}
         style={{ width: 300 }}
         color={"secondary"}
         value={lit.value}
@@ -88,7 +88,7 @@ export const Edit: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => 
       <TextField
         select
         className="ml-2"
-        label={lit.id}
+        //label={lit.id}
         value={lit.language || ""}
         style={{ width: 120 }}
         onChange={(e) => onChange(lit.copyWithUpdatedLanguage(e.target.value))}
