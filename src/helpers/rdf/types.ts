@@ -236,11 +236,11 @@ export class Subject extends RDFResource {
   }
 }
 
-const defaultSubject = new Subject(ns.BDR("DEFAULTSUBJECT") as rdf.NamedNode, rdf.graph())
-
 export const subjectAtomByUri = atomFamily<Subject, string>({
   key: "entity",
-  default: defaultSubject,
+  default: () => {
+    return new Subject(ns.BDR("DEFAULTSUBJECT") as rdf.NamedNode, rdf.graph())
+  },
 })
 
 export const valuesAtomBySubjectPropertyUri = selectorFamily<Array<LiteralWithId>, Array<string>>({
