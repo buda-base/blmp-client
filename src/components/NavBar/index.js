@@ -6,10 +6,10 @@ import { FiPower as LogoutIcon } from "react-icons/fi"
 import { InputLabel, Select, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
 import { useRecoilState, useRecoilValue, selectorFamily } from "recoil"
+import { useAuth0 } from "@auth0/auth0-react"
+import { FormHelperText, FormControl } from "@material-ui/core"
 
 import { uiLangState } from "../../atoms/common"
-
-import { useAuth0 } from "@auth0/auth0-react"
 
 function NavBar(props) {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
@@ -24,13 +24,14 @@ function NavBar(props) {
       <Link to={"/"} className="navbar-left">
         <img className="mx-auto" src="/images/BUDA-small.svg" height="50px" alt="buda editor" />
       </Link>
-
-      <InputLabel id="uilanglabel">{i18n.t("home.uilang")}</InputLabel>
-      <Select labelId="uilanglabel" id="select" value={uiLang} onChange={uiLangOnChange}>
-        <MenuItem value="en">English</MenuItem>
-        <MenuItem value="bo">བོད་ཡིག</MenuItem>
-        <MenuItem value="zh-Hans">中文</MenuItem>
-      </Select>
+      <FormControl className="ml-3">
+        <Select labelId="uilanglabel" id="select" value={uiLang} onChange={uiLangOnChange}>
+          <MenuItem value="en">English</MenuItem>
+          <MenuItem value="bo">བོད་ཡིག</MenuItem>
+          <MenuItem value="zh-Hans">中文</MenuItem>
+        </Select>
+        <FormHelperText>{i18n.t("home.uilang")}</FormHelperText>
+      </FormControl>
 
       {isAuthenticated ? (
         <div className="btn-group ml-auto" role="group">

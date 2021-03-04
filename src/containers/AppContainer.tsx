@@ -1,5 +1,5 @@
 import React from "react"
-import { BrowserRouter as Router, Route , RouteComponentProps } from "react-router-dom"
+import { BrowserRouter as Router, Route, RouteComponentProps, Switch } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import i18n from "i18next"
 import { useTranslation, initReactI18next } from "react-i18next"
@@ -28,13 +28,13 @@ i18n
     lng: "en",
     fallbackLng: "en",
     interpolation: {
-      escapeValue: false
-    }
+      escapeValue: false,
+    },
   })
 
 export interface IdTypeParams {
-    type?: string,
-    id?: string
+  type?: string
+  id?: string
 }
 
 export interface AppProps extends RouteComponentProps<IdTypeParams> {}
@@ -49,14 +49,14 @@ function App(props: AppProps) {
     <React.Fragment>
       <NavBarContainer />
       <main>
-        <Router>
+        <Switch>
           <Route exact path="/" component={Home} />
           <Route exact path="/profile" component={ProfileContainer} />
           <Route exact path="/persons" component={PersonsContainer} />
           <Route exact path="/person/:id" component={PersonView} />
           <Route exact path="/new/:type" component={EntityEditContainer} />
           <Route exact path="/person/:id/edit" component={PersonEditContainer} />
-        </Router>
+        </Switch>
       </main>
     </React.Fragment>
   )
