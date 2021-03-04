@@ -12,7 +12,7 @@ import { MUI_FIELD_SPACER, SectionDivider } from "../../../../routes/layout/them
 
 const debug = require("debug")("bdrc:atom:name")
 
-const defaultComponentValue= {
+const defaultComponentValue = {
   "@id": "",
   type: "RequiredNameStar",
   status: "pristine",
@@ -21,9 +21,9 @@ const defaultComponentValue= {
 }
 
 const family = atomFamily({
-  key: 'name',
-  default: [] // must be iterable for a List component
-});
+  key: "name",
+  default: [], // must be iterable for a List component
+})
 
 /**
  * List component
@@ -64,8 +64,7 @@ List.propTypes = {
 function MinimalAddButton({ add }) {
   return (
     <div className="text-right">
-      <button size="small" className="btn btn-link ml-2 px-0"
-        onClick={add} >
+      <button size="small" className="btn btn-link ml-2 px-0" onClick={add}>
         <AddIcon />
       </button>
     </div>
@@ -75,9 +74,10 @@ function MinimalAddButton({ add }) {
 function BlockAddButton({ add }) {
   return (
     <div className="text-center pb-1">
-      <button size="small"
+      <button
+        size="small"
         className="btn btn-sm btn-block btn-outline-primary mb-2 px-0"
-        style= {{ boxShadow: 'none' }}
+        style={{ boxShadow: "none" }}
         onClick={add}
       >
         {constants.AddAnother} <AddIcon />
@@ -95,27 +95,25 @@ function Create({ defaultValue, parentId }) {
       {
         id: getId(),
         ...defaultValue,
-        '@id': entityIdGenerator('NM'),
-        status: "pristine"
+        "@id": entityIdGenerator("NM"),
+        status: "pristine",
       },
     ])
   }
 
-  return (
-    <BlockAddButton add={addItem} />
-  )
+  return <BlockAddButton add={addItem} />
 }
 
 Create.propTypes = {
   parentId: PropTypes.string.isRequired,
-  defaultValue: PropTypes.object.isRequired
+  defaultValue: PropTypes.object.isRequired,
 }
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    '& .MuiFormHelperText-root': {
-      color: theme.palette.secondary.main
-    }
+    "& .MuiFormHelperText-root": {
+      color: theme.palette.secondary.main,
+    },
   },
 }))
 
@@ -123,32 +121,32 @@ const useStyles = makeStyles((theme) => ({
  * Edit component
  */
 function Edit({ value, onChange }) {
-  debug(value.id,value)
+  debug(value.id, value)
   const classes = useStyles()
   return (
     <React.Fragment>
       {value.status === "pristine" ? <SectionDivider text="NEW" /> : null}
 
-      {value.status === "pristine" ?
+      {value.status === "pristine" ? (
         <TextField
           className={classes.root}
-          style = {{ width: 200 }}
+          style={{ width: 200 }}
           label={null}
-          color={'secondary'}
+          color={"secondary"}
           value={value["@id"]}
           onChange={(e) => onChange({ ...value, "@id": e.target.value })}
           helperText="ID"
         />
-      : null}
+      ) : null}
 
-      {value.status === "pristine" ?
+      {value.status === "pristine" ? (
         <TextField
           select
           className="ml-2 mr-2"
           label={null}
           value={value["type"] || ""}
-          style = {{ width: 150 }}
-          onChange={(e) => onChange({ ...value, "type": e.target.value })}
+          style={{ width: 150 }}
+          onChange={(e) => onChange({ ...value, type: e.target.value })}
           helperText="Type"
         >
           {Object.keys(constants.sanitizedNameTypes).map((option) => (
@@ -157,33 +155,38 @@ function Edit({ value, onChange }) {
             </MenuItem>
           ))}
         </TextField>
-      : null}
+      ) : null}
 
       <TextField
         className={classes.root}
-        label={value.status === "filled" ? value["@id"] : null }
-        style = {{ width: '60%', marginRight: MUI_FIELD_SPACER }}
-        color={'secondary'}
+        label={value.status === "filled" ? value["@id"] : null}
+        style={{ width: "60%", marginRight: MUI_FIELD_SPACER }}
+        color={"secondary"}
         value={value["@value"]}
         onChange={(e) => onChange({ ...value, "@value": e.target.value })}
-        helperText={constants.NameTypes[value.type] || 'n/a'}
+        helperText={constants.NameTypes[value.type] || "n/a"}
       />
 
       <TextField
-          select
-          className=""
-          label={ value.status === "filled" ? " " : null }
-          value={value["@language"] || ""}
-          style = {{ width: 120 }}
-          onChange={(e) => onChange({ ...value, "@language": e.target.value })}
-          helperText="Language"
-        >
-          {constants.languageDefaults.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.value}
-            </MenuItem>
-          ))}
-        </TextField>
+        select
+        className=""
+        label={value.status === "filled" ? " " : null}
+        value={value["@language"] || ""}
+        style={{ width: 120 }}
+        onChange={(e) => onChange({ ...value, "@language": e.target.value })}
+        helperText="Language"
+      >
+        {constants.languageDefaults.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.value}
+          </MenuItem>
+        ))}
+        {!constants.languageDefaults.map((l) => l.value).includes(value["@language"]) && (
+          <MenuItem key={value["@language"]} value={value["@language"]}>
+            {value["@language"]}
+          </MenuItem>
+        )}
+      </TextField>
     </React.Fragment>
   )
 }
