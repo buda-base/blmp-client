@@ -1,7 +1,7 @@
 import React, { useEffect, FC } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
-import { LiteralWithId, Property } from "../../../helpers/rdf/types"
+import { LiteralWithId, Property, Subject, valuesAtomBySubjectPropertyUri } from "../../../helpers/rdf/types"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
@@ -21,25 +21,17 @@ const family = atomFamily<Array<LiteralWithId>, string>({
  * List component
  */
 
-const List: FC<{ id: string; initialState: Array<LiteralWithId> | null }> = ({ id, initialState }) => {
-  const [list, setList] = useRecoilState(family(id))
-
-  useEffect(() => {
-    if (!initialState) {
-      setList([])
-    } else {
-      setList(initialState)
-    }
-  }, [initialState, setList])
+const List: FC<{ subject: Subject; property: Property }> = ({ subject, property }) => {
+  const [list, setList] = useRecoilState(valuesAtomBySubjectPropertyUri([subject.id, property.id]))
 
   return (
     <React.Fragment>
       <div role="main">
         {list.map((lit) => (
-          <Component key={lit.id} parentId={id} lit={lit} />
+          <Component key={lit.id} subjectUri={subject.id} propertyUri={property.id} lit={lit} />
         ))}
 
-        <Create parentId={id} />
+        <Create subjectUri={subject.id} propertyUri={property.id} />
       </div>
     </React.Fragment>
   )
@@ -48,8 +40,8 @@ const List: FC<{ id: string; initialState: Array<LiteralWithId> | null }> = ({ i
 /**
  * Create component
  */
-const Create: FC<{ parentId: string }> = ({ parentId }) => {
-  const setList = useSetRecoilState(family(parentId))
+const Create: FC<{ subjectUri: string; propertyUri: string }> = ({ subjectUri, propertyUri }) => {
+  const [list, setList] = useRecoilState(valuesAtomBySubjectPropertyUri([subjectUri, propertyUri]))
 
   const addItem = () => {
     setList((oldList) => [...oldList, generateDefault()])
@@ -107,8 +99,12 @@ export const Edit: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => 
 /**
  * Display component, with DeleteButton
  */
-const Component: FC<{ lit: LiteralWithId; parentId: string }> = ({ lit, parentId }) => {
-  const [list, setList] = useRecoilState(family(parentId))
+const Component: FC<{ lit: LiteralWithId; subjectUri: string; propertyUri: string }> = ({
+  lit,
+  subjectUri,
+  propertyUri,
+}) => {
+  const [list, setList] = useRecoilState(valuesAtomBySubjectPropertyUri([subjectUri, propertyUri]))
   const index = list.findIndex((listItem) => listItem === lit)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {

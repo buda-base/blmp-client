@@ -1,13 +1,13 @@
 import React, { useState, FC, ReactElement } from "react"
 import PropertyContainer from "./PropertyContainer"
-import { PropertyGroup, RDFResource } from "../../../helpers/rdf/types"
+import { PropertyGroup, RDFResource, Subject } from "../../../helpers/rdf/types"
 import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 
 const debug = require("debug")("bdrc:entity:propertygroup")
 
-const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: RDFResource }> = ({ group, subject }) => {
+const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = ({ group, subject }) => {
   const [uiLang] = useRecoilState(uiLangState)
   const label = lang.ValueByLangToStrPrefLang(group.prefLabels, uiLang)
 

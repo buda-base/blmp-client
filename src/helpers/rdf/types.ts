@@ -189,10 +189,15 @@ export class LiteralWithId extends rdf.Literal {
 }
 
 export class Subject extends RDFResource {
-  propValues: Record<string, Array<LiteralWithId>> = {}
+  propValues: Record<string, Array<LiteralWithId>>
 
   setPropValues(propertyUri: string, values: Array<LiteralWithId>): void {
     this.propValues[propertyUri] = values
+  }
+
+  constructor(node: rdf.NamedNode, store: rdf.Store) {
+    super(node, store)
+    this.propValues = {}
   }
 
   static addIdToLitList = (litList: Array<rdf.Literal>): Array<LiteralWithId> => {
@@ -212,16 +217,33 @@ export class Subject extends RDFResource {
     this.propValues[propertyUri] = fromRDFWithID
     return fromRDFWithID
   }
+
+  propValuesToStore(store: rdf.Store, graphNode?: rdf.NamedNode, propertyUri?: string): void {
+    debug("propValuesToStore", propertyUri)
+    debug("propValuesToStore", this.propValues)
+    if (!propertyUri) {
+      for (propertyUri in this.propValues) {
+        this.propValuesToStore(store, graphNode, propertyUri)
+      }
+      return
+    }
+    const values: Array<LiteralWithId> = this.propValues[propertyUri]
+    if (!values) return
+    const propertyNode = new rdf.NamedNode(propertyUri)
+    for (const lit of values) {
+      store.add(this.node, propertyNode, lit, graphNode)
+    }
+  }
 }
 
 const defaultSubject = new Subject(ns.BDR("DEFAULTSUBJECT") as rdf.NamedNode, rdf.graph())
 
-const subjectAtomByUri = atomFamily<Subject, string>({
+export const subjectAtomByUri = atomFamily<Subject, string>({
   key: "entity",
   default: defaultSubject,
 })
 
-const valuesAtomBySubjectPropertyUri = selectorFamily<Array<LiteralWithId>, Array<string>>({
+export const valuesAtomBySubjectPropertyUri = selectorFamily<Array<LiteralWithId>, Array<string>>({
   key: "getValuesByPropertyUri",
   get: (subjectUriPropertyUri: Array<string>) => ({ get }) => {
     return get(subjectAtomByUri(subjectUriPropertyUri[0])).getPropValues(subjectUriPropertyUri[1])

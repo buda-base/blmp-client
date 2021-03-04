@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { TimeTravelObserver } from "../../helpers/observer"
-import { ShapeFetcher } from "../../../helpers/rdf/io"
+import { ShapeFetcher, debugStore } from "../../../helpers/rdf/io"
 import { RDFResource, Subject } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
@@ -10,6 +10,8 @@ import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
+import Button from "@material-ui/core/Button"
+import * as rdf from "rdflib"
 
 const debug = require("debug")("bdrc:entity:edit")
 
@@ -36,6 +38,15 @@ function EntityEditContainer(props: AppProps) {
   // creating new entity
   const subject: Subject = generateNew("P")
 
+  const save = (): void => {
+    debug("save!")
+    const store = new rdf.Store()
+    subject.propValuesToStore(store)
+    debug("save2!")
+    debugStore(store)
+    debug("save3!")
+  }
+
   return (
     <React.Fragment>
       <div role="main">
@@ -46,6 +57,9 @@ function EntityEditContainer(props: AppProps) {
           <PropertyGroupContainer key={index} group={group} subject={subject} />
         ))}
       </div>
+      <Button variant="outlined" onClick={save}>
+        Save
+      </Button>
     </React.Fragment>
   )
 }

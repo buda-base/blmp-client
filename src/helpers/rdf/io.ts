@@ -7,9 +7,9 @@ import { getShape } from "./shapes"
 
 const debug = require("debug")("bdrc:rdf:io")
 
-export const debugStore = (s: rdf.Store, debugNs: string) => {
+export const debugStore = (s: rdf.Store, debugNs?: string) => {
   const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
-  const debug = require("debug")(debugNs)
+  const thisDebug = debugNs ? require("debug")(debugNs) : debug
   rdf.serialize(defaultRef, s, undefined, "text/turtle", function (err, str) {
     debug(str)
   })
