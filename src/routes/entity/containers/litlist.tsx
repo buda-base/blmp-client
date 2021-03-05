@@ -1,7 +1,13 @@
 import React, { useEffect, FC } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
-import { LiteralWithId, Property, Subject, valuesAtomBySubjectPropertyUri } from "../../../helpers/rdf/types"
+import {
+  LiteralWithId,
+  Property,
+  Subject,
+  valuesAtomBySubjectPropertyUri,
+  subjectAtomByUri,
+} from "../../../helpers/rdf/types"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
@@ -23,6 +29,17 @@ const family = atomFamily<Array<LiteralWithId>, string>({
 
 const List: FC<{ subject: Subject; property: Property }> = ({ subject, property }) => {
   const [list, setList] = useRecoilState(valuesAtomBySubjectPropertyUri([subject.id, property.id]))
+  const [sub, setSub] = useRecoilState(subjectAtomByUri(subject.id))
+
+  useEffect(() => {
+    // reinitializing the atom
+    // TODO: this probably shouldn't appear in the history
+    if (!(property.uri in subject.propValues)) {
+      // the subject needs to be intialized for the property:
+      subject = subject.cloneWithUpdatedPropertyValues(property.uri, [])
+    }
+    setSub(subject)
+  }, [subject, setSub])
 
   return (
     <React.Fragment>

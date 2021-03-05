@@ -189,15 +189,22 @@ export class LiteralWithId extends rdf.Literal {
 }
 
 export class Subject extends RDFResource {
-  propValues: Record<string, Array<LiteralWithId>>
+  propValues: Record<string, Array<LiteralWithId>> = {}
 
   setPropValues(propertyUri: string, values: Array<LiteralWithId>): void {
     this.propValues[propertyUri] = values
   }
 
-  constructor(node: rdf.NamedNode, store: rdf.Store) {
+  constructor(node: rdf.NamedNode, store: rdf.Store, propValues?: Record<string, Array<LiteralWithId>>) {
     super(node, store)
-    this.propValues = {}
+    if (propValues) {
+      this.propValues = propValues
+    }
+  }
+
+  cloneWithUpdatedPropertyValues = (propertyUri: string, values: Array<LiteralWithId>): Subject => {
+    const propValues: Record<string, Array<LiteralWithId>> = { ...this.propValues, propertyUri: values }
+    return new Subject(this.node, this.store, propValues)
   }
 
   static addIdToLitList = (litList: Array<rdf.Literal>): Array<LiteralWithId> => {
@@ -208,14 +215,26 @@ export class Subject extends RDFResource {
     )
   }
 
+  getPropValuesFromStore(propertyUri: string): Array<LiteralWithId> {
+    const fromRDF: Array<rdf.Literal> = this.getPropLitValues(new rdf.NamedNode(propertyUri))
+    return Subject.addIdToLitList(fromRDF)
+  }
+
+  initForProperty(p: Property) {
+    const propValues: Array<LiteralWithId> = this.getPropValuesFromStore(p.uri)
+    this.propValues[p.uri] = propValues
+  }
+
+  getAllPropValuesFromStore(): Record<string, Array<LiteralWithId>> {
+    // TODO
+    return {}
+  }
+
   getPropValues(propertyUri: string): Array<LiteralWithId> {
     if (propertyUri in this.propValues) {
       return this.propValues[propertyUri]
     }
-    const fromRDF: Array<rdf.Literal> = this.getPropLitValues(new rdf.NamedNode(propertyUri))
-    const fromRDFWithID: Array<LiteralWithId> = Subject.addIdToLitList(fromRDF)
-    this.propValues[propertyUri] = fromRDFWithID
-    return fromRDFWithID
+    return []
   }
 
   propValuesToStore(store: rdf.Store, graphNode?: rdf.NamedNode, propertyUri?: string): void {

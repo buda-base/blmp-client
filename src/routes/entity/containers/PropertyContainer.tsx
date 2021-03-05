@@ -28,8 +28,6 @@ const PropertyContainer: FC<{ property: Property; subject: Subject }> = ({ prope
     )
   }
 
-  const initialstate: Array<LiteralWithId> = addIdToLitList(subject.getPropLitValues(property.node))
-
   return (
     <React.Fragment>
       <div role="main">
