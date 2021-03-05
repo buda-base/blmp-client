@@ -1,7 +1,7 @@
 import React, { useEffect, FC } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
-import { LiteralWithId, Property, Subject, valuesAtomBySubjectPropertyUri } from "../../../helpers/rdf/types"
+import { LiteralWithId, Property, Subject } from "../../../helpers/rdf/types"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
@@ -37,10 +37,10 @@ const List: FC<{ subject: Subject; property: Property }> = ({ subject, property 
     <React.Fragment>
       <div role="main">
         {list.map((lit) => (
-          <Component key={lit.id} subjectUri={subject.id} propertyUri={property.id} lit={lit} />
+          <Component key={lit.id} subject={subject} propertyUri={property.id} lit={lit} />
         ))}
 
-        <Create subjectUri={subject.id} propertyUri={property.id} />
+        <Create subject={subject} propertyUri={property.id} />
       </div>
     </React.Fragment>
   )

@@ -188,7 +188,10 @@ export class LiteralWithId extends rdf.Literal {
   }
 }
 
-type setSelfOnSelf = { setSelf: (arg: any) => void, onSet: ((newValues: (arg:Array<LiteralWithId>|DefaultValue) => void)  => void) }
+type setSelfOnSelf = {
+  setSelf: (arg: any) => void
+  onSet: (newValues: (arg: Array<LiteralWithId> | DefaultValue) => void) => void
+}
 
 export class Subject extends RDFResource {
   propValues: Record<string, Array<LiteralWithId>> = {}
@@ -261,22 +264,20 @@ export class Subject extends RDFResource {
     //debug(newValues)
   }
 
-  propsUpdateEffect:(propertyUri:string) => AtomEffect<Array<LiteralWithId>> = (propertyUri: string) => {
-    const self:Subject = this;
+  propsUpdateEffect: (propertyUri: string) => AtomEffect<Array<LiteralWithId>> = (propertyUri: string) => {
     // TypeScript is easy!
-    const res:((setSelfOnSelf: setSelfOnSelf) => void) = ({ setSelf, onSet }) => {
-
+    const res: (setSelfOnSelf: setSelfOnSelf) => void = ({ setSelf, onSet }) => {
       // could we use this for initialization??
       //const savedValue = localStorage.getItem(propertyUri)
       //if (savedValue != null) {
       //  setSelf(JSON.parse(savedValue));
       //}
 
-      onSet((newValues:Array<LiteralWithId>|DefaultValue):void => {
+      onSet((newValues: Array<LiteralWithId> | DefaultValue): void => {
         if (newValues instanceof DefaultValue) {
           //localStorage.removeItem(key);
         } else {
-          self.propValues[propertyUri] = newValues
+          this.propValues[propertyUri] = newValues
         }
       })
     }
@@ -288,9 +289,7 @@ export class Subject extends RDFResource {
     return atom<Array<LiteralWithId>>({
       key: "getValuesByPropertyUri",
       default: [],
-      effects_UNSTABLE: [
-        this.propsUpdateEffect(propertyUri)
-      ]
+      effects_UNSTABLE: [this.propsUpdateEffect(propertyUri)],
     })
   }
 }
