@@ -22,7 +22,7 @@ const family = atomFamily<Array<LiteralWithId>, string>({
  */
 
 const List: FC<{ subject: Subject; property: Property }> = ({ subject, property }) => {
-  const [list, setList] = useRecoilState(valuesAtomBySubjectPropertyUri([subject.id, property.id]))
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.id))
 
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
@@ -49,8 +49,8 @@ const List: FC<{ subject: Subject; property: Property }> = ({ subject, property 
 /**
  * Create component
  */
-const Create: FC<{ subjectUri: string; propertyUri: string }> = ({ subjectUri, propertyUri }) => {
-  const [list, setList] = useRecoilState(valuesAtomBySubjectPropertyUri([subjectUri, propertyUri]))
+const Create: FC<{ subject: Subject; propertyUri: string }> = ({ subject, propertyUri }) => {
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(propertyUri))
 
   const addItem = () => {
     setList((oldList) => [...oldList, generateDefault()])
@@ -108,12 +108,12 @@ export const Edit: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => 
 /**
  * Display component, with DeleteButton
  */
-const Component: FC<{ lit: LiteralWithId; subjectUri: string; propertyUri: string }> = ({
+const Component: FC<{ lit: LiteralWithId; subject: Subject; propertyUri: string }> = ({
   lit,
-  subjectUri,
+  subject,
   propertyUri,
 }) => {
-  const [list, setList] = useRecoilState(valuesAtomBySubjectPropertyUri([subjectUri, propertyUri]))
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(propertyUri))
   const index = list.findIndex((listItem) => listItem === lit)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
