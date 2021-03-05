@@ -31,6 +31,8 @@ const family = atomFamily<Array<LiteralWithId>, string>({
 const List: FC<{ subject: Subject; property: Property }> = ({ subject, property }) => {
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.id))
 
+  const canAdd = property?.datatype?.value !== ns.XSD("gYear").value || !list.length
+
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
     // TODO: this probably shouldn't appear in the history
@@ -47,7 +49,7 @@ const List: FC<{ subject: Subject; property: Property }> = ({ subject, property 
           <Component key={lit.id} subject={subject} property={property} lit={lit} />
         ))}
 
-        <Create subject={subject} property={property} />
+        {canAdd && <Create subject={subject} property={property} />}
       </div>
     </React.Fragment>
   )
@@ -58,8 +60,6 @@ const List: FC<{ subject: Subject; property: Property }> = ({ subject, property 
  */
 const Create: FC<{ subject: Subject; property: Property }> = ({ subject, property }) => {
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
-
-  debug("propUri:", property.uri)
 
   const addItem = () => {
     setList((oldList) => [...oldList, generateDefault(property)])
@@ -83,7 +83,7 @@ const lang = [{ value: "bo-x-ewts" }, { value: "bo" }, { value: "en" }, { value:
 /**
  * Edit component
  */
-export const Edit: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => void }> = ({ lit, onChange }) => {
+const EditLangString: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => void }> = ({ lit, onChange }) => {
   const classes = useStyles()
   return (
     <React.Fragment>
@@ -114,6 +114,22 @@ export const Edit: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => 
   )
 }
 
+const EditDate: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => void }> = ({ lit, onChange }) => {
+  const classes = useStyles()
+  return (
+    <React.Fragment>
+      <TextField
+        className={classes.root}
+        //label={lit.id}
+        style={{ width: 200 }}
+        color={"secondary"}
+        value={lit.value}
+        onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
+      />
+    </React.Fragment>
+  )
+}
+
 /**
  * Display component, with DeleteButton
  */
@@ -131,9 +147,15 @@ const Component: FC<{ lit: LiteralWithId; subject: Subject; property: Property }
     setList(newList)
   }
 
+  const t = property.datatype
+  let edit
+
+  if (t?.value === ns.RDF("langString").value) edit = <EditLangString lit={lit} onChange={onChange} />
+  else if (t?.value === ns.XSD("gYear").value) edit = <EditDate lit={lit} onChange={onChange} />
+
   return (
     <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <Edit lit={lit} onChange={onChange} />
+      {edit}
       <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
         <RemoveIcon />
       </button>
