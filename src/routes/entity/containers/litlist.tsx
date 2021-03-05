@@ -81,7 +81,7 @@ export const Edit: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => 
       <TextField
         className={classes.root}
         //label={lit.id}
-        style={{ width: 300 }}
+        style={{ width: "100%" }}
         color={"secondary"}
         value={lit.value}
         onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
@@ -127,7 +127,7 @@ const Component: FC<{ lit: LiteralWithId; subject: Subject; propertyUri: string 
   }
 
   return (
-    <div>
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
       <Edit lit={lit} onChange={onChange} />
       <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
         <RemoveIcon />

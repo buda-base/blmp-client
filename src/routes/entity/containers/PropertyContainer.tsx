@@ -31,10 +31,10 @@ const PropertyContainer: FC<{ property: Property; subject: Subject }> = ({ prope
   return (
     <React.Fragment>
       <div role="main">
-        <section className="album">
-          <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
-            <div className="row card my-4">
-              <p className="col-4 text-uppercase small my-2">{propLabel}</p>
+        <section className="album px-3">
+          <div className="container" style={{ border: "dashed 1px none" }}>
+            <div className="row card my-4 px-3 py-2">
+              <p className="col-4 text-uppercase small my-2 pl-0">{propLabel}</p>
               <LitList subject={subject} property={property} />
             </div>
           </div>
