@@ -12,6 +12,8 @@ const generateDefault = (property?: Property): LiteralWithId => {
   return new LiteralWithId("", "bo-x-ewts")
 }
 
+const debug = require("debug")("bdrc:entity:property:litlist")
+
 const family = atomFamily<Array<LiteralWithId>, string>({
   key: "literals",
   default: [], // must be iterable for a List component
@@ -51,6 +53,8 @@ const List: FC<{ subject: Subject; property: Property }> = ({ subject, property 
  */
 const Create: FC<{ subject: Subject; propertyUri: string }> = ({ subject, propertyUri }) => {
   const [list, setList] = useRecoilState(subject.getAtomForProperty(propertyUri))
+
+  debug("propUri:", propertyUri)
 
   const addItem = () => {
     setList((oldList) => [...oldList, generateDefault()])

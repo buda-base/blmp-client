@@ -269,6 +269,7 @@ export class Subject extends RDFResource {
   }: setSelfOnSelf) => {
     onSet((newValues: Array<LiteralWithId> | DefaultValue): void => {
       if (!(newValues instanceof DefaultValue)) {
+        debug("newalues for property ", propertyUri, newValues)
         this.propValues[propertyUri] = newValues
       }
     })
