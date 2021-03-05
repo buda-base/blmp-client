@@ -221,8 +221,13 @@ export class Subject extends RDFResource {
   }
 
   initForProperty(p: Property) {
+    if (p.uri in this.propValues) return
     const propValues: Array<LiteralWithId> = this.getPropValuesFromStore(p.uri)
     this.propValues[p.uri] = propValues
+  }
+
+  hasBeenInitializedForProperty(p: Property) {
+    return p.uri in this.propValues
   }
 
   getAllPropValuesFromStore(): Record<string, Array<LiteralWithId>> {
@@ -237,6 +242,10 @@ export class Subject extends RDFResource {
     return []
   }
 
+  initializedPropertyUris(): Array<string> {
+    return Object.keys(this.propValues)
+  }
+
   propValuesToStore(store: rdf.Store, graphNode?: rdf.NamedNode, propertyUri?: string): void {
     debug("propValuesToStore", propertyUri)
     debug("propValuesToStore", this.propValues)
@@ -246,31 +255,11 @@ export class Subject extends RDFResource {
       }
       return
     }
-    const values: Array<LiteralWithId> = this.propValues[propertyUri]
-    if (!values) return
-    const propertyNode = new rdf.NamedNode(propertyUri)
-    for (const lit of values) {
-      store.add(this.node, propertyNode, lit, graphNode)
-    }
+    const initialValues: Array<LiteralWithId> = this.propValues[propertyUri]
   }
 }
 
-export const subjectAtomByUri = atomFamily<Subject, string>({
-  key: "entity",
-  default: () => {
-    return new Subject(ns.BDR("DEFAULTSUBJECT") as rdf.NamedNode, rdf.graph())
-  },
-})
-
-export const valuesAtomBySubjectPropertyUri = selectorFamily<Array<LiteralWithId>, Array<string>>({
+export const valuesAtomBySubjectPropertyUri = atomFamily<Array<LiteralWithId>, Array<string>>({
   key: "getValuesByPropertyUri",
-  get: (subjectUriPropertyUri: Array<string>) => ({ get }) => {
-    return get(subjectAtomByUri(subjectUriPropertyUri[0])).getPropValues(subjectUriPropertyUri[1])
-  },
-  set: (subjectUriPropertyUri: Array<string>) => ({ get }, newValue) => {
-    if (newValue instanceof DefaultValue) {
-      newValue = []
-    }
-    get(subjectAtomByUri(subjectUriPropertyUri[0])).setPropValues(subjectUriPropertyUri[1], newValue)
-  },
+  default: [],
 })
