@@ -207,10 +207,10 @@ export class Subject extends RDFResource {
     }
   }
 
-  cloneWithUpdatedPropertyValues = (propertyUri: string, values: Array<LiteralWithId>): Subject => {
-    const propValues: Record<string, Array<LiteralWithId>> = { ...this.propValues, propertyUri: values }
-    return new Subject(this.node, this.store, propValues)
-  }
+  // cloneWithUpdatedPropertyValues = (propertyUri: string, values: Array<LiteralWithId>): Subject => {
+  //   const propValues: Record<string, Array<LiteralWithId>> = { ...this.propValues, propertyUri: values }
+  //   return new Subject(this.node, this.store, propValues)
+  // }
 
   static addIdToLitList = (litList: Array<rdf.Literal>): Array<LiteralWithId> => {
     return litList.map(
@@ -252,32 +252,23 @@ export class Subject extends RDFResource {
   }
 
   propValuesToStore(store: rdf.Store, graphNode?: rdf.NamedNode, propertyUri?: string): void {
-    debug("propValuesToStore", propertyUri)
-    debug("propValuesToStore", this.propValues)
     if (!propertyUri) {
       for (propertyUri in this.propValues) {
         this.propValuesToStore(store, graphNode, propertyUri)
       }
       return
     }
-    const initialValues: Array<LiteralWithId> = this.propValues[propertyUri]
-    //debug(newValues)
+    for (const lit of this.propValues[propertyUri]) {
+      store.add(this.node, new rdf.NamedNode(propertyUri), lit)
+    }
   }
 
   propsUpdateEffect: (propertyUri: string) => AtomEffect<Array<LiteralWithId>> = (propertyUri: string) => ({
     setSelf,
     onSet,
   }: setSelfOnSelf) => {
-    // could we use this for initialization??
-    //const savedValue = localStorage.getItem(propertyUri)
-    //if (savedValue != null) {
-    //  setSelf(JSON.parse(savedValue));
-    //}
     onSet((newValues: Array<LiteralWithId> | DefaultValue): void => {
-      debug(newValues)
-      if (newValues instanceof DefaultValue) {
-        //localStorage.removeItem(key);
-      } else {
+      if (!(newValues instanceof DefaultValue)) {
         this.propValues[propertyUri] = newValues
       }
     })

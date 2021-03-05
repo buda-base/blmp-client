@@ -39,12 +39,10 @@ function EntityEditContainer(props: AppProps) {
   const subject: Subject = generateNew("P")
 
   const save = (): void => {
-    debug("save!")
     const store = new rdf.Store()
     subject.propValuesToStore(store)
-    debug("save2!")
+    debug(store.statements)
     debugStore(store)
-    debug("save3!")
   }
 
   return (
