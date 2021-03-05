@@ -79,43 +79,9 @@ bds:CommonShape-prefLabel
 bds:PersonShape-personEvent
   a sh:PropertyShape ;
   sh:description "Events (birth, death, etc.) associated with this person"@en ;
-  sh:name "event"@en ;
+  sh:name "event year"@en ;
   sh:group bds:PersonEventsPropertyGroup ;
   sh:order "0"^^xsd:decimal ;
-  sh:path bdo:personEvent ;
-  bds:propertyShapeType bds:FacetShape ;
-.
-
-# and then each name has two properties, rdf:type and rdfs:label
-bds:PersonEventShape-type
-  a sh:PropertyShape ;
-  sh:path rdf:type ;
-  # there are predefined values for the type of editor / form:
-  dash:editor dash:EnumSelectEditor ;
-  sh:description "event type"@en ;
-  sh:name "type"@en ;
-  # this property should be displayed first
-  sh:order "0"^^xsd:decimal ;
-  # this is the ordered list of possible values:
-  sh:in ( bdo:PersonBirth bdo:PersonDeath bdo:PersonOccupiesSeat bdo:PersonAffiliation bdo:PersonAssumesOffice bdo:PersonAssumesSeat   bdo:PersonEventNotSpecified bdo:PersonFinalOrdination bdo:PersonFoundsMonastery bdo:PersonGterMaDiscovery bdo:PersonInResidence bdo:PersonLeavesOffice bdo:PersonLeavesSeat bdo:PersonMarriage bdo:PersonOccupiesSeat bdo:PersonRabByungOrdination bdo:PersonDivorce ) ;
-  # some constraints and validation error message
-  sh:message "A PersonEvent must have at least one rdf:type"@en ;
-  # note that because there's no max count, we could imagine a list where users can select multiple values
-  sh:minCount 1 ;
-.
-
-bds:PersonEventShape
-  a sh:NodeShape ;
-  sh:targetObjectsOf bdo:personEvent ;
-  sh:property bds:PersonEventShape-type ;
-  sh:property bds:PersonEventShape-onYear ;
-  sh:property bds:PersonEventShape-onDate ;
-  sh:property bds:PersonEventShape-notBefore ;
-  sh:property bds:PersonEventShape-notAfter ;
-  sh:targetClass bdo:PersonEvent ;
-.
-
-bds:PersonNameShape-onYear
   a sh:PropertyShape ;
   sh:path bdo:onYear ;
   sh:datatype xsd:gYear ;
@@ -125,30 +91,4 @@ bds:PersonNameShape-onYear
   dash:editor bds:gYearEditor ;
   sh:name "on year"@en ;
   sh:order "1"^^xsd:decimal ;
-.
-
-bds:PersonNameShape-onDate
-  a sh:PropertyShape ;
-  sh:path bdo:onDate ;
-  sh:datatype xsd:date ;
-  # Note that in that case we don't need a real date picker, just a field with some syntax check
-  dash:editor bds:DateEditor ;
-  sh:name "on date"@en ;
-  sh:order "4"^^xsd:decimal ;
-.
-
-bds:PersonNameShape-notBefore
-  a sh:PropertyShape ;
-  sh:path bdo:notBefore ;
-  sh:datatype xsd:gYear ;
-  sh:name "on date"@en ;
-  sh:order "2"^^xsd:decimal ;
-.
-
-bds:PersonNameShape-notAfter
-  a sh:PropertyShape ;
-  sh:path bdo:notBefore ;
-  sh:datatype xsd:gYear ;
-  sh:name "on date"@en ;
-  sh:order "3"^^xsd:decimal ;
 .
