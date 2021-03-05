@@ -274,7 +274,7 @@ export class Subject extends RDFResource {
     //  setSelf(JSON.parse(savedValue));
     //}
     onSet((newValues: Array<LiteralWithId> | DefaultValue): void => {
-      debug(newValues)
+      debug("newV:", newValues)
       if (newValues instanceof DefaultValue) {
         //localStorage.removeItem(key);
       } else {
