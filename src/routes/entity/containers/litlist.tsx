@@ -2,14 +2,19 @@ import React, { useEffect, FC } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
 import { LiteralWithId, Property, Subject } from "../../../helpers/rdf/types"
+import * as ns from "../../../helpers/rdf/ns"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
 import { AddIcon, RemoveIcon } from "../../layout/icons"
 
-const generateDefault = (property?: Property): LiteralWithId => {
-  return new LiteralWithId("", "bo-x-ewts")
+const generateDefault = (property: Property): LiteralWithId => {
+  if (property.datatype == ns.RDF("langString")) {
+    return new LiteralWithId("", "bo-x-ewts")
+  } else {
+    return new LiteralWithId("", null, property.datatype ? property.datatype : undefined)
+  }
 }
 
 const debug = require("debug")("bdrc:entity:property:litlist")
@@ -39,10 +44,10 @@ const List: FC<{ subject: Subject; property: Property }> = ({ subject, property 
     <React.Fragment>
       <div role="main">
         {list.map((lit) => (
-          <Component key={lit.id} subject={subject} propertyUri={property.id} lit={lit} />
+          <Component key={lit.id} subject={subject} property={property} lit={lit} />
         ))}
 
-        <Create subject={subject} propertyUri={property.id} />
+        <Create subject={subject} property={property} />
       </div>
     </React.Fragment>
   )
@@ -51,13 +56,13 @@ const List: FC<{ subject: Subject; property: Property }> = ({ subject, property 
 /**
  * Create component
  */
-const Create: FC<{ subject: Subject; propertyUri: string }> = ({ subject, propertyUri }) => {
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(propertyUri))
+const Create: FC<{ subject: Subject; property: Property }> = ({ subject, property }) => {
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
 
-  debug("propUri:", propertyUri)
+  debug("propUri:", property.uri)
 
   const addItem = () => {
-    setList((oldList) => [...oldList, generateDefault()])
+    setList((oldList) => [...oldList, generateDefault(property)])
   }
 
   return (
@@ -112,12 +117,8 @@ export const Edit: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => 
 /**
  * Display component, with DeleteButton
  */
-const Component: FC<{ lit: LiteralWithId; subject: Subject; propertyUri: string }> = ({
-  lit,
-  subject,
-  propertyUri,
-}) => {
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(propertyUri))
+const Component: FC<{ lit: LiteralWithId; subject: Subject; property: Property }> = ({ lit, subject, property }) => {
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
   const index = list.findIndex((listItem) => listItem === lit)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
