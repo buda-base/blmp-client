@@ -264,24 +264,23 @@ export class Subject extends RDFResource {
     //debug(newValues)
   }
 
-  propsUpdateEffect: (propertyUri: string) => AtomEffect<Array<LiteralWithId>> = (propertyUri: string) => {
-    // TypeScript is easy!
-    const res: (setSelfOnSelf: setSelfOnSelf) => void = ({ setSelf, onSet }) => {
-      // could we use this for initialization??
-      //const savedValue = localStorage.getItem(propertyUri)
-      //if (savedValue != null) {
-      //  setSelf(JSON.parse(savedValue));
-      //}
-
-      onSet((newValues: Array<LiteralWithId> | DefaultValue): void => {
-        if (newValues instanceof DefaultValue) {
-          //localStorage.removeItem(key);
-        } else {
-          this.propValues[propertyUri] = newValues
-        }
-      })
-    }
-    return res
+  propsUpdateEffect: (propertyUri: string) => AtomEffect<Array<LiteralWithId>> = (propertyUri: string) => ({
+    setSelf,
+    onSet,
+  }: setSelfOnSelf) => {
+    // could we use this for initialization??
+    //const savedValue = localStorage.getItem(propertyUri)
+    //if (savedValue != null) {
+    //  setSelf(JSON.parse(savedValue));
+    //}
+    onSet((newValues: Array<LiteralWithId> | DefaultValue): void => {
+      debug(newValues)
+      if (newValues instanceof DefaultValue) {
+        //localStorage.removeItem(key);
+      } else {
+        this.propValues[propertyUri] = newValues
+      }
+    })
   }
 
   @Memoize()
