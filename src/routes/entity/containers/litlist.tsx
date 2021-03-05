@@ -8,6 +8,7 @@ import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
 import { AddIcon, RemoveIcon } from "../../layout/icons"
+import i18n from "i18next"
 
 const generateDefault = (property: Property): LiteralWithId => {
   if (property.datatype == ns.RDF("langString")) {
@@ -114,16 +115,21 @@ const EditLangString: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) 
   )
 }
 
-const EditDate: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => void }> = ({ lit, onChange }) => {
+const EditYear: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => void }> = ({ lit, onChange }) => {
   const classes = useStyles()
+
+  let error
+  if (lit.value && !lit.value.match(/^[0-9]{4}$/)) error = i18n.t("error.gYear")
+
   return (
     <React.Fragment>
       <TextField
         className={classes.root}
         //label={lit.id}
-        style={{ width: 200 }}
+        style={{ width: 150 }}
         color={"secondary"}
         value={lit.value}
+        {...(error ? { helperText: error, error: true } : {})}
         onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
       />
     </React.Fragment>
@@ -151,7 +157,7 @@ const Component: FC<{ lit: LiteralWithId; subject: Subject; property: Property }
   let edit
 
   if (t?.value === ns.RDF("langString").value) edit = <EditLangString lit={lit} onChange={onChange} />
-  else if (t?.value === ns.XSD("gYear").value) edit = <EditDate lit={lit} onChange={onChange} />
+  else if (t?.value === ns.XSD("gYear").value) edit = <EditYear lit={lit} onChange={onChange} />
 
   return (
     <div style={{ display: "flex", justifyContent: "space-between" }}>
