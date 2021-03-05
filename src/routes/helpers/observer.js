@@ -14,7 +14,7 @@ export function TimeTravelObserver() {
     for (const a of snapshot.getNodes_UNSTABLE(true)) {
       const info = snapshot.getInfo_UNSTABLE(a)
       if (info.isModified) {
-        modified.push(a)
+        modified.push({ a, info })
         debug(a.key, a, info)
       }
       // DONE do not not take a snapshot if current change is UI language
@@ -26,7 +26,12 @@ export function TimeTravelObserver() {
       debug("modif:", modified)
       for (const a of snapshots[snapshots.length - 1].getNodes_UNSTABLE(true)) {
         const info = snapshots[snapshots.length - 1].getInfo_UNSTABLE(a)
-        if (info.isModified && a.key === modified[0].key) {
+        // DONE also create new state when new or deleted prefLabel
+        if (
+          info.isModified &&
+          a.key === modified[0].a.key &&
+          info.loadable.contents.length === modified[0].info.loadable.contents.length
+        ) {
           // replace previous snapshot for same property
           snapshots[snapshots.length - 1] = snapshot
           setSnapshots([...snapshots])

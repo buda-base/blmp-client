@@ -52,6 +52,9 @@ function EntityEditContainer(props: AppProps) {
       <div role="main">
         {subject.qname} -- {shapeLabel}
       </div>
+      <section className="album py-2 my-2">
+        <TimeTravelObserver />
+      </section>
       <div>
         {shape.groups.map((group, index) => (
           <PropertyGroupContainer key={index} group={group} subject={subject} />
