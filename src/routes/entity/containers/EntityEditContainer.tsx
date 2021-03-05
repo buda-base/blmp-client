@@ -49,7 +49,7 @@ function EntityEditContainer(props: AppProps) {
 
   return (
     <React.Fragment>
-      <div role="main">
+      <div role="main" className="pt-4" style={{ textAlign: "center" }}>
         {subject.qname} -- {shapeLabel}
       </div>
       <section className="album py-2 my-2">
@@ -60,9 +60,11 @@ function EntityEditContainer(props: AppProps) {
           <PropertyGroupContainer key={index} group={group} subject={subject} />
         ))}
       </div>
-      <Button variant="outlined" onClick={save}>
-        Save
-      </Button>
+      <div style={{ textAlign: "center" }}>
+        <Button variant="outlined" onClick={save}>
+          Save
+        </Button>
+      </div>
     </React.Fragment>
   )
 }
