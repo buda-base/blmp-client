@@ -3,7 +3,7 @@ import * as shapes from "./shapes"
 import * as ns from "./ns"
 import { idGenerator } from "../id"
 import { Memoize } from "typescript-memoize"
-import { atom, useRecoilState, useRecoilValue, selectorFamily, atomFamily, DefaultValue } from "recoil"
+import { atom, useRecoilState, useRecoilValue, selectorFamily, atomFamily, DefaultValue, AtomEffect } from "recoil"
 
 const debug = require("debug")("bdrc:rdf:types")
 
@@ -188,6 +188,8 @@ export class LiteralWithId extends rdf.Literal {
   }
 }
 
+type setSelfOnSelf = { setSelf: (arg: any) => void, onSet: ((newValues: (arg:Array<LiteralWithId>|DefaultValue) => void)  => void) }
+
 export class Subject extends RDFResource {
   propValues: Record<string, Array<LiteralWithId>> = {}
 
@@ -256,10 +258,39 @@ export class Subject extends RDFResource {
       return
     }
     const initialValues: Array<LiteralWithId> = this.propValues[propertyUri]
+    //debug(newValues)
+  }
+
+  propsUpdateEffect:(propertyUri:string) => AtomEffect<Array<LiteralWithId>> = (propertyUri: string) => {
+    const self:Subject = this;
+    // TypeScript is easy!
+    const res:((setSelfOnSelf: setSelfOnSelf) => void) = ({ setSelf, onSet }) => {
+
+      // could we use this for initialization??
+      //const savedValue = localStorage.getItem(propertyUri)
+      //if (savedValue != null) {
+      //  setSelf(JSON.parse(savedValue));
+      //}
+
+      onSet((newValues:Array<LiteralWithId>|DefaultValue):void => {
+        if (newValues instanceof DefaultValue) {
+          //localStorage.removeItem(key);
+        } else {
+          self.propValues[propertyUri] = newValues
+        }
+      })
+    }
+    return res
+  }
+
+  @Memoize()
+  getAtomForProperty(propertyUri: string) {
+    return atom<Array<LiteralWithId>>({
+      key: "getValuesByPropertyUri",
+      default: [],
+      effects_UNSTABLE: [
+        this.propsUpdateEffect(propertyUri)
+      ]
+    })
   }
 }
-
-export const valuesAtomBySubjectPropertyUri = atomFamily<Array<LiteralWithId>, Array<string>>({
-  key: "getValuesByPropertyUri",
-  default: [],
-})
