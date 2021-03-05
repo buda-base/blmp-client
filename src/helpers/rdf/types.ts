@@ -278,7 +278,7 @@ export class Subject extends RDFResource {
   @Memoize()
   getAtomForProperty(propertyUri: string) {
     return atom<Array<LiteralWithId>>({
-      key: "getValuesByPropertyUri",
+      key: this.id + propertyUri,
       default: [],
       effects_UNSTABLE: [this.propsUpdateEffect(propertyUri)],
     })
