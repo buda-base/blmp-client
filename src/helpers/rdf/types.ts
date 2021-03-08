@@ -7,6 +7,13 @@ import { atom, useRecoilState, useRecoilValue, selectorFamily, atomFamily, Defau
 
 const debug = require("debug")("bdrc:rdf:types")
 
+enum PropertyShapeType {
+  Literal,
+  Facet,
+  ResInList,
+  ResExt,
+}
+
 export class RDFResource {
   node: rdf.NamedNode
   store: rdf.Store
@@ -83,7 +90,7 @@ export class RDFResourceWithLabel extends RDFResource {
   }
 }
 
-export class Property extends RDFResourceWithLabel {
+export class PropertyShape extends RDFResourceWithLabel {
   // different property for prefLabels, property shapes are using sh:name
   @Memoize()
   public get prefLabels(): Record<string, string> {
@@ -124,16 +131,23 @@ export class Property extends RDFResourceWithLabel {
   public get path(): rdf.NamedNode | null {
     return this.getPropResValue(shapes.shPath)
   }
+
+  @Memoize()
+  public get targetShape(): NodeShape | null {
+    const val: rdf.NamedNode | null = this.store.any(null, shapes.shTargetObjectsOf, this.path) as rdf.NamedNode | null
+    if (val == null) return null
+    return new NodeShape(val, this.store)
+  }
 }
 
 export class PropertyGroup extends RDFResourceWithLabel {
   @Memoize()
-  public get properties(): Array<Property> {
-    const res: Array<Property> = []
+  public get properties(): Array<PropertyShape> {
+    const res: Array<PropertyShape> = []
     let propsingroup: Array<rdf.NamedNode> = this.store.each(null, shapes.shGroup, this.node) as Array<rdf.NamedNode>
     propsingroup = shapes.sortByPropValue(propsingroup, shapes.shOrder, this.store)
     for (const prop of propsingroup) {
-      res.push(new Property(prop, this.store))
+      res.push(new PropertyShape(prop, this.store))
     }
     return res
   }
@@ -145,7 +159,19 @@ export class PropertyGroup extends RDFResourceWithLabel {
   }
 }
 
-export class TopShape extends RDFResourceWithLabel {
+export class NodeShape extends RDFResourceWithLabel {
+  @Memoize()
+  public get properties(): Array<PropertyShape> {
+    const res: Array<Property> = []
+    // get all ?shape sh:property/sh:group ?group
+    let props: Array<rdf.NamedNode> = this.store.each(this.node, shapes.shProperty, null) as Array<rdf.NamedNode>
+    props = shapes.sortByPropValue(props, shapes.shOrder, this.store)
+    for (const prop of props) {
+      res.push(new PropertyShape(prop, this.store))
+    }
+    return res
+  }
+
   @Memoize()
   public get groups(): Array<PropertyGroup> {
     const res: Array<PropertyGroup> = []

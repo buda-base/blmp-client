@@ -1,7 +1,8 @@
 import React, { useEffect, FC } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
-import { LiteralWithId, PropertyShape, Subject } from "../../../helpers/rdf/types"
+import { PropertyShape, Subject } from "../../../helpers/rdf/types"
+import { generateNew } from "../../../helpers/rdf/construct"
 import * as ns from "../../../helpers/rdf/ns"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
@@ -10,15 +11,13 @@ import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/a
 import { AddIcon, RemoveIcon } from "../../layout/icons"
 import i18n from "i18next"
 
-const generateDefault = (property: PropertyShape): LiteralWithId => {
-  if (property.datatype == ns.RDF("langString")) {
-    return new LiteralWithId("", "bo-x-ewts")
-  } else {
-    return new LiteralWithId("", null, property.datatype ? property.datatype : undefined)
-  }
-}
+const debug = require("debug")("bdrc:entity:property:subnodelist")
 
-const debug = require("debug")("bdrc:entity:property:litlist")
+const generateOne = (property: PropertyShape): Subject => {
+  const targetShape = property.targetShape
+  if (!targetShape) throw "can't find target shape of " + property.uri
+  return generateNew("P", targetShape)
+}
 
 /**
  * List component
@@ -58,7 +57,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, pr
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
 
   const addItem = () => {
-    setList((oldList) => [...oldList, generateDefault(property)])
+    setList((oldList) => [...oldList, generateOne(property)])
   }
 
   return (
@@ -134,11 +133,7 @@ const EditYear: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => voi
 /**
  * Display component, with DeleteButton
  */
-const Component: FC<{ lit: LiteralWithId; subject: Subject; property: PropertyShape }> = ({
-  lit,
-  subject,
-  property,
-}) => {
+const Component: FC<{ lit: LiteralWithId; subject: Subject; property: Property }> = ({ lit, subject, property }) => {
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
   const index = list.findIndex((listItem) => listItem === lit)
 

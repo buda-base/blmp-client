@@ -1,5 +1,5 @@
 import React, { useState, FC } from "react"
-import { Property, RDFResource, Subject, LiteralWithId } from "../../../helpers/rdf/types"
+import { PropertyShape, RDFResource, Subject, LiteralWithId } from "../../../helpers/rdf/types"
 import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState, atomFamily } from "recoil"
@@ -8,16 +8,8 @@ import * as rdf from "rdflib"
 
 const debug = require("debug")("bdrc:entity:property")
 
-//const defaultResource = new RDFResource()
-
-const family = atomFamily({
-  key: "propvalues",
-  default: [], // must be iterable for a List component
-})
-
-const PropertyContainer: FC<{ property: Property; subject: Subject }> = ({ property, subject }) => {
+const PropertyContainer: FC<{ property: PropertyShape; subject: Subject }> = ({ property, subject }) => {
   const [uiLang] = useRecoilState(uiLangState)
-  const [list, setList] = useRecoilState(family("test"))
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
   const addIdToLitList = (litList: Array<rdf.Literal>): Array<LiteralWithId> => {

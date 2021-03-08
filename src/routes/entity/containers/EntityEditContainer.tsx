@@ -36,7 +36,7 @@ function EntityEditContainer(props: AppProps) {
   const shapeLabel = lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)
 
   // creating new entity
-  const subject: Subject = generateNew("P")
+  const subject: Subject = generateNew("P", shape)
 
   const save = (): void => {
     const store = new rdf.Store()
@@ -55,7 +55,7 @@ function EntityEditContainer(props: AppProps) {
       </section>
       <div>
         {shape.groups.map((group, index) => (
-          <PropertyGroupContainer key={index} group={group} subject={subject} />
+          <PropertyGroupContainer key={group.uri} group={group} subject={subject} />
         ))}
       </div>
       <div style={{ textAlign: "center" }}>

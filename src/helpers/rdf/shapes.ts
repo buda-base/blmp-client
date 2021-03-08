@@ -1,5 +1,5 @@
-import * as rdf from 'rdflib'
-import { RDFResource, RDFResourceWithLabel, PropertyGroup, TopShape } from "./types"
+import * as rdf from "rdflib"
+import { RDFResource, RDFResourceWithLabel, PropertyGroup, NodeShape } from "./types"
 import * as ns from "./ns"
 
 const debug = require("debug")("bdrc:rdf:shapes")
@@ -8,12 +8,12 @@ export const fetchUrlFromTypeQname = (typeQname: string): string => {
   return "/shapes/personpreflabel.ttl"
 }
 
-export const getShape = (typeQname:string, store: rdf.Store):TopShape => {
-  const uri:string = ns.uriFromQname(typeQname)
-  return new TopShape(rdf.sym(uri), store);
+export const getShape = (typeQname: string, store: rdf.Store): NodeShape => {
+  const uri: string = ns.uriFromQname(typeQname)
+  return new NodeShape(rdf.sym(uri), store)
 }
 
-export const rdfLitAsNumber = (lit:rdf.Literal):number|null => {
+export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
   const n = Number(lit.value)
   if (n && !isNaN(n)) {
     return +n
@@ -21,39 +21,42 @@ export const rdfLitAsNumber = (lit:rdf.Literal):number|null => {
   return null
 }
 
-export const shProperty = ns.SH('property')
-export const shGroup = ns.SH('group')
-export const shOrder = ns.SH('order') as rdf.NamedNode
-export const rdfsLabel = ns.RDFS('label') as rdf.NamedNode
-export const prefLabel = ns.SKOS('prefLabel') as rdf.NamedNode
-export const shName = ns.SH('name') as rdf.NamedNode
-export const shPath = ns.SH('path') as rdf.NamedNode
-export const dashEditor = ns.DASH('editor') as rdf.NamedNode
-export const shDescription = ns.SH('description') as rdf.NamedNode
-export const shMessage = ns.SH('message') as rdf.NamedNode
-export const shMinCount = ns.SH('minCount') as rdf.NamedNode
-export const shMaxCount = ns.SH('maxCount') as rdf.NamedNode
-export const shDatatype = ns.SH('datatype') as rdf.NamedNode
-export const dashSingleLine = ns.SH('singleLine') as rdf.NamedNode
+export const shProperty = ns.SH("property")
+export const shGroup = ns.SH("group")
+export const shOrder = ns.SH("order") as rdf.NamedNode
+export const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
+export const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
+export const shName = ns.SH("name") as rdf.NamedNode
+export const shPath = ns.SH("path") as rdf.NamedNode
+export const dashEditor = ns.DASH("editor") as rdf.NamedNode
+export const shDescription = ns.SH("description") as rdf.NamedNode
+export const shMessage = ns.SH("message") as rdf.NamedNode
+export const shMinCount = ns.SH("minCount") as rdf.NamedNode
+export const shMaxCount = ns.SH("maxCount") as rdf.NamedNode
+export const shDatatype = ns.SH("datatype") as rdf.NamedNode
+export const dashSingleLine = ns.SH("singleLine") as rdf.NamedNode
+export const shTargetObjectsOf = ns.SH("targetObjectsOf") as rdf.NamedNode
 
-export const sortByPropValue = (nodelist:Array<rdf.NamedNode>, p:rdf.NamedNode, store:rdf.Store): Array<rdf.NamedNode> => {
-  const orderedGroupObjs:Record<number,rdf.NamedNode> = {}
-  let orders:Array<number> = []
+export const sortByPropValue = (
+  nodelist: Array<rdf.NamedNode>,
+  p: rdf.NamedNode,
+  store: rdf.Store
+): Array<rdf.NamedNode> => {
+  const orderedGroupObjs: Record<number, rdf.NamedNode> = {}
+  let orders: Array<number> = []
   for (const node of nodelist) {
     let order = 0
-    const ordern:rdf.Literal|null = store.any(node, p, null) as rdf.Literal
+    const ordern: rdf.Literal | null = store.any(node, p, null) as rdf.Literal
     if (ordern) {
       const asnum = rdfLitAsNumber(ordern)
-      if (asnum)
-        order = asnum
-      else
-        debug("no order found for node and property: ", node.value, p.value)
+      if (asnum) order = asnum
+      else debug("no order found for node and property: ", node.value, p.value)
       orders.push(order)
     }
     orderedGroupObjs[order] = node
   }
   orders = orders.sort()
-  const res:Array<rdf.NamedNode> = []
+  const res: Array<rdf.NamedNode> = []
   for (const order of orders) {
     res.push(orderedGroupObjs[order])
   }
