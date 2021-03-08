@@ -13,19 +13,19 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
     const m_content = m_content_tab[i],
       s1_content = s1_content_tab[i],
       s2_content = s2_content_tab[i]
-    //debug("diff",m_content,s1_content,s2_content)
+    debug("diff", m_content, s1_content, s2_content)
     for (const k of Object.keys(m_content)) {
-      //debug("k",k)
-      const tags = ["@id", "@value", "@language", "type"]
+      debug("k", k)
+      const tags = ["@id", "@value", "@language", "type", "language", "value"]
       if (typeof m_content[k] === "object") {
         for (const tag of tags) {
           if (m_content[k][tag] != s1_content[k][tag]) {
             if (s2_content && s2_content[k]) {
-              if (tag == "@language" || s1_content[k][tag] == s2_content[k][tag]) {
-                //debug("false", tag)
+              if (tag.endsWith("language") || s1_content[k][tag] == s2_content[k][tag]) {
+                debug("false", tag)
                 return false
               } else if (s1_content[k][tag] != s2_content[k][tag]) {
-                //debug("true", tag)
+                debug("true", tag)
                 return true
               }
             }
@@ -35,11 +35,11 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
         if (tags.includes(k)) {
           if (m_content[k] != s1_content[k]) {
             if (s2_content && s2_content[k]) {
-              if (k == "@language" || s1_content[k] == s2_content[k]) {
-                //debug("false", k)
+              if (k.endsWith("language") || s1_content[k] == s2_content[k]) {
+                debug("false", k)
                 return false
               } else if (s1_content[k] != s2_content[k]) {
-                //debug("true", k)
+                debug("true", k)
                 return true
               }
             }
@@ -53,13 +53,17 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
 
 export function TimeTravelObserver() {
   const [snapshots, setSnapshots] = useState([])
-  const [current, setCurrent] = useState(1) // first undoable state is snapshot[1]
+  const [current, setCurrent] = useState(0) // first undoable state is snapshot[1]
 
   useHotkeys(
     "ctrl+z",
     () => {
       debug("UNDO", current)
-      if (current > 0) gotoSnapshot(snapshots[current - 1])
+      if (current > 0) {
+        gotoSnapshot(snapshots[current - 1])
+        const delay = 150
+        setTimeout(() => document.activeElement.blur(), delay)
+      }
     },
     [current]
   )
@@ -68,14 +72,17 @@ export function TimeTravelObserver() {
     "ctrl+y,ctrl+shift+z",
     () => {
       debug("REDO", current)
-      if (current < snapshots.length - 1) gotoSnapshot(snapshots[current + 1])
+      if (current < snapshots.length - 1) {
+        gotoSnapshot(snapshots[current + 1])
+        const delay = 150
+        setTimeout(() => document.activeElement.blur(), delay)
+      }
     },
     [current]
   )
 
   useRecoilTransactionObserver_UNSTABLE(({ snapshot }) => {
     // DONE dont add a previous state as a new one
-    // DEPRECATED because undo/redo more intuitive to use when a restored previous state is considered as new one
     if (
       snapshots.filter((s, i) => {
         if (s.getID() === snapshot.getID()) {
@@ -103,7 +110,7 @@ export function TimeTravelObserver() {
       const nodes1 = Array.from(snapshots[snapshots.length - 1].getNodes_UNSTABLE(true))
       const nodes2 =
         snapshots.length > 1 ? Array.from(snapshots[snapshots.length - 1 - 1].getNodes_UNSTABLE(true)) : null
-      //debug("modif:", modified,modified[0].info.loadable.getValue(),nodes1,nodes2)
+      debug("modif:", modified, modified[0].info.loadable.getValue(), nodes1, nodes2)
       for (const i in nodes1) {
         const s1 = nodes1[i]
         const s2 = nodes2 ? nodes2[i] : null
