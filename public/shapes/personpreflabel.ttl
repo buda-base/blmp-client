@@ -97,7 +97,6 @@ bds:PersonEventShape-onYear
   a sh:PropertyShape ;
   sh:description "year associated with this event"@en ;
   sh:name "event year"@en ;
-  sh:group bds:PersonEventsPropertyGroup ;
   sh:order "0"^^xsd:decimal ;
   a sh:PropertyShape ;
   sh:path bdo:onYear ;

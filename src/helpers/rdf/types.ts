@@ -135,9 +135,12 @@ export class PropertyShape extends RDFResourceWithLabel {
 
   @Memoize()
   public get objectType(): ObjectType {
-    const propertyShapeType = this.getPropResValue(shapes.shPropertyShapeType)
-    if (!propertyShapeType) return ObjectType.Literal
-    if (propertyShapeType == shapes.bdsFacetShape) return ObjectType.Facet
+    const propertyShapeType = this.getPropResValue(shapes.bdsPropertyShapeType)
+    if (!propertyShapeType) {
+      return ObjectType.Literal
+    }
+    // for some reason direct comparison doesn't work...
+    if (propertyShapeType.value == shapes.bdsFacetShape.value) return ObjectType.Facet
     // TODO: other cases
     return ObjectType.Literal
   }
@@ -229,7 +232,7 @@ type setSelfOnSelf = {
   onSet: (newValues: (arg: Array<Value> | DefaultValue) => void) => void
 }
 
-type Value = Subject | LiteralWithId | RDFResourceWithLabel
+export type Value = Subject | LiteralWithId | RDFResourceWithLabel
 
 export class Subject extends RDFResource {
   propValues: Record<string, Array<Value>> = {}

@@ -16,7 +16,7 @@ const nodeForType = (type: string, parentLname: string): rdf.NamedNode => {
   return ns.BDR(id.shortIdGenerator(prefix)) as rdf.NamedNode
 }
 
-export const generateNew = (type: string, shape: NodeShape, parent?: RDFResource): Subject => {
+export const generateNew = (type: string, shape: NodeShape | null, parent?: RDFResource): Subject => {
   let store: rdf.Store
   let parentLname = ""
   if (parent) {

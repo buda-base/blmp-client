@@ -1,8 +1,9 @@
 import React, { useEffect, FC } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
-import { LiteralWithId, PropertyShape, Subject } from "../../../helpers/rdf/types"
+import { LiteralWithId, PropertyShape, Subject, Value, ObjectType } from "../../../helpers/rdf/types"
 import * as ns from "../../../helpers/rdf/ns"
+import { generateNew } from "../../../helpers/rdf/construct"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
@@ -13,15 +14,24 @@ import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
 
-const generateDefault = (property: PropertyShape): LiteralWithId => {
-  if (property.datatype == ns.RDF("langString")) {
-    return new LiteralWithId("", "bo-x-ewts")
-  } else {
-    return new LiteralWithId("", null, property.datatype ? property.datatype : undefined)
+const debug = require("debug")("bdrc:entity:property:litlist")
+
+const generateDefault = (property: PropertyShape, parent: Subject): Value => {
+  switch (property.objectType) {
+    case ObjectType.Facet:
+      const res = generateNew("EV", property.targetShape, parent)
+      return res
+      break
+    case ObjectType.Literal:
+    default:
+      if (property.datatype == ns.RDF("langString")) {
+        return new LiteralWithId("", "bo-x-ewts")
+      } else {
+        return new LiteralWithId("", null, property.datatype ? property.datatype : undefined)
+      }
+      break
   }
 }
-
-const debug = require("debug")("bdrc:entity:property:litlist")
 
 /**
  * List component
@@ -63,7 +73,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, pr
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
 
   const addItem = () => {
-    setList((oldList) => [...oldList, generateDefault(property)])
+    setList((oldList) => [...oldList, generateDefault(property, subject)])
   }
 
   return (
@@ -199,20 +209,22 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
 
   return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      return (
-      <span>
-        {subject.lname}-{targetShapeLabel}
-      </span>
-      <div>
-        {targetShape.properties.map((p, index) => (
-          <PropertyContainer key={p.uri} property={p} subject={subNode} />
-        ))}
+    <React.Fragment>
+      component
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span>
+          facet {subject.lname}-{targetShapeLabel}
+        </span>
+        <div>
+          {targetShape.properties.map((p, index) => (
+            <PropertyContainer key={p.uri} property={p} subject={subNode} />
+          ))}
+        </div>
+        <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
+          <RemoveIcon />
+        </button>
       </div>
-      <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
-        <RemoveIcon />
-      </button>
-    </div>
+    </React.Fragment>
   )
 }
 
