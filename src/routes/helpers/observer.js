@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { useGotoRecoilSnapshot, useRecoilTransactionObserver_UNSTABLE } from "recoil"
+import { useHotkeys } from "react-hotkeys-hook"
 
 const debug = require("debug")("bdrc:observer")
 
@@ -52,10 +53,39 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
 
 export function TimeTravelObserver() {
   const [snapshots, setSnapshots] = useState([])
+  const [current, setCurrent] = useState(1) // first undoable state is snapshot[1]
+
+  useHotkeys(
+    "ctrl+z",
+    () => {
+      debug("UNDO", current)
+      if (current > 0) gotoSnapshot(snapshots[current - 1])
+    },
+    [current]
+  )
+
+  useHotkeys(
+    "ctrl+y,ctrl+shift+z",
+    () => {
+      debug("REDO", current)
+      if (current < snapshots.length - 1) gotoSnapshot(snapshots[current + 1])
+    },
+    [current]
+  )
 
   useRecoilTransactionObserver_UNSTABLE(({ snapshot }) => {
     // DONE dont add a previous state as a new one
-    if (snapshots.filter((s) => s.getID() === snapshot.getID()).length) return
+    // DEPRECATED because undo/redo more intuitive to use when a restored previous state is considered as new one
+    if (
+      snapshots.filter((s, i) => {
+        if (s.getID() === snapshot.getID()) {
+          setCurrent(i)
+          return true
+        }
+        return false
+      }).length
+    )
+      return
 
     const modified = []
     for (const a of snapshot.getNodes_UNSTABLE(true)) {
@@ -89,12 +119,13 @@ export function TimeTravelObserver() {
         ) {
           // replace previous snapshot for same property
           snapshots[snapshots.length - 1] = snapshot
+          setCurrent(snapshots.length - 1)
           setSnapshots([...snapshots])
           return
         }
       }
     }
-
+    setCurrent(snapshots.length)
     setSnapshots([...snapshots, snapshot])
   })
 
@@ -104,7 +135,11 @@ export function TimeTravelObserver() {
     <div className="small col-md-6 mx-auto text-center text-muted">
       Restore Snapshot:
       {snapshots.map((snapshot, i) => (
-        <button key={i} className="btn btn-sm btn-danger mx-1 icon btn-circle" onClick={() => gotoSnapshot(snapshot)}>
+        <button
+          key={i}
+          className={"btn btn-sm btn-danger mx-1 icon btn-circle" + (i == current ? " current" : "")}
+          onClick={() => gotoSnapshot(snapshot)}
+        >
           {i}
         </button>
       ))}
