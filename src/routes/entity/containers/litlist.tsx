@@ -9,6 +9,9 @@ import { TextField, MenuItem } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
 import { AddIcon, RemoveIcon } from "../../layout/icons"
 import i18n from "i18next"
+import PropertyContainer from "./PropertyContainer"
+import * as lang from "../../../helpers/lang"
+import { uiLangState } from "../../../atoms/common"
 
 const generateDefault = (property: PropertyShape): LiteralWithId => {
   if (property.datatype == ns.RDF("langString")) {
@@ -24,7 +27,7 @@ const debug = require("debug")("bdrc:entity:property:litlist")
  * List component
  */
 
-const List: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, property }) => {
+const ValueList: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, property }) => {
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.id))
 
   const canAdd = property.maxCount ? list.length < property.maxCount : true
@@ -41,10 +44,12 @@ const List: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, prop
   return (
     <React.Fragment>
       <div role="main">
-        {list.map((lit) => (
-          <Component key={lit.id} subject={subject} property={property} lit={lit} />
-        ))}
-
+        {list.map((val) => {
+          if (val instanceof Subject)
+            return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} />
+          else if (val instanceof LiteralWithId)
+            return <LiteralComponent key={val.id} subject={subject} property={property} lit={val} />
+        })}
         {canAdd && <Create subject={subject} property={property} />}
       </div>
     </React.Fragment>
@@ -74,7 +79,7 @@ const useStyles = makeStyles((theme) => ({
   root: {},
 }))
 
-const lang = [{ value: "bo-x-ewts" }, { value: "bo" }, { value: "en" }, { value: "zh-hans" }, { value: "zh-hant" }]
+const langs = [{ value: "bo-x-ewts" }, { value: "bo" }, { value: "en" }, { value: "zh-hans" }, { value: "zh-hant" }]
 
 /**
  * Edit component
@@ -100,7 +105,7 @@ const EditLangString: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) 
         onChange={(e) => onChange(lit.copyWithUpdatedLanguage(e.target.value))}
         helperText="Language"
       >
-        {lang.map((option) => (
+        {langs.map((option) => (
           <MenuItem key={option.value} value={option.value}>
             {option.value}
           </MenuItem>
@@ -134,7 +139,7 @@ const EditYear: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => voi
 /**
  * Display component, with DeleteButton
  */
-const Component: FC<{ lit: LiteralWithId; subject: Subject; property: PropertyShape }> = ({
+const LiteralComponent: FC<{ lit: LiteralWithId; subject: Subject; property: PropertyShape }> = ({
   lit,
   subject,
   property,
@@ -168,4 +173,47 @@ const Component: FC<{ lit: LiteralWithId; subject: Subject; property: PropertySh
   )
 }
 
-export default List
+//TODO: should probably go to another file
+const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: PropertyShape }> = ({
+  subNode,
+  subject,
+  property,
+}) => {
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
+  const [uiLang] = useRecoilState(uiLangState)
+  const index = list.findIndex((listItem) => listItem === subNode)
+
+  const onChange: (value: Subject) => void = (value: Subject) => {
+    const newList = replaceItemAtIndex(list, index, value)
+    setList(newList)
+  }
+
+  const deleteItem = () => {
+    const newList = removeItemAtIndex(list, index)
+    setList(newList)
+  }
+
+  const targetShape = property.targetShape
+  if (!targetShape) throw "unable to find target shape of " + property.lname
+
+  const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
+
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      return (
+      <span>
+        {subject.lname}-{targetShapeLabel}
+      </span>
+      <div>
+        {targetShape.properties.map((p, index) => (
+          <PropertyContainer key={p.uri} property={p} subject={subNode} />
+        ))}
+      </div>
+      <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
+        <RemoveIcon />
+      </button>
+    </div>
+  )
+}
+
+export default ValueList

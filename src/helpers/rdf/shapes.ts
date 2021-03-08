@@ -36,6 +36,8 @@ export const shMaxCount = ns.SH("maxCount") as rdf.NamedNode
 export const shDatatype = ns.SH("datatype") as rdf.NamedNode
 export const dashSingleLine = ns.SH("singleLine") as rdf.NamedNode
 export const shTargetObjectsOf = ns.SH("targetObjectsOf") as rdf.NamedNode
+export const shPropertyShapeType = ns.SH("propertyShapeType") as rdf.NamedNode
+export const bdsFacetShape = ns.BDS("FacetShape") as rdf.NamedNode
 
 export const sortByPropValue = (
   nodelist: Array<rdf.NamedNode>,

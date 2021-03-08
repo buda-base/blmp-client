@@ -7,13 +7,6 @@ import { atom, useRecoilState, useRecoilValue, selectorFamily, atomFamily, Defau
 
 const debug = require("debug")("bdrc:rdf:types")
 
-enum PropertyShapeType {
-  Literal,
-  Facet,
-  ResInList,
-  ResExt,
-}
-
 export class RDFResource {
   node: rdf.NamedNode
   store: rdf.Store
@@ -57,12 +50,13 @@ export class RDFResource {
   }
 
   public getPropIntValue(p: rdf.NamedNode): number | null {
-    const lit: rdf.Literal = this.store.any(this.node, p, null) as rdf.Literal
+    const lit: rdf.Literal | null = this.store.any(this.node, p, null) as rdf.Literal | null
+    if (lit === null) return null
     return shapes.rdfLitAsNumber(lit)
   }
 
   public getPropResValue(p: rdf.NamedNode): rdf.NamedNode | null {
-    const res: rdf.NamedNode = this.store.any(this.node, p, null) as rdf.NamedNode
+    const res: rdf.NamedNode | null = this.store.any(this.node, p, null) as rdf.NamedNode | null
     return res
   }
 
@@ -88,6 +82,13 @@ export class RDFResourceWithLabel extends RDFResource {
   public get prefLabels(): Record<string, string> {
     return this.getPropValueByLang(shapes.prefLabel)
   }
+}
+
+export enum ObjectType {
+  Literal,
+  Facet,
+  ResInList,
+  ResExt,
 }
 
 export class PropertyShape extends RDFResourceWithLabel {
@@ -133,6 +134,15 @@ export class PropertyShape extends RDFResourceWithLabel {
   }
 
   @Memoize()
+  public get objectType(): ObjectType {
+    const propertyShapeType = this.getPropResValue(shapes.shPropertyShapeType)
+    if (!propertyShapeType) return ObjectType.Literal
+    if (propertyShapeType == shapes.bdsFacetShape) return ObjectType.Facet
+    // TODO: other cases
+    return ObjectType.Literal
+  }
+
+  @Memoize()
   public get targetShape(): NodeShape | null {
     const val: rdf.NamedNode | null = this.store.any(null, shapes.shTargetObjectsOf, this.path) as rdf.NamedNode | null
     if (val == null) return null
@@ -162,7 +172,7 @@ export class PropertyGroup extends RDFResourceWithLabel {
 export class NodeShape extends RDFResourceWithLabel {
   @Memoize()
   public get properties(): Array<PropertyShape> {
-    const res: Array<Property> = []
+    const res: Array<PropertyShape> = []
     // get all ?shape sh:property/sh:group ?group
     let props: Array<rdf.NamedNode> = this.store.each(this.node, shapes.shProperty, null) as Array<rdf.NamedNode>
     props = shapes.sortByPropValue(props, shapes.shOrder, this.store)
@@ -216,27 +226,24 @@ export class LiteralWithId extends rdf.Literal {
 
 type setSelfOnSelf = {
   setSelf: (arg: any) => void
-  onSet: (newValues: (arg: Array<LiteralWithId> | DefaultValue) => void) => void
+  onSet: (newValues: (arg: Array<Value> | DefaultValue) => void) => void
 }
 
-export class Subject extends RDFResource {
-  propValues: Record<string, Array<LiteralWithId>> = {}
+type Value = Subject | LiteralWithId | RDFResourceWithLabel
 
-  setPropValues(propertyUri: string, values: Array<LiteralWithId>): void {
+export class Subject extends RDFResource {
+  propValues: Record<string, Array<Value>> = {}
+
+  setPropValues(propertyUri: string, values: Array<Value>): void {
     this.propValues[propertyUri] = values
   }
 
-  constructor(node: rdf.NamedNode, store: rdf.Store, propValues?: Record<string, Array<LiteralWithId>>) {
+  constructor(node: rdf.NamedNode, store: rdf.Store, propValues?: Record<string, Array<Value>>) {
     super(node, store)
     if (propValues) {
       this.propValues = propValues
     }
   }
-
-  // cloneWithUpdatedPropertyValues = (propertyUri: string, values: Array<LiteralWithId>): Subject => {
-  //   const propValues: Record<string, Array<LiteralWithId>> = { ...this.propValues, propertyUri: values }
-  //   return new Subject(this.node, this.store, propValues)
-  // }
 
   static addIdToLitList = (litList: Array<rdf.Literal>): Array<LiteralWithId> => {
     return litList.map(
@@ -246,27 +253,30 @@ export class Subject extends RDFResource {
     )
   }
 
-  getPropValuesFromStore(propertyUri: string): Array<LiteralWithId> {
-    const fromRDF: Array<rdf.Literal> = this.getPropLitValues(new rdf.NamedNode(propertyUri))
+  getPropValuesFromStore(property: PropertyShape): Array<Value> {
+    if (!property.path) {
+      throw "can't find path of " + property.uri
+    }
+    const fromRDF: Array<rdf.Literal> = this.getPropLitValues(property.path)
     return Subject.addIdToLitList(fromRDF)
   }
 
-  initForProperty(p: Property) {
+  initForProperty(p: PropertyShape) {
     if (p.uri in this.propValues) return
-    const propValues: Array<LiteralWithId> = this.getPropValuesFromStore(p.uri)
+    const propValues: Array<Value> = this.getPropValuesFromStore(p)
     this.propValues[p.uri] = propValues
   }
 
-  hasBeenInitializedForProperty(p: Property) {
+  hasBeenInitializedForProperty(p: PropertyShape) {
     return p.uri in this.propValues
   }
 
-  getAllPropValuesFromStore(): Record<string, Array<LiteralWithId>> {
+  getAllPropValuesFromStore(): Record<string, Array<Value>> {
     // TODO
     return {}
   }
 
-  getPropValues(propertyUri: string): Array<LiteralWithId> {
+  getPropValues(propertyUri: string): Array<Value> {
     if (propertyUri in this.propValues) {
       return this.propValues[propertyUri]
     }
@@ -284,16 +294,17 @@ export class Subject extends RDFResource {
       }
       return
     }
-    for (const lit of this.propValues[propertyUri]) {
-      store.add(this.node, new rdf.NamedNode(propertyUri), lit)
+    for (const val of this.propValues[propertyUri]) {
+      if (val instanceof LiteralWithId) store.add(this.node, new rdf.NamedNode(propertyUri), val)
+      else store.add(this.node, new rdf.NamedNode(propertyUri), val.node)
     }
   }
 
-  propsUpdateEffect: (propertyUri: string) => AtomEffect<Array<LiteralWithId>> = (propertyUri: string) => ({
+  propsUpdateEffect: (propertyUri: string) => AtomEffect<Array<Value>> = (propertyUri: string) => ({
     setSelf,
     onSet,
   }: setSelfOnSelf) => {
-    onSet((newValues: Array<LiteralWithId> | DefaultValue): void => {
+    onSet((newValues: Array<Value> | DefaultValue): void => {
       if (!(newValues instanceof DefaultValue)) {
         debug("newalues for property ", propertyUri, newValues)
         this.propValues[propertyUri] = newValues
@@ -303,7 +314,7 @@ export class Subject extends RDFResource {
 
   @Memoize()
   getAtomForProperty(propertyUri: string) {
-    return atom<Array<LiteralWithId>>({
+    return atom<Array<Value>>({
       key: this.id + propertyUri,
       default: [],
       effects_UNSTABLE: [this.propsUpdateEffect(propertyUri)],

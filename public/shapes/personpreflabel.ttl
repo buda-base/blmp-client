@@ -52,7 +52,7 @@ bds:PersonShape
   skos:prefLabel "Person Template"@en , "Person Template tib"@bo-x-ewts ;
   # persons have one property, which is name:
   sh:property bds:CommonShape-prefLabel ;
-  sh:property bds:PersonShape-eventYear ;
+  sh:property bds:PersonShape-personEvent ;
   sh:targetClass bdo:Person ;
 .
 
