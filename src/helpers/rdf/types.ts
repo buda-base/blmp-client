@@ -33,10 +33,8 @@ export class EntityGraphValues {
       const property = new rdf.NamedNode(propertyUri)
       const values: Array<Value> = this.newSubjectProps[subjectUri][propertyUri]
       for (const val of values) {
-        debug("add one value")
         if (val instanceof LiteralWithId) {
           const test = store.add(subject, property, val, defaultGraphNode)
-          debug(test)
         } else {
           store.add(subject, property, val.node)
           if (val instanceof Subject) {
@@ -167,6 +165,14 @@ export class RDFResource {
     return this.graph.store.each(this.node, p, null) as Array<rdf.NamedNode>
   }
 
+  public getPropResValuesFromList(p: rdf.NamedNode): Array<rdf.NamedNode> | null {
+    const colls = this.graph.store.each(this.node, p, null) as Array<rdf.Collection>
+    for (const coll of colls) {
+      return coll.elements as Array<rdf.NamedNode>
+    }
+    return null
+  }
+
   public getPropIntValue(p: rdf.NamedNode): number | null {
     const lit: rdf.Literal | null = this.graph.store.any(this.node, p, null) as rdf.Literal | null
     if (lit === null) return null
@@ -258,6 +264,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get datatype(): rdf.NamedNode | null {
     return this.getPropResValue(shapes.shDatatype)
+  }
+
+  @Memoize()
+  public get in(): Array<rdf.NamedNode> | null {
+    return this.getPropResValuesFromList(shapes.shIn)
   }
 
   @Memoize()
