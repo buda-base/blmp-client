@@ -11,37 +11,35 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
     s2_content_tab = s2.info.loadable.getValue()
   for (const i in m_content_tab) {
     const m_content = m_content_tab[i],
-      s1_content = s1_content_tab[i],
-      s2_content = s2_content_tab[i]
+      s1_content = s1_content_tab[i]
+    let s2_content = s2_content_tab[i]
     debug("diff", m_content, s1_content, s2_content)
+    if (!s2_content) s2_content = { empty: true }
     for (const k of Object.keys(m_content)) {
-      debug("k", k)
+      debug("k", k, typeof m_content[k])
       const tags = ["@id", "@value", "@language", "type", "language", "value"]
+      if (s2_content.empty) s2_content[k] = ""
       if (typeof m_content[k] === "object") {
         for (const tag of tags) {
           if (m_content[k][tag] != s1_content[k][tag]) {
-            if (s2_content && s2_content[k]) {
-              if (tag.endsWith("language") || s1_content[k][tag] == s2_content[k][tag]) {
-                debug("false", tag)
-                return false
-              } else if (s1_content[k][tag] != s2_content[k][tag]) {
-                debug("true", tag)
-                return true
-              }
+            if (tag.endsWith("language") || s1_content[k][tag] == s2_content[k][tag]) {
+              debug("false", tag)
+              return false
+            } else if (s1_content[k][tag] != s2_content[k][tag]) {
+              debug("true", tag)
+              return true
             }
           }
         }
       } else if (typeof m_content[k] === "string") {
         if (tags.includes(k)) {
           if (m_content[k] != s1_content[k]) {
-            if (s2_content && s2_content[k]) {
-              if (k.endsWith("language") || s1_content[k] == s2_content[k]) {
-                debug("false", k)
-                return false
-              } else if (s1_content[k] != s2_content[k]) {
-                debug("true", k)
-                return true
-              }
+            if (k.endsWith("language") || s1_content[k] == s2_content[k]) {
+              debug("false", k)
+              return false
+            } else if (s1_content[k] != s2_content[k]) {
+              debug("true", k)
+              return true
             }
           }
         }
@@ -61,6 +59,7 @@ export function TimeTravelObserver() {
       debug("UNDO", current)
       if (current > 0) {
         gotoSnapshot(snapshots[current - 1])
+        setCurrent(current - 1)
         const delay = 150
         setTimeout(() => document.activeElement.blur(), delay)
       }
@@ -74,6 +73,7 @@ export function TimeTravelObserver() {
       debug("REDO", current)
       if (current < snapshots.length - 1) {
         gotoSnapshot(snapshots[current + 1])
+        setCurrent(current + 1)
         const delay = 150
         setTimeout(() => document.activeElement.blur(), delay)
       }
@@ -87,6 +87,7 @@ export function TimeTravelObserver() {
       snapshots.filter((s, i) => {
         if (s.getID() === snapshot.getID()) {
           setCurrent(i)
+          debug("ID", s.getID(), i)
           return true
         }
         return false
