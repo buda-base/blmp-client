@@ -101,6 +101,7 @@ bds:PersonEventShape-onYear
   a sh:PropertyShape ;
   sh:path bdo:onYear ;
   sh:datatype xsd:gYear ;
+  sh:maxCount 1 ;
   # this should just check that the format is right for a xsd:gYear, see
   # https://www.w3.org/TR/xmlschema11-2/#gYear
   # basically 4 digits (always, even "0001")

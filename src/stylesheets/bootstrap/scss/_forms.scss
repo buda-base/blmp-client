@@ -345,3 +345,6 @@ textarea.form-control {
     }
   }
 }
+
+.MuiInputLabel-root::first-letter,
+.MuiFormHelperText-root::first-letter { text-transform:uppercase; }

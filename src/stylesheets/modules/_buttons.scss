@@ -28,8 +28,14 @@ body.dark-mode {
   text-align: center;
   padding: 6px 0;
   font-size: 12px;
-  line-height: 1.428571429;
+  line-height: 18px;
   border-radius: 50%;
+
+  &.current {
+    border:2px solid black;
+    line-height: 16px;
+    color:black;
+  }
 }
 
 .btn-circle.btn-md {

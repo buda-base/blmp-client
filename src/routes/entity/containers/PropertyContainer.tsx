@@ -8,21 +8,19 @@ import * as rdf from "rdflib"
 
 const debug = require("debug")("bdrc:entity:property")
 
-const PropertyContainer: FC<{ property: PropertyShape; subject: Subject }> = ({ property, subject }) => {
-  const [uiLang] = useRecoilState(uiLangState)
-  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
-
+const PropertyContainer: FC<{ property: PropertyShape; subject: Subject; embedded?: boolean }> = ({
+  property,
+  subject,
+  embedded,
+}) => {
   const objectType = property.objectType
 
   return (
     <React.Fragment>
       <div role="main">
-        <section className="album px-3">
-          <div className="container" style={{ border: "dashed 1px none" }}>
-            <div className="row card my-4 px-3 py-2">
-              <p className="col-4 text-uppercase small my-2 pl-0">{propLabel}</p>
-              <ValueList subject={subject} property={property} />
-            </div>
+        <section className="album">
+          <div className={"container" + (embedded ? " px-0" : "")} style={{ border: "dashed 1px none" }}>
+            <ValueList subject={subject} property={property} embedded={embedded} />
           </div>
         </section>
       </div>
