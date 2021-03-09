@@ -211,11 +211,8 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
 
   return (
     <React.Fragment>
-      component
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span>
-          facet {subject.lname}-{targetShapeLabel}
-        </span>
+        <span>{subNode.qname}</span>
         <div>
           {targetShape.properties.map((p, index) => (
             <PropertyContainer key={p.uri} property={p} subject={subNode} />

@@ -25,6 +25,11 @@ export class EntityGraphValues {
   }
 }
 
+type setSelfOnSelf = {
+  setSelf: (arg: any) => void
+  onSet: (newValues: (arg: Array<Value> | DefaultValue) => void) => void
+}
+
 // a proxy to an EntityGraph that updates the entity graph but is purely read-only, so that React is happy
 export class EntityGraph {
   onGetInitialValues: (subjectUri: string, propertyUri: string, values: Array<Value>) => void
@@ -79,7 +84,9 @@ export class EntityGraph {
     })
   }
 
-  @Memoize()
+  @Memoize((propertyUri: string, subjectUri: string) => {
+    return subjectUri + propertyUri
+  })
   getAtomForSubjectProperty(propertyUri: string, subjectUri: string) {
     return atom<Array<Value>>({
       key: subjectUri + propertyUri,
@@ -321,11 +328,6 @@ export class LiteralWithId extends rdf.Literal {
   public copyWithUpdatedLanguage(language: string) {
     return new LiteralWithId(this.value, language, this.datatype, this.id)
   }
-}
-
-type setSelfOnSelf = {
-  setSelf: (arg: any) => void
-  onSet: (newValues: (arg: Array<Value> | DefaultValue) => void) => void
 }
 
 export type Value = Subject | LiteralWithId | RDFResourceWithLabel
