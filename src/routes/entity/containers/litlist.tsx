@@ -15,11 +15,13 @@ import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
-import { AddIcon, RemoveIcon } from "../../layout/icons"
+import { AddIcon, RemoveIcon, ErrorIcon } from "../../layout/icons"
 import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
+import * as constants from "../../helpers/vocabulary"
+import { MinimalAddButton, BlockAddButton } from "../../helpers/shapes/bdo/event.js"
 
 const debug = require("debug")("bdrc:entity:property:litlist")
 
@@ -44,11 +46,19 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
  * List component
  */
 
-const ValueList: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, property }) => {
+const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean }> = ({
+  subject,
+  property,
+  embedded,
+}) => {
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.id))
+  const [uiLang] = useRecoilState(uiLangState)
+  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
   // TODO: handle the creation of a new value in a more sophisticated way (with the iframe and such)
   const canAdd = property.objectType != ObjectType.ResExt && property.maxCount ? list.length < property.maxCount : true
+
+  debug("canAdd", canAdd, property, list)
 
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
@@ -69,9 +79,9 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape }> = ({ subject,
           if (val instanceof Subject)
             return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} />
           else if (val instanceof LiteralWithId)
-            return <LiteralComponent key={val.id} subject={subject} property={property} lit={val} />
+            return <LiteralComponent key={val.id} subject={subject} property={property} lit={val} label={propLabel} />
         })}
-        {canAdd && <Create subject={subject} property={property} />}
+        {canAdd && <Create subject={subject} property={property} embedded={embedded} />}
       </div>
     </React.Fragment>
   )
@@ -80,24 +90,27 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape }> = ({ subject,
 /**
  * Create component
  */
-const Create: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, property }) => {
+const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean }> = ({
+  subject,
+  property,
+  embedded,
+}) => {
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
 
   const addItem = () => {
     setList((oldList) => [...oldList, generateDefault(property, subject)])
   }
 
-  return (
-    <div className="text-right">
-      <button className="btn btn-link ml-2 px-0" onClick={addItem}>
-        <AddIcon />
-      </button>
-    </div>
-  )
+  if (embedded) return <MinimalAddButton add={addItem} className=" " />
+  else return <BlockAddButton add={addItem} />
 }
 
 const useStyles = makeStyles((theme) => ({
-  root: {},
+  root: {
+    "& .MuiFormHelperText-root": {
+      color: theme.palette.secondary.main,
+    },
+  },
 }))
 
 const langs = [{ value: "bo-x-ewts" }, { value: "bo" }, { value: "en" }, { value: "zh-hans" }, { value: "zh-hant" }]
@@ -105,16 +118,23 @@ const langs = [{ value: "bo-x-ewts" }, { value: "bo" }, { value: "en" }, { value
 /**
  * Edit component
  */
-const EditLangString: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => void }> = ({ lit, onChange }) => {
+const EditLangString: FC<{
+  property: PropertyShape
+  lit: LiteralWithId
+  onChange: (value: LiteralWithId) => void
+  label: string
+}> = ({ property, lit, onChange, label }) => {
   const classes = useStyles()
+
   return (
-    <React.Fragment>
+    <div className="mb-4" style={{ display: "flex", width: "100%" }}>
       <TextField
         className={classes.root}
         //label={lit.id}
+        helperText={label}
         style={{ width: "100%" }}
-        color={"secondary"}
         value={lit.value}
+        InputLabelProps={{ shrink: true }}
         onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
       />
       <TextField
@@ -132,25 +152,44 @@ const EditLangString: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) 
           </MenuItem>
         ))}
       </TextField>
-    </React.Fragment>
+    </div>
   )
 }
 
-const EditYear: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => void }> = ({ lit, onChange }) => {
+const EditYear: FC<{
+  property: PropertyShape
+  lit: LiteralWithId
+  onChange: (value: LiteralWithId) => void
+  label: string
+}> = ({ property, lit, onChange, label }) => {
   const classes = useStyles()
 
   let error
   if (lit.value && !lit.value.match(/^[0-9]{4}$/)) error = i18n.t("error.gYear")
 
+  const eventType = "<the event type>"
+
   return (
     <React.Fragment>
       <TextField
-        className={classes.root}
-        //label={lit.id}
+        className={classes.root + " mt-2"}
+        label={label}
+        helperText={eventType}
         style={{ width: 150 }}
-        color={"secondary"}
         value={lit.value}
-        {...(error ? { helperText: error, error: true } : {})}
+        {...(error
+          ? {
+              helperText: (
+                <React.Fragment>
+                  {eventType} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                  <br />
+                  <i>{error}</i>
+                </React.Fragment>
+              ),
+              error: true,
+            }
+          : {})}
+        InputLabelProps={{ shrink: true }}
         onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
       />
     </React.Fragment>
@@ -160,10 +199,11 @@ const EditYear: FC<{ lit: LiteralWithId; onChange: (value: LiteralWithId) => voi
 /**
  * Display component, with DeleteButton
  */
-const LiteralComponent: FC<{ lit: LiteralWithId; subject: Subject; property: PropertyShape }> = ({
+const LiteralComponent: FC<{ lit: LiteralWithId; subject: Subject; property: PropertyShape; label: string }> = ({
   lit,
   subject,
   property,
+  label,
 }) => {
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
   const index = list.findIndex((listItem) => listItem === lit)
@@ -181,13 +221,15 @@ const LiteralComponent: FC<{ lit: LiteralWithId; subject: Subject; property: Pro
   const t = property.datatype
   let edit
 
-  if (t?.value === ns.RDF("langString").value) edit = <EditLangString lit={lit} onChange={onChange} />
-  else if (t?.value === ns.XSD("gYear").value) edit = <EditYear lit={lit} onChange={onChange} />
+  if (t?.value === ns.RDF("langString").value)
+    edit = <EditLangString property={property} lit={lit} onChange={onChange} label={label} />
+  else if (t?.value === ns.XSD("gYear").value)
+    edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
 
   return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <div style={{ display: "flex", alignItems: "center" }}>
       {edit}
-      <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
+      <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>
         <RemoveIcon />
       </button>
     </div>
@@ -215,19 +257,18 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
 
   return (
-    <React.Fragment>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span>{subNode.qname}</span>
-        <div>
-          {targetShape.properties.map((p, index) => (
-            <PropertyContainer key={p.uri} property={p} subject={subNode} />
-          ))}
-        </div>
-        <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
+    <div className="mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)" }}>
+      <div>
+        {targetShape.properties.map((p, index) => (
+          <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
+        ))}
+      </div>
+      <div className="text-center">
+        <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
           <RemoveIcon />
         </button>
       </div>
-    </React.Fragment>
+    </div>
   )
 }
 
