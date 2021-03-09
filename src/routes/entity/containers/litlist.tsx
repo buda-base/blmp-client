@@ -103,7 +103,8 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     setList((oldList) => [...oldList, generateDefault(property, subject)])
   }
 
-  if (embedded) return <MinimalAddButton add={addItem} className=" " />
+  if (embedded || property.path.value === ns.SKOS("prefLabel").value)
+    return <MinimalAddButton add={addItem} className=" " />
   else return <BlockAddButton add={addItem} />
 }
 
@@ -129,7 +130,7 @@ const EditLangString: FC<{
   const classes = useStyles()
 
   return (
-    <div className="mb-4" style={{ display: "flex", width: "100%" }}>
+    <div className="mb-2" style={{ display: "flex", width: "100%" }}>
       <TextField
         className={classes.root}
         //label={lit.id}
