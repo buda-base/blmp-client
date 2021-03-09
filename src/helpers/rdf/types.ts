@@ -8,6 +8,8 @@ import config from "../../config"
 
 const debug = require("debug")("bdrc:rdf:types")
 
+const defaultGraphNode = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+
 // an EntityGraphValues represents the global state of an entity we're editing, in a javascript object (and not an RDF store)
 export class EntityGraphValues {
   oldSubjectProps: Record<string, Record<string, Array<Value>>> = {}
@@ -22,6 +24,27 @@ export class EntityGraphValues {
   onUpdateValues = (subjectUri: string, propertyUri: string, values: Array<Value>) => {
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
     this.newSubjectProps[subjectUri][propertyUri] = values
+  }
+
+  addNewValuestoStore(store: rdf.Store, subjectUri: string) {
+    if (!(subjectUri in this.newSubjectProps)) return
+    const subject = new rdf.NamedNode(subjectUri)
+    for (const propertyUri in this.newSubjectProps[subjectUri]) {
+      const property = new rdf.NamedNode(propertyUri)
+      const values: Array<Value> = this.newSubjectProps[subjectUri][propertyUri]
+      for (const val of values) {
+        debug("add one value")
+        if (val instanceof LiteralWithId) {
+          const test = store.add(subject, property, val, defaultGraphNode)
+          debug(test)
+        } else {
+          store.add(subject, property, val.node)
+          if (val instanceof Subject) {
+            this.addNewValuestoStore(store, val.uri)
+          }
+        }
+      }
+    }
   }
 }
 
@@ -58,7 +81,11 @@ export class EntityGraph {
     }
   }
 
-  initPropertyValuesFromStore(s: RDFResource, p: PropertyShape) {
+  addNewValuestoStore(store: rdf.Store): void {
+    this.values.addNewValuestoStore(store, this.topSubjectUri)
+  }
+
+  initPropertyValuesFromStore(s: RDFResource, p: PropertyShape): void {
     const propValues: Array<Value> = this.getPropValuesFromStore(s, p)
   }
 

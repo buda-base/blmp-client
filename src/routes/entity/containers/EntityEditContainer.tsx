@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { TimeTravelObserver } from "../../helpers/observer"
 import { ShapeFetcher, debugStore } from "../../../helpers/rdf/io"
+import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
@@ -40,7 +41,8 @@ function EntityEditContainer(props: AppProps) {
 
   const save = (): void => {
     const store = new rdf.Store()
-    //subject.propValuesToStore(store)
+    setDefaultPrefixes(store)
+    subject.graph.addNewValuestoStore(store)
     debug(store.statements)
     debugStore(store)
   }

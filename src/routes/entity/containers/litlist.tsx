@@ -45,7 +45,9 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
  */
 
 const ValueList: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, property }) => {
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.id))
+  if (property.path == null) throw "can't find path of " + property.qname
+  debug("get atom for ", property.path)
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
 
   // TODO: handle the creation of a new value in a more sophisticated way (with the iframe and such)
   const canAdd = property.objectType != ObjectType.ResExt && property.maxCount ? list.length < property.maxCount : true
@@ -81,7 +83,8 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape }> = ({ subject,
  * Create component
  */
 const Create: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, property }) => {
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
+  if (property.path == null) throw "can't find path of " + property.qname
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
 
   const addItem = () => {
     setList((oldList) => [...oldList, generateDefault(property, subject)])
@@ -165,7 +168,8 @@ const LiteralComponent: FC<{ lit: LiteralWithId; subject: Subject; property: Pro
   subject,
   property,
 }) => {
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
+  if (property.path == null) throw "can't find path of " + property.qname
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const index = list.findIndex((listItem) => listItem === lit)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
@@ -200,7 +204,8 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   subject,
   property,
 }) => {
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
+  if (property.path == null) throw "can't find path of " + property.qname
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === subNode)
 
@@ -238,7 +243,8 @@ const ExtEntityComponent: FC<{ extRes: RDFResourceWithLabel; subject: Subject; p
   subject,
   property,
 }) => {
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
+  if (property.path == null) throw "can't find path of " + property.qname
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === extRes)
 

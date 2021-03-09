@@ -54,6 +54,7 @@ export const setDefaultPrefixes = (s: rdf.Store): void => {
   for (const [prefix, uri] of Object.entries(prefixToURI)) {
     s.setPrefixForURI(prefix, uri)
   }
+  s.setPrefixForURI("", BDO_uri)
 }
 
 export const qnameFromUri = (uri: string): string => {
