@@ -1,7 +1,14 @@
 import React, { useEffect, FC } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
-import { LiteralWithId, PropertyShape, Subject, Value, ObjectType } from "../../../helpers/rdf/types"
+import {
+  LiteralWithId,
+  PropertyShape,
+  Subject,
+  Value,
+  ObjectType,
+  RDFResourceWithLabel,
+} from "../../../helpers/rdf/types"
 import * as ns from "../../../helpers/rdf/ns"
 import { generateNew } from "../../../helpers/rdf/construct"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
@@ -40,7 +47,8 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
 const ValueList: FC<{ subject: Subject; property: PropertyShape }> = ({ subject, property }) => {
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.id))
 
-  const canAdd = property.maxCount ? list.length < property.maxCount : true
+  // TODO: handle the creation of a new value in a more sophisticated way (with the iframe and such)
+  const canAdd = property.objectType != ObjectType.ResExt && property.maxCount ? list.length < property.maxCount : true
 
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
@@ -56,6 +64,8 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape }> = ({ subject,
     <React.Fragment>
       <div role="main">
         {list.map((val) => {
+          if (val instanceof RDFResourceWithLabel)
+            return <ExtEntityComponent key={val.id} subject={subject} property={property} extRes={val} />
           if (val instanceof Subject)
             return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} />
           else if (val instanceof LiteralWithId)
@@ -194,11 +204,6 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === subNode)
 
-  const onChange: (value: Subject) => void = (value: Subject) => {
-    const newList = replaceItemAtIndex(list, index, value)
-    setList(newList)
-  }
-
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
     setList(newList)
@@ -218,6 +223,34 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
             <PropertyContainer key={p.uri} property={p} subject={subNode} />
           ))}
         </div>
+        <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
+          <RemoveIcon />
+        </button>
+      </div>
+    </React.Fragment>
+  )
+}
+
+//TODO: component to display an external entity that has already been selected, with a delete button to remove it
+// There should probably be a ExtEntityCreate or something like that to allow an entity to be selected
+const ExtEntityComponent: FC<{ extRes: RDFResourceWithLabel; subject: Subject; property: PropertyShape }> = ({
+  extRes,
+  subject,
+  property,
+}) => {
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.uri))
+  const [uiLang] = useRecoilState(uiLangState)
+  const index = list.findIndex((listItem) => listItem === extRes)
+
+  const deleteItem = () => {
+    const newList = removeItemAtIndex(list, index)
+    setList(newList)
+  }
+
+  return (
+    <React.Fragment>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span>External resource component</span>
         <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
           <RemoveIcon />
         </button>
