@@ -40,7 +40,7 @@ function EntityEditContainer(props: AppProps) {
 
   const save = (): void => {
     const store = new rdf.Store()
-    subject.propValuesToStore(store)
+    //subject.propValuesToStore(store)
     debug(store.statements)
     debugStore(store)
   }

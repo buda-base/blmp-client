@@ -2,7 +2,8 @@ import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
 import { fetchUrlFromTypeQname } from "./shapes"
-import { RDFResource, NodeShape } from "./types"
+import { RDFResource, NodeShape, EntityGraph } from "./types"
+import { uriFromQname } from "./ns"
 import { getShape } from "./shapes"
 
 const debug = require("debug")("bdrc:rdf:io")
@@ -45,7 +46,8 @@ export function ShapeFetcher(typeQname: string) {
       await loadTtl(url)
         .then(function (store: rdf.Store) {
           if (store) {
-            const shape: NodeShape = getShape(typeQname, store)
+            const shapeUri = uriFromQname(typeQname)
+            const shape: NodeShape = getShape(typeQname, new EntityGraph(store, shapeUri))
             debug(store)
             setLoadingState({ status: "fetched", error: undefined })
             setShape(shape)

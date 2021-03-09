@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from "react"
 import { fetchUrlFromTypeQname } from "./shapes"
 import * as ns from "./ns"
 import * as id from "./../id"
-import { RDFResource, Subject, NodeShape } from "./types"
+import { RDFResource, Subject, NodeShape, EntityGraph } from "./types"
 
 const debug = require("debug")("bdrc:rdf:construct")
 
@@ -17,14 +17,14 @@ const nodeForType = (type: string, parentLname: string): rdf.NamedNode => {
 }
 
 export const generateNew = (type: string, shape: NodeShape | null, parent?: RDFResource): Subject => {
-  let store: rdf.Store
+  let graph: EntityGraph
   let parentLname = ""
+  const node = nodeForType(type, parentLname)
   if (parent) {
-    store = parent.store
+    graph = parent.graph
     parentLname = parent.lname
   } else {
-    store = rdf.graph()
+    graph = new EntityGraph(rdf.graph(), node.uri)
   }
-  const node = nodeForType(type, parentLname)
-  return new Subject(node, store)
+  return new Subject(node, graph)
 }

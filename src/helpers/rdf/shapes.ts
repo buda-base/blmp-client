@@ -1,5 +1,5 @@
 import * as rdf from "rdflib"
-import { RDFResource, RDFResourceWithLabel, PropertyGroup, NodeShape } from "./types"
+import { RDFResource, RDFResourceWithLabel, PropertyGroup, NodeShape, EntityGraph } from "./types"
 import * as ns from "./ns"
 
 const debug = require("debug")("bdrc:rdf:shapes")
@@ -8,9 +8,9 @@ export const fetchUrlFromTypeQname = (typeQname: string): string => {
   return "/shapes/personpreflabel.ttl"
 }
 
-export const getShape = (typeQname: string, store: rdf.Store): NodeShape => {
+export const getShape = (typeQname: string, graph: EntityGraph): NodeShape => {
   const uri: string = ns.uriFromQname(typeQname)
-  return new NodeShape(rdf.sym(uri), store)
+  return new NodeShape(rdf.sym(uri), graph)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {

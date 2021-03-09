@@ -4,16 +4,100 @@ import * as ns from "./ns"
 import { idGenerator } from "../id"
 import { Memoize } from "typescript-memoize"
 import { atom, useRecoilState, useRecoilValue, selectorFamily, atomFamily, DefaultValue, AtomEffect } from "recoil"
+import config from "../../config"
 
 const debug = require("debug")("bdrc:rdf:types")
 
-export class RDFResource {
-  node: rdf.NamedNode
+// an EntityGraphValues represents the global state of an entity we're editing, in a javascript object (and not an RDF store)
+export class EntityGraphValues {
+  oldSubjectProps: Record<string, Record<string, Array<Value>>> = {}
+  newSubjectProps: Record<string, Record<string, Array<Value>>> = {}
+
+  onGetInitialValues = (subjectUri: string, propertyUri: string, values: Array<Value>) => {
+    if (!(subjectUri in this.oldSubjectProps)) this.oldSubjectProps[subjectUri] = {}
+    if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
+    this.oldSubjectProps[subjectUri][propertyUri] = values
+    this.newSubjectProps[subjectUri][propertyUri] = values
+  }
+  onUpdateValues = (subjectUri: string, propertyUri: string, values: Array<Value>) => {
+    if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
+    this.newSubjectProps[subjectUri][propertyUri] = values
+  }
+}
+
+// a proxy to an EntityGraph that updates the entity graph but is purely read-only, so that React is happy
+export class EntityGraph {
+  onGetInitialValues: (subjectUri: string, propertyUri: string, values: Array<Value>) => void
+  onUpdateValues: (subjectUri: string, propertyUri: string, values: Array<Value>) => void
+
+  getValues: () => EntityGraphValues
+
+  get values(): EntityGraphValues {
+    return this.getValues()
+  }
+
+  // where to start when reconstructing the tree
+  topSubjectUri: string
   store: rdf.Store
 
-  constructor(node: rdf.NamedNode, store: rdf.Store) {
-    this.node = node
+  constructor(store: rdf.Store, topSubjectUri: string) {
     this.store = store
+    // strange code: we're keeping values in the closure so that when the object freezes
+    // the freeze doesn't proagate to it
+    const values = new EntityGraphValues()
+    this.topSubjectUri = topSubjectUri
+    this.onGetInitialValues = values.onGetInitialValues
+    this.onUpdateValues = values.onUpdateValues
+    this.getValues = () => {
+      return values
+    }
+  }
+
+  initPropertyValuesFromStore(s: RDFResource, p: PropertyShape) {
+    const propValues: Array<Value> = this.getPropValuesFromStore(s, p)
+  }
+
+  getPropValuesFromStore(s: RDFResource, p: PropertyShape): Array<Value> {
+    if (!p.path) {
+      throw "can't find path of " + p.uri
+    }
+    //TODO: check expected values
+    const fromRDF: Array<rdf.Literal> = s.getPropLitValues(p.path)
+    const fromRDFIDs = Subject.addIdToLitList(fromRDF)
+    this.onGetInitialValues(s.uri, p.uri, fromRDFIDs)
+    return fromRDFIDs
+  }
+
+  propsUpdateEffect: (subjectUri: string, propertyUri: string) => AtomEffect<Array<Value>> = (
+    subjectUri: string,
+    propertyUri: string
+  ) => ({ setSelf, onSet }: setSelfOnSelf) => {
+    onSet((newValues: Array<Value> | DefaultValue): void => {
+      if (!(newValues instanceof DefaultValue)) {
+        this.onUpdateValues(subjectUri, propertyUri, newValues)
+      }
+    })
+  }
+
+  @Memoize()
+  getAtomForSubjectProperty(propertyUri: string, subjectUri: string) {
+    return atom<Array<Value>>({
+      key: subjectUri + propertyUri,
+      default: [],
+      effects_UNSTABLE: [this.propsUpdateEffect(subjectUri, propertyUri)],
+      // disable immutability in production
+      dangerouslyAllowMutability: !config.__DEV__,
+    })
+  }
+}
+
+export class RDFResource {
+  node: rdf.NamedNode
+  graph: EntityGraph
+
+  constructor(node: rdf.NamedNode, graph: EntityGraph) {
+    this.node = node
+    this.graph = graph
   }
 
   public get id(): string {
@@ -33,7 +117,7 @@ export class RDFResource {
   }
 
   public getPropValueByLang(p: rdf.NamedNode): Record<string, string> {
-    const lits: Array<rdf.Literal> = this.store.each(this.node, p, null) as Array<rdf.Literal>
+    const lits: Array<rdf.Literal> = this.graph.store.each(this.node, p, null) as Array<rdf.Literal>
     const res: Record<string, string> = {}
     for (const lit of lits) {
       res[lit.language] = lit.value
@@ -42,26 +126,26 @@ export class RDFResource {
   }
 
   public getPropLitValues(p: rdf.NamedNode): Array<rdf.Literal> {
-    return this.store.each(this.node, p, null) as Array<rdf.Literal>
+    return this.graph.store.each(this.node, p, null) as Array<rdf.Literal>
   }
 
   public getPropResValues(p: rdf.NamedNode): Array<rdf.NamedNode> {
-    return this.store.each(this.node, p, null) as Array<rdf.NamedNode>
+    return this.graph.store.each(this.node, p, null) as Array<rdf.NamedNode>
   }
 
   public getPropIntValue(p: rdf.NamedNode): number | null {
-    const lit: rdf.Literal | null = this.store.any(this.node, p, null) as rdf.Literal | null
+    const lit: rdf.Literal | null = this.graph.store.any(this.node, p, null) as rdf.Literal | null
     if (lit === null) return null
     return shapes.rdfLitAsNumber(lit)
   }
 
   public getPropResValue(p: rdf.NamedNode): rdf.NamedNode | null {
-    const res: rdf.NamedNode | null = this.store.any(this.node, p, null) as rdf.NamedNode | null
+    const res: rdf.NamedNode | null = this.graph.store.any(this.node, p, null) as rdf.NamedNode | null
     return res
   }
 
   public getPropBooleanValue(p: rdf.NamedNode, dflt = false): boolean {
-    const lit: rdf.Literal = this.store.any(this.node, p, null) as rdf.Literal
+    const lit: rdf.Literal = this.graph.store.any(this.node, p, null) as rdf.Literal
     const n = Boolean(lit.value)
     if (n) {
       return n
@@ -70,7 +154,7 @@ export class RDFResource {
   }
 
   public getPropValueLname(p: rdf.NamedNode): string | null {
-    const val: rdf.NamedNode = this.store.any(this.node, p, null) as rdf.NamedNode
+    const val: rdf.NamedNode = this.graph.store.any(this.node, p, null) as rdf.NamedNode
     if (val == null) return null
 
     return ns.lnameFromUri(val.value)
@@ -147,9 +231,13 @@ export class PropertyShape extends RDFResourceWithLabel {
 
   @Memoize()
   public get targetShape(): NodeShape | null {
-    const val: rdf.NamedNode | null = this.store.any(null, shapes.shTargetObjectsOf, this.path) as rdf.NamedNode | null
+    const val: rdf.NamedNode | null = this.graph.store.any(
+      null,
+      shapes.shTargetObjectsOf,
+      this.path
+    ) as rdf.NamedNode | null
     if (val == null) return null
-    return new NodeShape(val, this.store)
+    return new NodeShape(val, this.graph)
   }
 }
 
@@ -157,10 +245,14 @@ export class PropertyGroup extends RDFResourceWithLabel {
   @Memoize()
   public get properties(): Array<PropertyShape> {
     const res: Array<PropertyShape> = []
-    let propsingroup: Array<rdf.NamedNode> = this.store.each(null, shapes.shGroup, this.node) as Array<rdf.NamedNode>
-    propsingroup = shapes.sortByPropValue(propsingroup, shapes.shOrder, this.store)
+    let propsingroup: Array<rdf.NamedNode> = this.graph.store.each(
+      null,
+      shapes.shGroup,
+      this.node
+    ) as Array<rdf.NamedNode>
+    propsingroup = shapes.sortByPropValue(propsingroup, shapes.shOrder, this.graph.store)
     for (const prop of propsingroup) {
-      res.push(new PropertyShape(prop, this.store))
+      res.push(new PropertyShape(prop, this.graph))
     }
     return res
   }
@@ -177,10 +269,10 @@ export class NodeShape extends RDFResourceWithLabel {
   public get properties(): Array<PropertyShape> {
     const res: Array<PropertyShape> = []
     // get all ?shape sh:property/sh:group ?group
-    let props: Array<rdf.NamedNode> = this.store.each(this.node, shapes.shProperty, null) as Array<rdf.NamedNode>
-    props = shapes.sortByPropValue(props, shapes.shOrder, this.store)
+    let props: Array<rdf.NamedNode> = this.graph.store.each(this.node, shapes.shProperty, null) as Array<rdf.NamedNode>
+    props = shapes.sortByPropValue(props, shapes.shOrder, this.graph.store)
     for (const prop of props) {
-      res.push(new PropertyShape(prop, this.store))
+      res.push(new PropertyShape(prop, this.graph))
     }
     return res
   }
@@ -189,18 +281,22 @@ export class NodeShape extends RDFResourceWithLabel {
   public get groups(): Array<PropertyGroup> {
     const res: Array<PropertyGroup> = []
     // get all ?shape sh:property/sh:group ?group
-    const props: Array<rdf.NamedNode> = this.store.each(this.node, shapes.shProperty, null) as Array<rdf.NamedNode>
+    const props: Array<rdf.NamedNode> = this.graph.store.each(
+      this.node,
+      shapes.shProperty,
+      null
+    ) as Array<rdf.NamedNode>
     let grouplist: Array<rdf.NamedNode> = []
     for (const prop of props) {
       // we assume there's only one group per property, by construction of the shape (maybe it's wrong?)
-      const group: rdf.NamedNode | null = this.store.any(prop, shapes.shGroup, null) as rdf.NamedNode
+      const group: rdf.NamedNode | null = this.graph.store.any(prop, shapes.shGroup, null) as rdf.NamedNode
       if (group && !grouplist.includes(group)) {
         grouplist.push(group)
       }
     }
-    grouplist = shapes.sortByPropValue(grouplist, shapes.shOrder, this.store)
+    grouplist = shapes.sortByPropValue(grouplist, shapes.shOrder, this.graph.store)
     for (const group of grouplist) {
-      res.push(new PropertyGroup(group, this.store))
+      res.push(new PropertyGroup(group, this.graph))
     }
     return res
   }
@@ -235,19 +331,6 @@ type setSelfOnSelf = {
 export type Value = Subject | LiteralWithId | RDFResourceWithLabel
 
 export class Subject extends RDFResource {
-  propValues: Record<string, Array<Value>> = {}
-
-  setPropValues(propertyUri: string, values: Array<Value>): void {
-    this.propValues[propertyUri] = values
-  }
-
-  constructor(node: rdf.NamedNode, store: rdf.Store, propValues?: Record<string, Array<Value>>) {
-    super(node, store)
-    if (propValues) {
-      this.propValues = propValues
-    }
-  }
-
   static addIdToLitList = (litList: Array<rdf.Literal>): Array<LiteralWithId> => {
     return litList.map(
       (lit: rdf.Literal): LiteralWithId => {
@@ -265,13 +348,7 @@ export class Subject extends RDFResource {
   }
 
   initForProperty(p: PropertyShape) {
-    if (p.uri in this.propValues) return
-    const propValues: Array<Value> = this.getPropValuesFromStore(p)
-    this.propValues[p.uri] = propValues
-  }
-
-  hasBeenInitializedForProperty(p: PropertyShape) {
-    return p.uri in this.propValues
+    this.graph.initPropertyValuesFromStore(this, p)
   }
 
   getAllPropValuesFromStore(): Record<string, Array<Value>> {
@@ -279,48 +356,20 @@ export class Subject extends RDFResource {
     return {}
   }
 
-  getPropValues(propertyUri: string): Array<Value> {
-    if (propertyUri in this.propValues) {
-      return this.propValues[propertyUri]
-    }
-    return []
-  }
+  // propValuesToStore(store: rdf.Store, graphNode?: rdf.NamedNode, propertyUri?: string): void {
+  //   if (!propertyUri) {
+  //     for (propertyUri in this.propValues) {
+  //       this.propValuesToStore(store, graphNode, propertyUri)
+  //     }
+  //     return
+  //   }
+  //   for (const val of this.propValues[propertyUri]) {
+  //     if (val instanceof LiteralWithId) store.add(this.node, new rdf.NamedNode(propertyUri), val)
+  //     else store.add(this.node, new rdf.NamedNode(propertyUri), val.node)
+  //   }
+  // }
 
-  initializedPropertyUris(): Array<string> {
-    return Object.keys(this.propValues)
-  }
-
-  propValuesToStore(store: rdf.Store, graphNode?: rdf.NamedNode, propertyUri?: string): void {
-    if (!propertyUri) {
-      for (propertyUri in this.propValues) {
-        this.propValuesToStore(store, graphNode, propertyUri)
-      }
-      return
-    }
-    for (const val of this.propValues[propertyUri]) {
-      if (val instanceof LiteralWithId) store.add(this.node, new rdf.NamedNode(propertyUri), val)
-      else store.add(this.node, new rdf.NamedNode(propertyUri), val.node)
-    }
-  }
-
-  propsUpdateEffect: (propertyUri: string) => AtomEffect<Array<Value>> = (propertyUri: string) => ({
-    setSelf,
-    onSet,
-  }: setSelfOnSelf) => {
-    onSet((newValues: Array<Value> | DefaultValue): void => {
-      if (!(newValues instanceof DefaultValue)) {
-        debug("newalues for property ", propertyUri, newValues)
-        this.propValues[propertyUri] = newValues
-      }
-    })
-  }
-
-  @Memoize()
   getAtomForProperty(propertyUri: string) {
-    return atom<Array<Value>>({
-      key: this.id + propertyUri,
-      default: [],
-      effects_UNSTABLE: [this.propsUpdateEffect(propertyUri)],
-    })
+    return this.graph.getAtomForSubjectProperty(propertyUri, this.uri)
   }
 }

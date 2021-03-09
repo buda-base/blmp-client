@@ -45,10 +45,11 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape }> = ({ subject,
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
     // TODO: this probably shouldn't appear in the history
-    if (!subject.hasBeenInitializedForProperty(property)) {
-      subject.initForProperty(property)
-      setList(subject.getPropValues(property.uri))
-    }
+    // initialize
+    //if (!subject.hasBeenInitializedForProperty(property)) {
+    //  subject.initForProperty(property)
+    //  setList(subject.getPropValues(property.uri))
+    //}
   }, [subject, setList])
 
   return (
