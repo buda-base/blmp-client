@@ -335,6 +335,11 @@ const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; prop
     setList(newList)
   }
 
+  const onChange: (value: string) => void = (value: string) => {
+    const newList = replaceItemAtIndex(list, index, value)
+    setList(newList)
+  }
+
   return (
     <React.Fragment>
       <div style={{ display: "flex", justifyContent: "space-between" }}>

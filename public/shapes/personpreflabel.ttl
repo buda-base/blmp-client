@@ -122,7 +122,7 @@ bds:PersonEventShape-type
   # this property should be displayed first
   sh:order "0"^^xsd:decimal ;
   # this is the ordered list of possible values:
-  sh:in ( bdo:PersonBirth bdo:PersonDeath bdo:PersonOccupiesSeat bdo:PersonAffiliation bdo:PersonAssumesOffice bdo:PersonFinalOrdination bdo:PersonGterMaDiscovery bdo:PersonInResidence bdo:PersonLeavesOffice bdo:PersonLeavesSeat bdo:PersonMarriage bdo:PersonOccupiesSeat bdo:PersonRabByungOrdination bdo:PersonDivorce bdo:PersonEventNotSpecified ) ;
+  sh:in ( bdo:PersonBirth bdo:PersonDeath bdo:PersonAffiliation bdo:PersonAssumesOffice bdo:PersonFinalOrdination bdo:PersonGterMaDiscovery bdo:PersonInResidence bdo:PersonLeavesOffice bdo:PersonLeavesSeat bdo:PersonMarriage bdo:PersonOccupiesSeat bdo:PersonRabByungOrdination bdo:PersonDivorce bdo:PersonEventNotSpecified ) ;
   # some constraints and validation error message
   sh:message "A PersonEvent must have at least one rdf:type"@en ;
   # note that because there's no max count, we could imagine a list where users can select multiple values

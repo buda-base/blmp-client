@@ -202,9 +202,16 @@ export class RDFResource {
 }
 
 export class RDFResourceWithLabel extends RDFResource {
+  private labelProp: rdf.NamedNode
+
+  constructor(node: rdf.NamedNode, graph: EntityGraph, labelProp: rdf.NamedNode = shapes.prefLabel) {
+    super(node, graph)
+    this.labelProp = labelProp
+  }
+
   @Memoize()
   public get prefLabels(): Record<string, string> {
-    return this.getPropValueByLang(shapes.prefLabel)
+    return this.getPropValueByLang(this.labelProp)
   }
 }
 
@@ -272,7 +279,10 @@ export class PropertyShape extends RDFResourceWithLabel {
     if (!nodes) return null
     const res: Array<RDFResourceWithLabel> = []
     for (const node of nodes) {
-      res.push(new RDFResourceWithLabel(node, this.graph))
+      const r = new RDFResourceWithLabel(node, this.graph, shapes.rdfsLabel)
+      // just a way to intialize the value before the object gets frozen like a yogurt
+      const justforinit = r.prefLabels
+      res.push(r)
     }
     return res
   }
