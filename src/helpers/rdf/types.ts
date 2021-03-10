@@ -267,8 +267,14 @@ export class PropertyShape extends RDFResourceWithLabel {
   }
 
   @Memoize()
-  public get in(): Array<rdf.NamedNode> | null {
-    return this.getPropResValuesFromList(shapes.shIn)
+  public get in(): Array<RDFResourceWithLabel> | null {
+    const nodes = this.getPropResValuesFromList(shapes.shIn)
+    if (!nodes) return null
+    const res: Array<RDFResourceWithLabel> = []
+    for (const node of nodes) {
+      res.push(new RDFResourceWithLabel(node, this.graph))
+    }
+    return res
   }
 
   @Memoize()
@@ -280,6 +286,9 @@ export class PropertyShape extends RDFResourceWithLabel {
   public get objectType(): ObjectType {
     const propertyShapeType = this.getPropResValue(shapes.bdsPropertyShapeType)
     if (!propertyShapeType) {
+      const editor = this.getPropResValue(shapes.dashEditor)
+      if (!editor) return ObjectType.Literal
+      if (editor.value == shapes.dashEnumSelectEditor.value) return ObjectType.ResInList
       return ObjectType.Literal
     }
     // for some reason direct comparison doesn't work...

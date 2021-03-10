@@ -29,6 +29,7 @@ export const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 export const shName = ns.SH("name") as rdf.NamedNode
 export const shPath = ns.SH("path") as rdf.NamedNode
 export const dashEditor = ns.DASH("editor") as rdf.NamedNode
+export const dashEnumSelectEditor = ns.DASH("EnumSelectEditor") as rdf.NamedNode
 export const shDescription = ns.SH("description") as rdf.NamedNode
 export const shMessage = ns.SH("message") as rdf.NamedNode
 export const shMinCount = ns.SH("minCount") as rdf.NamedNode

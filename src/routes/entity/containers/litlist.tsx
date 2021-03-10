@@ -13,7 +13,7 @@ import * as ns from "../../../helpers/rdf/ns"
 import { generateNew } from "../../../helpers/rdf/construct"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
-import { TextField, MenuItem } from "@material-ui/core"
+import { TextField, MenuItem, InputLabel, Select } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
 import { AddIcon, RemoveIcon, ErrorIcon } from "../../layout/icons"
 import i18n from "i18next"
@@ -28,8 +28,12 @@ const debug = require("debug")("bdrc:entity:property:litlist")
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
   switch (property.objectType) {
     case ObjectType.Facet:
-      const res = generateNew("EV", property.targetShape, parent)
-      return res
+      return generateNew("EV", property.targetShape, parent)
+      break
+    case ObjectType.ResInList:
+      const propIn: Array<RDFResourceWithLabel> | null = property.in
+      if (!propIn) throw "can't find a list for " + property.uri
+      return propIn[0]
       break
     case ObjectType.Literal:
     default:
@@ -75,8 +79,11 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     <React.Fragment>
       <div role="main">
         {list.map((val) => {
-          if (val instanceof RDFResourceWithLabel)
-            return <ExtEntityComponent key={val.id} subject={subject} property={property} extRes={val} />
+          if (val instanceof RDFResourceWithLabel) {
+            if (property.objectType == ObjectType.ResExt)
+              return <ExtEntityComponent key={val.id} subject={subject} property={property} extRes={val} />
+            else return <ResSelectComponent key={val.id} subject={subject} property={property} res={val} />
+          }
           if (val instanceof Subject)
             return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} />
           else if (val instanceof LiteralWithId)
@@ -298,6 +305,47 @@ const ExtEntityComponent: FC<{ extRes: RDFResourceWithLabel; subject: Subject; p
     <React.Fragment>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span>External resource component</span>
+        <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
+          <RemoveIcon />
+        </button>
+      </div>
+    </React.Fragment>
+  )
+}
+
+//TODO: component to display an external entity that has already been selected, with a delete button to remove it
+// There should probably be a ExtEntityCreate or something like that to allow an entity to be selected
+const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; property: PropertyShape }> = ({
+  res,
+  subject,
+  property,
+}) => {
+  if (property.path == null) throw "can't find path of " + property.qname
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
+  const [uiLang] = useRecoilState(uiLangState)
+  const index = list.findIndex((listItem) => listItem === res)
+
+  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
+
+  const possibleValues = property.in
+  if (!possibleValues) throw "can't find possible list for " + property.uri
+
+  const deleteItem = () => {
+    const newList = removeItemAtIndex(list, index)
+    setList(newList)
+  }
+
+  return (
+    <React.Fragment>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <InputLabel id="label">{propLabel}</InputLabel>
+        <Select labelId="label" id="select" value={res.uri}>
+          {possibleValues.map((r) => (
+            <MenuItem key={r.uri} value={r.uri}>
+              {lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}
+            </MenuItem>
+          ))}
+        </Select>
         <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
           <RemoveIcon />
         </button>
