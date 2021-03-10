@@ -180,29 +180,27 @@ const EditYear: FC<{
   const eventType = "<the event type>"
 
   return (
-    <React.Fragment>
-      <TextField
-        className={classes.root + " mt-2"}
-        label={label}
-        helperText={eventType}
-        style={{ width: 150 }}
-        value={lit.value}
-        {...(error
-          ? {
-              helperText: (
-                <React.Fragment>
-                  {eventType} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                  <br />
-                  <i>{error}</i>
-                </React.Fragment>
-              ),
-              error: true,
-            }
-          : {})}
-        InputLabelProps={{ shrink: true }}
-        onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
-      />
-    </React.Fragment>
+    <TextField
+      className={classes.root + " mt-2"}
+      label={label}
+      helperText={eventType}
+      style={{ width: 150 }}
+      value={lit.value}
+      {...(error
+        ? {
+            helperText: (
+              <React.Fragment>
+                {eventType} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                <br />
+                <i>{error}</i>
+              </React.Fragment>
+            ),
+            error: true,
+          }
+        : {})}
+      InputLabelProps={{ shrink: true }}
+      onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
+    />
   )
 }
 
@@ -236,6 +234,8 @@ const LiteralComponent: FC<{ lit: LiteralWithId; subject: Subject; property: Pro
     edit = <EditLangString property={property} lit={lit} onChange={onChange} label={label} />
   else if (t?.value === ns.XSD("gYear").value)
     edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
+  //else if (t?.value === ns.RDF("type").value)
+  //  edit = <EditType property={property} lit={lit} onChange={onChange} label={label} />
 
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
@@ -336,25 +336,38 @@ const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; prop
   }
 
   const onChange: (value: string) => void = (value: string) => {
-    const newList = replaceItemAtIndex(list, index, value)
-    setList(newList)
+    const newVal = possibleValues.filter((p) => p.node.value === value)
+    if (newVal.length) {
+      const newList = replaceItemAtIndex(list, index, newVal[0])
+      setList(newList)
+    }
   }
+
+  const classes = useStyles()
 
   return (
     <React.Fragment>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <InputLabel id="label">{propLabel}</InputLabel>
-        <Select labelId="label" id="select" value={res.uri}>
-          {possibleValues.map((r) => (
-            <MenuItem key={r.uri} value={r.uri}>
-              {lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}
-            </MenuItem>
-          ))}
-        </Select>
-        <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
+      <TextField
+        select
+        className={classes.root + " mr-2"}
+        label={null}
+        value={res.uri}
+        style={{ width: 150 }}
+        onChange={(e) => onChange(e.target.value)}
+        helperText="Type"
+      >
+        {possibleValues.map((r) => (
+          <MenuItem key={r.uri} value={r.uri}>
+            {lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}
+          </MenuItem>
+        ))}
+      </TextField>
+
+      {!property.minCount && (
+        <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
           <RemoveIcon />
         </button>
-      </div>
+      )}
     </React.Fragment>
   )
 }

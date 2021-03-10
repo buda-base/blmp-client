@@ -13,7 +13,7 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
     const m_content = m_content_tab[i],
       s1_content = s1_content_tab[i]
     let s2_content = s2_content_tab[i]
-    debug("diff", m_content, s1_content, s2_content)
+    debug("diff", typeof m_content, m_content, s1_content, s2_content)
     if (!s2_content) s2_content = { empty: true }
     for (const k of Object.keys(m_content)) {
       debug("k", k, typeof m_content[k])
@@ -22,7 +22,11 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
       if (typeof m_content[k] === "object") {
         for (const tag of tags) {
           if (m_content[k][tag] != s1_content[k][tag]) {
-            if (tag.endsWith("language") || s1_content[k][tag] == s2_content[k][tag]) {
+            if (
+              k === "node" && tag === "value" ||
+              tag.endsWith("language") ||
+              s1_content[k][tag] == s2_content[k][tag]
+            ) {
               debug("false", tag)
               return false
             } else if (s1_content[k][tag] != s2_content[k][tag]) {
@@ -35,10 +39,10 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
         if (tags.includes(k)) {
           if (m_content[k] != s1_content[k]) {
             if (k.endsWith("language") || s1_content[k] == s2_content[k]) {
-              debug("false", k)
+              //debug("false", k)
               return false
             } else if (s1_content[k] != s2_content[k]) {
-              debug("true", k)
+              //debug("true", k)
               return true
             }
           }
@@ -111,7 +115,7 @@ export function TimeTravelObserver() {
       const nodes1 = Array.from(snapshots[snapshots.length - 1].getNodes_UNSTABLE(true))
       const nodes2 =
         snapshots.length > 1 ? Array.from(snapshots[snapshots.length - 1 - 1].getNodes_UNSTABLE(true)) : null
-      debug("modif:", modified, modified[0].info.loadable.getValue(), nodes1, nodes2)
+      //debug("modif:", modified, modified[0].info.loadable.getValue(), nodes1, nodes2)
       for (const i in nodes1) {
         const s1 = nodes1[i]
         const s2 = nodes2 ? nodes2[i] : null
