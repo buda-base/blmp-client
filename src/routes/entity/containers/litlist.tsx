@@ -69,8 +69,10 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     // reinitializing the property values atom if it hasn't been initialized yet
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
     if (vals) {
-      if (property.minCount && list.length < property.minCount) {
+      if (property.minCount && vals.length < property.minCount) {
         setList([...vals, generateDefault(property, subject)])
+      } else {
+        setList(vals)
       }
     } else if (property.minCount && list.length < property.minCount) {
       setList((oldList) => [...oldList, generateDefault(property, subject)])

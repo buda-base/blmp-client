@@ -28,7 +28,7 @@ export class EntityGraphValues {
   }
 
   isInitialized = (subjectUri: string, propertyUri: string) => {
-    return !(subjectUri in this.oldSubjectProps) || !(propertyUri in this.oldSubjectProps[subjectUri])
+    return subjectUri in this.oldSubjectProps && propertyUri in this.oldSubjectProps[subjectUri]
   }
 
   addNewValuestoStore(store: rdf.Store, subjectUri: string) {
@@ -104,9 +104,21 @@ export class EntityGraph {
     )
   }
 
+  static subjectify = (resList: Array<rdf.NamedNode>, graph: EntityGraph): Array<Subject> => {
+    return resList.map(
+      (res: rdf.NamedNode): Subject => {
+        return new Subject(res, graph)
+      }
+    )
+  }
+
   // only returns the values that were not initalized before
   getUnitializedValues(s: RDFResource, p: PropertyShape): Array<Value> | null {
-    if (this.values.isInitialized(s.uri, p.uri)) return null
+    const path = p.path
+    if (!path) return null
+    if (this.values.isInitialized(s.uri, path.uri)) {
+      return null
+    }
     return this.getPropValuesFromStore(s, p)
   }
 
@@ -117,16 +129,22 @@ export class EntityGraph {
     switch (p.objectType) {
       // TODO: ObjectType.ResExt, not an easy one!
       case ObjectType.Facet:
+        const fromRDFSubNode: Array<rdf.NamedNode> = s.getPropResValues(p.path)
+        const fromRDFSubs = EntityGraph.subjectify(fromRDFSubNode, s.graph)
+        this.onGetInitialValues(s.uri, p.path.uri, fromRDFSubs)
+        return fromRDFSubs
+        break
+      case ObjectType.ResInList:
         const fromRDFRes: Array<rdf.NamedNode> = s.getPropResValues(p.path)
         const fromRDFIDs = EntityGraph.addLabelsFromGraph(fromRDFRes, p.graph)
-        this.onGetInitialValues(s.uri, p.uri, fromRDFIDs)
+        this.onGetInitialValues(s.uri, p.path.uri, fromRDFIDs)
         return fromRDFIDs
         break
       case ObjectType.Literal:
       default:
         const fromRDFLits: Array<rdf.Literal> = s.getPropLitValues(p.path)
         const fromRDFLitIDs = EntityGraph.addIdToLitList(fromRDFLits)
-        this.onGetInitialValues(s.uri, p.uri, fromRDFLitIDs)
+        this.onGetInitialValues(s.uri, p.path.uri, fromRDFLitIDs)
         return fromRDFLitIDs
         break
     }
