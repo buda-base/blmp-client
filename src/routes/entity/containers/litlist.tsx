@@ -66,6 +66,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   if (property.minCount && !list.length) {
     setList((oldList) => [...oldList, generateDefault(property, subject)])
   }
+  const canDel = !property.minCount || property.minCount < list.length
 
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
@@ -83,13 +84,25 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
         {list.map((val) => {
           if (val instanceof RDFResourceWithLabel) {
             if (property.objectType == ObjectType.ResExt)
-              return <ExtEntityComponent key={val.id} subject={subject} property={property} extRes={val} />
-            else return <ResSelectComponent key={val.id} subject={subject} property={property} res={val} />
+              return (
+                <ExtEntityComponent key={val.id} subject={subject} property={property} extRes={val} canDel={canDel} />
+              )
+            else
+              return <ResSelectComponent key={val.id} subject={subject} property={property} res={val} canDel={canDel} />
           }
           if (val instanceof Subject)
-            return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} />
+            return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} canDel={canDel} />
           else if (val instanceof LiteralWithId)
-            return <LiteralComponent key={val.id} subject={subject} property={property} lit={val} label={propLabel} />
+            return (
+              <LiteralComponent
+                key={val.id}
+                subject={subject}
+                property={property}
+                lit={val}
+                label={propLabel}
+                canDel={canDel}
+              />
+            )
         })}
         {canAdd && <Create subject={subject} property={property} embedded={embedded} />}
       </div>
@@ -224,12 +237,13 @@ const EditYear: FC<{
 /**
  * Display component, with DeleteButton
  */
-const LiteralComponent: FC<{ lit: LiteralWithId; subject: Subject; property: PropertyShape; label: string }> = ({
-  lit,
-  subject,
-  property,
-  label,
-}) => {
+const LiteralComponent: FC<{
+  lit: LiteralWithId
+  subject: Subject
+  property: PropertyShape
+  label: string
+  canDel: boolean
+}> = ({ lit, subject, property, label, canDel }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const index = list.findIndex((listItem) => listItem === lit)
@@ -257,18 +271,21 @@ const LiteralComponent: FC<{ lit: LiteralWithId; subject: Subject; property: Pro
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
       {edit}
-      <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>
-        <RemoveIcon />
-      </button>
+      {canDel && (
+        <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>
+          <RemoveIcon />
+        </button>
+      )}
     </div>
   )
 }
 
 //TODO: should probably go to another file
-const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: PropertyShape }> = ({
+const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: PropertyShape; canDel: boolean }> = ({
   subNode,
   subject,
   property,
+  canDel,
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
@@ -292,22 +309,25 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
         ))}
       </div>
-      <div className="text-center">
-        <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
-          <RemoveIcon />
-        </button>
-      </div>
+      {canDel && (
+        <div className="text-center">
+          <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
+            <RemoveIcon />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
 
 //TODO: component to display an external entity that has already been selected, with a delete button to remove it
 // There should probably be a ExtEntityCreate or something like that to allow an entity to be selected
-const ExtEntityComponent: FC<{ extRes: RDFResourceWithLabel; subject: Subject; property: PropertyShape }> = ({
-  extRes,
-  subject,
-  property,
-}) => {
+const ExtEntityComponent: FC<{
+  extRes: RDFResourceWithLabel
+  subject: Subject
+  property: PropertyShape
+  canDel: boolean
+}> = ({ extRes, subject, property, canDel }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const [uiLang] = useRecoilState(uiLangState)
@@ -322,9 +342,11 @@ const ExtEntityComponent: FC<{ extRes: RDFResourceWithLabel; subject: Subject; p
     <React.Fragment>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span>External resource component</span>
-        <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
-          <RemoveIcon />
-        </button>
+        {canDel && (
+          <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
+            <RemoveIcon />
+          </button>
+        )}
       </div>
     </React.Fragment>
   )
@@ -332,11 +354,12 @@ const ExtEntityComponent: FC<{ extRes: RDFResourceWithLabel; subject: Subject; p
 
 //TODO: component to display an external entity that has already been selected, with a delete button to remove it
 // There should probably be a ExtEntityCreate or something like that to allow an entity to be selected
-const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; property: PropertyShape }> = ({
-  res,
-  subject,
-  property,
-}) => {
+const ResSelectComponent: FC<{
+  res: RDFResourceWithLabel
+  subject: Subject
+  property: PropertyShape
+  canDel: boolean
+}> = ({ res, subject, property, canDel }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const [uiLang] = useRecoilState(uiLangState)
@@ -389,10 +412,11 @@ const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; prop
           </MenuItem>
         ))}
       </TextField>
-
-      <button className="btn btn-link ml-0 mr-3 px-0" onClick={deleteItem}>
-        <RemoveIcon />
-      </button>
+      {canDel && (
+        <button className="btn btn-link ml-0 mr-3 px-0" onClick={deleteItem}>
+          <RemoveIcon />
+        </button>
+      )}
     </React.Fragment>
   )
 }
