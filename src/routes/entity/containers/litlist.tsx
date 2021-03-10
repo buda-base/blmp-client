@@ -63,7 +63,9 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   // TODO: handle the creation of a new value in a more sophisticated way (with the iframe and such)
   const canAdd = property.objectType != ObjectType.ResExt && property.maxCount ? list.length < property.maxCount : true
 
-  debug("canAdd", canAdd, property, list)
+  if (property.minCount && !list.length) {
+    setList((oldList) => [...oldList, generateDefault(property, subject)])
+  }
 
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
@@ -136,6 +138,9 @@ const EditLangString: FC<{
 }> = ({ property, lit, onChange, label }) => {
   const classes = useStyles()
 
+  let error
+  if (!lit.value) error = i18n.t("error.empty")
+
   return (
     <div className="mb-2" style={{ display: "flex", width: "100%" }}>
       <TextField
@@ -146,6 +151,18 @@ const EditLangString: FC<{
         value={lit.value}
         InputLabelProps={{ shrink: true }}
         onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
+        {...(error
+          ? {
+              helperText: (
+                <React.Fragment>
+                  {label} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                  <br />
+                  <i>{error}</i>
+                </React.Fragment>
+              ),
+              error: true,
+            }
+          : {})}
       />
       <TextField
         select
@@ -373,11 +390,9 @@ const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; prop
         ))}
       </TextField>
 
-      {!property.minCount && (
-        <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
-          <RemoveIcon />
-        </button>
-      )}
+      <button className="btn btn-link ml-0 mr-3 px-0" onClick={deleteItem}>
+        <RemoveIcon />
+      </button>
     </React.Fragment>
   )
 }

@@ -13,10 +13,10 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
     const m_content = m_content_tab[i],
       s1_content = s1_content_tab[i]
     let s2_content = s2_content_tab[i]
-    debug("diff", typeof m_content, m_content, s1_content, s2_content)
+    //debug("diff", typeof m_content, m_content, s1_content, s2_content)
     if (!s2_content) s2_content = { empty: true }
     for (const k of Object.keys(m_content)) {
-      debug("k", k, typeof m_content[k])
+      //debug("k", k, typeof m_content[k])
       const tags = ["@id", "@value", "@language", "type", "language", "value"]
       if (s2_content.empty) s2_content[k] = ""
       if (typeof m_content[k] === "object") {
@@ -27,10 +27,10 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
               tag.endsWith("language") ||
               s1_content[k][tag] == s2_content[k][tag]
             ) {
-              debug("false", tag)
+              //debug("false", tag)
               return false
             } else if (s1_content[k][tag] != s2_content[k][tag]) {
-              debug("true", tag)
+              //debug("true", tag)
               return true
             }
           }
