@@ -1,4 +1,4 @@
-import React, { useEffect, FC } from "react"
+import React, { useEffect, FC, ChangeEvent } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
 import {
@@ -335,12 +335,22 @@ const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; prop
     setList(newList)
   }
 
-  const onChange: (value: string) => void = (value: string) => {
-    const newVal = possibleValues.filter((p) => p.node.value === value)
-    if (newVal.length) {
-      const newList = replaceItemAtIndex(list, index, newVal[0])
-      setList(newList)
+  const getResourceFromUri = (uri: string) => {
+    for (const r of possibleValues) {
+      if (r.uri === uri) {
+        return r
+      }
     }
+    return null
+  }
+
+  const onChange: (event: ChangeEvent<{ name?: string | undefined; value: unknown }>) => void = (event) => {
+    const resForNewValue = getResourceFromUri(event.target.value as string)
+    if (resForNewValue == null) {
+      throw "getting value from ResSelectComponent that's not in the list of possible values " + event.target.value
+    }
+    const newList = replaceItemAtIndex(list, index, resForNewValue)
+    setList(newList)
   }
 
   const classes = useStyles()
@@ -353,7 +363,7 @@ const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; prop
         label={null}
         value={res.uri}
         style={{ width: 150 }}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
         helperText="Type"
       >
         {possibleValues.map((r) => (
