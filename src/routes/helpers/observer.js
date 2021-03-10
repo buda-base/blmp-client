@@ -1,6 +1,7 @@
 import React, { useState } from "react"
-import { useGotoRecoilSnapshot, useRecoilTransactionObserver_UNSTABLE } from "recoil"
+import { useGotoRecoilSnapshot, useRecoilTransactionObserver_UNSTABLE, useRecoilState } from "recoil"
 import { useHotkeys } from "react-hotkeys-hook"
+import { uiReadyState } from "../../atoms/common"
 
 const debug = require("debug")("bdrc:observer")
 
@@ -55,13 +56,15 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
 
 export function TimeTravelObserver() {
   const [snapshots, setSnapshots] = useState([])
-  const [current, setCurrent] = useState(0) // first undoable state is snapshot[1]
+  const [current, setCurrent] = useState(0)
+  const [first, setFirst] = useState(-1)
+  const [uiReady] = useRecoilState(uiReadyState)
 
   useHotkeys(
     "ctrl+z",
     () => {
-      debug("UNDO", current)
-      if (current > 0) {
+      debug("UNDO", current, first)
+      if (current > first + 1) {
         gotoSnapshot(snapshots[current - 1])
         setCurrent(current - 1)
         const delay = 150
@@ -74,7 +77,7 @@ export function TimeTravelObserver() {
   useHotkeys(
     "ctrl+y,ctrl+shift+z",
     () => {
-      debug("REDO", current)
+      debug("REDO", current, first)
       if (current < snapshots.length - 1) {
         gotoSnapshot(snapshots[current + 1])
         setCurrent(current + 1)
@@ -104,7 +107,7 @@ export function TimeTravelObserver() {
       const info = snapshot.getInfo_UNSTABLE(a)
       if (info.isModified) {
         modified.push({ a, info })
-        debug(a.key, a, info)
+        //debug(uiReady, first, a.key, a, info)
       }
       // DONE do not not take a snapshot if current change is UI language
       if (a.key === "uiLangState" && info.isModified) return
@@ -115,7 +118,7 @@ export function TimeTravelObserver() {
       const nodes1 = Array.from(snapshots[snapshots.length - 1].getNodes_UNSTABLE(true))
       const nodes2 =
         snapshots.length > 1 ? Array.from(snapshots[snapshots.length - 1 - 1].getNodes_UNSTABLE(true)) : null
-      //debug("modif:", modified, modified[0].info.loadable.getValue(), nodes1, nodes2)
+      //debug("modif:", uiReady, modified, modified[0].info.loadable.getValue(), nodes1, nodes2)
       for (const i in nodes1) {
         const s1 = nodes1[i]
         const s2 = nodes2 ? nodes2[i] : null
@@ -138,6 +141,7 @@ export function TimeTravelObserver() {
       }
     }
     setCurrent(snapshots.length)
+    if (uiReady && first === -1) setFirst(snapshots.length)
     setSnapshots([...snapshots, snapshot])
   })
 

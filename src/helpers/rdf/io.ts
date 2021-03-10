@@ -1,8 +1,10 @@
 import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
+import { useRecoilState } from "recoil"
 import { RDFResource, NodeShape, EntityGraph, Subject } from "./types"
 import { uriFromQname } from "./ns"
+import { uiReadyState } from "../../atoms/common"
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
   return "/shapes/personpreflabel.ttl"
@@ -77,6 +79,7 @@ export function ShapeFetcher(shapeQname: string) {
 export function EntityFetcher(entityQname: string) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>()
+  const [uiReady, setUiReady] = useRecoilState(uiReadyState)
 
   const reset = () => {
     setEntity(undefined)
@@ -96,6 +99,7 @@ export function EntityFetcher(entityQname: string) {
             debug(subject)
             setEntityLoadingState({ status: "fetched", error: undefined })
             setEntity(subject)
+            setUiReady(true)
           } else {
             setEntityLoadingState({ status: "error", error: "can't find shape" })
           }
