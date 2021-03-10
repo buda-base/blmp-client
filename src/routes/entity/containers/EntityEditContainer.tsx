@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { TimeTravelObserver } from "../../helpers/observer"
-import { ShapeFetcher, debugStore } from "../../../helpers/rdf/io"
+import { ShapeFetcher, debugStore, EntityFetcher } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
@@ -21,28 +21,33 @@ function EntityEditContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
   if (!typeQname) return null
   const { loadingState, shape } = ShapeFetcher(typeQname)
+  const { entityLoadingState, entity } = EntityFetcher("bdr:P1583")
 
-  if (loadingState.status === "fetching") return <span>{i18n.t("loading")}</span>
-  if (loadingState.status === "error") {
+  if (loadingState.status === "fetching" || entityLoadingState.status === "fetching")
+    return <span>{i18n.t("loading")}</span>
+  if (loadingState.status === "error" || entityLoadingState.status === "error") {
     return (
       <p className="text-center text-muted">
         <NotFoundIcon className="icon mr-2" />
         {loadingState.error}
+
+        {entityLoadingState.error}
       </p>
     )
   }
 
   if (!shape) return null
+  if (!entity) return null
 
   const shapeLabel = lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)
 
   // creating new entity
-  const subject: Subject = generateNew("P", shape)
+  //const subject: Subject = generateNew("P", shape)
 
   const save = (): void => {
     const store = new rdf.Store()
     setDefaultPrefixes(store)
-    subject.graph.addNewValuestoStore(store)
+    entity.graph.addNewValuestoStore(store)
     debug(store.statements)
     debugStore(store)
   }
@@ -50,14 +55,14 @@ function EntityEditContainer(props: AppProps) {
   return (
     <React.Fragment>
       <div role="main" className="pt-4" style={{ textAlign: "center" }}>
-        {subject.qname} -- {shapeLabel}
+        {entity.qname} -- {shapeLabel}
       </div>
       <section className="album py-2 my-2">
         <TimeTravelObserver />
       </section>
       <div>
         {shape.groups.map((group, index) => (
-          <PropertyGroupContainer key={group.uri} group={group} subject={subject} />
+          <PropertyGroupContainer key={group.uri} group={group} subject={entity} />
         ))}
       </div>
       <div style={{ textAlign: "center" }}>

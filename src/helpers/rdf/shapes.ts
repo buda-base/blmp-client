@@ -4,15 +4,6 @@ import * as ns from "./ns"
 
 const debug = require("debug")("bdrc:rdf:shapes")
 
-export const fetchUrlFromTypeQname = (typeQname: string): string => {
-  return "/shapes/personpreflabel.ttl"
-}
-
-export const getShape = (typeQname: string, graph: EntityGraph): NodeShape => {
-  const uri: string = ns.uriFromQname(typeQname)
-  return new NodeShape(rdf.sym(uri), graph)
-}
-
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
   const n = Number(lit.value)
   if (n && !isNaN(n)) {

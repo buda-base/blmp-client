@@ -1,7 +1,6 @@
 import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
-import { fetchUrlFromTypeQname } from "./shapes"
 import * as ns from "./ns"
 import * as id from "./../id"
 import { RDFResource, Subject, NodeShape, EntityGraph } from "./types"

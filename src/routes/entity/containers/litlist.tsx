@@ -63,19 +63,18 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   // TODO: handle the creation of a new value in a more sophisticated way (with the iframe and such)
   const canAdd = property.objectType != ObjectType.ResExt && property.maxCount ? list.length < property.maxCount : true
 
-  if (property.minCount && !list.length) {
-    setList((oldList) => [...oldList, generateDefault(property, subject)])
-  }
   const canDel = !property.minCount || property.minCount < list.length
 
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
-    // TODO: this probably shouldn't appear in the history
-    // initialize
-    //if (!subject.hasBeenInitializedForProperty(property)) {
-    //  subject.initForProperty(property)
-    //  setList(subject.getPropValues(property.uri))
-    //}
+    const vals: Array<Value> | null = subject.getUnitializedValues(property)
+    if (vals) {
+      if (property.minCount && list.length < property.minCount) {
+        setList([...vals, generateDefault(property, subject)])
+      }
+    } else if (property.minCount && list.length < property.minCount) {
+      setList((oldList) => [...oldList, generateDefault(property, subject)])
+    }
   }, [subject, setList])
 
   return (

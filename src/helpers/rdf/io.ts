@@ -1,10 +1,16 @@
 import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
-import { fetchUrlFromTypeQname } from "./shapes"
-import { RDFResource, NodeShape, EntityGraph } from "./types"
+import { RDFResource, NodeShape, EntityGraph, Subject } from "./types"
 import { uriFromQname } from "./ns"
-import { getShape } from "./shapes"
+
+export const fetchUrlFromshapeQname = (shapeQname: string): string => {
+  return "/shapes/personpreflabel.ttl"
+}
+
+export const fetchUrlFromEntityQname = (shapeQname: string): string => {
+  return "/examples/ptest.ttl"
+}
 
 const debug = require("debug")("bdrc:rdf:io")
 
@@ -29,7 +35,7 @@ interface IFetchState {
   error?: string
 }
 
-export function ShapeFetcher(typeQname: string) {
+export function ShapeFetcher(shapeQname: string) {
   const [loadingState, setLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [shape, setShape] = useState<NodeShape>()
 
@@ -39,16 +45,15 @@ export function ShapeFetcher(typeQname: string) {
   }
 
   useEffect(() => {
-    async function fetchResource(typeQname: string) {
+    async function fetchResource(shapeQname: string) {
       setLoadingState({ status: "fetching", error: undefined })
-      const url = fetchUrlFromTypeQname(typeQname)
+      const url = fetchUrlFromshapeQname(shapeQname)
 
       await loadTtl(url)
         .then(function (store: rdf.Store) {
           if (store) {
-            const shapeUri = uriFromQname(typeQname)
-            const shape: NodeShape = getShape(typeQname, new EntityGraph(store, shapeUri))
-            debug(store)
+            const shapeUri = uriFromQname(shapeQname)
+            const shape: NodeShape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri))
             setLoadingState({ status: "fetched", error: undefined })
             setShape(shape)
           } else {
@@ -63,8 +68,49 @@ export function ShapeFetcher(typeQname: string) {
           }
         })
     }
-    fetchResource(typeQname)
-  }, [typeQname])
+    fetchResource(shapeQname)
+  }, [shapeQname])
 
   return { loadingState, shape, reset }
+}
+
+export function EntityFetcher(entityQname: string) {
+  const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
+  const [entity, setEntity] = useState<Subject>()
+
+  const reset = () => {
+    setEntity(undefined)
+    setEntityLoadingState({ status: "idle", error: undefined })
+  }
+
+  useEffect(() => {
+    async function fetchResource(entityQname: string) {
+      setEntityLoadingState({ status: "fetching", error: undefined })
+      const url = fetchUrlFromEntityQname(entityQname)
+
+      await loadTtl(url)
+        .then(function (store: rdf.Store) {
+          if (store) {
+            const uri = uriFromQname(entityQname)
+            const subject: Subject = new Subject(new rdf.NamedNode(uri), new EntityGraph(store, uri))
+            debug(subject)
+            setEntityLoadingState({ status: "fetched", error: undefined })
+            setEntity(subject)
+          } else {
+            setEntityLoadingState({ status: "error", error: "can't find shape" })
+          }
+        })
+        .catch(function (error) {
+          debug(error)
+          if (error.response && error.response.data.output.payload.error === "Not Found") {
+            setEntityLoadingState({ status: "error", error: "No records found" })
+          } else {
+            setEntityLoadingState({ status: "error", error: "Unable to process" })
+          }
+        })
+    }
+    fetchResource(entityQname)
+  }, [entityQname])
+
+  return { entityLoadingState, entity, reset }
 }

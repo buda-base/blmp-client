@@ -21,9 +21,14 @@ export class EntityGraphValues {
     this.oldSubjectProps[subjectUri][propertyUri] = values
     this.newSubjectProps[subjectUri][propertyUri] = values
   }
+
   onUpdateValues = (subjectUri: string, propertyUri: string, values: Array<Value>) => {
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
     this.newSubjectProps[subjectUri][propertyUri] = values
+  }
+
+  isInitialized = (subjectUri: string, propertyUri: string) => {
+    return !(subjectUri in this.oldSubjectProps) || !(propertyUri in this.oldSubjectProps[subjectUri])
   }
 
   addNewValuestoStore(store: rdf.Store, subjectUri: string) {
@@ -83,19 +88,48 @@ export class EntityGraph {
     this.values.addNewValuestoStore(store, this.topSubjectUri)
   }
 
-  initPropertyValuesFromStore(s: RDFResource, p: PropertyShape): void {
-    const propValues: Array<Value> = this.getPropValuesFromStore(s, p)
+  static addIdToLitList = (litList: Array<rdf.Literal>): Array<LiteralWithId> => {
+    return litList.map(
+      (lit: rdf.Literal): LiteralWithId => {
+        return new LiteralWithId(lit.value, lit.language, lit.datatype)
+      }
+    )
+  }
+
+  static addLabelsFromGraph = (resList: Array<rdf.NamedNode>, graph: EntityGraph): Array<RDFResourceWithLabel> => {
+    return resList.map(
+      (res: rdf.NamedNode): RDFResourceWithLabel => {
+        return new RDFResourceWithLabel(res, graph)
+      }
+    )
+  }
+
+  // only returns the values that were not initalized before
+  getUnitializedValues(s: RDFResource, p: PropertyShape): Array<Value> | null {
+    if (this.values.isInitialized(s.uri, p.uri)) return null
+    return this.getPropValuesFromStore(s, p)
   }
 
   getPropValuesFromStore(s: RDFResource, p: PropertyShape): Array<Value> {
     if (!p.path) {
       throw "can't find path of " + p.uri
     }
-    //TODO: check expected values
-    const fromRDF: Array<rdf.Literal> = s.getPropLitValues(p.path)
-    const fromRDFIDs = Subject.addIdToLitList(fromRDF)
-    this.onGetInitialValues(s.uri, p.uri, fromRDFIDs)
-    return fromRDFIDs
+    switch (p.objectType) {
+      // TODO: ObjectType.ResExt, not an easy one!
+      case ObjectType.Facet:
+        const fromRDFRes: Array<rdf.NamedNode> = s.getPropResValues(p.path)
+        const fromRDFIDs = EntityGraph.addLabelsFromGraph(fromRDFRes, p.graph)
+        this.onGetInitialValues(s.uri, p.uri, fromRDFIDs)
+        return fromRDFIDs
+        break
+      case ObjectType.Literal:
+      default:
+        const fromRDFLits: Array<rdf.Literal> = s.getPropLitValues(p.path)
+        const fromRDFLitIDs = EntityGraph.addIdToLitList(fromRDFLits)
+        this.onGetInitialValues(s.uri, p.uri, fromRDFLitIDs)
+        return fromRDFLitIDs
+        break
+    }
   }
 
   propsUpdateEffect: (subjectUri: string, propertyUri: string) => AtomEffect<Array<Value>> = (
@@ -404,43 +438,9 @@ export class LiteralWithId extends rdf.Literal {
 export type Value = Subject | LiteralWithId | RDFResourceWithLabel
 
 export class Subject extends RDFResource {
-  static addIdToLitList = (litList: Array<rdf.Literal>): Array<LiteralWithId> => {
-    return litList.map(
-      (lit: rdf.Literal): LiteralWithId => {
-        return new LiteralWithId(lit.value, lit.language, lit.datatype)
-      }
-    )
+  getUnitializedValues(property: PropertyShape): Array<Value> | null {
+    return this.graph.getUnitializedValues(this, property)
   }
-
-  getPropValuesFromStore(property: PropertyShape): Array<Value> {
-    if (!property.path) {
-      throw "can't find path of " + property.uri
-    }
-    const fromRDF: Array<rdf.Literal> = this.getPropLitValues(property.path)
-    return Subject.addIdToLitList(fromRDF)
-  }
-
-  initForProperty(p: PropertyShape) {
-    this.graph.initPropertyValuesFromStore(this, p)
-  }
-
-  getAllPropValuesFromStore(): Record<string, Array<Value>> {
-    // TODO
-    return {}
-  }
-
-  // propValuesToStore(store: rdf.Store, graphNode?: rdf.NamedNode, propertyUri?: string): void {
-  //   if (!propertyUri) {
-  //     for (propertyUri in this.propValues) {
-  //       this.propValuesToStore(store, graphNode, propertyUri)
-  //     }
-  //     return
-  //   }
-  //   for (const val of this.propValues[propertyUri]) {
-  //     if (val instanceof LiteralWithId) store.add(this.node, new rdf.NamedNode(propertyUri), val)
-  //     else store.add(this.node, new rdf.NamedNode(propertyUri), val.node)
-  //   }
-  // }
 
   getAtomForProperty(propertyUri: string) {
     return this.graph.getAtomForSubjectProperty(propertyUri, this.uri)
