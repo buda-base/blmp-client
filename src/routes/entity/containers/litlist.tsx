@@ -1,4 +1,4 @@
-import React, { useEffect, FC } from "react"
+import React, { useEffect, FC, ChangeEvent } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
 import {
@@ -335,8 +335,21 @@ const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; prop
     setList(newList)
   }
 
-  const onChange: (value: string) => void = (value: string) => {
-    const newList = replaceItemAtIndex(list, index, value)
+  const getResourceFromUri = (uri: string) => {
+    for (const r of possibleValues) {
+      if (r.uri === uri) {
+        return r
+      }
+    }
+    return null
+  }
+
+  const onChange: (event: ChangeEvent<{ name?: string | undefined; value: unknown }>) => void = (event) => {
+    const resForNewValue = getResourceFromUri(event.target.value as string)
+    if (resForNewValue == null) {
+      throw "getting value from ResSelectComponent that's not in the list of possible values " + event.target.value
+    }
+    const newList = replaceItemAtIndex(list, index, resForNewValue)
     setList(newList)
   }
 
@@ -344,7 +357,7 @@ const ResSelectComponent: FC<{ res: RDFResourceWithLabel; subject: Subject; prop
     <React.Fragment>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <InputLabel id="label">{propLabel}</InputLabel>
-        <Select labelId="label" id="select" value={res.uri}>
+        <Select labelId="label" id={subject.uri + property.uri + index} value={res.uri} onChange={onChange}>
           {possibleValues.map((r) => (
             <MenuItem key={r.uri} value={r.uri}>
               {lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}
