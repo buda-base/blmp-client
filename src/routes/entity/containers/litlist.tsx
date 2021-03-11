@@ -340,6 +340,8 @@ const ExtEntityComponent: FC<{
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === extRes)
 
+  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
+
   const onChange: (value: RDFResourceWithLabel) => void = (value: RDFResourceWithLabel) => {
     const newList = replaceItemAtIndex(list, index, value)
     setList(newList)
@@ -359,9 +361,8 @@ const ExtEntityComponent: FC<{
           value={extRes.uri}
           onChange={onChange}
           propid={property.path}
-          helperTxt={"Role"}
-          type={"Role"}
-          parentId={""}
+          label={propLabel}
+          types={property.expectedObjectType}
         />
         {canDel && (
           <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
@@ -421,7 +422,6 @@ const ResSelectComponent: FC<{
       <TextField
         select
         className={classes.root + " mr-2"}
-        label={null}
         value={res.uri}
         style={{ width: 150 }}
         onChange={onChange}

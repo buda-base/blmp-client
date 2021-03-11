@@ -21,17 +21,18 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 // DONE dedicated subcomponent + keep previous keyword/language searched
-export function ResourceSelector({ value, onChange, propid, type, helperTxt, parentId }) {
+export function ResourceSelector({ value, onChange, propid, label, types }) {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("")
+  const [type, setType] = useState(types ? types[0].qname : "")
   const [libraryURL, setLibraryURL] = useState()
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
 
   const handler = (ev) => {
     try {
       if (!window.location.href.includes(ev.origin)) {
-        //debug("message: ", ev, value, JSON.stringify(value))
+        debug("message: ", ev, value, JSON.stringify(value))
 
         const data = JSON.parse(ev.data)
         if (data["tmp:propid"] === propid && data["@id"]) {
@@ -55,7 +56,7 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
     return () => window.removeEventListener("message", handler)
   }, []) // empty array => run only once
 
-  const updateLibrary = (ev, newlang) => {
+  const updateLibrary = (ev, newlang, newtype) => {
     debug("updLib: %o", propid)
     if (ev && libraryURL) {
       setLibraryURL("")
@@ -67,9 +68,13 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
       key = '"' + key + '"'
       if (lang.startsWith("bo")) key = key + "~1"
       lang = encodeURIComponent(lang)
+      let t = type
+      if (newtype) t = newtype
+      if (!t) throw "there should be a type here"
+      t = t.replace(/^bdo:/, "")
       // DONE move url to config + use dedicated route in library
       // TODO get type from ontology
-      setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=" + type + "&for=" + propid)
+      setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + propid)
     }
   }
 
@@ -97,7 +102,7 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
                 setKeyword(e.target.value)
                 if (libraryURL) updateLibrary(e)
               }}
-              helperText={constants.EventTypes[value.type] + " (" + helperTxt + ")" || "n/a"}
+              helperText={label} //type + " (" + helperTxt + ")" || "n/a"}
             />
             <LangEdit
               value={{ "@language": language }}
@@ -107,8 +112,26 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
               }}
               langOnly={true}
             />
+            <TextField
+              style={{ width: "150px" }}
+              select
+              value={type}
+              className={"mx-2"}
+              onChange={(e) => {
+                setType(e.target.value)
+                if (libraryURL) updateLibrary(null, null, e.target.value)
+              }}
+              helperText="Type"
+              // TODO we need some prefLabels for types here (ontology? i18n?)
+            >
+              {types.map((r) => (
+                <MenuItem key={r.qname} value={r.qname}>
+                  {r.qname.replace(/^bdo:/, "")}
+                </MenuItem>
+              ))}
+            </TextField>
             <button
-              {...(!keyword || !language ? { disabled: "disabled" } : {})}
+              {...(!keyword || !language || !type ? { disabled: "disabled" } : {})}
               className="btn btn-sm btn-outline-primary py-3 ml-2"
               style={{ boxShadow: "none", alignSelf: "center" }}
               onClick={updateLibrary}
@@ -162,7 +185,7 @@ export function ResourceSelector({ value, onChange, propid, type, helperTxt, par
             right: "calc(1rem - 1px)",
             width: "100%",
             zIndex: 10,
-            bottom: "calc(100% - 1.5rem)",
+            bottom: "calc(100% - 1rem)",
             maxWidth: "800px",
           }}
         >
