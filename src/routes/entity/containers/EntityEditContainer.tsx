@@ -46,9 +46,7 @@ function EntityEditContainer(props: AppProps) {
 
   const save = (): void => {
     const store = new rdf.Store()
-    setDefaultPrefixes(store)
     entity.graph.addNewValuestoStore(store)
-    debug(store.statements)
     debugStore(store)
   }
 

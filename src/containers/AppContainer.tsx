@@ -8,6 +8,7 @@ import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import NavBarContainer from "./NavBarContainer"
+import EntitySelector from "./EntitySelectorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import PersonsContainer from "../routes/persons/containers/PersonsContainer"
@@ -48,6 +49,7 @@ function App(props: AppProps) {
   return (
     <React.Fragment>
       <NavBarContainer />
+      <EntitySelector />
       <main>
         <Switch>
           <Route exact path="/" component={Home} />
