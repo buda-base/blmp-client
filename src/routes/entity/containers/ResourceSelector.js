@@ -4,9 +4,11 @@ import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
 
+import * as lang from "../../../helpers/lang"
 import * as constants from "../../helpers/vocabulary"
 import { Edit as LangEdit } from "../../helpers/shapes/skos/label"
 import { uiLangState } from "../../../atoms/common"
+import { ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
 
 import config from "../../../config"
 
@@ -32,14 +34,19 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
   const handler = (ev) => {
     try {
       if (!window.location.href.includes(ev.origin)) {
-        debug("message: ", ev, value, JSON.stringify(value))
+        //debug("message: ", ev, value, JSON.stringify(value))
 
         const data = JSON.parse(ev.data)
         if (data["tmp:propid"] === propid && data["@id"]) {
-          //debug("received msg: %o %o", propid, data, ev)
+          debug("received msg: %o %o", propid, data, ev)
 
-          // DONE this erases other changes when handler is defined in useEffect
-          onChange({ ...value, [propid]: { ...value[propid], ...data } })
+          onChange(
+            new ExtRDFResourceWithLabel(data["@id"], {
+              ...data["skos:prefLabel"]
+                ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
+                : {},
+            })
+          )
 
           setLibraryURL("")
         }
@@ -78,19 +85,10 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
     }
   }
 
-  // TODO use pdl functions
-  const getLocalizedValue = (values) => {
-    let val = values.filter((v) => v["@language"] === uiLang)
-    if (val.length) val = val[0]["@value"]
-    else if (values.length) val = values[0]["@value"]
-    else val = "?"
-    return val
-  }
-
   return (
     <div style={{ position: "relative", width: "100%" }}>
       <div className="py-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        {value === "tmp:uri" && (
+        {value.uri === "tmp:uri" && (
           <React.Fragment>
             <TextField
               className={classes.root}
@@ -102,7 +100,7 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
                 setKeyword(e.target.value)
                 if (libraryURL) updateLibrary(e)
               }}
-              helperText={label} //type + " (" + helperTxt + ")" || "n/a"}
+              helperText={label}
             />
             <LangEdit
               value={{ "@language": language }}
@@ -140,42 +138,25 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
             </button>
           </React.Fragment>
         )}
-        {/*(typeof value[propid] === "string" || value[propid]["@id"]) && (
+        {value.uri !== "tmp:uri" && (
           <React.Fragment>
             <TextField
               className={classes.root}
               InputLabelProps={{ shrink: true }}
-              //label={value.status === "filled" ? value["@id"] : null}
               style={{ width: "90%" }}
-              value={
-                !value[propid]["@id"]
-                  ? value[propid]
-                  : getLocalizedValue(value[propid]["skos:prefLabel"]) + " | " + value[propid]["@id"]
-              }
-              helperText={constants.EventTypes[value.type] + " (" + helperTxt + ")" || "n/a"}
+              value={lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang)}
+              helperText={label}
               disabled
             />
             <button
               className="btn btn-sm btn-outline-primary py-3 ml-2"
               style={{ boxShadow: "none", alignSelf: "center" }}
-              onClick={(ev) => {
-                debug("click: %o %o", value[propid])
-                let propVal = value[propid]
-                if (propVal["@id"]) {
-                  propVal = { ...propVal["tmp:keyword"] }
-                  delete propVal["@id"]
-                  delete propVal["skos:prefLabel"]
-                  delete propVal["tmp:keyword"]
-                } else {
-                  propVal = { "@value": "", "@language": "" }
-                }
-                onChange({ ...value, [propid]: propVal })
-              }}
+              onClick={(ev) => onChange(new ExtRDFResourceWithLabel("tmp:uri", {}))}
             >
               {i18n.t("search.change")}
             </button>
           </React.Fragment>
-        ) */}
+        )}
       </div>
       {libraryURL && (
         <div

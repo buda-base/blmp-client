@@ -30,7 +30,7 @@ const debug = require("debug")("bdrc:entity:property:litlist")
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
   switch (property.objectType) {
     case ObjectType.ResExt:
-      return new ExtRDFResourceWithLabel("tmp:uri", {})
+      return new ExtRDFResourceWithLabel("tmp:uri", {}) // TODO: might be a better way but "" isn't authorized
       break
     case ObjectType.Facet:
       return generateNew("EV", property.targetShape, parent)
@@ -352,15 +352,15 @@ const ExtEntityComponent: FC<{
     setList(newList)
   }
 
-  debug("ExtEntity", extRes, property.path, list[index])
+  debug("ExtEntity", extRes, property, list[index])
 
   return (
     <React.Fragment>
       <div style={{ display: "flex" }}>
         <ResourceSelector
-          value={extRes.uri}
+          value={extRes}
           onChange={onChange}
-          propid={property.path}
+          propid={property.path.value}
           label={propLabel}
           types={property.expectedObjectType}
         />
