@@ -40,13 +40,16 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
         if (data["tmp:propid"] === propid && data["@id"]) {
           debug("received msg: %o %o", propid, data, ev)
 
-          onChange(
-            new ExtRDFResourceWithLabel(data["@id"], {
+          const newRes = new ExtRDFResourceWithLabel(
+            data["@id"],
+            {
               ...data["skos:prefLabel"]
                 ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
                 : {},
-            })
+            },
+            { "tmp:keyword": { ...data["tmp:keyword"] } }
           )
+          onChange(newRes)
 
           setLibraryURL("")
         }
@@ -59,6 +62,10 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
   window.addEventListener("message", handler)
 
   useEffect(() => {
+    if (value.otherData["tmp:keyword"]) {
+      setKeyword(value.otherData["tmp:keyword"]["@value"])
+      setLanguage(value.otherData["tmp:keyword"]["@language"])
+    }
     // clean up
     return () => window.removeEventListener("message", handler)
   }, []) // empty array => run only once
@@ -151,7 +158,19 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
             <button
               className="btn btn-sm btn-outline-primary py-3 ml-2"
               style={{ boxShadow: "none", alignSelf: "center" }}
-              onClick={(ev) => onChange(new ExtRDFResourceWithLabel("tmp:uri", {}))}
+              onClick={(ev) =>
+                onChange(
+                  new ExtRDFResourceWithLabel(
+                    "tmp:uri",
+                    {},
+                    {
+                      ...value.otherData["tmp:keyword"]
+                        ? { "tmp:keyword": { ...value.otherData["tmp:keyword"] } }
+                        : {},
+                    }
+                  )
+                )
+              }
             >
               {i18n.t("search.change")}
             </button>

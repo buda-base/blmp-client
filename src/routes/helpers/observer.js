@@ -14,7 +14,7 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
     const m_content = m_content_tab[i],
       s1_content = s1_content_tab[i]
     let s2_content = s2_content_tab[i]
-    debug("diff", typeof m_content, m_content, s1_content, s2_content)
+    //debug("diff", typeof m_content, m_content, s1_content, s2_content)
     if (!s2_content) s2_content = { empty: true }
     let keys = Object.keys(m_content)
     if (!keys) keys = ["this"]

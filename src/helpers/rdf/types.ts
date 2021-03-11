@@ -269,15 +269,26 @@ export class RDFResourceWithLabel extends RDFResource {
 
 // this class allows to create a resource from just a URI and labels, we need it for external entities
 export class ExtRDFResourceWithLabel extends RDFResourceWithLabel {
-  private thisPrefLabels: Record<string, string>
+  private _prefLabels: Record<string, string>
+  private _otherData: Record<string, any>
 
   public get prefLabels(): Record<string, string> {
-    return this.thisPrefLabels
+    return this._prefLabels
   }
 
-  constructor(uri: string, prefLabels: Record<string, string>) {
+  public get otherData(): Record<string, any> {
+    return this._otherData
+  }
+
+  constructor(uri: string, prefLabels: Record<string, string>, data: Record<string, any> = {}) {
     super(new rdf.NamedNode(uri), new EntityGraph(new rdf.Store(), uri))
-    this.thisPrefLabels = prefLabels
+    this._prefLabels = prefLabels
+    debug("data", data)
+    this._otherData = data
+  }
+
+  public addOtherData(key: string, value: any): ExtRDFResourceWithLabel {
+    return new ExtRDFResourceWithLabel(this.node.uri, this._prefLabels, { ...this._otherData, [key]: value })
   }
 }
 

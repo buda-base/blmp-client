@@ -30,7 +30,11 @@ const debug = require("debug")("bdrc:entity:property:litlist")
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
   switch (property.objectType) {
     case ObjectType.ResExt:
-      return new ExtRDFResourceWithLabel("tmp:uri", {}) // TODO: might be a better way but "" isn't authorized
+      // to speed up dev/testing
+      //return new ExtRDFResourceWithLabel("bdr:P2JM192", { "en":"Delek Gyatso", "bo-x-ewts":"bde legs rgya mtsho/" })
+
+      // TODO: might be a better way but "" isn't authorized
+      return new ExtRDFResourceWithLabel("tmp:uri", {})
       break
     case ObjectType.Facet:
       return generateNew("EV", property.targetShape, parent)
