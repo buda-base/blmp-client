@@ -325,18 +325,29 @@ export class PropertyShape extends RDFResourceWithLabel {
     return this.getPropResValue(shapes.shDatatype)
   }
 
-  @Memoize()
-  public get in(): Array<RDFResourceWithLabel> | null {
-    const nodes = this.getPropResValuesFromList(shapes.shIn)
-    if (!nodes) return null
+  public static resourcizeWithInit(nodes: Array<rdf.NamedNode>, graph: EntityGraph): Array<RDFResourceWithLabel> {
     const res: Array<RDFResourceWithLabel> = []
     for (const node of nodes) {
-      const r = new RDFResourceWithLabel(node, this.graph, shapes.rdfsLabel)
-      // just a way to intialize the value before the object gets frozen like a yogurt
+      const r = new RDFResourceWithLabel(node, graph, shapes.rdfsLabel)
+      // just a way to intialize the value before the object gets frozen like a yogurt by Recoil
       const justforinit = r.prefLabels
       res.push(r)
     }
     return res
+  }
+
+  @Memoize()
+  public get in(): Array<RDFResourceWithLabel> | null {
+    const nodes = this.getPropResValuesFromList(shapes.shIn)
+    if (!nodes) return null
+    return PropertyShape.resourcizeWithInit(nodes, this.graph)
+  }
+
+  @Memoize()
+  public get expectedObjectType(): Array<RDFResourceWithLabel> | null {
+    const nodes = this.getPropResValuesFromList(shapes.bdsExpectedObjectType)
+    if (!nodes) return null
+    return PropertyShape.resourcizeWithInit(nodes, this.graph)
   }
 
   @Memoize()
