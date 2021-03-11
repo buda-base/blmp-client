@@ -8,6 +8,7 @@ import {
   Value,
   ObjectType,
   RDFResourceWithLabel,
+  ExtRDFResourceWithLabel,
 } from "../../../helpers/rdf/types"
 import * as ns from "../../../helpers/rdf/ns"
 import { generateNew } from "../../../helpers/rdf/construct"
@@ -22,14 +23,14 @@ import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
 import * as constants from "../../helpers/vocabulary"
 import { MinimalAddButton, BlockAddButton } from "../../helpers/shapes/bdo/event.js"
+import ResourceSelector from "./ResourceSelector"
 
 const debug = require("debug")("bdrc:entity:property:litlist")
 
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
   switch (property.objectType) {
     case ObjectType.ResExt:
-      debug(property, parent)
-      throw "new ResExt"
+      return new ExtRDFResourceWithLabel("tmp:uri", {})
       break
     case ObjectType.Facet:
       return generateNew("EV", property.targetShape, parent)
@@ -339,17 +340,31 @@ const ExtEntityComponent: FC<{
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === extRes)
 
+  const onChange: (value: RDFResourceWithLabel) => void = (value: RDFResourceWithLabel) => {
+    const newList = replaceItemAtIndex(list, index, value)
+    setList(newList)
+  }
+
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
 
+  debug("ExtEntity", extRes, property.path, list[index])
+
   return (
     <React.Fragment>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span>External resource component</span>
+      <div style={{ display: "flex" }}>
+        <ResourceSelector
+          value={extRes.uri}
+          onChange={onChange}
+          propid={property.path}
+          helperTxt={"Role"}
+          type={"Role"}
+          parentId={""}
+        />
         {canDel && (
-          <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
+          <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
             <RemoveIcon />
           </button>
         )}
