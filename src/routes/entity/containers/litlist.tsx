@@ -27,6 +27,10 @@ const debug = require("debug")("bdrc:entity:property:litlist")
 
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
   switch (property.objectType) {
+    case ObjectType.ResExt:
+      debug(property, parent)
+      throw "new ResExt"
+      break
     case ObjectType.Facet:
       return generateNew("EV", property.targetShape, parent)
       break
@@ -266,6 +270,7 @@ const LiteralComponent: FC<{
     edit = <EditLangString property={property} lit={lit} onChange={onChange} label={label} />
   else if (t?.value === ns.XSD("gYear").value)
     edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
+  else throw "literal with unknown datatype value:" + JSON.stringify(t)
   //else if (t?.value === ns.RDF("type").value)
   //  edit = <EditType property={property} lit={lit} onChange={onChange} label={label} />
 

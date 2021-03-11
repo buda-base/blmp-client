@@ -355,6 +355,7 @@ export class PropertyShape extends RDFResourceWithLabel {
     }
     // for some reason direct comparison doesn't work...
     if (propertyShapeType.value == shapes.bdsFacetShape.value) return ObjectType.Facet
+    else if (propertyShapeType.value == shapes.bdsExternalShape.value) return ObjectType.ResExt
     // TODO: other cases
     return ObjectType.Literal
   }
