@@ -58,7 +58,7 @@ function App(props: AppProps) {
           <Route exact path="/persons" component={PersonsContainer} />
           <Route exact path="/person/:id" component={PersonView} />
           <Route exact path="/new" component={NewEntityContainer} />
-          <Route exact path="/new/:shapeQname" component={EntityEditContainer} />
+          <Route exact path="/new/:shapeQname" component={NewEntityContainer} />
           <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
           <Route exact path="/edit/:entityQname" component={EntityEditContainer} />
           <Route exact path="/person/:id/edit" component={PersonEditContainer} />
