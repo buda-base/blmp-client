@@ -1,6 +1,14 @@
 import * as rdf from "rdflib"
-import { RDFResource, RDFResourceWithLabel, PropertyGroup, NodeShape, EntityGraph } from "./types"
+import {
+  RDFResource,
+  RDFResourceWithLabel,
+  PropertyGroup,
+  NodeShape,
+  EntityGraph,
+  ExtRDFResourceWithLabel,
+} from "./types"
 import * as ns from "./ns"
+import { Subject } from "./types"
 
 const debug = require("debug")("bdrc:rdf:shapes")
 
@@ -10,6 +18,20 @@ export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
     return +n
   }
   return null
+}
+
+// TODO: this should be fetched somewhere... unclear where yet
+export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
+  "bds:PersonShape": new ExtRDFResourceWithLabel(ns.BDS("PersonShape").value, { en: "Person" }),
+}
+
+export const possibleShapeRefs: Array<RDFResourceWithLabel> = [shapeRefsMap["bds:PersonShape"]]
+
+// TODO
+// returns an array of all possible shapes that can be used to edit an entity
+// depending on its type
+export const shapeRefsForEntity = (subject: Subject): Array<RDFResourceWithLabel> => {
+  return [shapeRefsMap["bds:PersonShape"]]
 }
 
 export const shProperty = ns.SH("property")

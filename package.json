@@ -55,7 +55,6 @@
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'dist/static/js/*.js'",
     "predeploy": "npm run build",
-    "deploy": "s3_deploy.py bdrc-admin msblabs dist -p wp",
     "lint": "eslint --ignore-path .gitignore ."
   },
   "lint-staged": {

@@ -3,9 +3,11 @@ import { TimeTravelObserver } from "../../helpers/observer"
 import { ShapeFetcher, debugStore, EntityFetcher } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject } from "../../../helpers/rdf/types"
+import * as shapes from "../../../helpers/rdf/shapes"
 import { generateNew } from "../../../helpers/rdf/construct"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
+import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/EntitySelectorContainer"
 import PropertyGroupContainer from "./PropertyGroupContainer"
 import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
@@ -17,14 +19,57 @@ import * as rdf from "rdflib"
 const debug = require("debug")("bdrc:entity:edit")
 
 function EntityEditContainer(props: AppProps) {
-  const [typeQname] = useState(props.match.params.type)
+  let [shapeQname] = useState(props.match.params.shapeQname)
+  let [entityQname] = useState(props.match.params.entityQname)
+  if (!entityQname) {
+    entityQname = "bdr:P1583"
+  }
   const [uiLang] = useRecoilState(uiLangState)
-  if (!typeQname) return null
-  const { loadingState, shape } = ShapeFetcher(typeQname)
-  const { entityLoadingState, entity } = EntityFetcher("bdr:P1583")
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const { entityLoadingState, entity } = EntityFetcher(entityQname)
 
-  if (loadingState.status === "fetching" || entityLoadingState.status === "fetching")
+  // here we create the entity in the list if it's not there yet:
+  const index = entities.findIndex((e) => e.subjectQname === entityQname)
+  const newEntities = [...entities]
+  let entitiesNeedUpdate = false
+  if (index == -1) {
+    let shapeRef = null
+    if (shapeQname) {
+      if (shapeQname in shapes.shapeRefsMap) shapeRef = shapes.shapeRefsMap[shapeQname]
+      else return <span>invalid shape!</span>
+    }
+    newEntities.push({
+      subjectQname: entityQname,
+      highlighted: true,
+      state: EditedEntityState.Loading,
+      shapeRef: shapeRef,
+      subject: entity || null,
+    })
+    entitiesNeedUpdate = true
+  }
+  // TODO: set the highlight field property
+  if (entitiesNeedUpdate) {
+    setEntities(newEntities)
+  }
+
+  if (entity && !shapeQname) {
+    const possibleShapes = shapes.shapeRefsForEntity(entity)
+    if (!possibleShapes) {
+      return <span>cannot find any appropriate shape for this entity</span>
+    }
+    if (possibleShapes.length > 1) {
+      // TODO
+    }
+    shapeQname = possibleShapes[0].qname
+    props.history.push("/edit/" + entityQname + "/" + shapeQname)
+  }
+
+  if (!shapeQname) return <span>loading</span>
+  const { loadingState, shape } = ShapeFetcher(shapeQname)
+
+  if (loadingState.status === "fetching" || entityLoadingState.status === "fetching") {
     return <span>{i18n.t("loading")}</span>
+  }
   if (loadingState.status === "error" || entityLoadingState.status === "error") {
     return (
       <p className="text-center text-muted">

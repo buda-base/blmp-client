@@ -14,6 +14,7 @@ import ProfileContainer from "../routes/account/containers/Profile"
 import PersonsContainer from "../routes/persons/containers/PersonsContainer"
 import PersonEditContainer from "../routes/persons/containers/PersonEditContainer"
 import EntityEditContainer from "../routes/entity/containers/EntityEditContainer"
+import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import PersonView from "../routes/persons/containers/PersonView"
 
 import enTranslations from "../translations/en"
@@ -34,8 +35,8 @@ i18n
   })
 
 export interface IdTypeParams {
-  type?: string
-  id?: string
+  shapeQname?: string
+  entityQname?: string
 }
 
 export interface AppProps extends RouteComponentProps<IdTypeParams> {}
@@ -56,7 +57,10 @@ function App(props: AppProps) {
           <Route exact path="/profile" component={ProfileContainer} />
           <Route exact path="/persons" component={PersonsContainer} />
           <Route exact path="/person/:id" component={PersonView} />
-          <Route exact path="/new/:type" component={EntityEditContainer} />
+          <Route exact path="/new" component={NewEntityContainer} />
+          <Route exact path="/new/:shapeQname" component={EntityEditContainer} />
+          <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
+          <Route exact path="/edit/:entityQname" component={EntityEditContainer} />
           <Route exact path="/person/:id/edit" component={PersonEditContainer} />
         </Switch>
       </main>

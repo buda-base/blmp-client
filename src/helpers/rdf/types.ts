@@ -253,10 +253,12 @@ export class RDFResource {
   }
 }
 
+const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
+
 export class RDFResourceWithLabel extends RDFResource {
   private labelProp: rdf.NamedNode
 
-  constructor(node: rdf.NamedNode, graph: EntityGraph, labelProp: rdf.NamedNode = shapes.prefLabel) {
+  constructor(node: rdf.NamedNode, graph: EntityGraph, labelProp: rdf.NamedNode = prefLabel) {
     super(node, graph)
     this.labelProp = labelProp
   }

@@ -37,6 +37,9 @@ interface IFetchState {
   error?: string
 }
 
+// maps of the shapes and entities that have been downloaded so far, with no gc
+export const shapesMap: Record<string, NodeShape> = {}
+
 export function ShapeFetcher(shapeQname: string) {
   const [loadingState, setLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [shape, setShape] = useState<NodeShape>()
@@ -47,6 +50,11 @@ export function ShapeFetcher(shapeQname: string) {
   }
 
   useEffect(() => {
+    if (shapeQname in shapesMap) {
+      setLoadingState({ status: "fetched", error: undefined })
+      setShape(shapesMap[shapeQname])
+      return
+    }
     async function fetchResource(shapeQname: string) {
       setLoadingState({ status: "fetching", error: undefined })
       const url = fetchUrlFromshapeQname(shapeQname)
@@ -80,6 +88,8 @@ export function EntityFetcher(entityQname: string) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>()
   const [uiReady, setUiReady] = useRecoilState(uiReadyState)
+  // TODO: use to update state & subject
+  // const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const reset = () => {
     setEntity(undefined)
