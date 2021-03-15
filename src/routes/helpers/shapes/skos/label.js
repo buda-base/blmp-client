@@ -103,7 +103,7 @@ export function Edit({ value, onChange, langOnly }) {
         className="ml-2"
         label={value["@id"] ? " " : null}
         value={value["@language"] || ""}
-        style={{ width: 120 }}
+        style={{ width: 150 }}
         onChange={(e) => onChange({ ...value, "@language": e.target.value })}
         helperText="Language"
       >

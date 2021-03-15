@@ -47,7 +47,7 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
                 ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
                 : {},
             },
-            { "tmp:keyword": { ...data["tmp:keyword"] } }
+            { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
           )
           onChange(newRes)
 
@@ -90,6 +90,25 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
       // TODO get type from ontology
       setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + propid)
     }
+  }
+
+  let dates
+  if (value.uri && value.uri !== "tmp:uri" && value.otherData) {
+    dates = ""
+
+    const getDate = (d) => {
+      // TODO use notBefore/notAfter
+      return d.onYear
+    }
+
+    if (value.otherData.PersonBirth) dates += getDate(value.otherData.PersonBirth) + "-"
+
+    if (value.otherData.PersonDeath) {
+      if (!dates) dates = "- "
+      dates += getDate(value.otherData.PersonDeath)
+    }
+
+    if (dates) dates = "(" + dates + ")"
   }
 
   return (
@@ -151,7 +170,7 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
               className={classes.root}
               InputLabelProps={{ shrink: true }}
               style={{ width: "90%" }}
-              value={lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang)}
+              value={lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang) + " " + dates + " | " + value.uri}
               helperText={label}
               disabled
             />

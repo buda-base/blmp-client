@@ -31,7 +31,7 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
   switch (property.objectType) {
     case ObjectType.ResExt:
       // to speed up dev/testing
-      //return new ExtRDFResourceWithLabel("bdr:P2JM192", { "en":"Delek Gyatso", "bo-x-ewts":"bde legs rgya mtsho/" })
+      // return new ExtRDFResourceWithLabel("bdr:P2JM192", { "en":"Delek Gyatso", "bo-x-ewts":"bde legs rgya mtsho/" })
 
       // TODO: might be a better way but "" isn't authorized
       return new ExtRDFResourceWithLabel("tmp:uri", {})
@@ -130,6 +130,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
+  const [uiLang] = useRecoilState(uiLangState)
 
   const addItem = () => {
     setList((oldList) => [...oldList, generateDefault(property, subject)])
@@ -137,7 +138,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
 
   if (embedded || property.path.value === ns.SKOS("prefLabel").value)
     return <MinimalAddButton add={addItem} className=" " />
-  else return <BlockAddButton add={addItem} />
+  else return <BlockAddButton add={addItem} label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)} />
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -217,7 +218,7 @@ const EditYear: FC<{
   let error
   if (lit.value && !lit.value.match(/^[0-9]{4}$/)) error = i18n.t("error.gYear")
 
-  const eventType = "<the event type>"
+  const eventType = "<the event type/s>"
 
   return (
     <TextField

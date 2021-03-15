@@ -60,6 +60,8 @@ bds:PersonShape
   sh:property bds:CommonShape-prefLabel ;
   sh:property bds:PersonShape-personEvent ;
   sh:property bds:PersonShape-studentOf ;
+  # TODO: with this line a duplicate of RelatedPersons block is displayed
+  # sh:property bds:PersonShape-teacherOf ; 
   sh:targetClass bdo:Person ;
 .
 
@@ -251,6 +253,17 @@ bds:PersonShape-studentOf
   sh:path bdo:personStudentOf ;
   # this means that the object of the property is external to the graph we're editing, we just want to select a person,
   # not edit their properties
+  bds:propertyShapeType bds:ExternalShape ;
+  bds:expectedObjectType ( bdo:Person bdo:Topic )
+.
+
+bds:PersonShape-teacherOf
+  a sh:PropertyShape ;
+  sh:description "the students of this person"@en ;
+  sh:name "students"@en ;
+  sh:group bds:PersonRelatedPropertyGroup ;
+  sh:order "1"^^xsd:decimal ;
+  sh:path bdo:personTeacherOf ;
   bds:propertyShapeType bds:ExternalShape ;
   bds:expectedObjectType ( bdo:Person bdo:Topic )
 .

@@ -95,7 +95,7 @@ export function MinimalAddButton({ add, className }) {
   )
 }
 
-export function BlockAddButton({ add }) {
+export function BlockAddButton({ add, label }) {
   return (
     <div className="text-center pb-1">
       <button
@@ -104,7 +104,7 @@ export function BlockAddButton({ add }) {
         style={{ boxShadow: "none" }}
         onClick={add}
       >
-        {constants.AddAnother} <AddIcon />
+        {constants.AddAnother} <AddIcon /> {label}
       </button>
     </div>
   )
