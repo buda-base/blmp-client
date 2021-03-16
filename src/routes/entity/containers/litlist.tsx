@@ -16,7 +16,7 @@ import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem, InputLabel, Select } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
-import { AddIcon, RemoveIcon, ErrorIcon } from "../../layout/icons"
+import { AddIcon, RemoveIcon, ErrorIcon, CloseIcon } from "../../layout/icons"
 import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
@@ -30,10 +30,13 @@ const debug = require("debug")("bdrc:entity:property:litlist")
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
   switch (property.objectType) {
     case ObjectType.ResExt:
+      /*
       // to speed up dev/testing
-      // return new ExtRDFResourceWithLabel("bdr:P2JM192", { "en":"Delek Gyatso", "bo-x-ewts":"bde legs rgya mtsho/" })
+      return new ExtRDFResourceWithLabel("bdr:P2JM192", { "en":"Delek Gyatso", "bo-x-ewts":"bde legs rgya mtsho/" }, 
+        { PersonBirth: { onYear: "1724" }, PersonDeath: { onYear: "1777" } })
+      */
 
-      // TODO: might be a better way but "" isn't authorized
+      // TODO might be a better way but "" isn't authorized
       return new ExtRDFResourceWithLabel("tmp:uri", {})
       break
     case ObjectType.Facet:
@@ -348,6 +351,7 @@ const ExtEntityComponent: FC<{
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
   const onChange: (value: RDFResourceWithLabel) => void = (value: RDFResourceWithLabel) => {
+    // TODO: can only save one external resource for property
     const newList = replaceItemAtIndex(list, index, value)
     setList(newList)
   }
@@ -360,8 +364,24 @@ const ExtEntityComponent: FC<{
   debug("ExtEntity", extRes, property, list[index])
 
   return (
-    <React.Fragment>
-      <div style={{ display: "flex" }}>
+    <div style={{ position: "relative" }}>
+      <div
+        style={{
+          ...extRes.uri !== "tmp:uri"
+            ? {
+                display: "inline-flex",
+                width: "auto",
+                backgroundColor: "#f0f0f0",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                flexDirection: "row",
+                position: "static",
+              }
+            : {},
+          ...extRes.uri === "tmp:uri" ? { display: "flex" } : {},
+        }}
+        {...(extRes.uri !== "tmp:uri" ? { className: "px-2 py-1 mr-2 mb-2 card" } : {})}
+      >
         <ResourceSelector
           value={extRes}
           onChange={onChange}
@@ -371,11 +391,11 @@ const ExtEntityComponent: FC<{
         />
         {canDel && (
           <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
-            <RemoveIcon />
+            {extRes.uri === "tmp:uri" ? <RemoveIcon /> : <CloseIcon />}
           </button>
         )}
       </div>
-    </React.Fragment>
+    </div>
   )
 }
 

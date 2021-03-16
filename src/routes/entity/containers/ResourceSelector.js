@@ -9,6 +9,7 @@ import * as constants from "../../helpers/vocabulary"
 import { Edit as LangEdit } from "../../helpers/shapes/skos/label"
 import { uiLangState } from "../../../atoms/common"
 import { ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
+import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon } from "../../layout/icons"
 
 import config from "../../../config"
 
@@ -31,7 +32,7 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
   const [libraryURL, setLibraryURL] = useState()
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
 
-  const handler = (ev) => {
+  const msgHandler = (ev) => {
     try {
       if (!window.location.href.includes(ev.origin)) {
         //debug("message: ", ev, value, JSON.stringify(value))
@@ -59,15 +60,33 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
     }
   }
 
-  window.addEventListener("message", handler)
+  /* // TODO close iframe when clicking anywhere else
+  const closeIframe = (ev) => {
+    if(libraryURL) {
+      setLibraryURL("")
+      ev.preventDefault();
+      ev.stopPropagation();
+      return false;
+    }
+  }
+  */
 
   useEffect(() => {
     if (value.otherData["tmp:keyword"]) {
       setKeyword(value.otherData["tmp:keyword"]["@value"])
       setLanguage(value.otherData["tmp:keyword"]["@language"])
     }
+    if (!window.blmp_msg_listener) {
+      window.blmp_msg_listener = true
+      window.addEventListener("message", msgHandler)
+      //document.addEventListener("click", closeIframe)
+    }
     // clean up
-    return () => window.removeEventListener("message", handler)
+    return () => {
+      delete window.blmp_msg_listener
+      window.removeEventListener("message", msgHandler)
+      //document.removeEventListener("click", closeIframe)
+    }
   }, []) // empty array => run only once
 
   const updateLibrary = (ev, newlang, newtype) => {
@@ -88,7 +107,7 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
       t = t.replace(/^bdo:/, "")
       // DONE move url to config + use dedicated route in library
       // TODO get type from ontology
-      setLibraryURL(config.LIBRARY_URL + "?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + propid)
+      setLibraryURL(config.LIBRARY_URL + "/simplesearch?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + propid)
     }
   }
 
@@ -97,8 +116,9 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
     dates = ""
 
     const getDate = (d) => {
+      if (d.onYear) return d.onYear
       // TODO use notBefore/notAfter
-      return d.onYear
+      return ""
     }
 
     if (value.otherData.PersonBirth) dates += getDate(value.otherData.PersonBirth) + "-"
@@ -112,60 +132,63 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
   }
 
   return (
-    <div style={{ position: "relative", width: "100%" }}>
-      <div className="py-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+    <React.Fragment>
+      <div style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}>
         {value.uri === "tmp:uri" && (
-          <React.Fragment>
-            <TextField
-              className={classes.root}
-              InputLabelProps={{ shrink: true }}
-              //label={value.status === "filled" ? value["@id"] : null}
-              style={{ width: "90%" }}
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value)
-                if (libraryURL) updateLibrary(e)
-              }}
-              helperText={label}
-            />
-            <LangEdit
-              value={{ "@language": language }}
-              onChange={(e) => {
-                setLanguage(e["@language"])
-                if (libraryURL) updateLibrary(null, language)
-              }}
-              langOnly={true}
-            />
-            <TextField
-              style={{ width: "150px" }}
-              select
-              value={type}
-              className={"mx-2"}
-              onChange={(e) => {
-                setType(e.target.value)
-                if (libraryURL) updateLibrary(null, null, e.target.value)
-              }}
-              helperText="Type"
-              // TODO we need some prefLabels for types here (ontology? i18n?)
-            >
-              {types.map((r) => (
-                <MenuItem key={r.qname} value={r.qname}>
-                  {r.qname.replace(/^bdo:/, "")}
-                </MenuItem>
-              ))}
-            </TextField>
-            <button
-              {...(!keyword || !language || !type ? { disabled: "disabled" } : {})}
-              className="btn btn-sm btn-outline-primary py-3 ml-2"
-              style={{ boxShadow: "none", alignSelf: "center" }}
-              onClick={updateLibrary}
-            >
-              {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
-            </button>
-          </React.Fragment>
+          <div className="py-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <React.Fragment>
+              <TextField
+                className={classes.root}
+                InputLabelProps={{ shrink: true }}
+                //label={value.status === "filled" ? value["@id"] : null}
+                style={{ width: "90%" }}
+                value={keyword}
+                onChange={(e) => {
+                  setKeyword(e.target.value)
+                  if (libraryURL) updateLibrary(e)
+                }}
+                helperText={label}
+              />
+              <LangEdit
+                value={{ "@language": language }}
+                onChange={(e) => {
+                  setLanguage(e["@language"])
+                  if (libraryURL) updateLibrary(null, language)
+                }}
+                langOnly={true}
+              />
+              <TextField
+                style={{ width: "150px" }}
+                select
+                value={type}
+                className={"mx-2"}
+                onChange={(e) => {
+                  setType(e.target.value)
+                  if (libraryURL) updateLibrary(null, null, e.target.value)
+                }}
+                helperText="Type"
+                // TODO we need some prefLabels for types here (ontology? i18n?)
+              >
+                {types.map((r) => (
+                  <MenuItem key={r.qname} value={r.qname}>
+                    {r.qname.replace(/^bdo:/, "")}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <button
+                {...(!keyword || !language || !type ? { disabled: "disabled" } : {})}
+                className="btn btn-sm btn-outline-primary py-3 ml-2"
+                style={{ boxShadow: "none", alignSelf: "center" }}
+                onClick={updateLibrary}
+              >
+                {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
+              </button>
+            </React.Fragment>
+          </div>
         )}
         {value.uri !== "tmp:uri" && (
           <React.Fragment>
+            {/*           
             <TextField
               className={classes.root}
               InputLabelProps={{ shrink: true }}
@@ -173,26 +196,74 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
               value={lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang) + " " + dates + " | " + value.uri}
               helperText={label}
               disabled
-            />
-            <button
+            /> */}
+            <div>
+              <div style={{ fontSize: "16px" /*, borderBottom:"1px solid #ccc"*/ }}>
+                {lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang) + " " + dates}
+              </div>
+              <div style={{ fontSize: "12px", opacity: "0.5", display: "flex", alignItems: "center" }}>
+                {value.uri}
+                &nbsp;
+                {!libraryURL && (
+                  <a title={i18n.t("search.help.preview")}>
+                    <InfoOutlinedIcon
+                      style={{ width: "18px", cursor: "pointer" }}
+                      onClick={(ev) => {
+                        if (libraryURL) setLibraryURL("")
+                        else setLibraryURL(config.LIBRARY_URL + "/show/" + value.uri)
+                      }}
+                    />
+                  </a>
+                )}
+                {libraryURL && (
+                  <a title={i18n.t("search.help.preview")}>
+                    <InfoIcon
+                      style={{ width: "18px", cursor: "pointer" }}
+                      onClick={(ev) => {
+                        if (libraryURL) setLibraryURL("")
+                        else setLibraryURL(config.LIBRARY_URL + "/show/" + value.uri)
+                      }}
+                    />
+                  </a>
+                )}
+                &nbsp;
+                <a
+                  title={i18n.t("search.help.open")}
+                  href={config.LIBRARY_URL + "/show/" + value.uri}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <LaunchIcon style={{ width: "16px" }} />
+                </a>
+                &nbsp;
+                {value.otherData["tmp:keyword"] && (
+                  <a title={i18n.t("search.help.replace")}>
+                    <SearchIcon
+                      style={{ width: "18px", cursor: "pointer" }}
+                      onClick={(ev) =>
+                        onChange(
+                          new ExtRDFResourceWithLabel(
+                            "tmp:uri",
+                            {},
+                            {
+                              ...value.otherData["tmp:keyword"]
+                                ? { "tmp:keyword": { ...value.otherData["tmp:keyword"] } }
+                                : {},
+                            }
+                          )
+                        )
+                      }
+                    />
+                  </a>
+                )}
+              </div>
+            </div>
+            {/* <button
               className="btn btn-sm btn-outline-primary py-3 ml-2"
               style={{ boxShadow: "none", alignSelf: "center" }}
-              onClick={(ev) =>
-                onChange(
-                  new ExtRDFResourceWithLabel(
-                    "tmp:uri",
-                    {},
-                    {
-                      ...value.otherData["tmp:keyword"]
-                        ? { "tmp:keyword": { ...value.otherData["tmp:keyword"] } }
-                        : {},
-                    }
-                  )
-                )
-              }
-            >
-              {i18n.t("search.change")}
-            </button>
+               */}
+            {/* {i18n.t("search.change")}
+            </button> */}
           </React.Fragment>
         )}
       </div>
@@ -201,17 +272,18 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
           className="row card px-3 py-3"
           style={{
             position: "absolute",
-            right: "calc(1rem - 1px)",
-            width: "100%",
             zIndex: 10,
-            bottom: "calc(100% - 1rem)",
-            maxWidth: "800px",
+            maxWidth: "800px", //minWidth: "670px",
+            ...value.uri === "tmp:uri"
+              ? { right: "calc(1rem - 1px + 34px)", width: "calc(100% - 34px)", bottom: "calc(100% - 1rem)" }
+              : {},
+            ...value.uri !== "tmp:uri" ? { left: "1rem", width: "calc(100%)", bottom: "100%" } : {},
           }}
         >
           <iframe style={{ border: "none" }} height="400" src={libraryURL} />
         </div>
       )}
-    </div>
+    </React.Fragment>
   )
 }
 
