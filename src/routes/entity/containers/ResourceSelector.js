@@ -32,32 +32,18 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
   const [libraryURL, setLibraryURL] = useState()
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
 
-  const msgHandler = (ev) => {
-    try {
-      if (!window.location.href.includes(ev.origin)) {
-        //debug("message: ", ev, value, JSON.stringify(value))
-
-        const data = JSON.parse(ev.data)
-        if (data["tmp:propid"] === propid && data["@id"]) {
-          debug("received msg: %o %o", propid, data, ev)
-
-          const newRes = new ExtRDFResourceWithLabel(
-            data["@id"],
-            {
-              ...data["skos:prefLabel"]
-                ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
-                : {},
-            },
-            { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
-          )
-          onChange(newRes)
-
-          setLibraryURL("")
-        }
-      }
-    } catch (err) {
-      debug("error: %o", err)
-    }
+  const updateRes = (data) => {
+    const newRes = new ExtRDFResourceWithLabel(
+      data["@id"],
+      {
+        ...data["skos:prefLabel"]
+          ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
+          : {},
+      },
+      { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
+    )
+    onChange(newRes)
+    setLibraryURL("")
   }
 
   /* // TODO close iframe when clicking anywhere else
@@ -76,6 +62,24 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
       setKeyword(value.otherData["tmp:keyword"]["@value"])
       setLanguage(value.otherData["tmp:keyword"]["@language"])
     }
+
+    // DONE: allow listeners for multiple properties
+    const msgHandler = (ev) => {
+      try {
+        if (!window.location.href.includes(ev.origin)) {
+          //debug("message: ", ev, value, JSON.stringify(value))
+
+          const data = JSON.parse(ev.data)
+          if (data["tmp:propid"] === propid && data["@id"]) {
+            debug("received msg: %o %o", propid, data, ev)
+            updateRes(data)
+          }
+        }
+      } catch (err) {
+        debug("error: %o", err)
+      }
+    }
+
     if (!window.blmp_msg_listener) {
       window.blmp_msg_listener = true
       window.addEventListener("message", msgHandler)
