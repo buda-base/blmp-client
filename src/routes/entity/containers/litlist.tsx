@@ -77,6 +77,12 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   const canDel = !property.minCount || property.minCount < list.length
 
+  const onChange: (value: RDFResourceWithLabel, idx: number) => void = (value: RDFResourceWithLabel, idx: number) => {
+    // TODO: save multiple external resource for property
+    const newList = replaceItemAtIndex(list, idx, value)
+    setList(newList)
+  }
+
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
@@ -91,14 +97,23 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     }
   }, [subject, setList])
 
+  debug("VaL:", propLabel, list)
+
   return (
     <React.Fragment>
       <div role="main">
-        {list.map((val) => {
+        {list.map((val, i) => {
           if (val instanceof RDFResourceWithLabel) {
             if (property.objectType == ObjectType.ResExt)
               return (
-                <ExtEntityComponent key={val.id} subject={subject} property={property} extRes={val} canDel={canDel} />
+                <ExtEntityComponent
+                  key={val.id}
+                  subject={subject}
+                  property={property}
+                  extRes={val}
+                  canDel={canDel}
+                  onChange={(value) => onChange(value, i)}
+                />
               )
             else
               return <ResSelectComponent key={val.id} subject={subject} property={property} res={val} canDel={canDel} />
@@ -342,19 +357,14 @@ const ExtEntityComponent: FC<{
   subject: Subject
   property: PropertyShape
   canDel: boolean
-}> = ({ extRes, subject, property, canDel }) => {
+  onChange: (value: RDFResourceWithLabel, idx: number) => void
+}> = ({ extRes, subject, property, canDel, onChange }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === extRes)
 
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
-
-  const onChange: (value: RDFResourceWithLabel) => void = (value: RDFResourceWithLabel) => {
-    // TODO: can only save one external resource for property
-    const newList = replaceItemAtIndex(list, index, value)
-    setList(newList)
-  }
 
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
