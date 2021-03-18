@@ -24,27 +24,13 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 // DONE dedicated subcomponent + keep previous keyword/language searched
-export function ResourceSelector({ value, onChange, propid, label, types }) {
+export function ResourceSelector({ value, onChange, propid, label, types, idx }) {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("")
   const [type, setType] = useState(types ? types[0].qname : "")
   const [libraryURL, setLibraryURL] = useState()
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
-
-  const updateRes = (data) => {
-    const newRes = new ExtRDFResourceWithLabel(
-      data["@id"],
-      {
-        ...data["skos:prefLabel"]
-          ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
-          : {},
-      },
-      { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
-    )
-    onChange(newRes)
-    setLibraryURL("")
-  }
 
   /* // TODO close iframe when clicking anywhere else
   const closeIframe = (ev) => {
@@ -57,37 +43,48 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
   }
   */
 
+  const updateRes = (data) => {
+    const newRes = new ExtRDFResourceWithLabel(
+      data["@id"],
+      {
+        ...data["skos:prefLabel"]
+          ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
+          : {},
+      },
+      { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
+    )
+    onChange(newRes, idx)
+    setLibraryURL("")
+  }
+
+  // DONE: allow listeners for multiple properties
+  const msgHandler = (ev) => {
+    try {
+      if (!window.location.href.includes(ev.origin)) {
+        //debug("message: ", ev, value, JSON.stringify(value))
+
+        const data = JSON.parse(ev.data)
+        if (data["tmp:propid"] === propid + ":" + idx && data["@id"]) {
+          debug("received msg: %o %o", propid, data, ev)
+          updateRes(data)
+        }
+      }
+    } catch (err) {
+      debug("error: %o", err)
+    }
+  }
+
   useEffect(() => {
     if (value.otherData["tmp:keyword"]) {
       setKeyword(value.otherData["tmp:keyword"]["@value"])
       setLanguage(value.otherData["tmp:keyword"]["@language"])
     }
 
-    // DONE: allow listeners for multiple properties
-    const msgHandler = (ev) => {
-      try {
-        if (!window.location.href.includes(ev.origin)) {
-          //debug("message: ", ev, value, JSON.stringify(value))
+    window.addEventListener("message", msgHandler)
+    //document.addEventListener("click", closeIframe)
 
-          const data = JSON.parse(ev.data)
-          if (data["tmp:propid"] === propid && data["@id"]) {
-            debug("received msg: %o %o", propid, data, ev)
-            updateRes(data)
-          }
-        }
-      } catch (err) {
-        debug("error: %o", err)
-      }
-    }
-
-    if (!window.blmp_msg_listener) {
-      window.blmp_msg_listener = true
-      window.addEventListener("message", msgHandler)
-      //document.addEventListener("click", closeIframe)
-    }
     // clean up
     return () => {
-      delete window.blmp_msg_listener
       window.removeEventListener("message", msgHandler)
       //document.removeEventListener("click", closeIframe)
     }
@@ -111,7 +108,9 @@ export function ResourceSelector({ value, onChange, propid, label, types }) {
       t = t.replace(/^bdo:/, "")
       // DONE move url to config + use dedicated route in library
       // TODO get type from ontology
-      setLibraryURL(config.LIBRARY_URL + "/simplesearch?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + propid)
+      setLibraryURL(
+        config.LIBRARY_URL + "/simplesearch?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + propid + ":" + idx
+      )
     }
   }
 

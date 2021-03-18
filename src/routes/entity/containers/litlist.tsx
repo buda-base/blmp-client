@@ -77,8 +77,8 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   const canDel = !property.minCount || property.minCount < list.length
 
+  // DONE save multiple external resource for property
   const onChange: (value: RDFResourceWithLabel, idx: number) => void = (value: RDFResourceWithLabel, idx: number) => {
-    // TODO: save multiple external resource for property
     const newList = replaceItemAtIndex(list, idx, value)
     setList(newList)
   }
@@ -97,8 +97,6 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     }
   }, [subject, setList])
 
-  debug("VaL:", propLabel, list)
-
   return (
     <React.Fragment>
       <div role="main">
@@ -107,12 +105,13 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
             if (property.objectType == ObjectType.ResExt)
               return (
                 <ExtEntityComponent
-                  key={val.id}
+                  key={val.id + ":" + i}
                   subject={subject}
                   property={property}
                   extRes={val}
                   canDel={canDel}
-                  onChange={(value) => onChange(value, i)}
+                  onChange={onChange}
+                  idx={i}
                 />
               )
             else
@@ -358,7 +357,8 @@ const ExtEntityComponent: FC<{
   property: PropertyShape
   canDel: boolean
   onChange: (value: RDFResourceWithLabel, idx: number) => void
-}> = ({ extRes, subject, property, canDel, onChange }) => {
+  idx: number
+}> = ({ extRes, subject, property, canDel, onChange, idx }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const [uiLang] = useRecoilState(uiLangState)
@@ -370,8 +370,6 @@ const ExtEntityComponent: FC<{
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
-
-  debug("ExtEntity", extRes, property, list[index])
 
   return (
     <div style={{ position: "relative" }}>
@@ -398,6 +396,7 @@ const ExtEntityComponent: FC<{
           propid={property.path.value}
           label={propLabel}
           types={property.expectedObjectType}
+          idx={idx}
         />
         {canDel && (
           <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
