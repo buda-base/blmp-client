@@ -166,7 +166,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
                   if (libraryURL) updateLibrary(null, language)
                 }}
                 langOnly={true}
-                {...(keyword.startsWith("bdr:") ? { disabled: "disabled" } : {})}
+                {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
               />
               <TextField
                 style={{ width: "150px" }}
@@ -178,7 +178,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
                   if (libraryURL) updateLibrary(null, null, e.target.value)
                 }}
                 helperText="Type"
-                {...(keyword.startsWith("bdr:") ? { disabled: "disabled" } : {})}
+                {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                 // TODO we need some prefLabels for types here (ontology? i18n?)
               >
                 {types.map((r) => (
@@ -251,7 +251,8 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
                                 ? { "tmp:keyword": { ...value.otherData["tmp:keyword"] } }
                                 : {},
                             }
-                          )
+                          ),
+                          idx
                         )
                       }
                     />

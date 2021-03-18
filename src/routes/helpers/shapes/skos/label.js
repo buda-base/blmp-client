@@ -106,7 +106,7 @@ export function Edit({ value, onChange, langOnly, disabled }) {
         style={{ width: 150 }}
         onChange={(e) => onChange({ ...value, "@language": e.target.value })}
         helperText="Language"
-        {...(disabled === "disabled" ? { disabled: "disabled" } : {})}
+        {...(disabled ? { disabled: true } : {})}
       >
         {lang.map((option) => (
           <MenuItem key={option.value} value={option.value}>
