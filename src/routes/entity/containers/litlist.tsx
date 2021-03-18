@@ -99,7 +99,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   return (
     <React.Fragment>
-      <div role="main">
+      <div role="main" style={{ display: "flex", flexWrap: "wrap" }}>
         {list.map((val, i) => {
           if (val instanceof RDFResourceWithLabel) {
             if (property.objectType == ObjectType.ResExt)
@@ -372,7 +372,7 @@ const ExtEntityComponent: FC<{
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", ...extRes.uri === "tmp:uri" ? { width: "100%" } : {} }}>
       <div
         style={{
           ...extRes.uri !== "tmp:uri"

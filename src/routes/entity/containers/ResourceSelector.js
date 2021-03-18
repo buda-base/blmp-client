@@ -67,6 +67,8 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
         if (data["tmp:propid"] === propid + ":" + idx && data["@id"]) {
           debug("received msg: %o %o", propid, data, ev)
           updateRes(data)
+        } else {
+          setLibraryURL("")
         }
       }
     } catch (err) {
@@ -95,22 +97,27 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
     if (ev && libraryURL) {
       setLibraryURL("")
     } else if (propid) {
-      let lang = language
-      if (newlang) lang = newlang
-      else if (!lang) lang = "bo-x-ewts"
-      let key = encodeURIComponent(keyword)
-      key = '"' + key + '"'
-      if (lang.startsWith("bo")) key = key + "~1"
-      lang = encodeURIComponent(lang)
-      let t = type
-      if (newtype) t = newtype
-      if (!t) throw "there should be a type here"
-      t = t.replace(/^bdo:/, "")
-      // DONE move url to config + use dedicated route in library
-      // TODO get type from ontology
-      setLibraryURL(
-        config.LIBRARY_URL + "/simplesearch?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + propid + ":" + idx
-      )
+      if (keyword.startsWith("bdr:")) {
+        // TODO: return dates in library
+        setLibraryURL(config.LIBRARY_URL + "/simple/" + keyword + "?for=" + propid + ":" + idx)
+      } else {
+        let lang = language
+        if (newlang) lang = newlang
+        else if (!lang) lang = "bo-x-ewts"
+        let key = encodeURIComponent(keyword)
+        key = '"' + key + '"'
+        if (lang.startsWith("bo")) key = key + "~1"
+        lang = encodeURIComponent(lang)
+        let t = type
+        if (newtype) t = newtype
+        if (!t) throw "there should be a type here"
+        t = t.replace(/^bdo:/, "")
+        // DONE move url to config + use dedicated route in library
+        // TODO get type from ontology
+        setLibraryURL(
+          config.LIBRARY_URL + "/simplesearch?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + propid + ":" + idx
+        )
+      }
     }
   }
 
@@ -159,6 +166,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
                   if (libraryURL) updateLibrary(null, language)
                 }}
                 langOnly={true}
+                {...(keyword.startsWith("bdr:") ? { disabled: "disabled" } : {})}
               />
               <TextField
                 style={{ width: "150px" }}
@@ -170,6 +178,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
                   if (libraryURL) updateLibrary(null, null, e.target.value)
                 }}
                 helperText="Type"
+                {...(keyword.startsWith("bdr:") ? { disabled: "disabled" } : {})}
                 // TODO we need some prefLabels for types here (ontology? i18n?)
               >
                 {types.map((r) => (
@@ -179,7 +188,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
                 ))}
               </TextField>
               <button
-                {...(!keyword || !language || !type ? { disabled: "disabled" } : {})}
+                {...(!keyword || !keyword.startsWith("bdr:") && (!language || !type) ? { disabled: "disabled" } : {})}
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 onClick={updateLibrary}
@@ -207,28 +216,17 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
               <div style={{ fontSize: "12px", opacity: "0.5", display: "flex", alignItems: "center" }}>
                 {value.uri}
                 &nbsp;
-                {!libraryURL && (
-                  <a title={i18n.t("search.help.preview")}>
-                    <InfoOutlinedIcon
-                      style={{ width: "18px", cursor: "pointer" }}
-                      onClick={(ev) => {
-                        if (libraryURL) setLibraryURL("")
-                        else setLibraryURL(config.LIBRARY_URL + "/show/" + value.uri)
-                      }}
-                    />
-                  </a>
-                )}
-                {libraryURL && (
-                  <a title={i18n.t("search.help.preview")}>
-                    <InfoIcon
-                      style={{ width: "18px", cursor: "pointer" }}
-                      onClick={(ev) => {
-                        if (libraryURL) setLibraryURL("")
-                        else setLibraryURL(config.LIBRARY_URL + "/show/" + value.uri)
-                      }}
-                    />
-                  </a>
-                )}
+                <a
+                  title={i18n.t("search.help.preview")}
+                  onClick={(ev) => {
+                    if (libraryURL) setLibraryURL("")
+                    else if (value.otherData["tmp:externalUrl"]) setLibraryURL(value.otherData["tmp:externalUrl"])
+                    else setLibraryURL(config.LIBRARY_URL + "/simple/" + value.uri)
+                  }}
+                >
+                  {!libraryURL && <InfoOutlinedIcon style={{ width: "18px", cursor: "pointer" }} />}
+                  {libraryURL && <InfoIcon style={{ width: "18px", cursor: "pointer" }} />}
+                </a>
                 &nbsp;
                 <a
                   title={i18n.t("search.help.open")}
@@ -276,7 +274,8 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
           style={{
             position: "absolute",
             zIndex: 10,
-            maxWidth: "800px", //minWidth: "670px",
+            maxWidth: "800px",
+            minWidth: "670px",
             ...value.uri === "tmp:uri"
               ? { right: "calc(1rem - 1px + 34px)", width: "calc(100% - 34px)", bottom: "calc(100% - 1rem)" }
               : {},
