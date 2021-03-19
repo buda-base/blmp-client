@@ -87,7 +87,7 @@ List.propTypes = {
 // eslint-disable-next-line no-unused-vars
 export function MinimalAddButton({ add, className }) {
   return (
-    <div className={className !== undefined ? className : "text-right"}>
+    <div className={className !== undefined ? className : "text-right"} style={{ width: "100%" }}>
       <button size="small" className="btn btn-link ml-2 px-0" onClick={add}>
         <AddIcon />
       </button>

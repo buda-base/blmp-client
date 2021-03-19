@@ -341,7 +341,7 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
 
   return (
-    <div className="mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)" }}>
+    <div className="mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }}>
       <div>
         {targetShape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
