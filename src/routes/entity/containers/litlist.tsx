@@ -83,6 +83,14 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     setList(newList)
   }
 
+  // TODO prevent adding same resource twice
+  const exists: (uri: string) => boolean = (uri: string): boolean => {
+    for (const val of list) {
+      if (val instanceof RDFResourceWithLabel && val.uri === uri) return true
+    }
+    return false
+  }
+
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
@@ -112,6 +120,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                   canDel={canDel}
                   onChange={onChange}
                   idx={i}
+                  exists={exists}
                 />
               )
             else
@@ -298,7 +307,7 @@ const LiteralComponent: FC<{
   //  edit = <EditType property={property} lit={lit} onChange={onChange} label={label} />
 
   return (
-    <div style={{ display: "flex", alignItems: "center" }}>
+    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
       {edit}
       {canDel && (
         <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>
@@ -358,7 +367,8 @@ const ExtEntityComponent: FC<{
   canDel: boolean
   onChange: (value: RDFResourceWithLabel, idx: number) => void
   idx: number
-}> = ({ extRes, subject, property, canDel, onChange, idx }) => {
+  exists: (uri: string) => boolean
+}> = ({ extRes, subject, property, canDel, onChange, idx, exists }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const [uiLang] = useRecoilState(uiLangState)
@@ -397,6 +407,7 @@ const ExtEntityComponent: FC<{
           label={propLabel}
           types={property.expectedObjectType}
           idx={idx}
+          exists={exists}
         />
         {canDel && (
           <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>

@@ -9,7 +9,7 @@ import * as constants from "../../helpers/vocabulary"
 import { Edit as LangEdit } from "../../helpers/shapes/skos/label"
 import { uiLangState } from "../../../atoms/common"
 import { ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
-import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon } from "../../layout/icons"
+import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon } from "../../layout/icons"
 
 import config from "../../../config"
 
@@ -24,13 +24,14 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 // DONE dedicated subcomponent + keep previous keyword/language searched
-export function ResourceSelector({ value, onChange, propid, label, types, idx }) {
+export function ResourceSelector({ value, onChange, propid, label, types, idx, exists }) {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("")
   const [type, setType] = useState(types ? types[0].qname : "")
   const [libraryURL, setLibraryURL] = useState()
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
+  const [error, setError] = useState("")
 
   /* // TODO close iframe when clicking anywhere else
   const closeIframe = (ev) => {
@@ -44,16 +45,22 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
   */
 
   const updateRes = (data) => {
-    const newRes = new ExtRDFResourceWithLabel(
-      data["@id"],
-      {
-        ...data["skos:prefLabel"]
-          ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
-          : {},
-      },
-      { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
-    )
-    onChange(newRes, idx)
+    if (data["@id"] && !exists(data["@id"])) {
+      const newRes = new ExtRDFResourceWithLabel(
+        data["@id"],
+        {
+          ...data["skos:prefLabel"]
+            ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
+            : {},
+        },
+        { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
+      )
+      onChange(newRes, idx)
+    } else {
+      // TODO translation with i18n
+      if (data["@id"]) setError(data["@id"] + " already exists")
+      else throw "no '@id' field in data"
+    }
     setLibraryURL("")
   }
 
@@ -128,13 +135,20 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
     const getDate = (d) => {
       if (d.onYear) return d.onYear
       // TODO use notBefore/notAfter
+      else if (d.notBefore || d.notAfter) {
+        let date = ""
+        if (d.notBefore) date = d.notBefore
+        date += "~"
+        if (d.notAfter) date += d.notAfter
+        return date
+      }
       return ""
     }
 
-    if (value.otherData.PersonBirth) dates += getDate(value.otherData.PersonBirth) + "-"
+    if (value.otherData.PersonBirth) dates += getDate(value.otherData.PersonBirth) + " – "
 
     if (value.otherData.PersonDeath) {
-      if (!dates) dates = "- "
+      if (!dates) dates = "– "
       dates += getDate(value.otherData.PersonDeath)
     }
 
@@ -145,7 +159,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
     <React.Fragment>
       <div style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}>
         {value.uri === "tmp:uri" && (
-          <div className="py-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div className="py-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
             <React.Fragment>
               <TextField
                 className={classes.root}
@@ -158,6 +172,18 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx })
                   if (libraryURL) updateLibrary(e)
                 }}
                 helperText={label}
+                {...(error
+                  ? {
+                      helperText: (
+                        <React.Fragment>
+                          {label} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                          <br />
+                          <i>{error}</i>
+                        </React.Fragment>
+                      ),
+                      error: true,
+                    }
+                  : {})}
               />
               <LangEdit
                 value={{ "@language": language }}
