@@ -24,8 +24,11 @@ export const debugStore = (s: rdf.Store, debugNs?: string) => {
   })
 }
 
+const acceptTtl = new Headers()
+acceptTtl.set("Accept", "text/turtle")
+
 export const loadTtl = async (url: string): Promise<rdf.Store> => {
-  const response = await fetch(url)
+  const response = await fetch(url, { headers: acceptTtl })
   const body = await response.text()
   const store: rdf.Store = rdf.graph()
   rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
