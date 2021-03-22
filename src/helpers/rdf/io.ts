@@ -14,6 +14,10 @@ export const fetchUrlFromEntityQname = (shapeQname: string): string => {
   return "/examples/ptest.ttl"
 }
 
+export const labelQueryUrlFromEntityQname = (shapeQname: string): string => {
+  return "/examples/ptest-assocLabels.ttl"
+}
+
 const debug = require("debug")("bdrc:rdf:io")
 
 export const debugStore = (s: rdf.Store, debugNs?: string) => {
@@ -102,29 +106,26 @@ export function EntityFetcher(entityQname: string) {
   useEffect(() => {
     async function fetchResource(entityQname: string) {
       setEntityLoadingState({ status: "fetching", error: undefined })
-      const url = fetchUrlFromEntityQname(entityQname)
+      const fetchUrl = fetchUrlFromEntityQname(entityQname)
+      const labelQueryUrl = labelQueryUrlFromEntityQname(entityQname)
+      const entityUri = uriFromQname(entityQname)
 
-      await loadTtl(url)
-        .then(function (store: rdf.Store) {
-          if (store) {
-            const uri = uriFromQname(entityQname)
-            const subject: Subject = new Subject(new rdf.NamedNode(uri), new EntityGraph(store, uri))
-            debug(subject)
-            setEntityLoadingState({ status: "fetched", error: undefined })
-            setEntity(subject)
-            setUiReady(true)
-          } else {
-            setEntityLoadingState({ status: "error", error: "can't find shape" })
-          }
-        })
-        .catch(function (error) {
-          debug(error)
-          if (error.response && error.response.data.output.payload.error === "Not Found") {
-            setEntityLoadingState({ status: "error", error: "No records found" })
-          } else {
-            setEntityLoadingState({ status: "error", error: "Unable to process" })
-          }
-        })
+      const loadRes = loadTtl(fetchUrl)
+      const loadLabels = loadTtl(labelQueryUrl)
+
+      try {
+        const entityStore = await loadRes
+        const labelsStore = await loadLabels
+        const subject: Subject = new Subject(
+          new rdf.NamedNode(entityUri),
+          new EntityGraph(entityStore, entityUri, labelsStore)
+        )
+        setEntityLoadingState({ status: "fetched", error: undefined })
+        setEntity(subject)
+        setUiReady(true)
+      } catch (e) {
+        setEntityLoadingState({ status: "error", error: "error fetching entity" })
+      }
     }
     fetchResource(entityQname)
   }, [entityQname])

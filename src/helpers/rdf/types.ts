@@ -9,6 +9,7 @@ import config from "../../config"
 const debug = require("debug")("bdrc:rdf:types")
 
 const defaultGraphNode = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 
 // an EntityGraphValues represents the global state of an entity we're editing, in a javascript object (and not an RDF store)
 export class EntityGraphValues {
@@ -70,8 +71,11 @@ export class EntityGraph {
   // where to start when reconstructing the tree
   topSubjectUri: string
   store: rdf.Store
+  // associatedLabelsStore is the store that contains the labels of associated resources
+  // (ex: students, teachers, etc.), it's not present in all circumstances
+  associatedLabelsStore?: rdf.Store
 
-  constructor(store: rdf.Store, topSubjectUri: string) {
+  constructor(store: rdf.Store, topSubjectUri: string, associatedLabelsStore?: rdf.Store) {
     this.store = store
     // strange code: we're keeping values in the closure so that when the object freezes
     // the freeze doesn't proagate to it
@@ -79,6 +83,7 @@ export class EntityGraph {
     this.topSubjectUri = topSubjectUri
     this.onGetInitialValues = values.onGetInitialValues
     this.onUpdateValues = values.onUpdateValues
+    this.associatedLabelsStore = associatedLabelsStore
     this.getValues = () => {
       return values
     }
@@ -100,6 +105,22 @@ export class EntityGraph {
     return resList.map(
       (res: rdf.NamedNode): RDFResourceWithLabel => {
         return new RDFResourceWithLabel(res, graph)
+      }
+    )
+  }
+
+  static addExtDataFromGraph = (resList: Array<rdf.NamedNode>, graph: EntityGraph): Array<RDFResourceWithLabel> => {
+    return resList.map(
+      (res: rdf.NamedNode): RDFResourceWithLabel => {
+        if (!graph.associatedLabelsStore) {
+          throw "trying to access inexistant associatedStore"
+        }
+        const lits: Array<rdf.Literal> = graph.associatedLabelsStore.each(res, prefLabel, null) as Array<rdf.Literal>
+        const perLang: Record<string, string> = {}
+        for (const lit of lits) {
+          perLang[lit.language] = lit.value
+        }
+        return new ExtRDFResourceWithLabel(res.uri, perLang)
       }
     )
   }
@@ -127,7 +148,12 @@ export class EntityGraph {
       throw "can't find path of " + p.uri
     }
     switch (p.objectType) {
-      // TODO: ObjectType.ResExt, not an easy one!
+      case ObjectType.ResExt:
+        const fromRDFResExt: Array<rdf.NamedNode> = s.getPropResValues(p.path)
+        const fromRDFResExtwData = EntityGraph.addExtDataFromGraph(fromRDFResExt, s.graph)
+        this.onGetInitialValues(s.uri, p.path.uri, fromRDFResExtwData)
+        return fromRDFResExtwData
+        break
       case ObjectType.Facet:
         const fromRDFSubNode: Array<rdf.NamedNode> = s.getPropResValues(p.path)
         const fromRDFSubs = EntityGraph.subjectify(fromRDFSubNode, s.graph)
@@ -136,9 +162,10 @@ export class EntityGraph {
         break
       case ObjectType.ResInList:
         const fromRDFRes: Array<rdf.NamedNode> = s.getPropResValues(p.path)
-        const fromRDFIDs = EntityGraph.addLabelsFromGraph(fromRDFRes, p.graph)
-        this.onGetInitialValues(s.uri, p.path.uri, fromRDFIDs)
-        return fromRDFIDs
+        // TODO: p.graph should be the graph of the ontology instead
+        const fromRDFReswLabels = EntityGraph.addLabelsFromGraph(fromRDFRes, p.graph)
+        this.onGetInitialValues(s.uri, p.path.uri, fromRDFReswLabels)
+        return fromRDFReswLabels
         break
       case ObjectType.Literal:
       default:
@@ -252,8 +279,6 @@ export class RDFResource {
     return ns.lnameFromUri(val.value)
   }
 }
-
-const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 
 export class RDFResourceWithLabel extends RDFResource {
   private labelProp: rdf.NamedNode

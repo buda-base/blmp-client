@@ -46,18 +46,5 @@
 @prefix wd:    <http://www.wikidata.org/entity/> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
 
-bdr:EV00B857229AAA1BF0
-   a             bdo:PersonDeath ;
-   bdo:onYear    "1364"^^xsd:gYear .
-
-
-bdr:EVDD9AB2BD104D0A7D
-   a             bdo:PersonBirth ;
-   # bdo:eventWhere  bdr:G967 ;
-   bdo:onYear    "1308"^^xsd:gYear .
-
-bdr:P1583  a     bdo:Person ;
-   bdo:personTeacherOf   bdr:P314 ;
-   skos:prefLabel  "dri med 'od zer/"@bo-x-ewts , "隆钦热降巴·赤墨俄色"@zh-hans ;
-   bdo:personEvent  bdr:EV00B857229AAA1BF0, bdr:EVDD9AB2BD104D0A7D ;
-.
+bdr:P314 skos:prefLabel  "kun mkhyen 'jigs med gling pa"@bo-x-ewts , "钦则俄色·晋美林巴"@zh-hans ;
+   .
