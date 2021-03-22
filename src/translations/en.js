@@ -18,6 +18,11 @@ const enTranslations = {
     lookup: "lookup",
     cancel: "cancel",
     change: "change",
+    help: {
+      preview: "Preview resource",
+      open: "Open in Library",
+      replace: "Replace",
+    },
   },
   error: {
     gYear: 'must be exactly 4 digits (always, even "0001")',

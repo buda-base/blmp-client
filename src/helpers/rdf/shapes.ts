@@ -52,6 +52,8 @@ export const dashSingleLine = ns.SH("singleLine") as rdf.NamedNode
 export const shTargetObjectsOf = ns.SH("targetObjectsOf") as rdf.NamedNode
 export const bdsPropertyShapeType = ns.BDS("propertyShapeType") as rdf.NamedNode
 export const bdsFacetShape = ns.BDS("FacetShape") as rdf.NamedNode
+export const bdsExternalShape = ns.BDS("ExternalShape") as rdf.NamedNode
+export const bdsExpectedObjectType = ns.BDS("expectedObjectType") as rdf.NamedNode
 export const shIn = ns.SH("in") as rdf.NamedNode
 
 export const sortByPropValue = (

@@ -87,7 +87,7 @@ List.propTypes = {
 // eslint-disable-next-line no-unused-vars
 export function MinimalAddButton({ add, className }) {
   return (
-    <div className={className !== undefined ? className : "text-right"}>
+    <div className={className !== undefined ? className : "text-right"} style={{ width: "100%" }}>
       <button size="small" className="btn btn-link ml-2 px-0" onClick={add}>
         <AddIcon />
       </button>
@@ -95,16 +95,16 @@ export function MinimalAddButton({ add, className }) {
   )
 }
 
-export function BlockAddButton({ add }) {
+export function BlockAddButton({ add, label }) {
   return (
-    <div className="text-center pb-1">
+    <div className="text-center pb-1" style={{ width: "100%" }}>
       <button
         size="small"
         className="btn btn-sm btn-block btn-outline-primary mb-2 px-0"
         style={{ boxShadow: "none" }}
         onClick={add}
       >
-        {constants.AddAnother} <AddIcon />
+        {constants.AddAnother} <AddIcon /> {label}
       </button>
     </div>
   )

@@ -271,15 +271,26 @@ export class RDFResourceWithLabel extends RDFResource {
 
 // this class allows to create a resource from just a URI and labels, we need it for external entities
 export class ExtRDFResourceWithLabel extends RDFResourceWithLabel {
-  private thisPrefLabels: Record<string, string>
+  private _prefLabels: Record<string, string>
+  private _otherData: Record<string, any>
 
   public get prefLabels(): Record<string, string> {
-    return this.thisPrefLabels
+    return this._prefLabels
   }
 
-  constructor(uri: string, prefLabels: Record<string, string>) {
+  public get otherData(): Record<string, any> {
+    return this._otherData
+  }
+
+  constructor(uri: string, prefLabels: Record<string, string>, data: Record<string, any> = {}) {
     super(new rdf.NamedNode(uri), new EntityGraph(new rdf.Store(), uri))
-    this.thisPrefLabels = prefLabels
+    this._prefLabels = prefLabels
+    debug("data", data)
+    this._otherData = data
+  }
+
+  public addOtherData(key: string, value: any): ExtRDFResourceWithLabel {
+    return new ExtRDFResourceWithLabel(this.node.uri, this._prefLabels, { ...this._otherData, [key]: value })
   }
 }
 
@@ -327,18 +338,29 @@ export class PropertyShape extends RDFResourceWithLabel {
     return this.getPropResValue(shapes.shDatatype)
   }
 
-  @Memoize()
-  public get in(): Array<RDFResourceWithLabel> | null {
-    const nodes = this.getPropResValuesFromList(shapes.shIn)
-    if (!nodes) return null
+  public static resourcizeWithInit(nodes: Array<rdf.NamedNode>, graph: EntityGraph): Array<RDFResourceWithLabel> {
     const res: Array<RDFResourceWithLabel> = []
     for (const node of nodes) {
-      const r = new RDFResourceWithLabel(node, this.graph, shapes.rdfsLabel)
-      // just a way to intialize the value before the object gets frozen like a yogurt
+      const r = new RDFResourceWithLabel(node, graph, shapes.rdfsLabel)
+      // just a way to intialize the value before the object gets frozen like a yogurt by Recoil
       const justforinit = r.prefLabels
       res.push(r)
     }
     return res
+  }
+
+  @Memoize()
+  public get in(): Array<RDFResourceWithLabel> | null {
+    const nodes = this.getPropResValuesFromList(shapes.shIn)
+    if (!nodes) return null
+    return PropertyShape.resourcizeWithInit(nodes, this.graph)
+  }
+
+  @Memoize()
+  public get expectedObjectType(): Array<RDFResourceWithLabel> | null {
+    const nodes = this.getPropResValuesFromList(shapes.bdsExpectedObjectType)
+    if (!nodes) return null
+    return PropertyShape.resourcizeWithInit(nodes, this.graph)
   }
 
   @Memoize()
@@ -357,6 +379,7 @@ export class PropertyShape extends RDFResourceWithLabel {
     }
     // for some reason direct comparison doesn't work...
     if (propertyShapeType.value == shapes.bdsFacetShape.value) return ObjectType.Facet
+    else if (propertyShapeType.value == shapes.bdsExternalShape.value) return ObjectType.ResExt
     // TODO: other cases
     return ObjectType.Literal
   }

@@ -8,6 +8,7 @@ import {
   Value,
   ObjectType,
   RDFResourceWithLabel,
+  ExtRDFResourceWithLabel,
 } from "../../../helpers/rdf/types"
 import * as ns from "../../../helpers/rdf/ns"
 import { generateNew } from "../../../helpers/rdf/construct"
@@ -15,18 +16,29 @@ import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem, InputLabel, Select } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
-import { AddIcon, RemoveIcon, ErrorIcon } from "../../layout/icons"
+import { AddIcon, RemoveIcon, ErrorIcon, CloseIcon } from "../../layout/icons"
 import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
 import * as constants from "../../helpers/vocabulary"
 import { MinimalAddButton, BlockAddButton } from "../../helpers/shapes/bdo/event.js"
+import ResourceSelector from "./ResourceSelector"
 
 const debug = require("debug")("bdrc:entity:property:litlist")
 
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
   switch (property.objectType) {
+    case ObjectType.ResExt:
+      /*
+      // to speed up dev/testing
+      return new ExtRDFResourceWithLabel("bdr:P2JM192", { "en":"Delek Gyatso", "bo-x-ewts":"bde legs rgya mtsho/" }, 
+        { PersonBirth: { onYear: "1724" }, PersonDeath: { onYear: "1777" } })
+      */
+
+      // TODO might be a better way but "" isn't authorized
+      return new ExtRDFResourceWithLabel("tmp:uri", {})
+      break
     case ObjectType.Facet:
       return generateNew("EV", property.targetShape, parent)
       break
@@ -65,6 +77,20 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   const canDel = !property.minCount || property.minCount < list.length
 
+  // DONE save multiple external resource for property
+  const onChange: (value: RDFResourceWithLabel, idx: number) => void = (value: RDFResourceWithLabel, idx: number) => {
+    const newList = replaceItemAtIndex(list, idx, value)
+    setList(newList)
+  }
+
+  // TODO prevent adding same resource twice
+  const exists: (uri: string) => boolean = (uri: string): boolean => {
+    for (const val of list) {
+      if (val instanceof RDFResourceWithLabel && val.uri === uri) return true
+    }
+    return false
+  }
+
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
@@ -81,12 +107,21 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   return (
     <React.Fragment>
-      <div role="main">
-        {list.map((val) => {
+      <div role="main" style={{ display: "flex", flexWrap: "wrap" }}>
+        {list.map((val, i) => {
           if (val instanceof RDFResourceWithLabel) {
             if (property.objectType == ObjectType.ResExt)
               return (
-                <ExtEntityComponent key={val.id} subject={subject} property={property} extRes={val} canDel={canDel} />
+                <ExtEntityComponent
+                  key={val.id + ":" + i}
+                  subject={subject}
+                  property={property}
+                  extRes={val}
+                  canDel={canDel}
+                  onChange={onChange}
+                  idx={i}
+                  exists={exists}
+                />
               )
             else
               return <ResSelectComponent key={val.id} subject={subject} property={property} res={val} canDel={canDel} />
@@ -121,6 +156,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
+  const [uiLang] = useRecoilState(uiLangState)
 
   const addItem = () => {
     setList((oldList) => [...oldList, generateDefault(property, subject)])
@@ -128,7 +164,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
 
   if (embedded || property.path.value === ns.SKOS("prefLabel").value)
     return <MinimalAddButton add={addItem} className=" " />
-  else return <BlockAddButton add={addItem} />
+  else return <BlockAddButton add={addItem} label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)} />
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -208,7 +244,7 @@ const EditYear: FC<{
   let error
   if (lit.value && !lit.value.match(/^[0-9]{4}$/)) error = i18n.t("error.gYear")
 
-  const eventType = "<the event type>"
+  const eventType = "<the event type/s>"
 
   return (
     <TextField
@@ -266,11 +302,12 @@ const LiteralComponent: FC<{
     edit = <EditLangString property={property} lit={lit} onChange={onChange} label={label} />
   else if (t?.value === ns.XSD("gYear").value)
     edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
+  else throw "literal with unknown datatype value:" + JSON.stringify(t)
   //else if (t?.value === ns.RDF("type").value)
   //  edit = <EditType property={property} lit={lit} onChange={onChange} label={label} />
 
   return (
-    <div style={{ display: "flex", alignItems: "center" }}>
+    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
       {edit}
       {canDel && (
         <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>
@@ -304,7 +341,7 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
 
   return (
-    <div className="mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)" }}>
+    <div className="mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }}>
       <div>
         {targetShape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
@@ -328,11 +365,16 @@ const ExtEntityComponent: FC<{
   subject: Subject
   property: PropertyShape
   canDel: boolean
-}> = ({ extRes, subject, property, canDel }) => {
+  onChange: (value: RDFResourceWithLabel, idx: number) => void
+  idx: number
+  exists: (uri: string) => boolean
+}> = ({ extRes, subject, property, canDel, onChange, idx, exists }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === extRes)
+
+  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
@@ -340,16 +382,40 @@ const ExtEntityComponent: FC<{
   }
 
   return (
-    <React.Fragment>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span>External resource component</span>
+    <div style={{ position: "relative", ...extRes.uri === "tmp:uri" ? { width: "100%" } : {} }}>
+      <div
+        style={{
+          ...extRes.uri !== "tmp:uri"
+            ? {
+                display: "inline-flex",
+                width: "auto",
+                backgroundColor: "#f0f0f0",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                flexDirection: "row",
+                position: "static",
+              }
+            : {},
+          ...extRes.uri === "tmp:uri" ? { display: "flex" } : {},
+        }}
+        {...(extRes.uri !== "tmp:uri" ? { className: "px-2 py-1 mr-2 mb-2 card" } : {})}
+      >
+        <ResourceSelector
+          value={extRes}
+          onChange={onChange}
+          propid={property.path.value}
+          label={propLabel}
+          types={property.expectedObjectType}
+          idx={idx}
+          exists={exists}
+        />
         {canDel && (
-          <button className="btn btn-link ml-2 px-0 float-right" onClick={deleteItem}>
-            <RemoveIcon />
+          <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
+            {extRes.uri === "tmp:uri" ? <RemoveIcon /> : <CloseIcon />}
           </button>
         )}
       </div>
-    </React.Fragment>
+    </div>
   )
 }
 
@@ -401,7 +467,6 @@ const ResSelectComponent: FC<{
       <TextField
         select
         className={classes.root + " mr-2"}
-        label={null}
         value={res.uri}
         style={{ width: 150 }}
         onChange={onChange}

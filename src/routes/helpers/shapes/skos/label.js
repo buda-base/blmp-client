@@ -84,7 +84,7 @@ const lang = [{ value: "bo-x-ewts" }, { value: "bo" }, { value: "en" }, { value:
 /**
  * Edit component
  */
-export function Edit({ value, onChange, langOnly }) {
+export function Edit({ value, onChange, langOnly, disabled }) {
   const classes = useStyles()
   return (
     <React.Fragment>
@@ -103,9 +103,10 @@ export function Edit({ value, onChange, langOnly }) {
         className="ml-2"
         label={value["@id"] ? " " : null}
         value={value["@language"] || ""}
-        style={{ width: 120 }}
+        style={{ width: 150 }}
         onChange={(e) => onChange({ ...value, "@language": e.target.value })}
         helperText="Language"
+        {...(disabled ? { disabled: true } : {})}
       >
         {lang.map((option) => (
           <MenuItem key={option.value} value={option.value}>

@@ -16,7 +16,9 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
     let s2_content = s2_content_tab[i]
     //debug("diff", typeof m_content, m_content, s1_content, s2_content)
     if (!s2_content) s2_content = { empty: true }
-    for (const k of Object.keys(m_content)) {
+    let keys = Object.keys(m_content)
+    if (!keys) keys = ["this"]
+    for (const k of keys) {
       //debug("k", k, typeof m_content[k])
       const tags = ["@id", "@value", "@language", "type", "language", "value"]
       if (s2_content.empty) s2_content[k] = ""
@@ -107,7 +109,7 @@ export function TimeTravelObserver() {
       const info = snapshot.getInfo_UNSTABLE(a)
       if (info.isModified) {
         modified.push({ a, info })
-        //debug(uiReady, first, a.key, a, info)
+        debug(uiReady, first, a.key, a, info)
       }
       // DONE do not not take a snapshot if current change is UI language
       if (a.key === "uiLangState" && info.isModified) return
