@@ -1,21 +1,13 @@
-import React, { useState, useEffect, useMemo } from "react"
-import { TimeTravelObserver } from "../../helpers/observer"
-import { ShapeFetcher, debugStore, EntityFetcher } from "../../../helpers/rdf/io"
 import * as shapes from "../../../helpers/rdf/shapes"
-import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
-import { RDFResource, Subject, RDFResourceWithLabel, ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
+import { RDFResourceWithLabel } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
-import NotFoundIcon from "@material-ui/icons/BrokenImage"
-import i18n from "i18next"
 import { entitiesAtom, EditedEntityState } from "../../../containers/EntitySelectorContainer"
-import PropertyGroupContainer from "./PropertyGroupContainer"
 import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
-import { atom, useRecoilState } from "recoil"
-import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
-import Button from "@material-ui/core/Button"
-import * as rdf from "rdflib"
+import { useRecoilState } from "recoil"
+import { AppProps } from "../../../containers/AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
+import React from "react"
 
 const debug = require("debug")("bdrc:entity:newentity")
 
@@ -50,11 +42,20 @@ function NewEntityContainer(props: AppProps) {
   return (
     <React.Fragment>
       <div>
+        New entity: here is a list of all possible shapes to choose from in order to create a new entity:
         {shapes.possibleShapeRefs.map((shape: RDFResourceWithLabel, index: number) => (
           <Link key={shape.qname} to={"/new/" + shape.qname}>
             {lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)}
           </Link>
         ))}
+      </div>
+      <div>
+        Load entity: select an entity to load here by its RID:
+        <input type="text" />
+        for the sake of the demo, we are going to pretend that you did input{" "}
+        <Link key="demofoo" to="/edit/bdr:P1583">
+          P1583
+        </Link>
       </div>
     </React.Fragment>
   )
