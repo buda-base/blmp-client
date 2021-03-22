@@ -225,3 +225,35 @@ input[type="checkbox"].dmcheck {
     background-color: #f6f6f6;
   }
 }
+
+.navbar { position:fixed; width:100%; background:white; z-index:1; }
+
+.tabs-select { 
+  z-index:0;
+  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(102,75,75,0.12);
+  float:left;
+  padding-top:70px; 
+  width:200px; 
+  height:100vh;
+  position:fixed;
+
+  button { 
+    outline:none; 
+    text-transform: none;
+    min-height:16px;
+    padding:4px;
+    width:100%;
+    a { justify-content: space-between; display:flex; width:100%; } 
+
+    &.Mui-selected { background:#eee;}
+  }
+
+  [role=tablist] + span:last-child { display:none; }
+
+  .MuiTabs-flexContainer,
+  .MuiTabs-root { display:inline-block; }
+  .MuiTabs-scroller { white-space: normal;}
+
+  & + main { padding-top:70px; padding-left:200px;}
+
+}

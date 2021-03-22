@@ -112,7 +112,7 @@ export function TimeTravelObserver() {
         debug(uiReady, first, a.key, a, info)
       }
       // DONE do not not take a snapshot if current change is UI language
-      if (a.key === "uiLangState" && info.isModified) return
+      if (["uiLangState", "uiTabState"].includes(a.key) && info.isModified) return
     }
 
     // DONE use only one snapshot for all successive modifications of same property value
