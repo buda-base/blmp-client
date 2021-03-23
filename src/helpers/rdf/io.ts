@@ -2,9 +2,10 @@ import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
 import { useRecoilState } from "recoil"
-import { RDFResource, NodeShape, EntityGraph, Subject } from "./types"
+import { RDFResource, RDFResourceWithLabel, NodeShape, EntityGraph, Subject } from "./types"
 import { uriFromQname } from "./ns"
 import { uiReadyState } from "../../atoms/common"
+import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
   return "/shapes/personpreflabel.ttl"
@@ -66,7 +67,7 @@ export function ShapeFetcher(shapeQname: string) {
       setLoadingState({ status: "fetching", error: undefined })
       const url = fetchUrlFromshapeQname(shapeQname)
 
-      await loadTtl(url)
+      loadTtl(url)
         .then(function (store: rdf.Store) {
           if (store) {
             const shapeUri = uriFromQname(shapeQname)
@@ -91,12 +92,12 @@ export function ShapeFetcher(shapeQname: string) {
   return { loadingState, shape, reset }
 }
 
-export function EntityFetcher(entityQname: string) {
+export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabel | null) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>()
   const [uiReady, setUiReady] = useRecoilState(uiReadyState)
-  // TODO: use to update state & subject
-  // const [entities, setEntities] = useRecoilState(entitiesAtom)
+  // DONE: use to update state & subject
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const reset = () => {
     setEntity(undefined)
@@ -123,11 +124,39 @@ export function EntityFetcher(entityQname: string) {
         setEntityLoadingState({ status: "fetched", error: undefined })
         setEntity(subject)
         setUiReady(true)
+
+        // update state with loaded entity
+        let index = entities.findIndex((e) => e.subjectQname === entityQname)
+        const newEntities = [...entities]
+        if (index === -1) {
+          index = 0
+          newEntities.push({
+            subjectQname: entityQname,
+            state: EditedEntityState.Loading,
+            shapeRef: shapeRef,
+            subject: null,
+          })
+        }
+        if (index >= 0 && newEntities[index] && !newEntities[index].subject) {
+          newEntities[index] = {
+            ...newEntities[index],
+            subject,
+            state: EditedEntityState.Saved,
+          }
+          setEntities(newEntities)
+        }
       } catch (e) {
         setEntityLoadingState({ status: "error", error: "error fetching entity" })
       }
     }
-    fetchResource(entityQname)
+    const index = entities.findIndex((e) => e.subjectQname === entityQname)
+    if (index === -1 || entities[index] && !entities[index].subject) fetchResource(entityQname)
+    else {
+      setEntityLoadingState({ status: "fetched", error: undefined })
+      const subj: Subject | null = entities[index].subject
+      if (subj) setEntity(subj)
+      setUiReady(true)
+    }
   }, [entityQname])
 
   return { entityLoadingState, entity, reset }

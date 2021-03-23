@@ -241,10 +241,11 @@ input[type="checkbox"].dmcheck {
     outline:none; 
     text-transform: none;
     min-height:16px;
-    padding:4px;
+    padding:8px;
     width:100%;
-    a { justify-content: space-between; display:flex; width:100%; 
-      span:first-child { max-width:calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+    a { justify-content: space-between; display:flex; width:100%;  align-items: center; line-height:16px;
+      & > span:first-child { max-width:calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;}
+      .RID { opacity:0.5; font-size:12px; }
     } 
 
     &.Mui-selected { background:#eee;}
@@ -256,6 +257,9 @@ input[type="checkbox"].dmcheck {
   .MuiTabs-root { display:inline-block; }
   .MuiTabs-scroller { white-space: normal;}
 
-  & + main { padding-top:70px; padding-left:250px;}
+  & + main { padding-top:70px; padding-left:250px;
+  
+    & > div { padding:20px; }
+  }
 
 }

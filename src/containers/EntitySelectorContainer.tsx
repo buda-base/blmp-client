@@ -14,6 +14,10 @@ import { uiLangState, uiTabState } from "../atoms/common"
 import { makeStyles } from "@material-ui/core/styles"
 import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
+import * as lang from "../helpers/lang"
+import * as ns from "../helpers/rdf/ns"
+
+const debug = require("debug")("bdrc:entity:selector")
 
 function a11yProps(index: number) {
   return {
@@ -42,7 +46,6 @@ export type Entity = {
   subject: Subject | null
   shapeRef: RDFResourceWithLabel | null
   state: EditedEntityState
-  highlighted: boolean
 }
 
 export const entitiesAtom = atom<Array<Entity>>({
@@ -51,12 +54,10 @@ export const entitiesAtom = atom<Array<Entity>>({
 })
 
 const EntitySelector: FC<Record<string, unknown>> = () => {
-  const { user, isAuthenticated, isLoading, logout } = useAuth0()
-
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
-
   const classes = useStyles()
-
+  const { user, isAuthenticated, isLoading, logout } = useAuth0()
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [uiLang] = useRecoilState(uiLangState)
   const [tab, setTab] = useRecoilState(uiTabState)
   const handleChange = (event: ChangeEvent<unknown>, newTab: number): void => {
     setTab(newTab)
@@ -69,7 +70,6 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
         subject: null,
         shapeRef: shapes.shapeRefsMap["bds:PersonShape"],
         state: EditedEntityState.NotLoaded,
-        highlighted: false,
       },
     ])
   }, [setEntities])
@@ -80,14 +80,23 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
         {entities.map((entity: Entity, index) => {
           // TODO: use entityQname to highlight the selected entity
           const link = "/edit/" + entity.subjectQname + (entity.shapeRef ? "/" + entity.shapeRef.qname : "")
+          let label
+          if (entity.subject) {
+            const prefLabels = entity?.subject?.getPropValueByLang(shapes.prefLabel)
+            label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
+          }
           return (
             <Tab
               key={entity.subjectQname}
               {...a11yProps(index)}
               label={
                 <Link to={link}>
-                  <span>{entity.subjectQname}</span>
-                  <span>{entity.state}</span> {/*entity.highlighted ? "(h)" : ""}*/}
+                  <span>
+                    <span>{label}</span>
+                    <br />
+                    <span className="RID">{entity.subjectQname}</span>
+                  </span>
+                  <span>{entity.state}</span>
                 </Link>
               }
             />

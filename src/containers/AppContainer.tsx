@@ -52,17 +52,19 @@ function App(props: AppProps) {
       <NavBarContainer />
       <EntitySelector />
       <main>
-        <Switch>
-          <Route exact path="/" component={Home} />
-          <Route exact path="/profile" component={ProfileContainer} />
-          <Route exact path="/persons" component={PersonsContainer} />
-          <Route exact path="/person/:id" component={PersonView} />
-          <Route exact path="/new" component={NewEntityContainer} />
-          <Route exact path="/new/:shapeQname" component={NewEntityContainer} />
-          <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
-          <Route exact path="/edit/:entityQname" component={EntityEditContainer} />
-          <Route exact path="/person/:id/edit" component={PersonEditContainer} />
-        </Switch>
+        <div>
+          <Switch>
+            <Route exact path="/" component={Home} />
+            <Route exact path="/profile" component={ProfileContainer} />
+            <Route exact path="/persons" component={PersonsContainer} />
+            <Route exact path="/person/:id" component={PersonView} />
+            <Route exact path="/new" component={NewEntityContainer} />
+            <Route exact path="/new/:shapeQname" component={NewEntityContainer} />
+            <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
+            <Route exact path="/edit/:entityQname" component={EntityEditContainer} />
+            <Route exact path="/person/:id/edit" component={PersonEditContainer} />
+          </Switch>
+        </div>
       </main>
     </React.Fragment>
   )

@@ -240,7 +240,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
                 {lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang) + " " + dates}
               </div>
               <div style={{ fontSize: "12px", opacity: "0.5", display: "flex", alignItems: "center" }}>
-                {value.uri}
+                {value.qname}
                 &nbsp;
                 <a
                   title={i18n.t("search.help.preview")}

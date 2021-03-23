@@ -27,12 +27,10 @@ function NewEntityContainer(props: AppProps) {
     debug(newSubject)
     const newEntity = {
       subjectQname: newSubject.qname,
-      highlighted: true,
       state: EditedEntityState.NeedsSaving,
       shapeRef: shapeRef,
       subject: newSubject,
     }
-    // TODO: unhighlight if highglight already present
     setEntities([newEntity, ...entities])
     props.history.push("/edit/" + newSubject.qname + "/" + shapeQname)
     return <span>creating...</span>

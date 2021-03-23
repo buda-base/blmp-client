@@ -26,31 +26,18 @@ function EntityEditContainer(props: AppProps) {
   }
   const [uiLang] = useRecoilState(uiLangState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const { entityLoadingState, entity } = EntityFetcher(entityQname)
 
   // here we create the entity in the list if it's not there yet:
   const index = entities.findIndex((e) => e.subjectQname === entityQname)
-  const newEntities = [...entities]
-  let entitiesNeedUpdate = false
+  let shapeRef = null
   if (index == -1) {
-    let shapeRef = null
     if (shapeQname) {
       if (shapeQname in shapes.shapeRefsMap) shapeRef = shapes.shapeRefsMap[shapeQname]
       else return <span>invalid shape!</span>
     }
-    newEntities.push({
-      subjectQname: entityQname,
-      highlighted: true,
-      state: EditedEntityState.Loading,
-      shapeRef: shapeRef,
-      subject: entity || null,
-    })
-    entitiesNeedUpdate = true
   }
-  // TODO: set the highlight field property
-  if (entitiesNeedUpdate) {
-    setEntities(newEntities)
-  }
+  // DONE: moved initialisation to EntotyFetcher
+  const { entityLoadingState, entity } = EntityFetcher(entityQname, shapeRef)
 
   if (entity && !shapeQname) {
     const possibleShapes = shapes.shapeRefsForEntity(entity)
