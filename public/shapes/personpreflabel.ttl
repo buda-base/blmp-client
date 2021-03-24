@@ -61,7 +61,7 @@ bds:PersonShape
   sh:property bds:PersonShape-personEvent ;
   sh:property bds:PersonShape-studentOf ;
   # TODO: with this line a duplicate of RelatedPersons block is displayed
-  # sh:property bds:PersonShape-teacherOf ; 
+  # sh:property bds:PersonShape-teacherOf ;
   sh:targetClass bdo:Person ;
 .
 
@@ -90,6 +90,7 @@ bds:PersonShape-personEvent
   sh:description "Events (birth, death, etc.) associated with this person"@en ;
   sh:name "events"@en ;
   sh:group bds:PersonEventsPropertyGroup ;
+  dash:editor dash:DetailsEditor ;
   sh:order "0"^^xsd:decimal ;
   sh:path bdo:personEvent ;
   bds:propertyShapeType bds:FacetShape ;
@@ -114,7 +115,7 @@ bds:PersonEventShape-onYear
   sh:maxCount 1 ;
   # this should just check that the format is right for a xsd:gYear, see
   # https://www.w3.org/TR/xmlschema11-2/#gYear
-  # basically 4 digits (always, even "0001")
+  # basically 4 digits (always, even "0001"), optionally preceded by an hyphen
   dash:editor bds:gYearEditor ;
   sh:name "on year"@en ;
   sh:order "1"^^xsd:decimal ;
@@ -265,5 +266,9 @@ bds:PersonShape-teacherOf
   sh:order "1"^^xsd:decimal ;
   sh:path bdo:personTeacherOf ;
   bds:propertyShapeType bds:ExternalShape ;
-  bds:expectedObjectType ( bdo:Person bdo:Topic )
+  bds:expectedObjectType ( bdo:Person bdo:Topic ) ;
+  # here we artificially want to hide this property by default in its group, what this implies is that the group should contain
+  # a "see more" (/ "see less") button that will display the form for these properties. If a property with displayPriority 1 has some value
+  # it should always be displayed
+  bds:displayPriority 1 ;
 .
