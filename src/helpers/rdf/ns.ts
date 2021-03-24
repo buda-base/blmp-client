@@ -58,6 +58,8 @@ export const setDefaultPrefixes = (s: rdf.Store): void => {
 }
 
 export const qnameFromUri = (uri: string): string => {
+  if (uri.match(/^[^:/#]+:[^:/#]+$/)) return uri
+
   let j = uri.indexOf("#")
   if (j < 0) j = uri.lastIndexOf("/")
   if (j < 0) throw new Error("Cannot make qname out of <" + uri + ">")

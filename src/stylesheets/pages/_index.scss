@@ -241,12 +241,18 @@ input[type="checkbox"].dmcheck {
     outline:none; 
     text-transform: none;
     min-height:16px;
-    padding:8px;
     width:100%;
-    a { justify-content: space-between; display:flex; width:100%;  align-items: center; line-height:16px;
+    padding:0px;
+    a { justify-content: space-between; display:flex; width:100%;  align-items: center; line-height:16px; padding:8px;
       & > span:first-child { max-width:calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;}
       .RID { opacity:0.5; font-size:12px; }
+
+      &:hover { text-decoration: none; 
+        & > span:first-child > span:first-child { text-decoration: underline;}
+      }
     } 
+
+    &:last-child a:hover { text-decoration: underline;}
 
     &.Mui-selected { background:#eee;}
   }
@@ -263,3 +269,8 @@ input[type="checkbox"].dmcheck {
   }
 
 }
+
+
+#root > main > div > div > div > .album > .container > .row > div { max-width:100%;}
+
+//.facet .blockAdd  { width:calc(100% - 2rem) !important; }

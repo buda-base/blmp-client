@@ -3,6 +3,7 @@ import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
+import { useHistory } from "react-router-dom"
 
 import * as lang from "../../../helpers/lang"
 import * as constants from "../../helpers/vocabulary"
@@ -10,6 +11,7 @@ import { Edit as LangEdit } from "../../helpers/shapes/skos/label"
 import { uiLangState } from "../../../atoms/common"
 import { ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
 import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon } from "../../layout/icons"
+import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
 
 import config from "../../../config"
 
@@ -32,6 +34,8 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
   const [libraryURL, setLibraryURL] = useState()
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [error, setError] = useState("")
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const history = useHistory()
 
   /* // TODO close iframe when clicking anywhere else
   const closeIframe = (ev) => {
@@ -155,6 +159,12 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
     if (dates) dates = "(" + dates + ")"
   }
 
+  const createAndLink = () => {
+    // TODO: use actual selected resource type
+    history.push("/new/" + type.replace(/^bdo/, "bds") + "Shape")
+    debug("entities...", entities)
+  }
+
   return (
     <React.Fragment>
       <div style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}>
@@ -189,7 +199,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
                 value={{ "@language": language }}
                 onChange={(e) => {
                   setLanguage(e["@language"])
-                  if (libraryURL) updateLibrary(null, language)
+                  if (libraryURL) updateLibrary(null, e["@language"])
                 }}
                 langOnly={true}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
@@ -221,6 +231,14 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
               >
                 {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
               </button>
+              <button
+                className="btn btn-sm btn-outline-primary py-3 ml-2"
+                style={{ boxShadow: "none", alignSelf: "center" }}
+                {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
+                onClick={createAndLink}
+              >
+                {i18n.t("search.create")}
+              </button>
             </React.Fragment>
           </div>
         )}
@@ -247,7 +265,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
                   onClick={(ev) => {
                     if (libraryURL) setLibraryURL("")
                     else if (value.otherData["tmp:externalUrl"]) setLibraryURL(value.otherData["tmp:externalUrl"])
-                    else setLibraryURL(config.LIBRARY_URL + "/simple/" + value.uri)
+                    else setLibraryURL(config.LIBRARY_URL + "/simple/" + value.qname)
                   }}
                 >
                   {!libraryURL && <InfoOutlinedIcon style={{ width: "18px", cursor: "pointer" }} />}
@@ -256,7 +274,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
                 &nbsp;
                 <a
                   title={i18n.t("search.help.open")}
-                  href={config.LIBRARY_URL + "/show/" + value.uri}
+                  href={config.LIBRARY_URL + "/show/" + value.qname}
                   rel="noreferrer"
                   target="_blank"
                 >
@@ -304,7 +322,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
             maxWidth: "800px",
             minWidth: "670px",
             ...value.uri === "tmp:uri"
-              ? { right: "calc(1rem - 1px + 34px)", width: "calc(100% - 34px)", bottom: "calc(100% - 1rem)" }
+              ? { right: "calc(1rem - 1px + 100px)", width: "calc(100% - 100px)", bottom: "calc(100% - 1rem)" }
               : {},
             ...value.uri !== "tmp:uri" ? { left: "1rem", width: "calc(100%)", bottom: "100%" } : {},
           }}

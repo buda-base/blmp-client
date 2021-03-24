@@ -143,6 +143,9 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             subject,
             state: EditedEntityState.Saved,
           }
+          debug("newEntities ready", newEntities, entities)
+
+          // TODO: better fix issue #2 before fully using getEntities....
           setEntities(newEntities)
         }
       } catch (e) {
@@ -157,7 +160,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       if (subj) setEntity(subj)
       setUiReady(true)
     }
-  }, [entityQname])
+  }, [entityQname, shapeRef])
 
   return { entityLoadingState, entity, reset }
 }
