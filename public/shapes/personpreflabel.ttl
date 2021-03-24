@@ -50,6 +50,12 @@ bds:PersonRelatedPropertyGroup
   sh:order 2 ;
 .
 
+bds:NotesPropertyGroup
+  a sh:PropertyGroup ;
+  rdfs:label "Notes"@en ;
+  sh:order 3 ;
+.
+
 # the shape
 bds:PersonShape
   a sh:NodeShape ;
@@ -116,7 +122,7 @@ bds:PersonEventShape-onYear
   # this should just check that the format is right for a xsd:gYear, see
   # https://www.w3.org/TR/xmlschema11-2/#gYear
   # basically 4 digits (always, even "0001"), optionally preceded by an hyphen
-  dash:editor bds:gYearEditor ;
+  dash:editor bds:TextFieldEditor ;
   sh:name "on year"@en ;
   sh:order "1"^^xsd:decimal ;
 .
@@ -271,4 +277,129 @@ bds:PersonShape-teacherOf
   # a "see more" (/ "see less") button that will display the form for these properties. If a property with displayPriority 1 has some value
   # it should always be displayed
   bds:displayPriority 1 ;
+.
+
+bds:RootShape-note
+  sh:group bds:NotesPropertyGroup ;
+  sh:order "0"^^xsd:decimal ;
+  a sh:PropertyShape ;
+  sh:path bdo:note ;
+  sh:nodeKind sh:IRI ;
+  bds:propertyShapeType bds:FacetShape ;
+  sh:name "notes"@en ;
+  dash:editor dash:DetailsEditor ;
+.
+
+bds:NoteShape
+  a sh:NodeShape ;
+  bds:identifierPrefix "NT" ;
+  bds:nodeShapeType bds:FacetShape ;
+  sh:property bds:NoteShape-contentLocation ;
+  sh:property bds:NoteShape-noteText ;
+# there are no note types currently well defined
+#  sh:property bds:NoteShape-noteType ;
+  sh:targetClass bdo:Note ;
+  sh:targetObjectsOf bdo:note ;
+.
+
+bds:NoteShape-contentLocation
+  a sh:PropertyShape ;
+  sh:message "a note may have at most one :contentLocation"@en ;
+  sh:path bdo:contentLocation ;
+  sh:class bdo:ContentLocation ;
+  sh:maxCount 1 ;
+  dash:editor dash:DetailsEditor ;
+  sh:name "source location"@en ;
+  sh:order "2"^^xsd:decimal ;
+.
+
+bds:NoteShape-noteText
+  a sh:PropertyShape ;
+  sh:message "a note may have at most one :noteText"@en ;
+  sh:path bdo:noteText ;
+  sh:datatype rdf:langString ;
+  sh:maxCount 1 ;
+  dash:editor dash:TextAreaWithLangEditor ;
+  sh:name "text"@en ;
+  sh:order "0"^^xsd:decimal ;
+.
+
+bds:ContentLocationShape
+  a sh:NodeShape ;
+  bds:identifierPrefix "CL" ;
+  rdfs:label "ContentLocation Shape"@en ;
+  sh:property bds:ContentLocationShape-contentLocationEndPage ;
+  sh:property bds:ContentLocationShape-contentLocationEndVolumeName ;
+  sh:property bds:ContentLocationShape-contentLocationLine ;
+  sh:property bds:ContentLocationShape-contentLocationPage ;
+  sh:property bds:ContentLocationShape-contentLocationVolume ;
+  sh:property bds:ContentLocationShape-contentLocationInstance ;
+  sh:targetClass bdo:ContentLocation ;
+  sh:targetObjectsOf bdo:contentLocation ;
+.
+
+bds:ContentLocationShape-contentLocationInstance
+  a sh:PropertyShape ;
+  sh:path bdo:contentLocationInstance ;
+  bds:propertyShapeType bds:ExternalShapeShape ;
+  sh:maxCount 1 ;
+  sh:minCount 1 ;
+  sh:class bdo:ImageInstance ;
+  sh:message "At most one instance allowed"@en ;
+  dash:editor dash:InstancesSelectEditor ;
+  sh:name "source scans"@en ;
+  sh:order "0"^^xsd:decimal ;
+.
+bds:ContentLocationShape-contentLocationEndPage
+  a sh:PropertyShape ;
+  sh:message "a :ContentLocation may indicate, at most one, ending page."@en ;
+  sh:path bdo:contentLocationEndPage ;
+  sh:datatype xsd:integer ;
+  sh:maxCount 1 ;
+  sh:minInclusive 1 ;
+  sh:maxInclusive 4000 ;
+  dash:editor dash:TextFieldEditor ;
+  sh:name "end page"@en ;
+  sh:order "3"^^xsd:decimal ;
+.
+bds:ContentLocationShape-contentLocationLine
+  a sh:PropertyShape ;
+  sh:message "a :ContentLocation may indicate, at most one, starting line number."@en ;
+  sh:path bdo:contentLocationLine ;
+  sh:datatype xsd:integer ;
+  sh:maxCount 1 ;
+  sh:minInclusive 1 ;
+  sh:maxInclusive 100 ;
+  dash:editor dash:TextFieldEditor ;
+  sh:name "line"@en ;
+  sh:order "5"^^xsd:decimal ;
+  bds:displayPriority 1 ;
+.
+bds:ContentLocationShape-contentLocationPage
+  a sh:PropertyShape ;
+  rdfs:label "contentLocationPage Shape"@en ;
+  sh:message "a :ContentLocation may indicate, at most one, starting page number."@en ;
+  sh:path bdo:contentLocationPage ;
+  sh:datatype xsd:integer ;
+  sh:maxCount 1 ;
+  sh:minInclusive 1 ;
+  sh:maxInclusive 4000 ;
+  dash:editor dash:TextFieldEditor ;
+  sh:name "page"@en ;
+  sh:order "2"^^xsd:decimal ;
+  dash:singleLine true ;
+.
+bds:ContentLocationShape-contentLocationVolume
+  a sh:PropertyShape ;
+  sh:message "a :ContentLocation may indicate, at most one, starting volume number."@en ;
+  sh:path bdo:contentLocationVolume ;
+  sh:datatype xsd:integer ;
+  sh:maxCount 1 ;
+  sh:minInclusive 1 ;
+  sh:maxInclusive 500 ;
+  sh:minCount 1 ;
+  dash:editor dash:TextFieldEditor ;
+  sh:name "volume"@en ;
+  sh:order "1"^^xsd:decimal ;
+  sh:defaultValue 1 ;
 .
