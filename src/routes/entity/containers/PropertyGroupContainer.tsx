@@ -1,6 +1,7 @@
 import React, { useState, FC, ReactElement } from "react"
 import PropertyContainer from "./PropertyContainer"
-import { PropertyGroup, RDFResource, Subject } from "../../../helpers/rdf/types"
+import { RDFResource, Subject } from "../../../helpers/rdf/types"
+import { PropertyGroup } from "../../../helpers/rdf/shapes"
 import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"

@@ -2,10 +2,11 @@ import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
 import { useRecoilState } from "recoil"
-import { RDFResource, RDFResourceWithLabel, NodeShape, EntityGraph, Subject } from "./types"
+import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject } from "./types"
+import { NodeShape, prefLabel } from "./shapes"
 import { uriFromQname } from "./ns"
 import { uiReadyState } from "../../atoms/common"
-import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
+import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
   if (shapeQname == "bds:PersonShape") return "http://purl.bdrc.io/shapes/core/PersonUIShapes"
@@ -136,6 +137,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             state: EditedEntityState.Loading,
             shapeRef: shapeRef,
             subject: null,
+            subjectLabelState: defaultEntityLabelAtom,
           })
         }
         if (index >= 0 && newEntities[index] && !newEntities[index].subject) {
@@ -143,6 +145,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             ...newEntities[index],
             subject,
             state: EditedEntityState.Saved,
+            subjectLabelState: subject.getAtomForProperty(prefLabel.uri),
           }
           debug("newEntities ready", newEntities, entities)
 

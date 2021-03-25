@@ -3,9 +3,11 @@ import config from "../../config"
 import { useState, useEffect, useContext } from "react"
 import { useRecoilState } from "recoil"
 import * as ns from "./ns"
+import { RDFResource, Subject, EntityGraph, RDFResourceWithLabel } from "./types"
+import { NodeShape } from "./shapes"
 import * as id from "./../id"
 import { IFetchState } from "./io"
-import { RDFResource, Subject, NodeShape, EntityGraph, RDFResourceWithLabel } from "./types"
+import * as shapes from "./shapes"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 
 const debug = require("debug")("bdrc:rdf:construct")
@@ -51,6 +53,7 @@ export function EntityCreator(shapeRef: RDFResourceWithLabel) {
         state: EditedEntityState.NeedsSaving,
         shapeRef: shapeRef,
         subject: newSubject,
+        subjectLabelState: newSubject.getAtomForProperty(shapes.prefLabel.uri),
       }
       setEntities([newEntity, ...entities])
       setEntity(newSubject)

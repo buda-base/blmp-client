@@ -1,11 +1,11 @@
 /* eslint-disable no-extra-parens */
 import React, { useState, FC, useEffect, ChangeEvent } from "react"
-import { Subject, NodeShape, RDFResourceWithLabel } from "../helpers/rdf/types"
+import { Subject, RDFResourceWithLabel, RDFResource, Value, LiteralWithId } from "../helpers/rdf/types"
 import * as shapes from "../helpers/rdf/shapes"
 import { FiPower as LogoutIcon } from "react-icons/fi"
 import { InputLabel, Select, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
-import { atom, useRecoilState, useRecoilValue, selectorFamily } from "recoil"
+import { atom, useRecoilState, useRecoilValue, selectorFamily, RecoilState } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
@@ -16,6 +16,7 @@ import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
 import * as lang from "../helpers/lang"
 import * as ns from "../helpers/rdf/ns"
+import { EntityInEntitySelectorContainer } from "./EntityInEntitySelectorContainer"
 
 const debug = require("debug")("bdrc:entity:selector")
 
@@ -46,11 +47,17 @@ export type Entity = {
   subject: Subject | null
   shapeRef: RDFResourceWithLabel | null
   state: EditedEntityState
+  subjectLabelState: RecoilState<Array<Value>>
 }
 
 export const entitiesAtom = atom<Array<Entity>>({
   key: "entities",
   default: [],
+})
+
+export const defaultEntityLabelAtom = atom<Array<Value>>({
+  key: "defaultEntityLabelAtom",
+  default: [new LiteralWithId("...", "en")], // TODO: use the i18n stuff
 })
 
 const EntitySelector: FC<Record<string, unknown>> = () => {
@@ -63,44 +70,11 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
     setTab(newTab)
   }
 
-  useEffect(() => {
-    setEntities([
-      {
-        subjectQname: "bdr:P1583",
-        subject: null,
-        shapeRef: shapes.shapeRefsMap["bds:PersonShape"],
-        state: EditedEntityState.NotLoaded,
-      },
-    ])
-  }, [setEntities])
-
   return (
     <div className="tabs-select">
       <Tabs value={tab} onChange={handleChange} aria-label="simple tabs example">
         {entities.map((entity: Entity, index) => {
-          // TODO: use entityQname to highlight the selected entity
-          const link = "/edit/" + entity.subjectQname + (entity.shapeRef ? "/" + entity.shapeRef.qname : "")
-          let label
-          if (entity.subject) {
-            const prefLabels = entity?.subject?.getPropValueByLang(shapes.prefLabel)
-            label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
-          }
-          return (
-            <Tab
-              key={entity.subjectQname}
-              {...a11yProps(index)}
-              label={
-                <Link to={link}>
-                  <span>
-                    <span>{label}</span>
-                    <br />
-                    <span className="RID">{entity.subjectQname}</span>
-                  </span>
-                  <span>{entity.state}</span>
-                </Link>
-              }
-            />
-          )
+          return <EntityInEntitySelectorContainer entity={entity} index={index} key={index} />
         })}
         <Tab key="new" {...a11yProps(entities.length)} label={<Link to="/new">NEW / LOAD</Link>} />
       </Tabs>

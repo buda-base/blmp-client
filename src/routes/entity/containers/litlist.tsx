@@ -3,13 +3,13 @@ import PropTypes from "prop-types"
 import * as rdf from "rdflib"
 import {
   LiteralWithId,
-  PropertyShape,
   Subject,
   Value,
   ObjectType,
   RDFResourceWithLabel,
   ExtRDFResourceWithLabel,
 } from "../../../helpers/rdf/types"
+import { PropertyShape } from "../../../helpers/rdf/shapes"
 import * as ns from "../../../helpers/rdf/ns"
 import { generateNew } from "../../../helpers/rdf/construct"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
