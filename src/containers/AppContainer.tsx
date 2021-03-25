@@ -54,7 +54,7 @@ function App(props: AppProps) {
       <main>
         <div>
           <Switch>
-            <Route exact path="/" component={Home} />
+            <Route exact path="/" component={NewEntityContainer} />
             <Route exact path="/profile" component={ProfileContainer} />
             <Route exact path="/persons" component={PersonsContainer} />
             <Route exact path="/person/:id" component={PersonView} />

@@ -8,6 +8,7 @@ import { uiReadyState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
+  if (shapeQname == "bds:PersonShape") return "http://purl.bdrc.io/shapes/core/PersonUIShapes"
   return "/shapes/personpreflabel.ttl"
 }
 
@@ -25,7 +26,7 @@ export const debugStore = (s: rdf.Store, debugNs?: string) => {
   const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
   const thisDebug = debugNs ? require("debug")(debugNs) : debug
   rdf.serialize(defaultRef, s, undefined, "text/turtle", function (err, str) {
-    debug(str)
+    thisDebug(str)
   })
 }
 

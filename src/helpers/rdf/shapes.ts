@@ -22,16 +22,20 @@ export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
 
 // TODO: this should be fetched somewhere... unclear where yet
 export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
+  "bds:PersonShapeTest": new ExtRDFResourceWithLabel(ns.BDS("PersonShapeTest").value, { en: "Person (test)" }),
   "bds:PersonShape": new ExtRDFResourceWithLabel(ns.BDS("PersonShape").value, { en: "Person" }),
 }
 
-export const possibleShapeRefs: Array<RDFResourceWithLabel> = [shapeRefsMap["bds:PersonShape"]]
+export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
+  shapeRefsMap["bds:PersonShapeTest"],
+  shapeRefsMap["bds:PersonShape"],
+]
 
 // TODO
 // returns an array of all possible shapes that can be used to edit an entity
 // depending on its type
 export const shapeRefsForEntity = (subject: Subject): Array<RDFResourceWithLabel> => {
-  return [shapeRefsMap["bds:PersonShape"]]
+  return [shapeRefsMap["bds:PersonShapeTest"], shapeRefsMap["bds:PersonShape"]]
 }
 
 export const shProperty = ns.SH("property")
