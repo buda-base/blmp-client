@@ -1,3 +1,4 @@
+import { EntityCreator } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { RDFResourceWithLabel } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
@@ -23,16 +24,8 @@ function NewEntityContainer(props: AppProps) {
     // if we know what shape we want, we can just create the entity:
     // TODO: perhaps the shape should be fetched there too, so that we can
     // properly generate the ID
-    const newSubject = generateNew("P", null)
-    debug(newSubject)
-    const newEntity = {
-      subjectQname: newSubject.qname,
-      state: EditedEntityState.NeedsSaving,
-      shapeRef: shapeRef,
-      subject: newSubject,
-    }
-    setEntities([newEntity, ...entities])
-    props.history.replace("/edit/" + newSubject.qname + "/" + shapeQname)
+    const { entityLoadingState, entity } = EntityCreator(shapeRef)
+    if (entity) props.history.replace("/edit/" + entity.qname + "/" + shapeQname)
     return <span>creating...</span>
   }
 

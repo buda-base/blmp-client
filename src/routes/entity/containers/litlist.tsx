@@ -32,7 +32,7 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
     case ObjectType.ResExt:
       /*
       // to speed up dev/testing
-      return new ExtRDFResourceWithLabel("bdr:P2JM192", { "en":"Delek Gyatso", "bo-x-ewts":"bde legs rgya mtsho/" }, 
+      return new ExtRDFResourceWithLabel("bdr:P2JM192", { "en":"Delek Gyatso", "bo-x-ewts":"bde legs rgya mtsho/" },
         { PersonBirth: { onYear: "1724" }, PersonDeath: { onYear: "1777" } })
       */
 
@@ -68,6 +68,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   embedded,
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
+  debug(subject)
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
   const [uiLang] = useRecoilState(uiLangState)
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)

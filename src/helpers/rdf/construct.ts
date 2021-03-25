@@ -1,9 +1,12 @@
 import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
+import { useRecoilState } from "recoil"
 import * as ns from "./ns"
 import * as id from "./../id"
-import { RDFResource, Subject, NodeShape, EntityGraph } from "./types"
+import { IFetchState } from "./io"
+import { RDFResource, Subject, NodeShape, EntityGraph, RDFResourceWithLabel } from "./types"
+import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 
 const debug = require("debug")("bdrc:rdf:construct")
 
@@ -26,4 +29,35 @@ export const generateNew = (type: string, shape: NodeShape | null, parent?: RDFR
     graph = new EntityGraph(rdf.graph(), node.uri)
   }
   return new Subject(node, graph)
+}
+
+export function EntityCreator(shapeRef: RDFResourceWithLabel) {
+  const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
+  const [entity, setEntity] = useState<Subject>()
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+
+  const reset = () => {
+    setEntity(undefined)
+    setEntityLoadingState({ status: "idle", error: undefined })
+  }
+
+  useEffect(() => {
+    // TODO: in the future this can be async
+    function fetchResource(shapeRef: RDFResourceWithLabel) {
+      setEntityLoadingState({ status: "creating", error: undefined })
+      const newSubject = generateNew("P", null)
+      const newEntity = {
+        subjectQname: newSubject.qname,
+        state: EditedEntityState.NeedsSaving,
+        shapeRef: shapeRef,
+        subject: newSubject,
+      }
+      setEntities([newEntity, ...entities])
+      setEntity(newSubject)
+      setEntityLoadingState({ status: "created", error: undefined })
+    }
+    fetchResource(shapeRef)
+  }, [shapeRef])
+
+  return { entityLoadingState, entity, reset }
 }

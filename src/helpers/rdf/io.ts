@@ -41,7 +41,7 @@ export const loadTtl = async (url: string): Promise<rdf.Store> => {
   return store
 }
 
-interface IFetchState {
+export interface IFetchState {
   status: string
   error?: string
 }
@@ -97,7 +97,6 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>()
   const [uiReady, setUiReady] = useRecoilState(uiReadyState)
-  // DONE: use to update state & subject
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const reset = () => {
@@ -108,6 +107,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   useEffect(() => {
     async function fetchResource(entityQname: string) {
       setEntityLoadingState({ status: "fetching", error: undefined })
+      if (entityQname != "bdr:P1583") throw "can't find " + entityQname
       const fetchUrl = fetchUrlFromEntityQname(entityQname)
       const labelQueryUrl = labelQueryUrlFromEntityQname(entityQname)
       const entityUri = uriFromQname(entityQname)
@@ -154,8 +154,13 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       }
     }
     const index = entities.findIndex((e) => e.subjectQname === entityQname)
-    if (index === -1 || entities[index] && !entities[index].subject) fetchResource(entityQname)
-    else {
+    debug("entities", entities)
+    if (index === -1 || entities[index] && !entities[index].subject) {
+      debug("index", index)
+      debug("entity", entities[index])
+      //debug("entity.subject", entities[index])
+      fetchResource(entityQname)
+    } else {
       setEntityLoadingState({ status: "fetched", error: undefined })
       const subj: Subject | null = entities[index].subject
       if (subj) setEntity(subj)

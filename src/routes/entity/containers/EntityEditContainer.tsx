@@ -22,10 +22,15 @@ function EntityEditContainer(props: AppProps) {
   const [shapeQname, setShapeQname] = useState(props.match.params.shapeQname)
   const [entityQname, setEntityQname] = useState(props.match.params.entityQname)
 
-  if (!entityQname) setEntityQname("bdr:P1583")
+  if (!entityQname) {
+    setEntityQname("bdr:P1583")
+    //entityQname = "bdr:P1583"
+  }
 
   const [uiLang] = useRecoilState(uiLangState)
   const [entities] = useRecoilState(entitiesAtom)
+
+  debug(entities)
 
   debug("uri/qname", entityQname)
 
@@ -39,6 +44,7 @@ function EntityEditContainer(props: AppProps) {
   const index = entities.findIndex((e) => e.subjectQname === entityQname)
   let shapeRef = null
   if (index == -1) {
+    debug("can't find " + entityQname + " in entities, ")
     if (shapeQname) {
       if (shapeQname in shapes.shapeRefsMap) shapeRef = shapes.shapeRefsMap[shapeQname]
       else return <span>invalid shape!</span>
