@@ -19,13 +19,21 @@ import * as rdf from "rdflib"
 const debug = require("debug")("bdrc:entity:edit")
 
 function EntityEditContainer(props: AppProps) {
-  let [shapeQname] = useState(props.match.params.shapeQname)
-  let [entityQname] = useState(props.match.params.entityQname)
-  if (!entityQname) {
-    entityQname = "bdr:P1583"
-  }
+  const [shapeQname, setShapeQname] = useState(props.match.params.shapeQname)
+  const [entityQname, setEntityQname] = useState(props.match.params.entityQname)
+
+  if (!entityQname) setEntityQname("bdr:P1583")
+
   const [uiLang] = useRecoilState(uiLangState)
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [entities] = useRecoilState(entitiesAtom)
+
+  debug("uri/qname", entityQname)
+
+  useEffect(() => {
+    debug("params", props.match.params.entityQname)
+    if (props.match.params.entityQname) setEntityQname(props.match.params.entityQname)
+    if (props.match.params.shapeQname) setShapeQname(props.match.params.shapeQname)
+  }, [props.match.params])
 
   // here we create the entity in the list if it's not there yet:
   const index = entities.findIndex((e) => e.subjectQname === entityQname)
@@ -36,8 +44,12 @@ function EntityEditContainer(props: AppProps) {
       else return <span>invalid shape!</span>
     }
   }
-  // DONE: moved initialisation to EntotyFetcher
+  // DONE: moved entities initialisation to EntityFetcher
   const { entityLoadingState, entity } = EntityFetcher(entityQname, shapeRef)
+
+  // TODO: update highlighted tab
+
+  debug("entity", entity)
 
   if (entity && !shapeQname) {
     const possibleShapes = shapes.shapeRefsForEntity(entity)
@@ -47,8 +59,7 @@ function EntityEditContainer(props: AppProps) {
     if (possibleShapes.length > 1) {
       // TODO
     }
-    shapeQname = possibleShapes[0].qname
-    props.history.push("/edit/" + entityQname + "/" + shapeQname)
+    props.history.push("/edit/" + entityQname + "/" + possibleShapes[0].qname)
   }
 
   if (!shapeQname) return <span>loading</span>

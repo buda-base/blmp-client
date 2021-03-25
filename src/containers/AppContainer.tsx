@@ -19,6 +19,8 @@ import PersonView from "../routes/persons/containers/PersonView"
 
 import enTranslations from "../translations/en"
 
+const debug = require("debug")("bdrc:router")
+
 i18n
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
@@ -35,8 +37,8 @@ i18n
   })
 
 export interface IdTypeParams {
-  shapeQname?: string
-  entityQname?: string
+  shapeQname: string
+  entityQname: string
 }
 
 export interface AppProps extends RouteComponentProps<IdTypeParams> {}
@@ -46,6 +48,9 @@ function App(props: AppProps) {
 
   if (isLoading) return <span>Loading</span>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
+
+  // TODO: refresh when switching between two open resources
+  debug("hello?", props)
 
   return (
     <React.Fragment>

@@ -188,6 +188,7 @@ export class EntityGraph {
     })
   }
 
+  // commenting this out fixes random "TypeError: Cannot define property __memoized_map_1, object is not extensible"
   @Memoize((propertyUri: string, subjectUri: string) => {
     return subjectUri + propertyUri
   })

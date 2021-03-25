@@ -97,7 +97,7 @@ export function MinimalAddButton({ add, className }) {
 
 export function BlockAddButton({ add, label }) {
   return (
-    <div className="text-center pb-1" style={{ width: "100%" }}>
+    <div className="blockAdd text-center pb-1" style={{ width: "100%" }}>
       <button
         size="small"
         className="btn btn-sm btn-block btn-outline-primary mb-2 px-0"

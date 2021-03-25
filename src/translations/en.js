@@ -15,14 +15,15 @@ const enTranslations = {
     loading: "Loading...",
   },
   search: {
-    lookup: "lookup",
-    cancel: "cancel",
-    change: "change",
     help: {
       preview: "Preview resource",
       open: "Open in Library",
       replace: "Replace",
     },
+    lookup: "lookup",
+    cancel: "cancel",
+    change: "change",
+    create: "create",
   },
   error: {
     gYear: 'must be exactly 4 digits (always, even "0001")',

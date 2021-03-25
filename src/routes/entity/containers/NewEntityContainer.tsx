@@ -32,7 +32,7 @@ function NewEntityContainer(props: AppProps) {
       subject: newSubject,
     }
     setEntities([newEntity, ...entities])
-    props.history.push("/edit/" + newSubject.qname + "/" + shapeQname)
+    props.history.replace("/edit/" + newSubject.qname + "/" + shapeQname)
     return <span>creating...</span>
   }
 

@@ -242,7 +242,7 @@ const EditYear: FC<{
   const classes = useStyles()
 
   let error
-  if (lit.value && !lit.value.match(/^[0-9]{4}$/)) error = i18n.t("error.gYear")
+  if (lit.value && !lit.value.match(/^-?[0-9]{4}$/)) error = i18n.t("error.gYear")
 
   const eventType = "<the event type/s>"
 
@@ -341,7 +341,7 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
 
   return (
-    <div className="mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }}>
+    <div className="facet mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }}>
       <div>
         {targetShape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
