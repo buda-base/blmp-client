@@ -7,7 +7,7 @@ import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
+import { BrowserRouter as Router, Switch, Route, Link, Redirect } from "react-router-dom"
 import React from "react"
 
 const debug = require("debug")("bdrc:entity:entitycreation")
@@ -23,7 +23,8 @@ function EntityCreationContainer(props: AppProps) {
   // TODO: perhaps the shape should be fetched there too, so that we can
   // properly generate the ID
   const { entityLoadingState, entity } = EntityCreator(shapeRef)
-  if (entity) props.history.replace("/edit/" + entity.qname + "/" + shapeQname)
+  if (entity) return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
+
   // TODO: check if entityLoadingState is in error
   return <span>creating...</span>
 }

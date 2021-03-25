@@ -19,57 +19,27 @@ import * as rdf from "rdflib"
 const debug = require("debug")("bdrc:entity:edit")
 
 function EntityEditContainer(props: AppProps) {
-  const [shapeQname, setShapeQname] = useState(props.match.params.shapeQname)
-  const [entityQname, setEntityQname] = useState(props.match.params.entityQname)
-
-  if (!entityQname) {
-    setEntityQname("bdr:P1583")
-    //entityQname = "bdr:P1583"
-  }
+  //const [shapeQname, setShapeQname] = useState(props.match.params.shapeQname)
+  //const [entityQname, setEntityQname] = useState(props.match.params.entityQname)
+  const shapeQname = props.match.params.shapeQname
+  const entityQname = props.match.params.entityQname
 
   const [uiLang] = useRecoilState(uiLangState)
-  const [entities] = useRecoilState(entitiesAtom)
 
-  debug(entities)
+  // useEffect(() => {
+  //   debug("params", props.match.params.entityQname)
+  //   if (props.match.params.entityQname) setEntityQname(props.match.params.entityQname)
+  //   if (props.match.params.shapeQname) setShapeQname(props.match.params.shapeQname)
+  // }, [props.match.params])
 
-  debug("uri/qname", entityQname)
-
-  useEffect(() => {
-    debug("params", props.match.params.entityQname)
-    if (props.match.params.entityQname) setEntityQname(props.match.params.entityQname)
-    if (props.match.params.shapeQname) setShapeQname(props.match.params.shapeQname)
-  }, [props.match.params])
-
-  // here we create the entity in the list if it's not there yet:
-  const index = entities.findIndex((e) => e.subjectQname === entityQname)
-  let shapeRef = null
-  if (index == -1) {
-    debug("can't find " + entityQname + " in entities, ")
-    if (shapeQname) {
-      if (shapeQname in shapes.shapeRefsMap) shapeRef = shapes.shapeRefsMap[shapeQname]
-      else return <span>invalid shape!</span>
-    }
-  }
-  // DONE: moved entities initialisation to EntityFetcher
-  const { entityLoadingState, entity } = EntityFetcher(entityQname, shapeRef)
+  if (!(shapeQname in shapes.shapeRefsMap)) return <span>invalid shape!</span>
 
   // TODO: update highlighted tab
 
-  debug("entity", entity)
-
-  if (entity && !shapeQname) {
-    const possibleShapes = shapes.shapeRefsForEntity(entity)
-    if (!possibleShapes) {
-      return <span>cannot find any appropriate shape for this entity</span>
-    }
-    if (possibleShapes.length > 1) {
-      // TODO
-    }
-    props.history.push("/edit/" + entityQname + "/" + possibleShapes[0].qname)
-  }
-
-  if (!shapeQname) return <span>loading</span>
+  const { entityLoadingState, entity } = EntityFetcher(entityQname, shapes.shapeRefsMap[shapeQname])
   const { loadingState, shape } = ShapeFetcher(shapeQname)
+
+  // TODO: check that shape can be properly applied to entuty
 
   if (loadingState.status === "fetching" || entityLoadingState.status === "fetching") {
     return <span>{i18n.t("loading")}</span>
@@ -85,8 +55,7 @@ function EntityEditContainer(props: AppProps) {
     )
   }
 
-  if (!shape) return null
-  if (!entity) return null
+  if (!shape || !entity) return null
 
   const shapeLabel = lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)
 
