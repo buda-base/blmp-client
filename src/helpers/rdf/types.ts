@@ -3,7 +3,16 @@ import * as shapes from "./shapes"
 import * as ns from "./ns"
 import { idGenerator } from "../id"
 import { Memoize } from "typescript-memoize"
-import { atom, useRecoilState, useRecoilValue, selectorFamily, atomFamily, DefaultValue, AtomEffect } from "recoil"
+import {
+  atom,
+  useRecoilState,
+  useRecoilValue,
+  selectorFamily,
+  atomFamily,
+  DefaultValue,
+  AtomEffect,
+  RecoilState,
+} from "recoil"
 import config from "../../config"
 
 const debug = require("debug")("bdrc:rdf:types")
@@ -50,6 +59,31 @@ export class EntityGraphValues {
       }
     }
   }
+
+  propsUpdateEffect: (subjectUri: string, propertyUri: string) => AtomEffect<Array<Value>> = (
+    subjectUri: string,
+    propertyUri: string
+  ) => ({ setSelf, onSet }: setSelfOnSelf) => {
+    onSet((newValues: Array<Value> | DefaultValue): void => {
+      if (!(newValues instanceof DefaultValue)) {
+        this.onUpdateValues(subjectUri, propertyUri, newValues)
+      }
+    })
+  }
+
+  @Memoize((propertyUri: string, subjectUri: string) => {
+    return subjectUri + propertyUri
+  })
+  getAtomForSubjectProperty(propertyUri: string, subjectUri: string) {
+    debug(this)
+    return atom<Array<Value>>({
+      key: subjectUri + propertyUri,
+      default: [],
+      effects_UNSTABLE: [this.propsUpdateEffect(subjectUri, propertyUri)],
+      // disable immutability in production
+      dangerouslyAllowMutability: !config.__DEV__,
+    })
+  }
 }
 
 type setSelfOnSelf = {
@@ -60,7 +94,7 @@ type setSelfOnSelf = {
 // a proxy to an EntityGraph that updates the entity graph but is purely read-only, so that React is happy
 export class EntityGraph {
   onGetInitialValues: (subjectUri: string, propertyUri: string, values: Array<Value>) => void
-  onUpdateValues: (subjectUri: string, propertyUri: string, values: Array<Value>) => void
+  getAtomForSubjectProperty: (propertyUri: string, subjectUri: string) => RecoilState<Array<Value>>
 
   getValues: () => EntityGraphValues
 
@@ -82,7 +116,8 @@ export class EntityGraph {
     const values = new EntityGraphValues()
     this.topSubjectUri = topSubjectUri
     this.onGetInitialValues = values.onGetInitialValues
-    this.onUpdateValues = values.onUpdateValues
+    this.getAtomForSubjectProperty = (propertyUri, subjectUri) =>
+      values.getAtomForSubjectProperty(propertyUri, subjectUri)
     this.associatedLabelsStore = associatedLabelsStore
     this.getValues = () => {
       return values
@@ -175,31 +210,6 @@ export class EntityGraph {
         return fromRDFLitIDs
         break
     }
-  }
-
-  propsUpdateEffect: (subjectUri: string, propertyUri: string) => AtomEffect<Array<Value>> = (
-    subjectUri: string,
-    propertyUri: string
-  ) => ({ setSelf, onSet }: setSelfOnSelf) => {
-    onSet((newValues: Array<Value> | DefaultValue): void => {
-      if (!(newValues instanceof DefaultValue)) {
-        this.onUpdateValues(subjectUri, propertyUri, newValues)
-      }
-    })
-  }
-
-  // commenting this out fixes random "TypeError: Cannot define property __memoized_map_1, object is not extensible"
-  @Memoize((propertyUri: string, subjectUri: string) => {
-    return subjectUri + propertyUri
-  })
-  getAtomForSubjectProperty(propertyUri: string, subjectUri: string) {
-    return atom<Array<Value>>({
-      key: subjectUri + propertyUri,
-      default: [],
-      effects_UNSTABLE: [this.propsUpdateEffect(subjectUri, propertyUri)],
-      // disable immutability in production
-      dangerouslyAllowMutability: !config.__DEV__,
-    })
   }
 }
 
