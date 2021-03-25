@@ -15,6 +15,7 @@ import PersonsContainer from "../routes/persons/containers/PersonsContainer"
 import PersonEditContainer from "../routes/persons/containers/PersonEditContainer"
 import EntityEditContainer from "../routes/entity/containers/EntityEditContainer"
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
+import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import PersonView from "../routes/persons/containers/PersonView"
 
 import enTranslations from "../translations/en"
@@ -64,7 +65,7 @@ function App(props: AppProps) {
             <Route exact path="/persons" component={PersonsContainer} />
             <Route exact path="/person/:id" component={PersonView} />
             <Route exact path="/new" component={NewEntityContainer} />
-            <Route exact path="/new/:shapeQname" component={NewEntityContainer} />
+            <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
             <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
             <Route exact path="/edit/:entityQname" component={EntityEditContainer} />
             <Route exact path="/person/:id/edit" component={PersonEditContainer} />

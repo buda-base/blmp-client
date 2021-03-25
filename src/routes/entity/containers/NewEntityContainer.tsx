@@ -14,20 +14,6 @@ const debug = require("debug")("bdrc:entity:newentity")
 
 function NewEntityContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
-
-  const shapeQname = props.match.params.shapeQname
-  if (shapeQname) {
-    let shapeRef = null
-    if (shapeQname in shapes.shapeRefsMap) shapeRef = shapes.shapeRefsMap[shapeQname]
-    else return <span>invalid shape!</span>
-    // if we know what shape we want, we can just create the entity:
-    // TODO: perhaps the shape should be fetched there too, so that we can
-    // properly generate the ID
-    const { entityLoadingState, entity } = EntityCreator(shapeRef)
-    if (entity) props.history.replace("/edit/" + entity.qname + "/" + shapeQname)
-    return <span>creating...</span>
-  }
 
   // otherwise we want the user to select the appropriate shape
   return (
