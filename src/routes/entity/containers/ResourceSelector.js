@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 // DONE dedicated subcomponent + keep previous keyword/language searched
-export function ResourceSelector({ value, onChange, propid, label, types, idx, exists }) {
+export function ResourceSelector({ value, onChange, propid, label, types, idx, exists, subject }) {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("")
@@ -161,7 +161,18 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
 
   const createAndLink = () => {
     // TODO: use actual selected resource type
-    history.push("/new/" + type.replace(/^bdo/, "bds") + "Shape")
+    history.push(
+      "/new/" +
+        type.replace(/^bdo/, "bds") +
+        "Shape" +
+        "Test" /* tmp */ +
+        "?subject=" +
+        subject.qname +
+        "&propid=" +
+        propid +
+        "&index=" +
+        idx
+    )
     debug("entities...", entities)
   }
 
