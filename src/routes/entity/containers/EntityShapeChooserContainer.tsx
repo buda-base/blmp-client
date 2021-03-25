@@ -15,7 +15,7 @@ import { atom, useRecoilState } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
+import { BrowserRouter as Router, Switch, Route, Link, Redirect } from "react-router-dom"
 
 const debug = require("debug")("bdrc:entity:edit")
 
@@ -54,7 +54,7 @@ function EntityShapeChooserContainer(props: AppProps) {
         </div>
       )
     } else {
-      props.history.push("/edit/" + entityQname + "/" + possibleShapes[0].qname)
+      return <Redirect to={"/edit/" + entityQname + "/" + possibleShapes[0].qname} />
     }
   }
 
