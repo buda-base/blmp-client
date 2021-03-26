@@ -117,7 +117,7 @@ export class EntityGraph {
   // (ex: students, teachers, etc.), it's not present in all circumstances
   associatedLabelsStore?: rdf.Store
 
-  constructor(store: rdf.Store, topSubjectUri: string, associatedLabelsStore?: rdf.Store) {
+  constructor(store: rdf.Store, topSubjectUri: string, associatedLabelsStore: rdf.Store = rdf.graph()) {
     this.store = store
     // strange code: we're keeping values in the closure so that when the object freezes
     // the freeze doesn't proagate to it
@@ -385,6 +385,17 @@ export class Subject extends RDFResource {
 
   getAtomForProperty(propertyUri: string) {
     return this.graph.getAtomForSubjectProperty(propertyUri, this.uri)
+  }
+
+  // returns new subject extended with some TTL
+  extendWithTTL(ttl: string): Subject {
+    const newStore: rdf.Store = rdf.graph()
+    // DONE: merge with current store
+    newStore.addAll(this.graph.store.statements)
+    rdf.parse(ttl, newStore, rdf.Store.defaultGraphURI, "text/turtle")
+    const newGraph = new EntityGraph(newStore, this.graph.topSubjectUri, this.graph.associatedLabelsStore)
+    const newSubject = new Subject(this.node, newGraph)
+    return newSubject
   }
 }
 
