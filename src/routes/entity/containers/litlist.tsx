@@ -266,6 +266,8 @@ const EditYear: FC<{
             error: true,
           }
         : {})}
+      type="number"
+      InputProps={{ inputProps: { min: -2000, max: 2100 } }}
       InputLabelProps={{ shrink: true }}
       onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
     />
