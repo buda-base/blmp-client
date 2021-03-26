@@ -22,7 +22,7 @@ const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
   const n = Number(lit.value)
-  if (n && !isNaN(n)) {
+  if (!isNaN(n)) {
     return +n
   }
   return null

@@ -65,8 +65,8 @@ export const sortByPropValue = (
     const ordern: rdf.Literal | null = store.any(node, p, null) as rdf.Literal
     if (ordern) {
       const asnum = rdfLitAsNumber(ordern)
-      if (asnum) order = asnum
-      else debug("no order found for node and property: ", node.value, p.value)
+      if (asnum !== null) order = asnum
+      else debug("no order found for node and property: ", node.value, p.value, asnum)
       orders.push(order)
     }
     orderedGroupObjs[order] = node
