@@ -65,8 +65,8 @@ export const sortByPropValue = (
     const ordern: rdf.Literal | null = store.any(node, p, null) as rdf.Literal
     if (ordern) {
       const asnum = rdfLitAsNumber(ordern)
-      if (asnum) order = asnum
-      else debug("no order found for node and property: ", node.value, p.value)
+      if (asnum !== null) order = asnum
+      else debug("no order found for node and property: ", node.value, p.value, asnum)
       orders.push(order)
     }
     orderedGroupObjs[order] = node
@@ -211,7 +211,8 @@ export class NodeShape extends RDFResourceWithLabel {
     for (const prop of props) {
       // we assume there's only one group per property, by construction of the shape (maybe it's wrong?)
       const group: rdf.NamedNode | null = this.graph.store.any(prop, shGroup, null) as rdf.NamedNode
-      if (group && !grouplist.includes(group)) {
+      // for some reason grouplist.includes(group) doesn't work, I suppose new objects are created by rdflib
+      if (group && !grouplist.some((e) => e.value === group.value)) {
         grouplist.push(group)
       }
     }
