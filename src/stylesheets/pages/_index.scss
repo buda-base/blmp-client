@@ -274,3 +274,6 @@ input[type="checkbox"].dmcheck {
 #root > main > div > div > div > .album > .container > .row > div { max-width:100%;}
 
 //.facet .blockAdd  { width:calc(100% - 2rem) !important; }
+
+iframe { z-index:2; }
+.iframe-BG { position:fixed; left:0; top:0; width:100vw; height:100vh;background:rgba(0,0,0,0); z-index:1; }

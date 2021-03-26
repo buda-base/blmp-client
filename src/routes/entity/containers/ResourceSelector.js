@@ -37,16 +37,10 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const history = useHistory()
 
-  /* // TODO close iframe when clicking anywhere else
-  const closeIframe = (ev) => {
-    if(libraryURL) {
-      setLibraryURL("")
-      ev.preventDefault();
-      ev.stopPropagation();
-      return false;
-    }
+  // TODO close iframe when clicking anywhere else
+  const closeFrame = (ev) => {
+    if (libraryURL) setLibraryURL("")
   }
-  */
 
   const updateRes = (data) => {
     if (data["@id"] && !exists(data["@id"])) {
@@ -339,6 +333,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
           }}
         >
           <iframe style={{ border: "none" }} height="400" src={libraryURL} />
+          <div className="iframe-BG" onClick={closeFrame}></div>
         </div>
       )}
     </React.Fragment>
