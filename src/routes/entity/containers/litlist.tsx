@@ -409,6 +409,7 @@ const ExtEntityComponent: FC<{
           types={property.expectedObjectType}
           idx={idx}
           exists={exists}
+          subject={subject}
         />
         {canDel && (
           <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
