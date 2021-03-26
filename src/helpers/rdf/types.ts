@@ -387,3 +387,11 @@ export class Subject extends RDFResource {
     return this.graph.getAtomForSubjectProperty(propertyUri, this.uri)
   }
 }
+
+export class Ontology {
+  store: rdf.Store
+
+  constructor(store: rdf.Store) {
+    this.store = store
+  }
+}

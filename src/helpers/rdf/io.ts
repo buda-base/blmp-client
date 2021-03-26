@@ -2,7 +2,7 @@ import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
 import { useRecoilState } from "recoil"
-import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject } from "./types"
+import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject, Ontology } from "./types"
 import { NodeShape, prefLabel } from "./shapes"
 import { uriFromQname } from "./ns"
 import { uiReadyState } from "../../atoms/common"
@@ -50,6 +50,28 @@ export interface IFetchState {
 // maps of the shapes and entities that have been downloaded so far, with no gc
 export const shapesMap: Record<string, NodeShape> = {}
 
+export let ontologyConst: Ontology | undefined = undefined
+export const ontologyUrl = "http://purl.bdrc.io/ontology/core.ttl"
+
+async function loadOntology(): Promise<Ontology> {
+  debug("loading ontology")
+  if (ontologyConst) {
+    return Promise.resolve(ontologyConst)
+  }
+  const response = await fetch(ontologyUrl, { headers: acceptTtl })
+  let body = await response.text()
+  if (body.startsWith("BASE")) {
+    const firstlineidx: number = body.indexOf("\n")
+    if (firstlineidx > 1) body = body.substring(firstlineidx + 1)
+  }
+  const store: rdf.Store = rdf.graph()
+  rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
+  const res = new Ontology(store)
+  ontologyConst = res
+  debug("ontology loaded")
+  return Promise.resolve(res)
+}
+
 export function ShapeFetcher(shapeQname: string) {
   const [loadingState, setLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [shape, setShape] = useState<NodeShape>()
@@ -68,25 +90,18 @@ export function ShapeFetcher(shapeQname: string) {
     async function fetchResource(shapeQname: string) {
       setLoadingState({ status: "fetching", error: undefined })
       const url = fetchUrlFromshapeQname(shapeQname)
-
-      loadTtl(url)
-        .then(function (store: rdf.Store) {
-          if (store) {
-            const shapeUri = uriFromQname(shapeQname)
-            const shape: NodeShape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri))
-            setLoadingState({ status: "fetched", error: undefined })
-            setShape(shape)
-          } else {
-            setLoadingState({ status: "error", error: "can't find shape" })
-          }
-        })
-        .catch(function (error) {
-          if (error.response && error.response.data.output.payload.error === "Not Found") {
-            setLoadingState({ status: "error", error: "No records found" })
-          } else {
-            setLoadingState({ status: "error", error: "Unable to process" })
-          }
-        })
+      const loadRes = loadTtl(url)
+      const loadOnto = loadOntology()
+      try {
+        const store = await loadRes
+        const ontology = await loadOnto
+        const shapeUri = uriFromQname(shapeQname)
+        const shape: NodeShape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri))
+        setLoadingState({ status: "fetched", error: undefined })
+        setShape(shape)
+      } catch (e) {
+        setLoadingState({ status: "error", error: "error fetching shape or ontology" })
+      }
     }
     fetchResource(shapeQname)
   }, [shapeQname])
