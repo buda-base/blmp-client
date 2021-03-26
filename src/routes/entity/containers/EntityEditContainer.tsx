@@ -15,6 +15,7 @@ import { atom, useRecoilState } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
+import qs from "query-string"
 
 const debug = require("debug")("bdrc:entity:edit")
 
@@ -23,6 +24,7 @@ function EntityEditContainer(props: AppProps) {
   //const [entityQname, setEntityQname] = useState(props.match.params.entityQname)
   const shapeQname = props.match.params.shapeQname
   const entityQname = props.match.params.entityQname
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const [uiLang] = useRecoilState(uiLangState)
 
@@ -56,6 +58,24 @@ function EntityEditContainer(props: AppProps) {
   }
 
   if (!shape || !entity) return null
+
+  // TODO: add new entity as object for property where it was created
+  const urlParams = qs.parse(props.history.location.search)
+  const index = entities.findIndex((e) => e.subjectQname === urlParams.subject)
+  // TODO: what if subject for property is a new one?
+  if (index >= 0 && entities[index].subject) {
+    const subject = entities[index].subject
+    if (subject) {
+      const newSubject = subject.extendWithTTL(
+        "<" + subject.uri + "> <" + urlParams.propid + "> <" + entity.qname + "> ."
+      )
+      debug("newSubject:", newSubject.graph.store, subject.graph.store)
+      const newEntities = [...entities]
+      newEntities[index] = { ...entities[index], subject: newSubject }
+      setEntities(newEntities)
+      props.history.replace(props.history.location.pathname)
+    }
+  }
 
   const shapeLabel = lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)
 
