@@ -19,6 +19,7 @@ const enTranslations = {
       preview: "Preview resource",
       open: "Open in Library",
       replace: "Replace",
+      edit: "Edit resource",
     },
     lookup: "lookup",
     cancel: "cancel",

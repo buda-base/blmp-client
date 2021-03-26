@@ -3,14 +3,14 @@ import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
-import { useHistory } from "react-router-dom"
+import { useHistory, Link } from "react-router-dom"
 
 import * as lang from "../../../helpers/lang"
 import * as constants from "../../helpers/vocabulary"
 import { Edit as LangEdit } from "../../helpers/shapes/skos/label"
 import { uiLangState } from "../../../atoms/common"
 import { ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
-import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon } from "../../layout/icons"
+import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, SettingsIcon } from "../../layout/icons"
 import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
 
 import config from "../../../config"
@@ -285,6 +285,10 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
                 >
                   <LaunchIcon style={{ width: "16px" }} />
                 </a>
+                &nbsp;
+                <Link title={i18n.t("search.help.edit")} to={"/edit/" + value.qname}>
+                  <SettingsIcon style={{ width: "16px" }} />
+                </Link>
                 &nbsp;
                 {value.otherData["tmp:keyword"] && (
                   <a title={i18n.t("search.help.replace")}>
