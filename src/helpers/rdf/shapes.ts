@@ -80,6 +80,13 @@ export const sortByPropValue = (
 }
 
 export class PropertyShape extends RDFResourceWithLabel {
+  ontologyGraph: EntityGraph
+
+  constructor(node: rdf.NamedNode, graph: EntityGraph, ontologyGraph: EntityGraph) {
+    super(node, graph, rdfsLabel)
+    this.ontologyGraph = ontologyGraph
+  }
+
   // different property for prefLabels, property shapes are using sh:name
   @Memoize()
   public get prefLabels(): Record<string, string> {
@@ -131,14 +138,14 @@ export class PropertyShape extends RDFResourceWithLabel {
   public get in(): Array<RDFResourceWithLabel> | null {
     const nodes = this.getPropResValuesFromList(shIn)
     if (!nodes) return null
-    return PropertyShape.resourcizeWithInit(nodes, this.graph)
+    return PropertyShape.resourcizeWithInit(nodes, this.ontologyGraph)
   }
 
   @Memoize()
   public get expectedObjectType(): Array<RDFResourceWithLabel> | null {
     const nodes = this.getPropResValuesFromList(bdsExpectedObjectType)
     if (!nodes) return null
-    return PropertyShape.resourcizeWithInit(nodes, this.graph)
+    return PropertyShape.resourcizeWithInit(nodes, this.ontologyGraph)
   }
 
   @Memoize()
@@ -166,18 +173,25 @@ export class PropertyShape extends RDFResourceWithLabel {
   public get targetShape(): NodeShape | null {
     const val: rdf.NamedNode | null = this.graph.store.any(null, shTargetObjectsOf, this.path) as rdf.NamedNode | null
     if (val == null) return null
-    return new NodeShape(val, this.graph)
+    return new NodeShape(val, this.graph, this.ontologyGraph)
   }
 }
 
 export class PropertyGroup extends RDFResourceWithLabel {
+  ontologyGraph: EntityGraph
+
+  constructor(node: rdf.NamedNode, graph: EntityGraph, ontologyGraph: EntityGraph) {
+    super(node, graph, rdfsLabel)
+    this.ontologyGraph = ontologyGraph
+  }
+
   @Memoize()
   public get properties(): Array<PropertyShape> {
     const res: Array<PropertyShape> = []
     let propsingroup: Array<rdf.NamedNode> = this.graph.store.each(null, shGroup, this.node) as Array<rdf.NamedNode>
     propsingroup = sortByPropValue(propsingroup, shOrder, this.graph.store)
     for (const prop of propsingroup) {
-      res.push(new PropertyShape(prop, this.graph))
+      res.push(new PropertyShape(prop, this.graph, this.ontologyGraph))
     }
     return res
   }
@@ -190,6 +204,13 @@ export class PropertyGroup extends RDFResourceWithLabel {
 }
 
 export class NodeShape extends RDFResourceWithLabel {
+  ontologyGraph: EntityGraph
+
+  constructor(node: rdf.NamedNode, graph: EntityGraph, ontologyGraph: EntityGraph) {
+    super(node, graph, rdfsLabel)
+    this.ontologyGraph = ontologyGraph
+  }
+
   @Memoize()
   public get properties(): Array<PropertyShape> {
     const res: Array<PropertyShape> = []
@@ -197,7 +218,7 @@ export class NodeShape extends RDFResourceWithLabel {
     let props: Array<rdf.NamedNode> = this.graph.store.each(this.node, shProperty, null) as Array<rdf.NamedNode>
     props = sortByPropValue(props, shOrder, this.graph.store)
     for (const prop of props) {
-      res.push(new PropertyShape(prop, this.graph))
+      res.push(new PropertyShape(prop, this.graph, this.ontologyGraph))
     }
     return res
   }
@@ -218,7 +239,7 @@ export class NodeShape extends RDFResourceWithLabel {
     }
     grouplist = sortByPropValue(grouplist, shOrder, this.graph.store)
     for (const group of grouplist) {
-      res.push(new PropertyGroup(group, this.graph))
+      res.push(new PropertyGroup(group, this.graph, this.ontologyGraph))
     }
     return res
   }

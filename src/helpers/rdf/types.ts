@@ -19,6 +19,7 @@ const debug = require("debug")("bdrc:rdf:types")
 
 const defaultGraphNode = new rdf.NamedNode(rdf.Store.defaultGraphURI)
 const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
+const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
   const n = Number(lit.value)
@@ -312,8 +313,12 @@ export class RDFResource {
 export class RDFResourceWithLabel extends RDFResource {
   private labelProp: rdf.NamedNode
 
-  constructor(node: rdf.NamedNode, graph: EntityGraph, labelProp: rdf.NamedNode = prefLabel) {
+  constructor(node: rdf.NamedNode, graph: EntityGraph, labelProp?: rdf.NamedNode) {
     super(node, graph)
+    if (!labelProp) {
+      if (node.value.startsWith("http://purl.bdrc.io/res")) labelProp = prefLabel
+      labelProp = rdfsLabel
+    }
     this.labelProp = labelProp
   }
 
@@ -400,9 +405,9 @@ export class Subject extends RDFResource {
 }
 
 export class Ontology {
-  store: rdf.Store
+  graph: EntityGraph
 
-  constructor(store: rdf.Store) {
-    this.store = store
+  constructor(store: rdf.Store, url: string) {
+    this.graph = new EntityGraph(store, url)
   }
 }
