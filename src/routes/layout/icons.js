@@ -8,6 +8,7 @@ export { default as SearchIcon } from "@material-ui/icons/FindReplace"
 export { default as LaunchIcon } from "@material-ui/icons/Launch"
 export { default as InfoIcon } from "@material-ui/icons/Info"
 export { default as InfoOutlinedIcon } from "@material-ui/icons/InfoOutlined"
+export { default as SettingsIcon } from "@material-ui/icons/Settings"
 
 export const PersonIcon = (props) => <Img src="/icons/person.svg" {...props} />
 export const WorkIcon = (props) => <Img src="/icons/work.svg" {...props} />
