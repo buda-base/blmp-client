@@ -117,7 +117,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                   key={val.id + ":" + i}
                   subject={subject}
                   property={property}
-                  extRes={val}
+                  extRes={val as ExtRDFResourceWithLabel}
                   canDel={canDel}
                   onChange={onChange}
                   idx={i}
@@ -364,20 +364,17 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
 //TODO: component to display an external entity that has already been selected, with a delete button to remove it
 // There should probably be a ExtEntityCreate or something like that to allow an entity to be selected
 const ExtEntityComponent: FC<{
-  extRes: RDFResourceWithLabel
+  extRes: ExtRDFResourceWithLabel
   subject: Subject
   property: PropertyShape
   canDel: boolean
-  onChange: (value: RDFResourceWithLabel, idx: number) => void
+  onChange: (value: ExtRDFResourceWithLabel, idx: number) => void
   idx: number
   exists: (uri: string) => boolean
 }> = ({ extRes, subject, property, canDel, onChange, idx, exists }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
-  const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === extRes)
-
-  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
@@ -403,16 +400,7 @@ const ExtEntityComponent: FC<{
         }}
         {...(extRes.uri !== "tmp:uri" ? { className: "px-2 py-1 mr-2 mb-2 card" } : {})}
       >
-        <ResourceSelector
-          value={extRes}
-          onChange={onChange}
-          propid={property.path.value}
-          label={propLabel}
-          types={property.expectedObjectType}
-          idx={idx}
-          exists={exists}
-          subject={subject}
-        />
+        <ResourceSelector value={extRes} onChange={onChange} p={property} idx={idx} exists={exists} subject={subject} />
         {canDel && (
           <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
             {extRes.uri === "tmp:uri" ? <RemoveIcon /> : <CloseIcon />}

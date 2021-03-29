@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, FC, ChangeEvent } from "react"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
@@ -9,7 +9,8 @@ import * as lang from "../../../helpers/lang"
 import * as constants from "../../helpers/vocabulary"
 import { Edit as LangEdit } from "../../helpers/shapes/skos/label"
 import { uiLangState } from "../../../atoms/common"
-import { ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
+import { ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
+import { PropertyShape } from "../../../helpers/rdf/shapes"
 import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, SettingsIcon } from "../../layout/icons"
 import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
 
@@ -25,30 +26,70 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
+type valueLang = {
+  "@value": string
+  "@language": string
+}
+
+type dateDate = {
+  onYear: string
+  notBefore: string
+  notAfter: string
+}
+
+type messagePayload = {
+  "tmp:propid": string
+  "@id": string
+  "skos:prefLabel"?: Array<valueLang>
+  "tmp:keyword": valueLang
+  "tmp:otherData": Record<string, string>
+}
+
 // DONE dedicated subcomponent + keep previous keyword/language searched
-export function ResourceSelector({ value, onChange, propid, label, types, idx, exists, subject }) {
+const ResourceSelector: FC<{
+  value: ExtRDFResourceWithLabel
+  onChange: (value: ExtRDFResourceWithLabel, idx: number) => void
+  p: PropertyShape
+  idx: number
+  exists: (uri: string) => boolean
+  subject: Subject
+}> = ({ value, onChange, p, idx, exists, subject }) => {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("")
-  const [type, setType] = useState(types ? types[0].qname : "")
-  const [libraryURL, setLibraryURL] = useState()
+  const [type, setType] = useState(p.expectedObjectType ? p.expectedObjectType[0].qname : "")
+  const [libraryURL, setLibraryURL] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [error, setError] = useState("")
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const history = useHistory()
+  const propid = p.path?.value
+
+  if (!propid) {
+    throw "can't get the path for property " + p.qname
+  }
+
+  if (!p.expectedObjectType) {
+    throw "can't get the types for property " + p.qname
+  }
 
   // TODO close iframe when clicking anywhere else
-  const closeFrame = (ev) => {
+  const closeFrame = () => {
     if (libraryURL) setLibraryURL("")
   }
 
-  const updateRes = (data) => {
+  const updateRes = (data: messagePayload) => {
     if (data["@id"] && !exists(data["@id"])) {
       const newRes = new ExtRDFResourceWithLabel(
         data["@id"],
         {
           ...data["skos:prefLabel"]
-            ? { ...data["skos:prefLabel"].reduce((acc, l) => ({ ...acc, [l["@language"]]: l["@value"] }), {}) }
+            ? {
+                ...data["skos:prefLabel"].reduce(
+                  (acc: Record<string, string>, l: valueLang) => ({ ...acc, [l["@language"]]: l["@value"] }),
+                  {}
+                ),
+              }
             : {},
         },
         { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
@@ -63,12 +104,12 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
   }
 
   // DONE: allow listeners for multiple properties
-  const msgHandler = (ev) => {
+  const msgHandler = (ev: MessageEvent) => {
     try {
       if (!window.location.href.includes(ev.origin)) {
         //debug("message: ", ev, value, JSON.stringify(value))
 
-        const data = JSON.parse(ev.data)
+        const data = JSON.parse(ev.data) as messagePayload
         if (data["tmp:propid"] === propid + ":" + idx && data["@id"]) {
           debug("received msg: %o %o", propid, data, ev)
           updateRes(data)
@@ -97,7 +138,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
     }
   }, []) // empty array => run only once
 
-  const updateLibrary = (ev, newlang, newtype) => {
+  const updateLibrary = (ev?: Event | React.FormEvent, newlang?: string, newtype?: string) => {
     debug("updLib: %o", propid)
     if (ev && libraryURL) {
       setLibraryURL("")
@@ -130,7 +171,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
   if (value.uri && value.uri !== "tmp:uri" && value.otherData) {
     dates = ""
 
-    const getDate = (d) => {
+    const getDate = (d: dateDate) => {
       if (d.onYear) return d.onYear
       // TODO use notBefore/notAfter
       else if (d.notBefore || d.notAfter) {
@@ -170,6 +211,24 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
     debug("entities...", entities)
   }
 
+  const label = lang.ValueByLangToStrPrefLang(p.prefLabels, uiLang)
+
+  const textOnChange: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
+    const newValue = e.currentTarget.value
+    setKeyword(newValue)
+    if (libraryURL) updateLibrary(e)
+  }
+
+  const textOnChange2: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
+    const newValue = e.currentTarget.value
+    setType(newValue)
+    if (libraryURL) updateLibrary(undefined, undefined, newValue)
+  }
+
+  const onClick: React.MouseEventHandler<HTMLButtonElement> = (e: React.MouseEvent<HTMLButtonElement>) => {
+    updateLibrary(e)
+  }
+
   return (
     <React.Fragment>
       <div style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}>
@@ -182,10 +241,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
                 //label={value.status === "filled" ? value["@id"] : null}
                 style={{ width: "90%" }}
                 value={keyword}
-                onChange={(e) => {
-                  setKeyword(e.target.value)
-                  if (libraryURL) updateLibrary(e)
-                }}
+                onChange={textOnChange}
                 helperText={label}
                 {...(error
                   ? {
@@ -202,37 +258,34 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
               />
               <LangEdit
                 value={{ "@language": language }}
-                onChange={(e) => {
+                onChange={(e: valueLang) => {
                   setLanguage(e["@language"])
-                  if (libraryURL) updateLibrary(null, e["@language"])
+                  if (libraryURL) updateLibrary(undefined, e["@language"])
                 }}
                 langOnly={true}
-                {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
+                {...(keyword.startsWith("bdr:") ? { disabled: true } : { disabled: false })}
               />
               <TextField
                 style={{ width: "150px" }}
                 select
                 value={type}
                 className={"mx-2"}
-                onChange={(e) => {
-                  setType(e.target.value)
-                  if (libraryURL) updateLibrary(null, null, e.target.value)
-                }}
+                onChange={textOnChange2}
                 helperText="Type"
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                 // TODO we need some prefLabels for types here (ontology? i18n?)
               >
-                {types.map((r) => (
+                {p.expectedObjectType?.map((r) => (
                   <MenuItem key={r.qname} value={r.qname}>
                     {r.qname.replace(/^bdo:/, "")}
                   </MenuItem>
                 ))}
               </TextField>
               <button
-                {...(!keyword || !keyword.startsWith("bdr:") && (!language || !type) ? { disabled: "disabled" } : {})}
+                {...(!keyword || !keyword.startsWith("bdr:") && (!language || !type) ? { disabled: true } : {})}
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
-                onClick={updateLibrary}
+                onClick={onClick}
               >
                 {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
               </button>
@@ -249,7 +302,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
         )}
         {value.uri !== "tmp:uri" && (
           <React.Fragment>
-            {/*           
+            {/*
             <TextField
               className={classes.root}
               InputLabelProps={{ shrink: true }}
@@ -267,7 +320,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
                 &nbsp;
                 <a
                   title={i18n.t("search.help.preview")}
-                  onClick={(ev) => {
+                  onClick={() => {
                     if (libraryURL) setLibraryURL("")
                     else if (value.otherData["tmp:externalUrl"]) setLibraryURL(value.otherData["tmp:externalUrl"])
                     else setLibraryURL(config.LIBRARY_URL + "/simple/" + value.qname)
@@ -294,7 +347,7 @@ export function ResourceSelector({ value, onChange, propid, label, types, idx, e
                   <a title={i18n.t("search.help.replace")}>
                     <SearchIcon
                       style={{ width: "18px", cursor: "pointer" }}
-                      onClick={(ev) =>
+                      onClick={() =>
                         onChange(
                           new ExtRDFResourceWithLabel(
                             "tmp:uri",
