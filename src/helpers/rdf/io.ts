@@ -50,10 +50,10 @@ export interface IFetchState {
 // maps of the shapes and entities that have been downloaded so far, with no gc
 export const shapesMap: Record<string, NodeShape> = {}
 
-export let ontologyConst: Ontology | undefined = undefined
+export let ontologyConst: EntityGraph | undefined = undefined
 export const ontologyUrl = "http://purl.bdrc.io/ontology/core.ttl"
 
-async function loadOntology(): Promise<Ontology> {
+async function loadOntology(): Promise<EntityGraph> {
   debug("loading ontology")
   if (ontologyConst) {
     return Promise.resolve(ontologyConst)
@@ -66,7 +66,7 @@ async function loadOntology(): Promise<Ontology> {
   }
   const store: rdf.Store = rdf.graph()
   rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
-  const res = new Ontology(store)
+  const res = new EntityGraph(store, ontologyUrl)
   ontologyConst = res
   debug("ontology loaded")
   return Promise.resolve(res)
@@ -96,7 +96,7 @@ export function ShapeFetcher(shapeQname: string) {
         const store = await loadRes
         const ontology = await loadOnto
         const shapeUri = uriFromQname(shapeQname)
-        const shape: NodeShape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri))
+        const shape: NodeShape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri), ontology)
         setLoadingState({ status: "fetched", error: undefined })
         setShape(shape)
       } catch (e) {
