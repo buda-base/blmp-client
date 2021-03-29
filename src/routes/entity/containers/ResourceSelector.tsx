@@ -6,7 +6,6 @@ import i18n from "i18next"
 import { useHistory, Link } from "react-router-dom"
 
 import * as lang from "../../../helpers/lang"
-import * as constants from "../../helpers/vocabulary"
 import { uiLangState } from "../../../atoms/common"
 import { ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"

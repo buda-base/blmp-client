@@ -21,9 +21,37 @@ import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
-import * as constants from "../../helpers/vocabulary"
-import { MinimalAddButton, BlockAddButton } from "../../helpers/shapes/bdo/event.js"
 import ResourceSelector from "./ResourceSelector"
+
+export const MinimalAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; className: string }> = ({
+  add,
+  className,
+}) => {
+  return (
+    <div className={className !== undefined ? className : "text-right"} style={{ width: "100%" }}>
+      <button className="btn btn-link ml-2 px-0" onClick={add}>
+        <AddIcon />
+      </button>
+    </div>
+  )
+}
+
+export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; label: string }> = ({
+  add,
+  label,
+}) => {
+  return (
+    <div className="blockAdd text-center pb-1" style={{ width: "100%" }}>
+      <button
+        className="btn btn-sm btn-block btn-outline-primary mb-2 px-0"
+        style={{ boxShadow: "none" }}
+        onClick={add}
+      >
+        {i18n.t("general.add_another")} <AddIcon /> {label}
+      </button>
+    </div>
+  )
+}
 
 const debug = require("debug")("bdrc:entity:property:litlist")
 

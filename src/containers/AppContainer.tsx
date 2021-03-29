@@ -11,13 +11,10 @@ import NavBarContainer from "../components/NavBar"
 import EntitySelector from "./EntitySelectorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
-import PersonsContainer from "../routes/persons/containers/PersonsContainer"
-import PersonEditContainer from "../routes/persons/containers/PersonEditContainer"
 import EntityEditContainer from "../routes/entity/containers/EntityEditContainer"
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
-import PersonView from "../routes/persons/containers/PersonView"
 
 import enTranslations from "../translations/en"
 
@@ -63,13 +60,10 @@ function App(props: AppProps) {
           <Switch>
             <Route exact path="/" component={NewEntityContainer} />
             <Route exact path="/profile" component={ProfileContainer} />
-            <Route exact path="/persons" component={PersonsContainer} />
-            <Route exact path="/person/:id" component={PersonView} />
             <Route exact path="/new" component={NewEntityContainer} />
             <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
             <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
             <Route exact path="/edit/:entityQname" component={EntityShapeChooserContainer} />
-            <Route exact path="/person/:id/edit" component={PersonEditContainer} />
           </Switch>
         </div>
       </main>

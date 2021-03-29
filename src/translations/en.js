@@ -30,6 +30,9 @@ const enTranslations = {
     gYear: 'must be exactly 4 digits (always, even "0001")',
     empty: "should not be empty",
   },
+  general: {
+    add_another: "Add another",
+  },
 }
 
 export default enTranslations

@@ -6,7 +6,6 @@ import Auth0ProviderWithHistory from "./contexts/AuthProvider"
 
 import App from "./containers/AppContainer"
 import LoginContainer from "./routes/account/containers/Login"
-import Sandbox from "./routes/public/containers/Sandbox"
 import { AuthContextWrapper } from "./contexts/AuthContext"
 
 const target = document.querySelector("#root")
@@ -18,7 +17,6 @@ render(
         <Route exact path="/login" component={LoginContainer} />
         <RecoilRoot>
           <Switch>
-            <Route exact path="/sandbox" component={Sandbox} />
             <Route component={App} />
           </Switch>
         </RecoilRoot>
