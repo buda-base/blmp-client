@@ -59,10 +59,10 @@ function EntityEditContainer(props: AppProps) {
 
   if (!shape || !entity) return null
 
-  // TODO: add new entity as object for property where it was created
+  // DONE: add new entity as object for property where it was created
   const urlParams = qs.parse(props.history.location.search)
   const index = entities.findIndex((e) => e.subjectQname === urlParams.subject)
-  // TODO: what if subject for property is a new one?
+  // DONE: ok if subject for property is a new one
   if (index >= 0 && entities[index].subject) {
     const subject = entities[index].subject
     if (subject) {

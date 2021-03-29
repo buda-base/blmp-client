@@ -146,7 +146,6 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         let index = entities.findIndex((e) => e.subjectQname === entityQname)
         const newEntities = [...entities]
         if (index === -1) {
-          index = 0
           newEntities.push({
             subjectQname: entityQname,
             state: EditedEntityState.Loading,
@@ -154,6 +153,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             subject: null,
             subjectLabelState: defaultEntityLabelAtom,
           })
+          index = newEntities.length - 1
         }
         if (index >= 0 && newEntities[index] && !newEntities[index].subject) {
           newEntities[index] = {
@@ -162,9 +162,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             state: EditedEntityState.Saved,
             subjectLabelState: subject.getAtomForProperty(prefLabel.uri),
           }
-          debug("newEntities ready", newEntities, entities)
 
-          // TODO: better fix issue #2 before fully using getEntities....
+          // DONE: issue #2 fixed, fully using getEntities
           setEntities(newEntities)
         }
       } catch (e) {
@@ -172,11 +171,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       }
     }
     const index = entities.findIndex((e) => e.subjectQname === entityQname)
-    debug("entities", entities)
     if (index === -1 || entities[index] && !entities[index].subject) {
-      debug("index", index)
-      debug("entity", entities[index])
-      //debug("entity.subject", entities[index])
       fetchResource(entityQname)
     } else {
       setEntityLoadingState({ status: "fetched", error: undefined })
