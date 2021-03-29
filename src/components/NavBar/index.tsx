@@ -8,15 +8,17 @@ import i18n from "i18next"
 import { useRecoilState, useRecoilValue, selectorFamily } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
+import { AppProps } from "../../containers/AppContainer"
 
 import { uiLangState } from "../../atoms/common"
 
-function NavBar(props) {
+function NavBar(props: AppProps) {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
 
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
-  const uiLangOnChange = (event) => {
-    setUiLang(event.target.value)
+  // https://github.com/mui-org/material-ui/issues/15400
+  const uiLangOnChange = (event: React.FormEvent<{ value: unknown }>) => {
+    setUiLang(event.currentTarget.value as string)
   }
 
   return (

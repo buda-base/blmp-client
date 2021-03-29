@@ -1,8 +1,8 @@
-import React from "react"
+import React, { FC, MouseEventHandler } from "react"
 import { Link } from "react-router-dom"
 import PropTypes from "prop-types"
 
-export const Alert = ({ type, text }) => {
+export const Alert: FC<{ type: string; text: string }> = ({ type, text }) => {
   const name = `alert ${type} alert-dismissible fade show`
 
   return (
@@ -15,12 +15,7 @@ export const Alert = ({ type, text }) => {
   )
 }
 
-Alert.propTypes = {
-  type: PropTypes.string,
-  text: PropTypes.string
-}
-
-export const AlertError = ({ text }) => {
+export const AlertError: FC<{ text: string }> = ({ text }) => {
   return (
     <div className="alert alert-danger fade show rounded-0" role="alert">
       {text}
@@ -28,11 +23,7 @@ export const AlertError = ({ text }) => {
   )
 }
 
-AlertError.propTypes = {
-  text: PropTypes.string
-}
-
-export function AlertBacklink({ text, goBack }) {
+export const AlertBacklink: FC<{ text: string; goBack: MouseEventHandler }> = ({ text, goBack }) => {
   return (
     <div className="alert alert-info alert-dismissible" role="alert">
       {text} Click&nbsp;
@@ -44,7 +35,7 @@ export function AlertBacklink({ text, goBack }) {
   )
 }
 
-export function AlertErrorForm({ text, dismissable = false }) {
+export const AlertErrorForm: FC<{ text: string; dismissable: boolean }> = ({ text, dismissable = false }) => {
   return (
     <div className="alert alert-danger alert-dismissible fade show small text-center" role="alert">
       {text}

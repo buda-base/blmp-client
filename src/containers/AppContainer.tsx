@@ -7,7 +7,7 @@ import { useTranslation, initReactI18next } from "react-i18next"
 import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
-import NavBarContainer from "./NavBarContainer"
+import NavBarContainer from "../components/NavBar"
 import EntitySelector from "./EntitySelectorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
