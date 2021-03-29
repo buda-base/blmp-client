@@ -176,7 +176,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const langs = [{ value: "bo-x-ewts" }, { value: "bo" }, { value: "en" }, { value: "zh-hans" }, { value: "zh-hant" }]
+export const langs = [
+  { value: "bo-x-ewts" },
+  { value: "bo" },
+  { value: "en" },
+  { value: "zh-hans" },
+  { value: "zh-hant" },
+]
 
 /**
  * Edit component
@@ -215,22 +221,32 @@ const EditLangString: FC<{
             }
           : {})}
       />
-      <TextField
-        select
-        className="ml-2"
-        //label={lit.id}
-        value={lit.language || ""}
-        style={{ width: 120 }}
-        onChange={(e) => onChange(lit.copyWithUpdatedLanguage(e.target.value))}
-        helperText="Language"
-      >
-        {langs.map((option) => (
-          <MenuItem key={option.value} value={option.value}>
-            {option.value}
-          </MenuItem>
-        ))}
-      </TextField>
+      <LangSelect value={lit.language || ""} onChange={(value) => onChange(lit.copyWithUpdatedLanguage(value))} />
     </div>
+  )
+}
+
+export const LangSelect: FC<{
+  onChange: (value: string) => void
+  value: string
+}> = ({ onChange, value }) => {
+  const onChangeHandler = (event: React.FormEvent<{ value: unknown }>) => {
+    onChange(event.currentTarget.value as string)
+  }
+  return (
+    <Select
+      className="ml-2"
+      //label={lit.id}
+      value={value}
+      style={{ width: 120 }}
+      onChange={onChangeHandler}
+    >
+      {langs.map((option) => (
+        <MenuItem key={option.value} value={option.value}>
+          {option.value}
+        </MenuItem>
+      ))}
+    </Select>
   )
 }
 

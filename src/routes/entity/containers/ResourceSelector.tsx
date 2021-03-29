@@ -7,12 +7,12 @@ import { useHistory, Link } from "react-router-dom"
 
 import * as lang from "../../../helpers/lang"
 import * as constants from "../../helpers/vocabulary"
-import { Edit as LangEdit } from "../../helpers/shapes/skos/label"
 import { uiLangState } from "../../../atoms/common"
 import { ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, SettingsIcon } from "../../layout/icons"
 import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
+import { LangSelect } from "./ValueList"
 
 import config from "../../../config"
 
@@ -270,13 +270,12 @@ const ResourceSelector: FC<{
                     }
                   : {})}
               />
-              <LangEdit
-                value={{ "@language": language }}
-                onChange={(e: valueLang) => {
-                  setLanguage(e["@language"])
-                  if (libraryURL) updateLibrary(undefined, e["@language"])
+              <LangSelect
+                value={language}
+                onChange={(lang: string) => {
+                  setLanguage(lang)
+                  if (libraryURL) updateLibrary(undefined, lang)
                 }}
-                langOnly={true}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : { disabled: false })}
               />
               {p.expectedObjectTypes?.length > 1 && (
