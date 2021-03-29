@@ -70,6 +70,8 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
     setTab(newTab)
   }
 
+  debug("tab", tab)
+
   return (
     <div className="tabs-select">
       <Tabs value={tab} onChange={handleChange} aria-label="simple tabs example">

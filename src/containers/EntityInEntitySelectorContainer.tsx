@@ -33,10 +33,17 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const prefLabels = RDFResource.valuesByLang(labelValues)
   const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
   const link = "/edit/" + entity.subjectQname + (entity.shapeRef ? "/" + entity.shapeRef.qname : "")
+  const [tab, setTab] = useRecoilState(uiTabState)
+  const handleClick = (event: ChangeEvent<unknown>, newTab: number): void => {
+    setTab(newTab)
+  }
+
   return (
     <Tab
       key={entity.subjectQname}
       {...a11yProps(index)}
+      className={index === tab ? "Mui-selected" : ""}
+      onClick={(e) => handleClick(e, index)}
       label={
         <Link to={link}>
           <span>
