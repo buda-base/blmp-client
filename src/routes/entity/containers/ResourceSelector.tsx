@@ -57,7 +57,7 @@ const ResourceSelector: FC<{
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("")
-  const [type, setType] = useState(p.expectedObjectType ? p.expectedObjectType[0].qname : "")
+  const [type, setType] = useState(p.expectedObjectTypes ? p.expectedObjectTypes[0].qname : "")
   const [libraryURL, setLibraryURL] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [error, setError] = useState("")
@@ -69,7 +69,7 @@ const ResourceSelector: FC<{
     throw "can't get the path for property " + p.qname
   }
 
-  if (!p.expectedObjectType) {
+  if (!p.expectedObjectTypes) {
     throw "can't get the types for property " + p.qname
   }
 
@@ -275,7 +275,7 @@ const ResourceSelector: FC<{
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                 // TODO we need some prefLabels for types here (ontology? i18n?)
               >
-                {p.expectedObjectType?.map((r) => (
+                {p.expectedObjectTypes?.map((r) => (
                   <MenuItem key={r.qname} value={r.qname}>
                     {r.qname.replace(/^bdo:/, "")}
                   </MenuItem>
