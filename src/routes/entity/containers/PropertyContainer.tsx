@@ -4,7 +4,7 @@ import { PropertyShape } from "../../../helpers/rdf/shapes"
 import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState, atomFamily } from "recoil"
-import ValueList from "./litlist"
+import ValueList from "./ValueList"
 import * as rdf from "rdflib"
 
 const debug = require("debug")("bdrc:entity:property")
