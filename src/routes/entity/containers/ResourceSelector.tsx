@@ -42,7 +42,7 @@ type messagePayload = {
   "@id": string
   "skos:prefLabel"?: Array<valueLang>
   "tmp:keyword": valueLang
-  "tmp:otherData": Record<string, string>
+  "tmp:otherData": Record<string, string | string[]>
 }
 
 // DONE dedicated subcomponent + keep previous keyword/language searched
@@ -79,26 +79,40 @@ const ResourceSelector: FC<{
   }
 
   const updateRes = (data: messagePayload) => {
-    if (data["@id"] && !exists(data["@id"])) {
-      const newRes = new ExtRDFResourceWithLabel(
-        data["@id"],
-        {
-          ...data["skos:prefLabel"]
-            ? {
-                ...data["skos:prefLabel"].reduce(
-                  (acc: Record<string, string>, l: valueLang) => ({ ...acc, [l["@language"]]: l["@value"] }),
-                  {}
-                ),
-              }
-            : {},
-        },
-        { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
-      )
-      onChange(newRes, idx)
-    } else {
-      // TODO translation with i18n
-      if (data["@id"]) setError(data["@id"] + " already exists")
-      else throw "no '@id' field in data"
+    let isTypeOk = false
+    if (p.expectedObjectTypes) {
+      let allow = p.expectedObjectTypes.map((t) => t.qname)
+      if (!Array.isArray(allow)) allow = [allow]
+      let actual = data["tmp:otherData"]["tmp:type"]
+      if (!Array.isArray(actual)) actual = [actual]
+      if (actual.filter((t) => allow.includes(t)).length) isTypeOk = true
+      //debug("typeOk",isTypeOk,actual,allow)
+      const displayTypes = (t: string[]) => t.map((a) => a.replace(/^bdo:/, "")).join(", ") // TODO: translation (ontology?)
+      setError("Has type: " + displayTypes(actual) + "; but should have one of: " + displayTypes(allow))
+    }
+
+    if (isTypeOk) {
+      if (data["@id"] && !exists(data["@id"])) {
+        const newRes = new ExtRDFResourceWithLabel(
+          data["@id"],
+          {
+            ...data["skos:prefLabel"]
+              ? {
+                  ...data["skos:prefLabel"].reduce(
+                    (acc: Record<string, string>, l: valueLang) => ({ ...acc, [l["@language"]]: l["@value"] }),
+                    {}
+                  ),
+                }
+              : {},
+          },
+          { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
+        )
+        onChange(newRes, idx)
+      } else if (isTypeOk) {
+        // TODO translation with i18n
+        if (data["@id"]) setError(data["@id"] + " already exists")
+        else throw "no '@id' field in data"
+      }
     }
     setLibraryURL("")
   }
@@ -219,7 +233,7 @@ const ResourceSelector: FC<{
     if (libraryURL) updateLibrary(e)
   }
 
-  const textOnChange2: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
+  const textOnChangeType: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
     const newValue = e.currentTarget.value
     setType(newValue)
     if (libraryURL) updateLibrary(undefined, undefined, newValue)
@@ -270,7 +284,7 @@ const ResourceSelector: FC<{
                 select
                 value={type}
                 className={"mx-2"}
-                onChange={textOnChange2}
+                onChange={textOnChangeType}
                 helperText="Type"
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                 // TODO we need some prefLabels for types here (ontology? i18n?)
