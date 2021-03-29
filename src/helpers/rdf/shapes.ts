@@ -43,6 +43,7 @@ export const dashEnumSelectEditor = ns.DASH("EnumSelectEditor") as rdf.NamedNode
 export const shDescription = ns.SH("description") as rdf.NamedNode
 export const shMessage = ns.SH("message") as rdf.NamedNode
 export const shMinCount = ns.SH("minCount") as rdf.NamedNode
+export const shClass = ns.SH("class") as rdf.NamedNode
 export const shMaxCount = ns.SH("maxCount") as rdf.NamedNode
 export const shDatatype = ns.SH("datatype") as rdf.NamedNode
 export const dashSingleLine = ns.SH("singleLine") as rdf.NamedNode
@@ -50,7 +51,7 @@ export const shTargetObjectsOf = ns.SH("targetObjectsOf") as rdf.NamedNode
 export const bdsPropertyShapeType = ns.BDS("propertyShapeType") as rdf.NamedNode
 export const bdsFacetShape = ns.BDS("FacetShape") as rdf.NamedNode
 export const bdsExternalShape = ns.BDS("ExternalShape") as rdf.NamedNode
-export const bdsExpectedObjectType = ns.BDS("expectedObjectType") as rdf.NamedNode
+export const bdsClassIn = ns.BDS("classIn") as rdf.NamedNode
 export const shIn = ns.SH("in") as rdf.NamedNode
 
 export const sortByPropValue = (
@@ -142,8 +143,12 @@ export class PropertyShape extends RDFResourceWithLabel {
   }
 
   @Memoize()
-  public get expectedObjectType(): Array<RDFResourceWithLabel> | null {
-    const nodes = this.getPropResValuesFromList(bdsExpectedObjectType)
+  public get expectedObjectTypes(): Array<RDFResourceWithLabel> | null {
+    let nodes = this.getPropResValuesFromList(bdsClassIn)
+    if (!nodes) {
+      const cl = this.getPropResValues(shClass)
+      if (cl.length) nodes = cl
+    }
     if (!nodes) return null
     return PropertyShape.resourcizeWithInit(nodes, this.ontologyGraph)
   }

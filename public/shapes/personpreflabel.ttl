@@ -256,7 +256,7 @@ bds:PersonShape-studentOf
   # this means that the object of the property is external to the graph we're editing, we just want to select a person,
   # not edit their properties
   bds:propertyShapeType bds:ExternalShape ;
-  bds:expectedObjectType ( bdo:Person bdo:Topic )
+  bds:classIn ( bdo:Person bdo:Topic )
 .
 
 bds:PersonShape-teacherOf
@@ -267,7 +267,7 @@ bds:PersonShape-teacherOf
   sh:order "1"^^xsd:decimal ;
   sh:path bdo:personTeacherOf ;
   bds:propertyShapeType bds:ExternalShape ;
-  bds:expectedObjectType ( bdo:Person bdo:Topic ) ;
+  bds:classIn ( bdo:Person bdo:Topic ) ;
   # here we artificially want to hide this property by default in its group, what this implies is that the group should contain
   # a "see more" (/ "see less") button that will display the form for these properties. If a property with displayPriority 1 has some value
   # it should always be displayed
