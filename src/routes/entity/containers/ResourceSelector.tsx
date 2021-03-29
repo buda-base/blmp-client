@@ -279,22 +279,24 @@ const ResourceSelector: FC<{
                 langOnly={true}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : { disabled: false })}
               />
-              <TextField
-                style={{ width: "150px" }}
-                select
-                value={type}
-                className={"mx-2"}
-                onChange={textOnChangeType}
-                helperText="Type"
-                {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
-                // TODO we need some prefLabels for types here (ontology? i18n?)
-              >
-                {p.expectedObjectTypes?.map((r) => (
-                  <MenuItem key={r.qname} value={r.qname}>
-                    {r.qname.replace(/^bdo:/, "")}
-                  </MenuItem>
-                ))}
-              </TextField>
+              {p.expectedObjectTypes?.length > 1 && (
+                <TextField
+                  style={{ width: "150px" }}
+                  select
+                  value={type}
+                  className={"mx-2"}
+                  onChange={textOnChangeType}
+                  helperText="Type"
+                  {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
+                  // TODO we need some prefLabels for types here (ontology? i18n?)
+                >
+                  {p.expectedObjectTypes?.map((r) => (
+                    <MenuItem key={r.qname} value={r.qname}>
+                      {r.qname.replace(/^bdo:/, "")}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
               <button
                 {...(!keyword || !keyword.startsWith("bdr:") && (!language || !type) ? { disabled: true } : {})}
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
