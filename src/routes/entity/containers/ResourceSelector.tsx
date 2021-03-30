@@ -220,8 +220,8 @@ const ResourceSelector: FC<{
     if (libraryURL) updateLibrary(e)
   }
 
-  const textOnChangeType: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
-    const newValue = JSON.parse(JSON.stringify(e.target)).value // sometimes I just hate TypeScript... :{
+  const textOnChangeType: React.ChangeEventHandler<HTMLInputElement> = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value
     setType(newValue)
     if (libraryURL) updateLibrary(undefined, undefined, newValue)
   }
