@@ -227,7 +227,7 @@ const EditLangString: FC<{
   if (!lit.value) error = i18n.t("error.empty")
 
   return (
-    <div className="mb-2" style={{ display: "flex", width: "100%" }}>
+    <div className="mb-2" style={{ display: "flex", width: "100%", alignItems: "end" }}>
       <TextField
         className={classes.root}
         //label={lit.id}
@@ -263,12 +263,13 @@ export const LangSelect: FC<{
   }
   // TODO: default value should be from the user profile or based on the latest value used
   return (
-    <Select
+    <TextField
+      select
       className="ml-2"
       //label={lit.id}
-      defaultValue="bo-x-ewts"
-      value={value}
-      style={{ width: 120 }}
+      helperText={"Language"}
+      value={value ? value : "bo-x-ewts"}
+      style={{ width: 100, flexShrink: 0 }}
       onChange={onChangeHandler}
     >
       {langs.map((option) => (
@@ -276,7 +277,7 @@ export const LangSelect: FC<{
           {option.value}
         </MenuItem>
       ))}
-    </Select>
+    </TextField>
   )
 }
 
@@ -359,7 +360,7 @@ const LiteralComponent: FC<{
     <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
       {edit}
       {canDel && (
-        <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>
+        <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
           <RemoveIcon />
         </button>
       )}

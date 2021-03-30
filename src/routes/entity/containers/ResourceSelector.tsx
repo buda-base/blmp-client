@@ -265,7 +265,7 @@ const ResourceSelector: FC<{
               />
               {p.expectedObjectTypes?.length > 1 && (
                 <TextField
-                  style={{ width: "150px" }}
+                  style={{ width: 100, flexShrink: 0 }}
                   select
                   value={type}
                   className={"mx-2"}
