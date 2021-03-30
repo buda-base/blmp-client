@@ -257,20 +257,21 @@ const EditLangString: FC<{
 export const LangSelect: FC<{
   onChange: (value: string) => void
   value: string
-}> = ({ onChange, value }) => {
+  disabled?: boolean
+}> = ({ onChange, value, disabled }) => {
   const onChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
     onChange(event.target.value as string)
   }
-  // TODO: default value should be from the user profile or based on the latest value used
   return (
     <TextField
       select
       className="ml-2"
       //label={lit.id}
       helperText={"Language"}
-      value={value ? value : "bo-x-ewts"}
+      value={value}
       style={{ width: 100, flexShrink: 0 }}
       onChange={onChangeHandler}
+      {...(disabled ? { disabled: true } : {})}
     >
       {langs.map((option) => (
         <MenuItem key={option.value} value={option.value}>

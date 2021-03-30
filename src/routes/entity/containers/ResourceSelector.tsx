@@ -55,7 +55,7 @@ const ResourceSelector: FC<{
 }> = ({ value, onChange, p, idx, exists, subject }) => {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
-  const [language, setLanguage] = useState("")
+  const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
   const [type, setType] = useState(p.expectedObjectTypes ? p.expectedObjectTypes[0].qname : "")
   const [libraryURL, setLibraryURL] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
@@ -82,7 +82,11 @@ const ResourceSelector: FC<{
       if (!Array.isArray(actual)) actual = [actual]
       if (actual.filter((t) => allow.includes(t)).length) isTypeOk = true
       //debug("typeOk",isTypeOk,actual,allow)
-      const displayTypes = (t: string[]) => t.map((a) => a.replace(/^bdo:/, "")).join(", ") // TODO: translation (ontology?)
+      const displayTypes = (t: string[]) =>
+        t
+          .filter((a) => a)
+          .map((a) => a.replace(/^bdo:/, ""))
+          .join(", ") // TODO: translation (ontology?)
       setError("Has type: " + displayTypes(actual) + "; but should have one of: " + displayTypes(allow))
     }
 
@@ -217,7 +221,7 @@ const ResourceSelector: FC<{
   }
 
   const textOnChangeType: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
-    const newValue = e.currentTarget.value
+    const newValue = JSON.parse(JSON.stringify(e.target)).value // sometimes I just hate TypeScript... :{
     setType(newValue)
     if (libraryURL) updateLibrary(undefined, undefined, newValue)
   }
@@ -265,8 +269,8 @@ const ResourceSelector: FC<{
               />
               {p.expectedObjectTypes?.length > 1 && (
                 <TextField
-                  style={{ width: 100, flexShrink: 0 }}
                   select
+                  style={{ width: 100, flexShrink: 0 }}
                   value={type}
                   className={"mx-2"}
                   onChange={textOnChangeType}
