@@ -17,6 +17,7 @@ import Tab from "@material-ui/core/Tab"
 import * as lang from "../helpers/lang"
 import * as ns from "../helpers/rdf/ns"
 import { Entity, EditedEntityState } from "./EntitySelectorContainer"
+import * as rdf from "rdflib"
 
 const debug = require("debug")("bdrc:entity:selector")
 
@@ -38,6 +39,16 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     setTab(newTab)
   }
 
+  let icon
+  if (entity.subject) {
+    const rdfType = ns.RDF("type") as rdf.NamedNode
+    for (const s of entity.subject.graph.store.statements) {
+      if (s.predicate.value === rdfType.value && s.subject.value === entity.subject.node.value) {
+        icon = s.object.value.replace(/.*?[/]([^/]+)$/, "$1").toLowerCase()
+      }
+    }
+  }
+
   return (
     <Tab
       key={entity.subjectQname}
@@ -46,7 +57,8 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       onClick={(e) => handleClick(e, index)}
       label={
         <Link to={link}>
-          <span>
+          <img src={"/icons/" + icon + (index === tab ? "_" : "") + ".svg"} style={{ height: 25 }} />
+          <span className="ml-2" style={{ marginRight: "auto" }}>
             <span>{label}</span>
             <br />
             <span className="RID">{entity.subjectQname}</span>

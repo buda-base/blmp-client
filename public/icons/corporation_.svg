@@ -12,7 +12,7 @@
    viewBox="0 0 60.799999 58.799999"
    version="1.1"
    id="svg23"
-   sodipodi:docname="corporation.svg"
+   sodipodi:docname="corporation_.svg"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
   <metadata
      id="metadata27">
@@ -22,7 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title>WORKSEARCH_Corporation_moyen</dc:title>
+        <dc:title>WORKSEARCH_Corporation_moyen_outlinegris</dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -40,27 +40,27 @@
      id="namedview25"
      showgrid="false"
      inkscape:zoom="2.247619"
-     inkscape:cx="29.9"
-     inkscape:cy="19.9"
+     inkscape:cx="30.9"
+     inkscape:cy="18.9"
      inkscape:window-x="1"
      inkscape:window-y="1"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg23" />
   <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
   <title
-     id="title2">WORKSEARCH_Corporation_moyen</title>
+     id="title2">WORKSEARCH_Corporation_moyen_outlinegris</title>
   <desc
      id="desc4">Created with Sketch.</desc>
   <defs
      id="defs6" />
   <g
-     id="WORKSEARCH_Corporation_moyen"
+     id="WORKSEARCH_Corporation_moyen_outlinegris"
      style="fill:none;fill-rule:evenodd;stroke:none;stroke-width:1"
-     transform="translate(-15.6,-13.6)">
+     transform="translate(-14.6,-12.6)">
     <g
        id="Group"
-       transform="translate(16,14)"
-       style="fill:#000000;fill-rule:nonzero;stroke:#ffffff;stroke-width:0.80000001">
+       transform="translate(15,13)"
+       style="fill:#000000;fill-rule:nonzero;stroke:#f5f5f5;stroke-width:0.80000001">
       <path
          d="M 31.000534,12 C 34.308042,12 37,9.3082814 37,6.0010686 37,2.6917186 34.306973,0 31.000534,0 27.691958,0 25,2.6927872 25,6.0010686 25,9.3082814 27.693027,12 31.000534,12 Z m 0,-9.2826358 c 1.808176,0 3.280791,1.4724844 3.280791,3.2826358 0,1.8090828 -1.472615,3.2804987 -3.280791,3.2804987 -1.809244,0 -3.281859,-1.4714159 -3.281859,-3.2804987 0,-1.8101514 1.472615,-3.2826358 3.281859,-3.2826358 z"
          id="Shape"
