@@ -48,6 +48,10 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       }
     }
   }
+  if (!icon && entity.shapeRef?.qname) {
+    // TODO: might be something better than that...
+    icon = entity.shapeRef.qname.replace(/^.*?:([^:]+)Shape[^/]+$/, "$1").toLowerCase()
+  }
 
   return (
     <Tab
@@ -57,8 +61,13 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       onClick={(e) => handleClick(e, index)}
       label={
         <Link to={link}>
-          <img src={"/icons/" + icon + (index === tab ? "_" : "") + ".svg"} style={{ height: 25 }} />
-          <span className="ml-2" style={{ marginRight: "auto" }}>
+          {icon && (
+            <img
+              src={"/icons/" + icon + (index === tab ? "_" : "") + ".svg"}
+              style={{ height: 25, position: "absolute" }}
+            />
+          )}
+          <span style={{ marginLeft: 30, marginRight: "auto", textAlign: "left" }}>
             <span>{label}</span>
             <br />
             <span className="RID">{entity.subjectQname}</span>
