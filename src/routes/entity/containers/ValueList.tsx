@@ -258,13 +258,15 @@ export const LangSelect: FC<{
   onChange: (value: string) => void
   value: string
 }> = ({ onChange, value }) => {
-  const onChangeHandler = (event: React.FormEvent<{ value: unknown }>) => {
-    onChange(event.currentTarget.value as string)
+  const onChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
+    onChange(event.target.value as string)
   }
+  // TODO: default value should be from the user profile or based on the latest value used
   return (
     <Select
       className="ml-2"
       //label={lit.id}
+      defaultValue="bo-x-ewts"
       value={value}
       style={{ width: 120 }}
       onChange={onChangeHandler}

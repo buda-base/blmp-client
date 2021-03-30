@@ -62,11 +62,7 @@ const ResourceSelector: FC<{
   const [error, setError] = useState("")
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const history = useHistory()
-  const propid = p.path?.value
-
-  if (!propid) {
-    throw "can't get the path for property " + p.qname
-  }
+  const msgId = subject.qname + p.qname + idx
 
   if (!p.expectedObjectTypes) {
     throw "can't get the types for property " + p.qname
@@ -123,8 +119,8 @@ const ResourceSelector: FC<{
         //debug("message: ", ev, value, JSON.stringify(value))
 
         const data = JSON.parse(ev.data) as messagePayload
-        if (data["tmp:propid"] === propid + ":" + idx && data["@id"]) {
-          debug("received msg: %o %o", propid, data, ev)
+        if (data["tmp:propid"] === msgId && data["@id"]) {
+          debug("received msg: %o %o", msgId, data, ev)
           updateRes(data)
         } else {
           setLibraryURL("")
@@ -152,13 +148,13 @@ const ResourceSelector: FC<{
   }, []) // empty array => run only once
 
   const updateLibrary = (ev?: Event | React.FormEvent, newlang?: string, newtype?: string) => {
-    debug("updLib: %o", propid)
+    debug("updLib: %o", msgId)
     if (ev && libraryURL) {
       setLibraryURL("")
-    } else if (propid) {
+    } else if (msgId) {
       if (keyword.startsWith("bdr:")) {
         // TODO: return dates in library
-        setLibraryURL(config.LIBRARY_URL + "/simple/" + keyword + "?for=" + propid + ":" + idx)
+        setLibraryURL(config.LIBRARY_URL + "/simple/" + keyword + "?for=" + msgId)
       } else {
         let lang = language
         if (newlang) lang = newlang
@@ -173,9 +169,7 @@ const ResourceSelector: FC<{
         t = t.replace(/^bdo:/, "")
         // DONE move url to config + use dedicated route in library
         // TODO get type from ontology
-        setLibraryURL(
-          config.LIBRARY_URL + "/simplesearch?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + propid + ":" + idx
-        )
+        setLibraryURL(config.LIBRARY_URL + "/simplesearch?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + msgId)
       }
     }
   }
@@ -209,18 +203,8 @@ const ResourceSelector: FC<{
 
   const createAndLink = () => {
     // TODO: use actual selected resource type
-    history.push(
-      "/new/" +
-        type.replace(/^bdo/, "bds") +
-        "Shape" +
-        "Test" /* tmp */ +
-        "?subject=" +
-        subject.qname +
-        "&propid=" +
-        propid +
-        "&index=" +
-        idx
-    )
+
+    history.push("/new?subject=" + subject.qname + "&propid=" + p.path?.value + "&index=" + idx)
     debug("entities...", entities)
   }
 
@@ -273,6 +257,8 @@ const ResourceSelector: FC<{
                 value={language}
                 onChange={(lang: string) => {
                   setLanguage(lang)
+                  debug("yeah, changing lang!!", lang)
+                  debug(lang)
                   if (libraryURL) updateLibrary(undefined, lang)
                 }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : { disabled: false })}

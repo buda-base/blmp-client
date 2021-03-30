@@ -9,6 +9,7 @@ import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
 import React, { ChangeEvent } from "react"
+import qs from "query-string"
 
 const debug = require("debug")("bdrc:entity:newentity")
 
@@ -19,13 +20,17 @@ function NewEntityContainer(props: AppProps) {
     setTab(0)
   }
 
+  const urlParams = qs.parse(props.history.location.search)
+  let search = ""
+  if (urlParams.subject) search = props.history.location.search
+
   // otherwise we want the user to select the appropriate shape
   return (
     <React.Fragment>
       <div>
         New entity: here is a list of all possible shapes to choose from in order to create a new entity:
         {shapes.possibleShapeRefs.map((shape: RDFResourceWithLabel, index: number) => (
-          <Link key={shape.qname} to={"/new/" + shape.qname} onClick={handleNewtab}>
+          <Link key={shape.qname} to={"/new/" + shape.qname + search} onClick={handleNewtab}>
             {lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)}
           </Link>
         ))}
