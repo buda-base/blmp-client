@@ -97,7 +97,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   debug(subject)
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
@@ -184,14 +184,14 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   embedded,
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
 
   const addItem = () => {
     setList((oldList) => [...oldList, generateDefault(property, subject)])
   }
 
-  if (embedded || property.path.value === ns.SKOS("prefLabel").value)
+  if (embedded || property.path.sparqlString === ns.SKOS("prefLabel").value)
     return <MinimalAddButton add={addItem} className=" " />
   else return <BlockAddButton add={addItem} label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)} />
 }
@@ -333,7 +333,7 @@ const LiteralComponent: FC<{
   canDel: boolean
 }> = ({ lit, subject, property, label, canDel }) => {
   if (property.path == null) throw "can't find path of " + property.qname
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
@@ -377,7 +377,7 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   canDel,
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === subNode)
 
@@ -421,7 +421,7 @@ const ExtEntityComponent: FC<{
   exists: (uri: string) => boolean
 }> = ({ extRes, subject, property, canDel, onChange, idx, exists }) => {
   if (property.path == null) throw "can't find path of " + property.qname
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === extRes)
 
   const deleteItem = () => {
@@ -468,7 +468,7 @@ const ResSelectComponent: FC<{
   canDel: boolean
 }> = ({ res, subject, property, canDel }) => {
   if (property.path == null) throw "can't find path of " + property.qname
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.uri))
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === res)
 

@@ -209,7 +209,7 @@ const ResourceSelector: FC<{
   const createAndLink = () => {
     // TODO: use actual selected resource type
 
-    history.push("/new?subject=" + subject.qname + "&propid=" + p.path?.value + "&index=" + idx)
+    history.push("/new?subject=" + subject.qname + "&propid=" + p.path?.sparqlString + "&index=" + idx)
     debug("entities...", entities)
   }
 
