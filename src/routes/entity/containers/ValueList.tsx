@@ -123,18 +123,20 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   useEffect(() => {
     // reinitializing the property values atom if it hasn't been initialized yet
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
-    if (vals) {
+    if (vals && vals.length) {
       if (property.minCount && vals.length < property.minCount) {
         setList([...vals, generateDefault(property, subject)])
       } else {
         setList(vals)
       }
-    } else if (property.minCount && list.length < property.minCount) {
-      setList((oldList) => [...oldList, generateDefault(property, subject)])
+    } else {
+      if (property.objectType != ObjectType.Facet || property.minCount) {
+        setList((oldList) => [...oldList, generateDefault(property, subject)])
+      }
     }
   }, [subject, setList])
 
-  let addBtn = false
+  let addBtn = property.objectType === ObjectType.Facet
   return (
     <React.Fragment>
       <div role="main" style={{ display: "flex", flexWrap: "wrap" }}>
@@ -160,7 +162,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
             addBtn = true
             return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} canDel={canDel} />
           } else if (val instanceof LiteralWithId) {
-            addBtn = true
+            addBtn = val && val.value !== ""
             return (
               <LiteralComponent
                 key={val.id}
@@ -195,7 +197,8 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     setList((oldList) => [...oldList, generateDefault(property, subject)])
   }
 
-  if (embedded || property.path.sparqlString === ns.SKOS("prefLabel").value)
+  if (embedded)
+    // || property.path.sparqlString === ns.SKOS("prefLabel").value)
     return <MinimalAddButton add={addItem} className=" " />
   else return <BlockAddButton add={addItem} /*label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)}*/ />
 }
@@ -365,7 +368,7 @@ const LiteralComponent: FC<{
     <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
       {edit}
       {canDel && (
-        <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
+        <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>
           <RemoveIcon />
         </button>
       )}
