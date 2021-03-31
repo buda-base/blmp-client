@@ -65,6 +65,7 @@ const ResourceSelector: FC<{
   const msgId = subject.qname + p.qname + idx
 
   if (!p.expectedObjectTypes) {
+    debug(p)
     throw "can't get the types for property " + p.qname
   }
 

@@ -45,10 +45,16 @@ bds:PersonRelatedPropertyGroup
   sh:order 2 ;
 .
 
+bds:KinshipPropertyGroup
+  a sh:PropertyGroup ;
+  rdfs:label "Kinship"@en ;
+  sh:order 3 ;
+.
+
 bds:NotesPropertyGroup
   a sh:PropertyGroup ;
   rdfs:label "Notes"@en ;
-  sh:order 3 ;
+  sh:order 4 ;
 .
 
 # the shape
@@ -61,8 +67,17 @@ bds:PersonShapeTest
   sh:property bds:CommonShape-prefLabel ;
   sh:property bds:PersonShape-personEvent ;
   sh:property bds:PersonShape-studentOf ;
-  # TODO: with this line a duplicate of RelatedPersons block is displayed
-  # sh:property bds:PersonShape-teacherOf ;
+  sh:property bds:PersonShape-teacherOf ;
+  sh:property bds:PersonShape-hasBrother ;
+  sh:property bds:PersonShape-hasSister ;
+  sh:property bds:PersonShape-hasSon ;
+  sh:property bds:PersonShape-hasDaughter ;
+  sh:property bds:PersonShape-hasHusband ;
+  sh:property bds:PersonShape-hasWife ; 
+  sh:property bds:PersonShape-hasFather ;
+  sh:property bds:PersonShape-hasMother ; 
+  sh:property bds:PersonShape-hasGrandfather ;
+  sh:property bds:PersonShape-hasGrandmother ;
   sh:targetClass bdo:Person ;
 .
 
@@ -398,3 +413,156 @@ bds:ContentLocationShape-contentLocationVolume
   sh:order "1"^^xsd:decimal ;
   sh:defaultValue 1 ;
 .
+
+
+
+##
+## Kinship
+##
+bds:PersonShape-hasBrother
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasBrother ;
+  sh:node bds:MaleShape ; # TODO: not implemented yet 
+  sh:class bdo:Person ;
+.
+bds:PersonShape-hasSister
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasSister ;
+  sh:class bdo:Person ;
+.
+bds:PersonShape-hasSon
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasSon ;
+  sh:class bdo:Person ;
+.
+bds:PersonShape-hasDaughter
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasDaughter ;
+  sh:class bdo:Person ;
+.
+bds:PersonShape-hasHusband
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasHusband ;
+  sh:message "A husband must be Male"@en ;
+  sh:class bdo:Person ;
+.
+bds:PersonShape-hasWife
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasWife ;
+  sh:class bdo:Person ;
+.
+bds:PersonShape-hasMother
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasMother ;
+  sh:maxCount 1 ;
+  sh:message "There is at most one mother"@en ;
+  sh:class bdo:Person ;
+.
+bds:PersonShape-hasFather
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasFather ;
+  sh:maxCount 1 ;
+  sh:class bdo:Person ;
+.
+bds:PersonShape-hasGrandfather
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasGrandfather ;
+  sh:maxCount 2 ;
+  sh:message "A person may have at most 2 grandfathers"@en ;
+  sh:class bdo:Person ;
+.
+bds:PersonShape-hasGrandmother
+  a sh:PropertyShape ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:path bdo:hasGrandmother ;
+  sh:maxCount 2 ;
+  sh:message "A person may have at most 2 grandmothers"@en ;
+  sh:class bdo:Person ;
+.
+
+##
+## Kinship / UI
+##
+bds:PersonShape-hasBrother
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "This Person may have zero or more brothers."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has brother"@en ;
+  sh:order "0"^^xsd:decimal ;
+.
+bds:PersonShape-hasSister
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "this Person may have zero or more sisters."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has sister"@en ;
+  sh:order "1"^^xsd:decimal ;
+.
+bds:PersonShape-hasSon
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "this Person may have zero or more sons."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has son"@en ;
+  sh:order "2"^^xsd:decimal ;
+.
+bds:PersonShape-hasDaughter
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "this Person may have zero or more daughters."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has daughter"@en ;
+  sh:order "3"^^xsd:decimal ;
+.
+bds:PersonShape-hasHusband
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "this Person may have a husband."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has husband"@en ;
+  sh:order "4"^^xsd:decimal ;
+.
+bds:PersonShape-hasWife
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "this Person may have at most one wife."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has wife"@en ;
+  sh:order "5"^^xsd:decimal ;
+.
+bds:PersonShape-hasFather
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "this Person may have a father."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has father"@en ;
+  sh:order "13"^^xsd:decimal ; # TODO: use numerical sort in UI
+.
+bds:PersonShape-hasMother
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "this Person may have at most one mother."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has mother"@en ;
+  sh:order "14"^^xsd:decimal ;
+.
+bds:PersonShape-hasGrandfather
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "this Person may have at most two Grandfathers."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has grandfather"@en ;
+  sh:order "11"^^xsd:decimal ;
+  bds:displayPriority 1 ;
+.
+bds:PersonShape-hasGrandmother
+  dash:editor dash:InstancesSelectEditor ;
+  sh:description "this Person may have at most two Grandmothers."@en ;
+  sh:group bds:KinshipPropertyGroup ;
+  sh:name "has grandmother"@en ;
+  sh:order "12"^^xsd:decimal ;
+  bds:displayPriority 1 ;
+.
+
+
