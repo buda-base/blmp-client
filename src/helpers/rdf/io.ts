@@ -51,7 +51,7 @@ export interface IFetchState {
 export const shapesMap: Record<string, NodeShape> = {}
 
 export let ontologyConst: EntityGraph | undefined = undefined
-export const ontologyUrl = "http://purl.bdrc.io/ontology/core.ttl"
+export const ontologyUrl = "https://purl.bdrc.io/ontology/data/ttl"
 
 async function loadOntology(): Promise<EntityGraph> {
   debug("loading ontology")

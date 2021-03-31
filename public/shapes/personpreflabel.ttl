@@ -1,5 +1,5 @@
 @prefix adm: <http://purl.bdrc.io/ontology/admin/> .
-@prefix bda: <http://purl.bdrc.io/admin.data/> .
+@prefix bda: <http://purl.bdrc.io/admindata/> .
 @prefix bdd: <http://purl.bdrc.io/data/> .
 @prefix bdg: <http://purl.bdrc.io/graph/> .
 @prefix bdo: <http://purl.bdrc.io/ontology/core/> .
@@ -195,112 +195,6 @@ bds:PersonEventShape-type
   sh:message "A PersonEvent must have at least one rdf:type"@en ;
   # note that because there's no max count, we could imagine a list where users can select multiple values
   sh:minCount 1 ;
-.
-
-bdo:PersonRabByungOrdination
-  a owl:Class ;
-  adm:userTooltip "A preliminary to monastic ordination, when someone takes the five root vows"@en ;
-  rdfs:label "Preliminary Ordination"@en ;
-  rdfs:label "rab byung"@bo-x-ewts ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonAffiliation
-  a owl:Class ;
-  adm:userTooltip "Event indicating the Person becoming affiliated with a lineage or organization"@en ;
-  rdfs:label "Affiliation"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-bdo:PersonAssumesOffice
-  a owl:Class ;
-  adm:userTooltip "Event indicating a Person assuming an office such as Professor, Postmaster or General"@en ;
-  rdfs:label "Assumes office"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonBirth
-  a owl:Class ;
-  adm:userTooltip "Birth Event for a Person"@en ;
-  rdfs:label "Birth"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonDivorce
-  a owl:Class ;
-  adm:userTooltip "Event occurring upon a divorce of the Person"@en ;
-  rdfs:label "Divorce"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonDeath
-  a owl:Class ;
-  adm:userTooltip "Death Event for a Person"@en ;
-  rdfs:label "Death"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonEventNotSpecified
-  a owl:Class ;
-  adm:userTooltip "An otherwise unspecified type of Person Event"@en ;
-  rdfs:label "Unspecified Event"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonFinalOrdination
-  a owl:Class ;
-  adm:userTooltip "The Event of a Person receiving their final ordination"@en ;
-  rdfs:label "Final Ordination"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonGterMaDiscovery
-  a owl:Class ;
-  adm:userTooltip "The Event of a Person discovering a terma"@en ;
-  rdfs:label "Discovers Terma"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonInResidence
-  a owl:Class ;
-  adm:userTooltip "The Event of a Person establishing residence in a Place such as a Monastery, Cave, and so on"@en ;
-  rdfs:label "In Residence"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonLeavesOffice
-  a owl:Class ;
-  adm:userTooltip "The Event of a Person leaving an Office"@en ;
-  rdfs:label "Leaves Office"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonLeavesSeat
-  a owl:Class ;
-  adm:userTooltip "The Event of a Person leaving a Seat"@en ;
-  rdfs:label "Leaves Seat"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonMarriage
-  a owl:Class ;
-  adm:userTooltip "The Event of a Person becoming married to another Person"@en ;
-  rdfs:label "Marriage"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonOccupiesSeat
-  a owl:Class ;
-  adm:userTooltip "The Event of a Person occupying a Seat"@en ;
-  rdfs:label "Occupies Seat"@en ;
-  rdfs:subClassOf bdo:PersonEvent ;
-.
-
-bdo:PersonRabByungOrdination
-  a owl:Class ;
-  adm:userTooltip "A preliminary to monastic ordination, when someone takes the five root vows"@en ;
-  rdfs:label "Preliminary Ordination"@en ;
-  rdfs:label "rab byung"@bo-x-ewts ;
-  rdfs:subClassOf bdo:PersonEvent ;
 .
 
 bds:PersonShape-studentOf
