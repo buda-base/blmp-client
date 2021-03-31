@@ -53,11 +53,12 @@ bds:NotesPropertyGroup
 bds:AdminPropertyGroup
   a sh:PropertyGroup ;
   rdfs:label "Admin data"@en ;
-  sh:order "4"^^xsd:decimal ;
+  sh:order 4 ;
 .
 bds:PersonShape-adminData
   dash:editor dash:DetailsEditor ;
   sh:group bds:AdminPropertyGroup ;
+  bds:propertyShapeType bds:FacetShape ;
   sh:name "admin data"@en ;
   sh:order "0"^^xsd:decimal ;
   a sh:PropertyShape ;
@@ -97,6 +98,7 @@ bds:PersonShapeTest
   sh:property bds:CommonShape-prefLabel ;
   sh:property bds:PersonShape-personEvent ;
   sh:property bds:PersonShape-studentOf ;
+  sh:property bds:PersonShape-adminData ;
   # TODO: with this line a duplicate of RelatedPersons block is displayed
   # sh:property bds:PersonShape-teacherOf ;
   sh:targetClass bdo:Person ;
