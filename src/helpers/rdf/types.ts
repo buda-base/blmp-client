@@ -1,7 +1,7 @@
 import * as rdf from "rdflib"
 import * as ns from "./ns"
 import { idGenerator } from "../id"
-import { PropertyShape } from "./shapes"
+import { PropertyShape, Path } from "./shapes"
 import { Memoize } from "typescript-memoize"
 import {
   atom,
@@ -34,61 +34,77 @@ export class EntityGraphValues {
   oldSubjectProps: Record<string, Record<string, Array<Value>>> = {}
   newSubjectProps: Record<string, Record<string, Array<Value>>> = {}
 
-  onGetInitialValues = (subjectUri: string, propertyUri: string, values: Array<Value>) => {
+  onGetInitialValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
     if (!(subjectUri in this.oldSubjectProps)) this.oldSubjectProps[subjectUri] = {}
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
-    this.oldSubjectProps[subjectUri][propertyUri] = values
-    this.newSubjectProps[subjectUri][propertyUri] = values
+    this.oldSubjectProps[subjectUri][pathString] = values
+    this.newSubjectProps[subjectUri][pathString] = values
   }
 
-  onUpdateValues = (subjectUri: string, propertyUri: string, values: Array<Value>) => {
+  onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
-    this.newSubjectProps[subjectUri][propertyUri] = values
+    this.newSubjectProps[subjectUri][pathString] = values
   }
 
-  isInitialized = (subjectUri: string, propertyUri: string) => {
-    return subjectUri in this.oldSubjectProps && propertyUri in this.oldSubjectProps[subjectUri]
+  isInitialized = (subjectUri: string, pathString: string) => {
+    return subjectUri in this.oldSubjectProps && pathString in this.oldSubjectProps[subjectUri]
   }
 
   addNewValuestoStore(store: rdf.Store, subjectUri: string) {
     if (!(subjectUri in this.newSubjectProps)) return
     const subject = new rdf.NamedNode(subjectUri)
-    for (const propertyUri in this.newSubjectProps[subjectUri]) {
-      const property = new rdf.NamedNode(propertyUri)
-      const values: Array<Value> = this.newSubjectProps[subjectUri][propertyUri]
-      for (const val of values) {
-        if (val instanceof LiteralWithId) {
-          const test = store.add(subject, property, val, defaultGraphNode)
-        } else {
-          store.add(subject, property, val.node)
-          if (val instanceof Subject) {
-            this.addNewValuestoStore(store, val.uri)
+    for (const pathString in this.newSubjectProps[subjectUri]) {
+      // handling inverse path vs. direct path
+      if (pathString.startsWith("^")) {
+        const property = new rdf.NamedNode(pathString.substring(1))
+        const values: Array<Value> = this.newSubjectProps[subjectUri][pathString]
+        for (const val of values) {
+          if (val instanceof LiteralWithId) {
+            throw "can't add literals in inverse path, something's wrong with the data!"
+          } else {
+            store.add(val.node, property, subject)
+            if (val instanceof Subject) {
+              this.addNewValuestoStore(store, val.uri)
+            }
+          }
+        }
+      } else {
+        const property = new rdf.NamedNode(pathString)
+        const values: Array<Value> = this.newSubjectProps[subjectUri][pathString]
+        for (const val of values) {
+          if (val instanceof LiteralWithId) {
+            const test = store.add(subject, property, val, defaultGraphNode)
+          } else {
+            store.add(subject, property, val.node)
+            if (val instanceof Subject) {
+              this.addNewValuestoStore(store, val.uri)
+            }
           }
         }
       }
     }
   }
 
-  propsUpdateEffect: (subjectUri: string, propertyUri: string) => AtomEffect<Array<Value>> = (
+  propsUpdateEffect: (subjectUri: string, pathString: string) => AtomEffect<Array<Value>> = (
     subjectUri: string,
-    propertyUri: string
+    pathString: string
   ) => ({ setSelf, onSet }: setSelfOnSelf) => {
     onSet((newValues: Array<Value> | DefaultValue): void => {
       if (!(newValues instanceof DefaultValue)) {
-        this.onUpdateValues(subjectUri, propertyUri, newValues)
+        this.onUpdateValues(subjectUri, pathString, newValues)
       }
     })
   }
 
-  @Memoize((propertyUri: string, subjectUri: string) => {
-    return subjectUri + propertyUri
+  @Memoize((pathString: string, subjectUri: string) => {
+    return subjectUri + pathString
   })
-  getAtomForSubjectProperty(propertyUri: string, subjectUri: string) {
+  getAtomForSubjectProperty(pathString: string, subjectUri: string) {
     debug(this)
     return atom<Array<Value>>({
-      key: subjectUri + propertyUri,
+      key: subjectUri + pathString,
       default: [],
-      effects_UNSTABLE: [this.propsUpdateEffect(subjectUri, propertyUri)],
+      effects_UNSTABLE: [this.propsUpdateEffect(subjectUri, pathString)],
       // disable immutability in production
       dangerouslyAllowMutability: !config.__DEV__,
     })
@@ -102,8 +118,8 @@ type setSelfOnSelf = {
 
 // a proxy to an EntityGraph that updates the entity graph but is purely read-only, so that React is happy
 export class EntityGraph {
-  onGetInitialValues: (subjectUri: string, propertyUri: string, values: Array<Value>) => void
-  getAtomForSubjectProperty: (propertyUri: string, subjectUri: string) => RecoilState<Array<Value>>
+  onGetInitialValues: (subjectUri: string, pathString: string, values: Array<Value>) => void
+  getAtomForSubjectProperty: (pathString: string, subjectUri: string) => RecoilState<Array<Value>>
 
   getValues: () => EntityGraphValues
 
@@ -125,8 +141,8 @@ export class EntityGraph {
     const values = new EntityGraphValues()
     this.topSubjectUri = topSubjectUri
     this.onGetInitialValues = values.onGetInitialValues
-    this.getAtomForSubjectProperty = (propertyUri, subjectUri) =>
-      values.getAtomForSubjectProperty(propertyUri, subjectUri)
+    this.getAtomForSubjectProperty = (pathString, subjectUri) =>
+      values.getAtomForSubjectProperty(pathString, subjectUri)
     this.associatedLabelsStore = associatedLabelsStore
     this.getValues = () => {
       return values
@@ -181,7 +197,7 @@ export class EntityGraph {
   getUnitializedValues(s: RDFResource, p: PropertyShape): Array<Value> | null {
     const path = p.path
     if (!path) return null
-    if (this.values.isInitialized(s.uri, path.uri)) {
+    if (this.values.isInitialized(s.uri, path.sparqlString)) {
       return null
     }
     return this.getPropValuesFromStore(s, p)
@@ -193,29 +209,39 @@ export class EntityGraph {
     }
     switch (p.objectType) {
       case ObjectType.ResExt:
-        const fromRDFResExt: Array<rdf.NamedNode> = s.getPropResValues(p.path)
+        if (!p.path.directPathNode) {
+          // I'm not so sure about this exception but well... it's ok in our current rules
+          throw "can't have non-direct path for property " + p.uri
+        }
+        const fromRDFResExt: Array<rdf.NamedNode> = s.getPropResValuesFromPath(p.path)
         const fromRDFResExtwData = EntityGraph.addExtDataFromGraph(fromRDFResExt, s.graph)
-        this.onGetInitialValues(s.uri, p.path.uri, fromRDFResExtwData)
+        this.onGetInitialValues(s.uri, p.path.sparqlString, fromRDFResExtwData)
         return fromRDFResExtwData
         break
       case ObjectType.Facet:
-        const fromRDFSubNode: Array<rdf.NamedNode> = s.getPropResValues(p.path)
+        const fromRDFSubNode: Array<rdf.NamedNode> = s.getPropResValuesFromPath(p.path)
         const fromRDFSubs = EntityGraph.subjectify(fromRDFSubNode, s.graph)
-        this.onGetInitialValues(s.uri, p.path.uri, fromRDFSubs)
+        this.onGetInitialValues(s.uri, p.path.sparqlString, fromRDFSubs)
         return fromRDFSubs
         break
       case ObjectType.ResInList:
-        const fromRDFRes: Array<rdf.NamedNode> = s.getPropResValues(p.path)
+        if (!p.path.directPathNode) {
+          throw "can't have non-direct path for property " + p.uri
+        }
+        const fromRDFResList: Array<rdf.NamedNode> = s.getPropResValues(p.path.directPathNode)
         // TODO: p.graph should be the graph of the ontology instead
-        const fromRDFReswLabels = EntityGraph.addLabelsFromGraph(fromRDFRes, p.graph)
-        this.onGetInitialValues(s.uri, p.path.uri, fromRDFReswLabels)
+        const fromRDFReswLabels = EntityGraph.addLabelsFromGraph(fromRDFResList, p.graph)
+        this.onGetInitialValues(s.uri, p.path.sparqlString, fromRDFReswLabels)
         return fromRDFReswLabels
         break
       case ObjectType.Literal:
       default:
-        const fromRDFLits: Array<rdf.Literal> = s.getPropLitValues(p.path)
+        if (!p.path.directPathNode) {
+          throw "can't have non-direct path for property " + p.uri
+        }
+        const fromRDFLits: Array<rdf.Literal> = s.getPropLitValues(p.path.directPathNode)
         const fromRDFLitIDs = EntityGraph.addIdToLitList(fromRDFLits)
-        this.onGetInitialValues(s.uri, p.path.uri, fromRDFLitIDs)
+        this.onGetInitialValues(s.uri, p.path.sparqlString, fromRDFLitIDs)
         return fromRDFLitIDs
         break
     }
@@ -293,6 +319,20 @@ export class RDFResource {
     return res
   }
 
+  public getPropResValuesFromPath(p: Path): Array<rdf.NamedNode> {
+    if (p.directPathNode) {
+      return this.graph.store.each(this.node, p.directPathNode, null) as Array<rdf.NamedNode>
+    }
+    return this.graph.store.each(this.node, p.inversePathNode, null) as Array<rdf.NamedNode>
+  }
+
+  public getPropResValueFromPath(p: Path): rdf.NamedNode | null {
+    if (p.directPathNode) {
+      return this.graph.store.any(this.node, p.directPathNode, null) as rdf.NamedNode | null
+    }
+    return this.graph.store.any(this.node, p.inversePathNode, null) as rdf.NamedNode | null
+  }
+
   public getPropBooleanValue(p: rdf.NamedNode, dflt = false): boolean {
     const lit: rdf.Literal = this.graph.store.any(this.node, p, null) as rdf.Literal
     const n = Boolean(lit.value)
@@ -300,13 +340,6 @@ export class RDFResource {
       return n
     }
     return dflt
-  }
-
-  public getPropValueLname(p: rdf.NamedNode): string | null {
-    const val: rdf.NamedNode = this.graph.store.any(this.node, p, null) as rdf.NamedNode
-    if (val == null) return null
-
-    return ns.lnameFromUri(val.value)
   }
 }
 
@@ -388,8 +421,8 @@ export class Subject extends RDFResource {
     return this.graph.getUnitializedValues(this, property)
   }
 
-  getAtomForProperty(propertyUri: string) {
-    return this.graph.getAtomForSubjectProperty(propertyUri, this.uri)
+  getAtomForProperty(pathString: string) {
+    return this.graph.getAtomForSubjectProperty(pathString, this.uri)
   }
 
   // returns new subject extended with some TTL

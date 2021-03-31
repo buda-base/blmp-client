@@ -48,11 +48,13 @@ export const shMaxCount = ns.SH("maxCount") as rdf.NamedNode
 export const shDatatype = ns.SH("datatype") as rdf.NamedNode
 export const dashSingleLine = ns.SH("singleLine") as rdf.NamedNode
 export const shTargetObjectsOf = ns.SH("targetObjectsOf") as rdf.NamedNode
+export const shTargetSubjectsOf = ns.SH("targetSubjectsOf") as rdf.NamedNode
 export const bdsPropertyShapeType = ns.BDS("propertyShapeType") as rdf.NamedNode
 export const bdsFacetShape = ns.BDS("FacetShape") as rdf.NamedNode
 export const bdsExternalShape = ns.BDS("ExternalShape") as rdf.NamedNode
 export const bdsClassIn = ns.BDS("classIn") as rdf.NamedNode
 export const shIn = ns.SH("in") as rdf.NamedNode
+export const shInversePath = ns.SH("inversePath") as rdf.NamedNode
 
 export const sortByPropValue = (
   nodelist: Array<rdf.NamedNode>,
@@ -78,6 +80,33 @@ export const sortByPropValue = (
     res.push(orderedGroupObjs[order])
   }
   return res
+}
+
+export class Path {
+  sparqlString: string
+
+  directPathNode: rdf.NamedNode | null = null
+  inversePathNode: rdf.NamedNode | null = null
+
+  static fromSparqlString() {
+    // TODO
+  }
+
+  constructor(node: rdf.Node, graph: EntityGraph) {
+    if (node instanceof rdf.BlankNode) {
+      // inverse path
+      const invpaths = graph.store.each(node, shInversePath, null) as Array<rdf.NamedNode>
+      if (invpaths.length != 1) {
+        throw "too many inverse path in shacl path:" + invpaths
+      }
+      const invpath = invpaths[0]
+      this.sparqlString = "^" + invpath.value
+      this.inversePathNode = invpath
+    } else {
+      this.directPathNode = node as rdf.NamedNode
+      this.sparqlString = node.value
+    }
+  }
 }
 
 export class PropertyShape extends RDFResourceWithLabel {
@@ -116,7 +145,9 @@ export class PropertyShape extends RDFResourceWithLabel {
 
   @Memoize()
   public get editorLname(): string | null {
-    return this.getPropValueLname(dashEditor)
+    const val = this.getPropResValue(dashEditor)
+    if (!val) return null
+    return ns.lnameFromUri(val.value)
   }
 
   @Memoize()
@@ -154,8 +185,10 @@ export class PropertyShape extends RDFResourceWithLabel {
   }
 
   @Memoize()
-  public get path(): rdf.NamedNode | null {
-    return this.getPropResValue(shPath)
+  public get path(): Path | null {
+    const pathNode = this.getPropResValue(shPath)
+    if (!pathNode) return null
+    return new Path(pathNode, this.graph)
   }
 
   @Memoize()
@@ -175,9 +208,20 @@ export class PropertyShape extends RDFResourceWithLabel {
 
   @Memoize()
   public get targetShape(): NodeShape | null {
-    const val: rdf.NamedNode | null = this.graph.store.any(null, shTargetObjectsOf, this.path) as rdf.NamedNode | null
-    if (val == null) return null
-    return new NodeShape(val, this.graph, this.ontologyGraph)
+    const path = this.path
+    if (!path) return null
+    let val: rdf.NamedNode | null
+    if (path.directPathNode) {
+      val = this.graph.store.any(null, shTargetObjectsOf, path.directPathNode) as rdf.NamedNode | null
+      if (val == null) return null
+      return new NodeShape(val, this.graph, this.ontologyGraph)
+    }
+    if (path.inversePathNode) {
+      val = this.graph.store.any(null, shTargetSubjectsOf, path.inversePathNode) as rdf.NamedNode | null
+      if (val == null) return null
+      return new NodeShape(val, this.graph, this.ontologyGraph)
+    }
+    return null
   }
 }
 
