@@ -129,10 +129,12 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
       } else {
         setList(vals)
       }
-    } else {
-      if (property.objectType != ObjectType.Facet || property.minCount) {
-        setList((oldList) => [...oldList, generateDefault(property, subject)])
-      }
+    } else if (
+      property.objectType != ObjectType.Facet &&
+      (property.minCount && list.length < property.minCount || !list.length)
+    ) {
+      debug("reinit??", list.length, list)
+      setList((oldList) => [...oldList, generateDefault(property, subject)])
     }
   }, [subject, setList])
 
@@ -149,7 +151,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                   subject={subject}
                   property={property}
                   extRes={val as ExtRDFResourceWithLabel}
-                  canDel={canDel}
+                  canDel={canDel && (i > 0 || val.uri !== "tmp:uri")}
                   onChange={onChange}
                   idx={i}
                   exists={exists}

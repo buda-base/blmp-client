@@ -207,10 +207,18 @@ const ResourceSelector: FC<{
   }
 
   const createAndLink = () => {
-    // TODO: use actual selected resource type
-
-    history.push("/new?subject=" + subject.qname + "&propid=" + p.path?.sparqlString + "&index=" + idx)
-    debug("entities...", entities)
+    history.push(
+      "/new/" +
+        type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
+        "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
+        "?subject=" +
+        subject.qname +
+        "&propid=" +
+        p.path?.sparqlString +
+        "&index=" +
+        idx
+    )
+    //debug("entities...", entities)
   }
 
   const label = lang.ValueByLangToStrPrefLang(p.prefLabels, uiLang)
