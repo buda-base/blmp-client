@@ -349,11 +349,12 @@ export class RDFResourceWithLabel extends RDFResource {
   constructor(node: rdf.NamedNode, graph: EntityGraph, labelProp?: rdf.NamedNode) {
     super(node, graph)
     if (!labelProp) {
-      if (node.value.startsWith("http://purl.bdrc.io/res") || node.value.startsWith("http://purl.bdrc.io/admindata/"))
+      if (node.value.startsWith("http://purl.bdrc.io/res") || node.value.startsWith("http://purl.bdrc.io/admindata/")) {
         labelProp = prefLabel
-      labelProp = rdfsLabel
+      } else {
+        labelProp = rdfsLabel
+      }
     }
-    //debug("labelprop", node, labelProp)
     this.labelProp = labelProp
   }
 

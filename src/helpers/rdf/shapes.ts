@@ -158,7 +158,7 @@ export class PropertyShape extends RDFResourceWithLabel {
   public static resourcizeWithInit(nodes: Array<rdf.NamedNode>, graph: EntityGraph): Array<RDFResourceWithLabel> {
     const res: Array<RDFResourceWithLabel> = []
     for (const node of nodes) {
-      const r = new RDFResourceWithLabel(node, graph, rdfsLabel)
+      const r = new RDFResourceWithLabel(node, graph)
       // just a way to intialize the value before the object gets frozen like a yogurt by Recoil
       const justforinit = r.prefLabels
       res.push(r)
