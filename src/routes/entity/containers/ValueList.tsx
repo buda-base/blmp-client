@@ -36,9 +36,9 @@ export const MinimalAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonEleme
   )
 }
 
-export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; label: string }> = ({
+export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement> /*; label: string*/ }> = ({
   add,
-  label,
+  //label,
 }) => {
   return (
     <div className="blockAdd text-center pb-1" style={{ width: "100%" }}>
@@ -47,7 +47,7 @@ export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement
         style={{ boxShadow: "none" }}
         onClick={add}
       >
-        {i18n.t("general.add_another")} <AddIcon /> {label}
+        {i18n.t("general.add_another")} <AddIcon /> {/* label */}
       </button>
     </div>
   )
@@ -134,6 +134,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     }
   }, [subject, setList])
 
+  let addBtn = false
   return (
     <React.Fragment>
       <div role="main" style={{ display: "flex", flexWrap: "wrap" }}>
@@ -155,9 +156,11 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
             else
               return <ResSelectComponent key={val.id} subject={subject} property={property} res={val} canDel={canDel} />
           }
-          if (val instanceof Subject)
+          if (val instanceof Subject) {
+            addBtn = true
             return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} canDel={canDel} />
-          else if (val instanceof LiteralWithId)
+          } else if (val instanceof LiteralWithId) {
+            addBtn = true
             return (
               <LiteralComponent
                 key={val.id}
@@ -168,9 +171,10 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                 canDel={canDel}
               />
             )
+          }
         })}
-        {canAdd && <Create subject={subject} property={property} embedded={embedded} />}
       </div>
+      {canAdd && addBtn && <Create subject={subject} property={property} embedded={embedded} />}
     </React.Fragment>
   )
 }
@@ -193,7 +197,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
 
   if (embedded || property.path.sparqlString === ns.SKOS("prefLabel").value)
     return <MinimalAddButton add={addItem} className=" " />
-  else return <BlockAddButton add={addItem} label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)} />
+  else return <BlockAddButton add={addItem} /*label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)}*/ />
 }
 
 const useStyles = makeStyles((theme) => ({
