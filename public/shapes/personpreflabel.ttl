@@ -50,12 +50,48 @@ bds:NotesPropertyGroup
   rdfs:label "Notes"@en ;
   sh:order 3 ;
 .
+bds:AdminPropertyGroup
+  a sh:PropertyGroup ;
+  rdfs:label "Admin data"@en ;
+  sh:order "4"^^xsd:decimal ;
+.
+bds:PersonShape-adminData
+  dash:editor dash:DetailsEditor ;
+  sh:group bds:AdminPropertyGroup ;
+  sh:name "admin data"@en ;
+  sh:order "0"^^xsd:decimal ;
+  a sh:PropertyShape ;
+  sh:path [ sh:inversePath adm:adminAbout ] ;
+  sh:maxCount 1 ;
+  sh:minCount 1 ;
+.
+bds:AdmEntityShape
+  a sh:NodeShape ;
+  sh:namespace "http://purl.bdrc.io/admindata/" ;
+  rdfs:label "Admin Entity shape"@en ;
+  sh:property bds:AdmEntityShape-status ;
+  sh:targetClass bdo:Entity ;
+  sh:targetSubjectsOf adm:adminAbout ;
+.
+bds:AdmEntityShape-status
+  a sh:PropertyShape ;
+  sh:path adm:status ;
+  dash:editor dash:EnumSelectEditor ;
+  sh:name "status"@en ;
+  sh:order "0" ;
+  sh:class adm:Status ;
+  sh:maxCount 1 ;
+  sh:minCount 1 ;
+  sh:in ( bda:StatusReleased bda:StatusWithdrawn bda:StatusEditing bda:StatusOnHold bda:StatusProvisional bda:StatusScanned bda:StatusSeekingOut bda:StatusAccessioned bda:StatusAcquiring ) ;
+  sh:nodeKind sh:IRI ;
+.
 
 # the shape
 bds:PersonShapeTest
   a sh:NodeShape ;
   # In case the editor needs to create a new person, it should start with P
   bds:identifierPrefix "P" ;
+  sh:namespace "http://purl.bdrc.io/resource/" ;
   skos:prefLabel "Person Template"@en , "Person Template tib"@bo-x-ewts ;
   # persons have one property, which is name:
   sh:property bds:CommonShape-prefLabel ;
@@ -99,6 +135,8 @@ bds:PersonShape-personEvent
 
 bds:PersonEventShape
   a sh:NodeShape ;
+  bds:identifierPrefix "EV" ;
+  sh:namespace "http://purl.bdrc.io/resource/" ;
   sh:targetObjectsOf bdo:personEvent ;
   sh:property bds:PersonEventShape-onYear ;
   sh:property bds:PersonEventShape-type ;
@@ -288,6 +326,7 @@ bds:RootShape-note
 bds:NoteShape
   a sh:NodeShape ;
   bds:identifierPrefix "NT" ;
+  sh:namespace "http://purl.bdrc.io/resource/" ;
   bds:nodeShapeType bds:FacetShape ;
   sh:property bds:NoteShape-contentLocation ;
   sh:property bds:NoteShape-noteText ;
@@ -322,6 +361,7 @@ bds:NoteShape-noteText
 bds:ContentLocationShape
   a sh:NodeShape ;
   bds:identifierPrefix "CL" ;
+  sh:namespace "http://purl.bdrc.io/resource/" ;
   rdfs:label "ContentLocation Shape"@en ;
   sh:property bds:ContentLocationShape-contentLocationEndPage ;
   sh:property bds:ContentLocationShape-contentLocationEndVolumeName ;
