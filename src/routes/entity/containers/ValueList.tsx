@@ -145,6 +145,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
       }
     } else if (
       property.objectType != ObjectType.Facet &&
+      (!property.displayPriority || property.displayPriority === 0) &&
       (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField)
     ) {
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])

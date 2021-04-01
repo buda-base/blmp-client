@@ -42,6 +42,7 @@ export const dashEditor = ns.DASH("editor") as rdf.NamedNode
 export const dashEnumSelectEditor = ns.DASH("EnumSelectEditor") as rdf.NamedNode
 export const shDescription = ns.SH("description") as rdf.NamedNode
 export const shMessage = ns.SH("message") as rdf.NamedNode
+export const bdsDisplayPriority = ns.BDS("displayPriority") as rdf.NamedNode
 export const shMinCount = ns.SH("minCount") as rdf.NamedNode
 export const shClass = ns.SH("class") as rdf.NamedNode
 export const shMaxCount = ns.SH("maxCount") as rdf.NamedNode
@@ -131,6 +132,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get singleLine(): boolean {
     return this.getPropBooleanValue(dashSingleLine)
+  }
+
+  @Memoize()
+  public get displayPriority(): number | null {
+    return this.getPropIntValue(bdsDisplayPriority)
   }
 
   @Memoize()
