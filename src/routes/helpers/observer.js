@@ -109,7 +109,7 @@ export function TimeTravelObserver() {
       const info = snapshot.getInfo_UNSTABLE(a)
       if (info.isModified) {
         modified.push({ a, info })
-        debug(uiReady, first, a.key, a, info)
+        //debug(uiReady, first, a.key, a, info)
       }
       // DONE do not not take a snapshot if current change is UI language
       if (["uiLangState", "uiTabState"].includes(a.key) && info.isModified) return

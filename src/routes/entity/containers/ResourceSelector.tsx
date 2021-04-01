@@ -47,7 +47,7 @@ type messagePayload = {
 // DONE dedicated subcomponent + keep previous keyword/language searched
 const ResourceSelector: FC<{
   value: ExtRDFResourceWithLabel
-  onChange: (value: ExtRDFResourceWithLabel, idx: number) => void
+  onChange: (value: ExtRDFResourceWithLabel, idx: number, removeFirst: boolean | undefined) => void
   p: PropertyShape
   idx: number
   exists: (uri: string) => boolean
@@ -107,10 +107,10 @@ const ResourceSelector: FC<{
           },
           { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
         )
-        onChange(newRes, idx)
+        onChange(newRes, idx, false)
       } else if (isTypeOk) {
         // TODO translation with i18n
-        if (data["@id"]) setError(data["@id"] + " already exists")
+        if (data["@id"]) setError(data["@id"] + " already selected")
         else throw "no '@id' field in data"
       }
     }
@@ -371,7 +371,8 @@ const ResourceSelector: FC<{
                                 : {},
                             }
                           ),
-                          idx
+                          idx,
+                          true
                         )
                       }
                     />
@@ -397,7 +398,11 @@ const ResourceSelector: FC<{
             maxWidth: "800px",
             minWidth: "670px",
             ...value.uri === "tmp:uri"
-              ? { right: "calc(1rem - 1px + 100px)", width: "calc(100% - 100px)", bottom: "calc(100% - 1rem)" }
+              ? {
+                  right: "calc(1rem - 1px + 100px " + (idx == 0 ? "- 34px" : "") + ")",
+                  width: "calc(100% - 100px)",
+                  bottom: "calc(100% - 1rem)",
+                }
               : {},
             ...value.uri !== "tmp:uri" ? { left: "1rem", width: "calc(100%)", bottom: "100%" } : {},
           }}

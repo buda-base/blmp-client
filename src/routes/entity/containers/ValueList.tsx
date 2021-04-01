@@ -96,7 +96,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   embedded,
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
-  debug(subject)
+  //debug(subject)
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
@@ -107,8 +107,13 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   const canDel = !property.minCount || property.minCount < list.length
 
   // DONE save multiple external resource for property
-  const onChange: (value: RDFResourceWithLabel, idx: number) => void = (value: RDFResourceWithLabel, idx: number) => {
+  const onChange: (value: RDFResourceWithLabel, idx: number, removeFirst: boolean | undefined) => void = (
+    value: RDFResourceWithLabel,
+    idx: number,
+    removeFirst: boolean | undefined
+  ) => {
     const newList = replaceItemAtIndex(list, idx, value)
+    //if(removeFirst) newList.shift()
     setList(newList)
   }
 
@@ -120,7 +125,16 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     return false
   }
 
+  let firstValueIsEmptyField = true
+
   useEffect(() => {
+    // TODO: check maxCount
+    if (list.length) {
+      const first = list[0],
+        last = list[list.length - 1]
+      if (first instanceof ExtRDFResourceWithLabel && first.uri !== "tmp:uri") firstValueIsEmptyField = false
+    }
+
     // reinitializing the property values atom if it hasn't been initialized yet
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
     if (vals && vals.length) {
@@ -131,17 +145,27 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
       }
     } else if (
       property.objectType != ObjectType.Facet &&
-      (property.minCount && list.length < property.minCount || !list.length)
+      (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField)
     ) {
-      debug("reinit??", list.length, list)
-      setList((oldList) => [...oldList, generateDefault(property, subject)])
+      if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
+      else setList((oldList) => [...oldList, generateDefault(property, subject)])
     }
-  }, [subject, setList])
+  }, [subject, list])
 
   let addBtn = property.objectType === ObjectType.Facet
+
   return (
     <React.Fragment>
-      <div role="main" style={{ display: "flex", flexWrap: "wrap" }}>
+      <div
+        role="main"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          ...list.length > 1 && firstValueIsEmptyField
+            ? { borderBottom: "2px solid #eee", paddingBottom: "16px" }
+            : {},
+        }}
+      >
         {list.map((val, i) => {
           if (val instanceof RDFResourceWithLabel) {
             if (property.objectType == ObjectType.ResExt)
@@ -151,7 +175,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                   subject={subject}
                   property={property}
                   extRes={val as ExtRDFResourceWithLabel}
-                  canDel={canDel && (i > 0 || val.uri !== "tmp:uri")}
+                  canDel={canDel && i > 0 || val.uri !== "tmp:uri"}
                   onChange={onChange}
                   idx={i}
                   exists={exists}
@@ -425,7 +449,7 @@ const ExtEntityComponent: FC<{
   subject: Subject
   property: PropertyShape
   canDel: boolean
-  onChange: (value: ExtRDFResourceWithLabel, idx: number) => void
+  onChange: (value: ExtRDFResourceWithLabel, idx: number, removeFirst: boolean | undefined) => void
   idx: number
   exists: (uri: string) => boolean
 }> = ({ extRes, subject, property, canDel, onChange, idx, exists }) => {
