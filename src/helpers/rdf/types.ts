@@ -438,6 +438,18 @@ export class Subject extends RDFResource {
     const newSubject = new Subject(this.node, newGraph)
     return newSubject
   }
+
+  removeWithTTL(ttl: string): Subject {
+    const newStore: rdf.Store = rdf.graph()
+    newStore.addAll(this.graph.store.statements)
+    const delStore: rdf.Store = rdf.graph()
+    rdf.parse(ttl, delStore, rdf.Store.defaultGraphURI, "text/turtle")
+    //debug("del:",delStore)
+    newStore.remove(delStore.statements)
+    const newGraph = new EntityGraph(newStore, this.graph.topSubjectUri, this.graph.associatedLabelsStore)
+    const newSubject = new Subject(this.node, newGraph)
+    return newSubject
+  }
 }
 
 export class Ontology {

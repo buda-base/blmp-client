@@ -22,6 +22,7 @@ import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
+import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
 
 export const MinimalAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; className: string }> = ({
   add,
@@ -127,6 +128,8 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   let firstValueIsEmptyField = true
 
+  debug("dP:", property.qname, property.displayPriority)
+
   useEffect(() => {
     // TODO: check maxCount
     if (list.length) {
@@ -145,7 +148,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
       }
     } else if (
       property.objectType != ObjectType.Facet &&
-      (!property.displayPriority || property.displayPriority === 0) &&
+      (!property.displayPriority || property.displayPriority === 0 || list.length) &&
       (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField)
     ) {
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
@@ -457,10 +460,29 @@ const ExtEntityComponent: FC<{
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === extRes)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
     setList(newList)
+    /* 
+    // TODO? update entity at RDF level
+    // actually it is not enough... WIP
+
+    const nEnt = entities.findIndex((e) => e.subjectQname === subject.qname)
+    if (nEnt >= 0 && entities[nEnt].subject) {
+      const subject = entities[nEnt].subject
+      if (subject) {
+        debug("subject to update:",subject.graph.store.statements)
+        const newSubject = subject.removeWithTTL(
+          "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(extRes.qname) + "> ."
+        )
+        const newEntities = [...entities]
+        newEntities[nEnt] = { ...entities[nEnt], subject: newSubject }
+        setEntities(newEntities)
+      }
+    }
+    */
   }
 
   return (
