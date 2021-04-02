@@ -60,4 +60,6 @@ bdr:P1583  a     bdo:Person ;
    bdo:personTeacherOf   bdr:P314 ;
    skos:prefLabel  "dri med 'od zer/"@bo-x-ewts , "隆钦热降巴·赤墨俄色"@zh-hans ;
    bdo:personEvent  bdr:EV00B857229AAA1BF0, bdr:EVDD9AB2BD104D0A7D ;
+   bdo:hasMother   bdr:P1585 ;
+   bdo:hasGrandmother   bdr:P8888 ;
 .

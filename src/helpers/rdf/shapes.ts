@@ -75,7 +75,7 @@ export const sortByPropValue = (
     }
     orderedGroupObjs[order] = node
   }
-  orders = orders.sort()
+  orders = orders.sort((a, b) => a - b)
   const res: Array<rdf.NamedNode> = []
   for (const order of orders) {
     res.push(orderedGroupObjs[order])

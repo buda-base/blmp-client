@@ -477,21 +477,21 @@ bds:PersonShape-hasFather
   sh:description "this Person may have a father."@en ;
   sh:group bds:KinshipPropertyGroup ;
   sh:name "has father"@en ;
-  sh:order "13"^^xsd:decimal ; # TODO: use numerical sort in UI
+  sh:order "6"^^xsd:decimal ; 
 .
 bds:PersonShape-hasMother
   dash:editor dash:InstancesSelectEditor ;
   sh:description "this Person may have at most one mother."@en ;
   sh:group bds:KinshipPropertyGroup ;
   sh:name "has mother"@en ;
-  sh:order "14"^^xsd:decimal ;
+  sh:order "7"^^xsd:decimal ;
 .
 bds:PersonShape-hasGrandfather
   dash:editor dash:InstancesSelectEditor ;
   sh:description "this Person may have at most two Grandfathers."@en ;
   sh:group bds:KinshipPropertyGroup ;
   sh:name "has grandfather"@en ;
-  sh:order "11"^^xsd:decimal ;
+  sh:order "11"^^xsd:decimal ; # DONE: use numerical sort in UI
   bds:displayPriority 1 ;
 .
 bds:PersonShape-hasGrandmother

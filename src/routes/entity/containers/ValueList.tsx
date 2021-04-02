@@ -465,7 +465,7 @@ const ExtEntityComponent: FC<{
     setList(newList)
 
     // DONE: update entity at RDF level
-    // actually it is not enough... WIP
+    // (actually it was not enough, entity had also to be updated from Recoil/entities in top level Container)
 
     const nEnt = entities.findIndex((e) => e.subjectQname === subject.qname)
     if (nEnt >= 0 && entities[nEnt].subject) {
