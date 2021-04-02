@@ -32,6 +32,9 @@ const enTranslations = {
   },
   general: {
     add_another: "Add another",
+    toggle: "{{show}} empty secondary properties",
+    show: "Show",
+    hide: "Hide",
   },
 }
 

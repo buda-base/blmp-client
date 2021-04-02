@@ -54,5 +54,5 @@ bdr:P1585 skos:prefLabel  "'brom bza' bsod nams rgyan/"@bo-x-ewts ;
    .
 
 
-bdr:P8888 skos:prefLabel "(the name)"@en ;
+bdr:P88888 skos:prefLabel "(the name)"@en ;
    .

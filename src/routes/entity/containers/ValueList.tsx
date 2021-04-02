@@ -54,6 +54,23 @@ export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement
   )
 }
 
+export const OtherButton: FC<{ onClick: React.MouseEventHandler<HTMLButtonElement>; label: string }> = ({
+  onClick,
+  label,
+}) => {
+  return (
+    <div className="blockAdd text-center pb-1" style={{ margin: "0 15px" }}>
+      <button
+        className="btn btn-sm btn-block btn-outline-primary mb-2 px-0 py-2"
+        style={{ boxShadow: "none" }}
+        onClick={onClick}
+      >
+        {label}
+      </button>
+    </div>
+  )
+}
+
 const debug = require("debug")("bdrc:entity:property:litlist")
 
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
@@ -91,10 +108,11 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
  * List component
  */
 
-const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean }> = ({
+const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean; force?: boolean }> = ({
   subject,
   property,
   embedded,
+  force,
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   //debug(subject)
@@ -118,7 +136,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     setList(newList)
   }
 
-  // TODO prevent adding same resource twice
+  // DONE prevent adding same resource twice
   const exists: (uri: string) => boolean = (uri: string): boolean => {
     for (const val of list) {
       if (val instanceof RDFResourceWithLabel && val.uri === uri) return true
@@ -145,13 +163,15 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
       }
     } else if (
       property.objectType != ObjectType.Facet &&
-      (!property.displayPriority || property.displayPriority === 0 || list.length) &&
+      (!property.displayPriority || property.displayPriority === 0 || list.length || force) &&
       (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField)
     ) {
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
       else setList((oldList) => [...oldList, generateDefault(property, subject)])
+    } else if (property.displayPriority && property.displayPriority >= 1 && list.length === 1 && !force) {
+      if (firstValueIsEmptyField) setList([])
     }
-  }, [subject, list])
+  }, [subject, list, force])
 
   let addBtn = property.objectType === ObjectType.Facet
 
