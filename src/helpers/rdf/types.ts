@@ -100,7 +100,7 @@ export class EntityGraphValues {
     return subjectUri + pathString
   })
   getAtomForSubjectProperty(pathString: string, subjectUri: string) {
-    debug(this)
+    //debug(this)
     return atom<Array<Value>>({
       key: subjectUri + pathString,
       default: [],
@@ -380,7 +380,7 @@ export class ExtRDFResourceWithLabel extends RDFResourceWithLabel {
   constructor(uri: string, prefLabels: Record<string, string>, data: Record<string, any> = {}) {
     super(new rdf.NamedNode(uri), new EntityGraph(new rdf.Store(), uri))
     this._prefLabels = prefLabels
-    debug("data", data)
+    //debug("data", data)
     this._otherData = data
   }
 
@@ -449,6 +449,10 @@ export class Subject extends RDFResource {
     const newGraph = new EntityGraph(newStore, this.graph.topSubjectUri, this.graph.associatedLabelsStore)
     const newSubject = new Subject(this.node, newGraph)
     return newSubject
+  }
+
+  static createEmpty(): Subject {
+    return new Subject(new rdf.NamedNode("tmp:uri"), new EntityGraph(new rdf.Store(), "tmp:uri"))
   }
 }
 

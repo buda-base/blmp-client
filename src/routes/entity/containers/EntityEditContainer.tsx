@@ -38,7 +38,8 @@ function EntityEditContainer(props: AppProps) {
 
   // TODO: update highlighted tab
 
-  const { entityLoadingState, entity } = EntityFetcher(entityQname, shapes.shapeRefsMap[shapeQname])
+  // eslint-disable-next-line prefer-const
+  let { entityLoadingState, entity } = EntityFetcher(entityQname, shapes.shapeRefsMap[shapeQname])
   const { loadingState, shape } = ShapeFetcher(shapeQname)
 
   // TODO: check that shape can be properly applied to entuty
@@ -69,9 +70,11 @@ function EntityEditContainer(props: AppProps) {
       const newSubject = subject.extendWithTTL(
         "<" + subject.uri + "> <" + urlParams.propid + "> <" + entity.qname + "> ."
       )
-      debug("newSubject:", newSubject.graph.store, subject.graph.store)
+      //debug("newSubject:", newSubject.graph.store, subject.graph.store)
       const newEntities = [...entities]
       newEntities[index] = { ...entities[index], subject: newSubject }
+      // DONE: fix deleted property reappearing
+      entity = newSubject
       setEntities(newEntities)
       props.history.replace(props.history.location.pathname)
     }
@@ -87,6 +90,8 @@ function EntityEditContainer(props: AppProps) {
     entity.graph.addNewValuestoStore(store)
     debugStore(store)
   }
+
+  debug("entity.store", entity.graph.store.statements)
 
   return (
     <React.Fragment>

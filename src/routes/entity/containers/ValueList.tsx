@@ -128,8 +128,6 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   let firstValueIsEmptyField = true
 
-  debug("dP:", property.qname, property.displayPriority)
-
   useEffect(() => {
     // TODO: check maxCount
     if (list.length) {
@@ -465,15 +463,15 @@ const ExtEntityComponent: FC<{
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
     setList(newList)
-    /* 
-    // TODO? update entity at RDF level
+
+    // DONE: update entity at RDF level
     // actually it is not enough... WIP
 
     const nEnt = entities.findIndex((e) => e.subjectQname === subject.qname)
     if (nEnt >= 0 && entities[nEnt].subject) {
       const subject = entities[nEnt].subject
       if (subject) {
-        debug("subject to update:",subject.graph.store.statements)
+        debug("subject to update:", subject.graph.store.statements)
         const newSubject = subject.removeWithTTL(
           "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(extRes.qname) + "> ."
         )
@@ -482,7 +480,6 @@ const ExtEntityComponent: FC<{
         setEntities(newEntities)
       }
     }
-    */
   }
 
   return (

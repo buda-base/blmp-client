@@ -111,12 +111,12 @@ export function ShapeFetcher(shapeQname: string) {
 
 export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabel | null) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
-  const [entity, setEntity] = useState<Subject>()
+  const [entity, setEntity] = useState<Subject>(Subject.createEmpty())
   const [uiReady, setUiReady] = useRecoilState(uiReadyState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const reset = () => {
-    setEntity(undefined)
+    setEntity(Subject.createEmpty())
     setEntityLoadingState({ status: "idle", error: undefined })
   }
 
