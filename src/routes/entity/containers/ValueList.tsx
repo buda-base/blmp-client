@@ -131,8 +131,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   useEffect(() => {
     // TODO: check maxCount
     if (list.length) {
-      const first = list[0],
-        last = list[list.length - 1]
+      const first = list[0]
       if (first instanceof ExtRDFResourceWithLabel && first.uri !== "tmp:uri") firstValueIsEmptyField = false
     }
 
@@ -461,7 +460,12 @@ const ExtEntityComponent: FC<{
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const deleteItem = () => {
-    const newList = removeItemAtIndex(list, index)
+    let newList = removeItemAtIndex(list, index)
+    // DONE: remove first empty field if alone & displayPriority >= 1
+    if (idx === 1 && newList.length === 1) {
+      const first = newList[0]
+      if (first instanceof ExtRDFResourceWithLabel && first.uri === "tmp:uri") newList = []
+    }
     setList(newList)
 
     // DONE: update entity at RDF level
