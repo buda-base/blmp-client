@@ -262,7 +262,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const addItem = () => {
-    // TODO: also update rdf
+    // DONE: also update rdf
     const item = generateDefault(property, subject)
     let rdf = "<" + subject.uri + "> <" + property?.path?.sparqlString + "> "
     if (item instanceof LiteralWithId) rdf += '"' + item.value + '"' + (item.language ? "@" + item.language : "")
@@ -419,6 +419,7 @@ const LiteralComponent: FC<{
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
     const newList = replaceItemAtIndex(list, index, value)
@@ -426,6 +427,18 @@ const LiteralComponent: FC<{
   }
 
   const deleteItem = () => {
+    const rdf =
+      "<" +
+      subject.uri +
+      "> <" +
+      property?.path?.sparqlString +
+      '> "' +
+      lit.value +
+      '"' +
+      (lit.language ? "@" + lit.language : "") +
+      "."
+    debug("delI", rdf)
+    updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
@@ -464,8 +477,13 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === subNode)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const deleteItem = () => {
+    const rdf =
+      "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(subNode.qname) + "> ."
+    debug("delI", rdf)
+    updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
