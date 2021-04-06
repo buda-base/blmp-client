@@ -16,6 +16,8 @@ import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 import qs from "query-string"
+import { updateEntitiesRDF } from "./ValueList"
+import * as ns from "../../../helpers/rdf/ns"
 
 const debug = require("debug")("bdrc:entity:edit")
 
@@ -67,15 +69,9 @@ function EntityEditContainer(props: AppProps) {
   if (index >= 0 && entities[index].subject) {
     const subject = entities[index].subject
     if (subject) {
-      const newSubject = subject.extendWithTTL(
-        "<" + subject.uri + "> <" + urlParams.propid + "> <" + entity.qname + "> ."
-      )
-      //debug("newSubject:", newSubject.graph.store, subject.graph.store)
-      const newEntities = [...entities]
-      newEntities[index] = { ...entities[index], subject: newSubject }
+      const rdf = "<" + subject.uri + "> <" + urlParams.propid + "> <" + ns.uriFromQname(entity.qname) + "> ."
       // DONE: fix deleted property reappearing
-      entity = newSubject
-      setEntities(newEntities)
+      updateEntitiesRDF(subject, subject.extendWithTTL, rdf, entities, setEntities)
       props.history.replace(props.history.location.pathname)
     }
   }

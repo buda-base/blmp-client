@@ -22,7 +22,7 @@ import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
-import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
+import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 
 export const MinimalAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; className: string }> = ({
   add,
@@ -69,6 +69,26 @@ export const OtherButton: FC<{ onClick: React.MouseEventHandler<HTMLButtonElemen
       </button>
     </div>
   )
+}
+
+export const updateEntitiesRDF = (
+  subject: Subject,
+  updateFunction: (rdf: string) => Subject,
+  rdf: string,
+  entities: Array<Entity>,
+  setEntities: (newEntities: Array<Entity>) => void
+) => {
+  debug("update with RDF:", rdf)
+  const nEnt = entities.findIndex((e) => e.subjectQname === subject.qname)
+  if (nEnt >= 0 && entities[nEnt].subject) {
+    const subject = entities[nEnt].subject
+    if (subject) {
+      const newSubject = updateFunction.call(subject, rdf)
+      const newEntities = [...entities]
+      newEntities[nEnt] = { ...entities[nEnt], subject: newSubject }
+      setEntities(newEntities)
+    }
+  }
 }
 
 const debug = require("debug")("bdrc:entity:property:litlist")
@@ -239,9 +259,19 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const addItem = () => {
-    setList((oldList) => [...oldList, generateDefault(property, subject)])
+    // TODO: also update rdf
+    const item = generateDefault(property, subject)
+    let rdf = "<" + subject.uri + "> <" + property?.path?.sparqlString + "> "
+    if (item instanceof LiteralWithId) rdf += '"' + item.value + '"' + (item.language ? "@" + item.language : "")
+    else if (item instanceof Subject) rdf += "<" + ns.uriFromQname(item.qname) + ">"
+    rdf += "."
+    debug("addI", rdf)
+    // DONE: make a reusable function
+    updateEntitiesRDF(subject, subject.extendWithTTL, rdf, entities, setEntities)
+    setList((oldList) => [...oldList, item])
   }
 
   if (embedded)
@@ -491,19 +521,8 @@ const ExtEntityComponent: FC<{
     // DONE: update entity at RDF level
     // (actually it was not enough, entity had also to be updated from Recoil/entities in top level Container)
 
-    const nEnt = entities.findIndex((e) => e.subjectQname === subject.qname)
-    if (nEnt >= 0 && entities[nEnt].subject) {
-      const subject = entities[nEnt].subject
-      if (subject) {
-        debug("subject to update:", subject.graph.store.statements)
-        const newSubject = subject.removeWithTTL(
-          "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(extRes.qname) + "> ."
-        )
-        const newEntities = [...entities]
-        newEntities[nEnt] = { ...entities[nEnt], subject: newSubject }
-        setEntities(newEntities)
-      }
-    }
+    const rdf = "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(extRes.qname) + "> ."
+    updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
   }
 
   return (
