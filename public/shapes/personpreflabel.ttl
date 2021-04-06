@@ -132,6 +132,7 @@ bds:CommonShape-prefLabel
   sh:order "0"^^xsd:decimal ;
   # the rdf path of the predicate
   sh:path skos:prefLabel ;
+  sh:uniqueLang true ;
   # some constraints and error message
   sh:message "There must be at least one skos:prefLabel"@en ;
   sh:minCount 1 ;
@@ -477,7 +478,7 @@ bds:PersonShape-hasFather
   sh:description "this Person may have a father."@en ;
   sh:group bds:KinshipPropertyGroup ;
   sh:name "has father"@en ;
-  sh:order "6"^^xsd:decimal ; 
+  sh:order "6"^^xsd:decimal ;
 .
 bds:PersonShape-hasMother
   dash:editor dash:InstancesSelectEditor ;
