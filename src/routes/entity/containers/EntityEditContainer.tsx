@@ -62,6 +62,8 @@ function EntityEditContainer(props: AppProps) {
 
   if (!shape || !entity) return null
 
+  debug("entity:", entity)
+
   // DONE: add new entity as object for property where it was created
   const urlParams = qs.parse(props.history.location.search)
   const index = entities.findIndex((e) => e.subjectQname === urlParams.subject)

@@ -202,7 +202,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
         style={{
           display: "flex",
           flexWrap: "wrap",
-          ...list.length > 1 && firstValueIsEmptyField
+          ...list.length > 1 && firstValueIsEmptyField && property.path.sparqlString !== ns.SKOS("prefLabel").value
             ? { borderBottom: "2px solid #eee", paddingBottom: "16px" }
             : {},
         }}
@@ -274,8 +274,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     setList((oldList) => [...oldList, item])
   }
 
-  if (embedded)
-    // || property.path.sparqlString === ns.SKOS("prefLabel").value)
+  if (embedded || property.path.sparqlString === ns.SKOS("prefLabel").value)
     return <MinimalAddButton add={addItem} className=" " />
   else return <BlockAddButton add={addItem} /*label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)}*/ />
 }
