@@ -278,5 +278,12 @@ input[type="checkbox"].dmcheck {
 iframe { z-index:2; }
 .iframe-BG { position:fixed; left:0; top:0; width:100vw; height:100vh;background:rgba(0,0,0,0); z-index:1; }
 
+// TODO: fix selected resource horizontal stacking
+.extEntity,
 .langString { width: 100%; }
+.facet .extEntity,
 .facet .langString { width: calc(100% - 2rem); }
+
+.maxCount .resSelect { pointer-events: none; }
+.maxCount .resSelect > div > :not(:first-child) { display:none;  }
+.maxCount :not(.card) > .resSelect > div > :first-child:not(.card) { width: calc(100% - 2rem) !important; opacity:0.65; }

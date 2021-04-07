@@ -245,7 +245,7 @@ bds:NoteShape
   sh:property bds:NoteShape-contentLocation ;
   sh:property bds:NoteShape-noteText ;
   # TODO: fix loading
-  # sh:property bds:NoteShape-noteSource ;
+  sh:property bds:NoteShape-noteSource ;
 # there are no note types currently well defined
 #  sh:property bds:NoteShape-noteType ;
   sh:targetClass bdo:Note ;
@@ -281,7 +281,7 @@ bds:NoteShape-noteSource
   sh:datatype rdf:langString ;
   bds:propertyShapeType bds:ExternalShape ;
   sh:name "source"@en ;
-  sh:order "2"^^xsd:decimal ;
+  sh:order "1"^^xsd:decimal ;
   sh:maxCount 1 ;
   sh:class bdo:Instance ;
 .

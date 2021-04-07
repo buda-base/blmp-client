@@ -184,7 +184,8 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     } else if (
       property.objectType != ObjectType.Facet &&
       (!property.displayPriority || property.displayPriority === 0 || list.length || force) &&
-      (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField)
+      (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField) &&
+      (!property.maxCount || property.maxCount >= list.length)
     ) {
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
       else setList((oldList) => [...oldList, generateDefault(property, subject)])
@@ -198,6 +199,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   return (
     <React.Fragment>
       <div
+        className={property.maxCount && property.maxCount < list.length ? "maxCount" : ""}
         role="main"
         style={{
           display: "flex",
@@ -509,6 +511,8 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
 
   const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
 
+  debug("target", property.path.sparqlString, targetShape)
+
   return (
     <div className="facet mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }}>
       <div>
@@ -559,8 +563,9 @@ const ExtEntityComponent: FC<{
     updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
   }
 
+  //, ...extRes.uri === "tmp:uri" ? { /*width: "100%"*/ } : {} }}>
   return (
-    <div style={{ position: "relative", ...extRes.uri === "tmp:uri" ? { width: "100%" } : {} }}>
+    <div className="extEntity" style={{ position: "relative" }}>
       <div
         style={{
           ...extRes.uri !== "tmp:uri"

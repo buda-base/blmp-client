@@ -241,7 +241,10 @@ const ResourceSelector: FC<{
 
   return (
     <React.Fragment>
-      <div style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}>
+      <div
+        className="resSelect"
+        style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}
+      >
         {value.uri === "tmp:uri" && (
           <div className="py-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
             <React.Fragment>

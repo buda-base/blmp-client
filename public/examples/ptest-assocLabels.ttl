@@ -49,10 +49,11 @@
 bdr:P314 skos:prefLabel  "kun mkhyen 'jigs med gling pa"@bo-x-ewts , "钦则俄色·晋美林巴"@zh-hans ;
    .
 
-
 bdr:P1585 skos:prefLabel  "'brom bza' bsod nams rgyan/"@bo-x-ewts ;
    .
 
-
 bdr:P88888 skos:prefLabel "(the name)"@en ;
+   .
+
+bdr:MW25268  skos:prefLabel  "gangs can mkhas dbang rim byon gyi rnam thar mdor bsdus/"@bo-x-ewts ;
    .
