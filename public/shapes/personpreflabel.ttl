@@ -59,7 +59,7 @@ bds:NotesPropertyGroup
 bds:AdminPropertyGroup
   a sh:PropertyGroup ;
   rdfs:label "Admin data"@en ;
-  sh:order 4 ;
+  sh:order 5 ;
 .
 bds:PersonShape-adminData
   dash:editor dash:DetailsEditor ;
@@ -117,7 +117,6 @@ bds:PersonShapeTest
   sh:property bds:PersonShape-hasGrandmother ;
   sh:property bds:PersonShape-adminData ;
   sh:property bds:PersonShape-teacherOf ;
-  # TODO: block is duplicated 
   sh:property bds:RootShape-note ;
   sh:targetClass bdo:Person ;
 .

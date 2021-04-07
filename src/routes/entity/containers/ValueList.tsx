@@ -231,7 +231,6 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
           } else if (val instanceof LiteralWithId) {
             addBtn = val && val.value !== ""
             const isUnique =
-              property.uniqueLang === true &&
               list.filter((l) => l instanceof LiteralWithId && l.value === val.value && l.language === val.language)
                 .length === 1
             return (
@@ -453,8 +452,6 @@ const LiteralComponent: FC<{
   const t = property.datatype
   let edit
 
-  debug("t:", t, lit, property)
-
   if (t?.value === ns.RDF("langString").value)
     edit = (
       <EditLangString
@@ -462,7 +459,7 @@ const LiteralComponent: FC<{
         lit={lit}
         onChange={onChange}
         label={label}
-        {...(!isUnique ? { globalError: i18n.t("error.unique") } : {})}
+        {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
       />
     )
   else if (t?.value === ns.XSD("gYear").value)
