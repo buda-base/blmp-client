@@ -450,9 +450,10 @@ const LiteralComponent: FC<{
   }
 
   const t = property.datatype
-  let edit
+  let edit, classN
 
-  if (t?.value === ns.RDF("langString").value)
+  if (t?.value === ns.RDF("langString").value) {
+    classN = "langString"
     edit = (
       <EditLangString
         property={property}
@@ -462,14 +463,15 @@ const LiteralComponent: FC<{
         {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
       />
     )
-  else if (t?.value === ns.XSD("gYear").value)
+  } else if (t?.value === ns.XSD("gYear").value) {
+    classN = "gYear"
     edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
-  else throw "literal with unknown datatype value:" + JSON.stringify(t)
+  } else throw "literal with unknown datatype value:" + JSON.stringify(t)
   //else if (t?.value === ns.RDF("type").value)
   //  edit = <EditType property={property} lit={lit} onChange={onChange} label={label} />
 
   return (
-    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+    <div className={classN} style={{ display: "flex", alignItems: "center" /*, width: "100%"*/ }}>
       {edit}
       {canDel && (
         <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>

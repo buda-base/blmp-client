@@ -277,3 +277,6 @@ input[type="checkbox"].dmcheck {
 
 iframe { z-index:2; }
 .iframe-BG { position:fixed; left:0; top:0; width:100vw; height:100vh;background:rgba(0,0,0,0); z-index:1; }
+
+.langString { width: 100%; }
+.facet .langString { width: calc(100% - 2rem); }

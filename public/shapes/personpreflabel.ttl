@@ -244,6 +244,8 @@ bds:NoteShape
   bds:nodeShapeType bds:FacetShape ;
   sh:property bds:NoteShape-contentLocation ;
   sh:property bds:NoteShape-noteText ;
+  # TODO: fix loading
+  # sh:property bds:NoteShape-noteSource ;
 # there are no note types currently well defined
 #  sh:property bds:NoteShape-noteType ;
   sh:targetClass bdo:Note ;
@@ -271,6 +273,17 @@ bds:NoteShape-noteText
   dash:editor dash:TextAreaWithLangEditor ;
   sh:name "text"@en ;
   sh:order "0"^^xsd:decimal ;
+.
+
+bds:NoteShape-noteSource
+  a sh:PropertyShape ;
+  sh:path bdo:noteSource ;
+  sh:datatype rdf:langString ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:name "source"@en ;
+  sh:order "2"^^xsd:decimal ;
+  sh:maxCount 1 ;
+  sh:class bdo:Instance ;
 .
 
 bds:ContentLocationShape
