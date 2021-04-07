@@ -428,6 +428,19 @@ export class Subject extends RDFResource {
     return this.graph.getAtomForSubjectProperty(pathString, this.uri)
   }
 
+  updateWithNewValues() {
+    // must clone because can't use same graph/store ("object not extensible" error)
+    const newStore: rdf.Store = rdf.graph()
+    newStore.addAll(this.graph.store.statements)
+    this.graph.addNewValuestoStore(newStore)
+    debug("newStore", newStore.statements)
+    const newGraph = new EntityGraph(newStore, this.graph.topSubjectUri, this.graph.associatedLabelsStore)
+    const newSubject = new Subject(this.node, newGraph)
+    return newSubject
+  }
+
+  /* // not really useful
+
   // returns new subject extended with some TTL
   extendWithTTL(ttl: string): Subject {
     const newStore: rdf.Store = rdf.graph()
@@ -450,6 +463,7 @@ export class Subject extends RDFResource {
     const newSubject = new Subject(this.node, newGraph)
     return newSubject
   }
+  */
 
   static createEmpty(): Subject {
     return new Subject(new rdf.NamedNode("tmp:uri"), new EntityGraph(new rdf.Store(), "tmp:uri"))

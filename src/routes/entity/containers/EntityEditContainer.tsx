@@ -71,9 +71,9 @@ function EntityEditContainer(props: AppProps) {
   if (index >= 0 && entities[index].subject) {
     const subject = entities[index].subject
     if (subject) {
-      const rdf = "<" + subject.uri + "> <" + urlParams.propid + "> <" + ns.uriFromQname(entity.qname) + "> ."
+      //const rdf = "<" + subject.uri + "> <" + urlParams.propid + "> <" + ns.uriFromQname(entity.qname) + "> ."
       // DONE: fix deleted property reappearing
-      updateEntitiesRDF(subject, subject.extendWithTTL, rdf, entities, setEntities)
+      updateEntitiesRDF(subject.qname, entities, setEntities)
       props.history.replace(props.history.location.pathname)
     }
   }
@@ -89,7 +89,7 @@ function EntityEditContainer(props: AppProps) {
     debugStore(store)
   }
 
-  debug("entity.store", entity.graph.store.statements)
+  debug("entity.store", entity.graph.store.statements, entity.graph)
 
   return (
     <React.Fragment>
