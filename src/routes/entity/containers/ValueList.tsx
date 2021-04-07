@@ -453,6 +453,8 @@ const LiteralComponent: FC<{
   const t = property.datatype
   let edit
 
+  debug("t:", t, lit, property)
+
   if (t?.value === ns.RDF("langString").value)
     edit = (
       <EditLangString

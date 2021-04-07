@@ -56,10 +56,18 @@ bdr:EVDD9AB2BD104D0A7D
    # bdo:eventWhere  bdr:G967 ;
    bdo:onYear    "1308"^^xsd:gYear .
 
+bdr:NT93D338F6A346B51D
+   a             bdo:Note ;
+   bdo:contentLocationStatement  "v. 2, pp.104-112" ;
+   bdo:noteSource  bdr:MW25268 ;
+   bdo:noteText  "biography\ndates: 1308-1363"@en ;
+.
+
 bdr:P1583  a     bdo:Person ;
    bdo:personTeacherOf   bdr:P314 ;
    skos:prefLabel  "dri med 'od zer/"@bo-x-ewts , "隆钦热降巴·赤墨俄色"@zh-hans ;
    bdo:personEvent  bdr:EV00B857229AAA1BF0, bdr:EVDD9AB2BD104D0A7D ;
    bdo:hasMother   bdr:P1585 ;
    bdo:hasGrandmother   bdr:P88888 ;
+   bdo:note      bdr:NT93D338F6A346B51D ;
 .
