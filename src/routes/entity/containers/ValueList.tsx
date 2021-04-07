@@ -230,6 +230,10 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
             return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} canDel={canDel} />
           } else if (val instanceof LiteralWithId) {
             addBtn = val && val.value !== ""
+            const isUnique =
+              property.uniqueLang === true &&
+              list.filter((l) => l instanceof LiteralWithId && l.value === val.value && l.language === val.language)
+                .length === 1
             return (
               <LiteralComponent
                 key={val.id}
@@ -238,6 +242,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                 lit={val}
                 label={propLabel}
                 canDel={canDel}
+                isUnique={isUnique}
               />
             )
           }
@@ -303,11 +308,13 @@ const EditLangString: FC<{
   lit: LiteralWithId
   onChange: (value: LiteralWithId) => void
   label: string
-}> = ({ property, lit, onChange, label }) => {
+  globalError?: string
+}> = ({ property, lit, onChange, label, globalError }) => {
   const classes = useStyles()
 
-  let error
+  let error = ""
   if (!lit.value) error = i18n.t("error.empty")
+  else if (globalError) error = globalError
 
   return (
     <div className="mb-2" style={{ display: "flex", width: "100%", alignItems: "end" }}>
@@ -414,7 +421,8 @@ const LiteralComponent: FC<{
   property: PropertyShape
   label: string
   canDel: boolean
-}> = ({ lit, subject, property, label, canDel }) => {
+  isUnique: boolean
+}> = ({ lit, subject, property, label, canDel, isUnique }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
@@ -446,7 +454,15 @@ const LiteralComponent: FC<{
   let edit
 
   if (t?.value === ns.RDF("langString").value)
-    edit = <EditLangString property={property} lit={lit} onChange={onChange} label={label} />
+    edit = (
+      <EditLangString
+        property={property}
+        lit={lit}
+        onChange={onChange}
+        label={label}
+        {...(!isUnique ? { globalError: i18n.t("error.unique") } : {})}
+      />
+    )
   else if (t?.value === ns.XSD("gYear").value)
     edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
   else throw "literal with unknown datatype value:" + JSON.stringify(t)

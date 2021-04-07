@@ -335,6 +335,7 @@ export class RDFResource {
 
   public getPropBooleanValue(p: rdf.NamedNode, dflt = false): boolean {
     const lit: rdf.Literal = this.graph.store.any(this.node, p, null) as rdf.Literal
+    if (!lit) return dflt
     const n = Boolean(lit.value)
     if (n) {
       return n
