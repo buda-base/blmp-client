@@ -565,7 +565,7 @@ const ExtEntityComponent: FC<{
 
   //, ...extRes.uri === "tmp:uri" ? { /*width: "100%"*/ } : {} }}>
   return (
-    <div className="extEntity" style={{ position: "relative" }}>
+    <div className={"extEntity" + (extRes.uri === "tmp:uri" ? " new" : "")} style={{ position: "relative" }}>
       <div
         style={{
           ...extRes.uri !== "tmp:uri"

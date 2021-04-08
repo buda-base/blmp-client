@@ -327,7 +327,7 @@ const ResourceSelector: FC<{
               helperText={label}
               disabled
             /> */}
-            <div>
+            <div className="selected">
               <div style={{ fontSize: "16px" /*, borderBottom:"1px solid #ccc"*/ }}>
                 {lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang) + " " + dates}
               </div>
