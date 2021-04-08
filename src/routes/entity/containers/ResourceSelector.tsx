@@ -306,6 +306,7 @@ const ResourceSelector: FC<{
                 {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
               </button>
               <button
+                disabled // TODO: dont open a new entity simultaneously
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}

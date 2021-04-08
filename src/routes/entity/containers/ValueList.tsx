@@ -205,7 +205,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
           display: "flex",
           flexWrap: "wrap",
           ...list.length > 1 && firstValueIsEmptyField && property.path.sparqlString !== ns.SKOS("prefLabel").value
-            ? { borderBottom: "2px solid #eee", paddingBottom: "16px" }
+            ? { /*borderBottom: "2px solid #eee",*/ paddingBottom: "16px" }
             : {},
         }}
       >
@@ -468,6 +468,8 @@ const LiteralComponent: FC<{
   } else if (t?.value === ns.XSD("gYear").value) {
     classN = "gYear"
     edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
+  } else if (t?.value === ns.XSD("integer").value) {
+    edit = <TextField helperText={label} type="number" />
   } else throw "literal with unknown datatype value:" + JSON.stringify(t)
   //else if (t?.value === ns.RDF("type").value)
   //  edit = <EditType property={property} lit={lit} onChange={onChange} label={label} />
@@ -514,7 +516,9 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   debug("target", property.path.sparqlString, targetShape)
 
   return (
-    <div className="facet mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }}>
+    <div
+      className="card facet mb-4 py-2 px-3 mx-1" /*style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }} */
+    >
       <div>
         {targetShape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
