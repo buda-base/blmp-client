@@ -71,6 +71,7 @@ export const OtherButton: FC<{ onClick: React.MouseEventHandler<HTMLButtonElemen
   )
 }
 
+/* // breaks history
 export const updateEntitiesRDF = (
   subject: Subject,
   updateFunction: (rdf: string) => Subject,
@@ -90,6 +91,7 @@ export const updateEntitiesRDF = (
     }
   }
 }
+*/
 
 const debug = require("debug")("bdrc:entity:property:litlist")
 
@@ -268,8 +270,8 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const addItem = () => {
+    /* // no need for updateEntitiesRDF
     // DONE: also update rdf
-    const item = generateDefault(property, subject)
     let rdf = "<" + subject.uri + "> <" + property?.path?.sparqlString + "> "
     if (item instanceof LiteralWithId) rdf += '"' + item.value + '"' + (item.language ? "@" + item.language : "")
     else if (item instanceof Subject) rdf += "<" + ns.uriFromQname(item.qname) + ">"
@@ -277,6 +279,9 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     debug("addI", rdf)
     // DONE: make a reusable function
     updateEntitiesRDF(subject, subject.extendWithTTL, rdf, entities, setEntities)
+    */
+
+    const item = generateDefault(property, subject)
     setList((oldList) => [...oldList, item])
   }
 
@@ -435,6 +440,7 @@ const LiteralComponent: FC<{
   }
 
   const deleteItem = () => {
+    /* // no need for updateEntitiesRDF
     const rdf =
       "<" +
       subject.uri +
@@ -447,6 +453,7 @@ const LiteralComponent: FC<{
       "."
     debug("delI", rdf)
     updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
+    */
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
@@ -500,10 +507,12 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const deleteItem = () => {
+    /* // no need for updateEntitiesRDF
     const rdf =
       "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(subNode.qname) + "> ."
     debug("delI", rdf)
     updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
+    */
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
@@ -560,11 +569,14 @@ const ExtEntityComponent: FC<{
     }
     setList(newList)
 
+    /* // no need for updateEntitiesRDF
+
     // DONE: update entity at RDF level
     // (actually it was not enough, entity had also to be updated from Recoil/entities in top level Container)
 
     const rdf = "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(extRes.qname) + "> ."
     updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
+    */
   }
 
   //, ...extRes.uri === "tmp:uri" ? { /*width: "100%"*/ } : {} }}>

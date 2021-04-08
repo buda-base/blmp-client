@@ -16,7 +16,6 @@ import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 import qs from "query-string"
-import { updateEntitiesRDF } from "./ValueList"
 import * as ns from "../../../helpers/rdf/ns"
 
 const debug = require("debug")("bdrc:entity:edit")
@@ -64,6 +63,8 @@ function EntityEditContainer(props: AppProps) {
 
   debug("entity:", entity)
 
+  /* // no need for updateEntitiesRDF
+
   // DONE: add new entity as object for property where it was created
   const urlParams = qs.parse(props.history.location.search)
   const index = entities.findIndex((e) => e.subjectQname === urlParams.subject)
@@ -77,6 +78,7 @@ function EntityEditContainer(props: AppProps) {
       props.history.replace(props.history.location.pathname)
     }
   }
+  */
 
   const shapeLabel = lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)
 
