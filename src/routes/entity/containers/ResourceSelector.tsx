@@ -206,20 +206,16 @@ const ResourceSelector: FC<{
     if (dates) dates = "(" + dates + ")"
   }
 
-  const createAndLink = () => {
-    history.push(
-      "/new/" +
-        type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
-        "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
-        "?subject=" +
-        subject.qname +
-        "&propid=" +
-        p.path?.sparqlString +
-        "&index=" +
-        idx
-    )
-    //debug("entities...", entities)
-  }
+  const linkUrl =
+    "/new/" +
+    type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
+    "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
+    "?subject=" +
+    subject.qname +
+    "&propid=" +
+    p.path?.sparqlString +
+    "&index=" +
+    idx
 
   const label = lang.ValueByLangToStrPrefLang(p.prefLabels, uiLang)
 
@@ -302,14 +298,14 @@ const ResourceSelector: FC<{
               >
                 {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
               </button>
-              <button
+              <Link
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
-                onClick={createAndLink}
+                to={linkUrl}
               >
                 {i18n.t("search.create")}
-              </button>
+              </Link>
             </React.Fragment>
           </div>
         )}
