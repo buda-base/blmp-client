@@ -8,10 +8,10 @@ import { nodeForType } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
-import { ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
+import { RDFResource, ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, SettingsIcon } from "../../layout/icons"
-import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
+import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 import { LangSelect } from "./ValueList"
 import { qnameFromUri } from "../../../helpers/rdf/ns"
 
@@ -224,8 +224,24 @@ const ResourceSelector: FC<{
     //debug("entities...", entities)
   }
 
-  const createAndUpdate = () => {
-    history.push("/new/bds:PersonShapeTest/bdr:P1583/" + qnameFromUri(property?.path?.sparqlString) + "/" + idx)
+  const createAndUpdate = (type: RDFResourceWithLabel) => () => {
+    history.push(
+      "/new/" +
+        type.qname.replace(/^bdo/, "bds") +
+        "ShapeTest/" +
+        subject.qname +
+        "/" +
+        qnameFromUri(property?.path?.sparqlString) +
+        "/" +
+        idx
+    )
+  }
+
+  const chooseEntity = (ent: Entity, prefLabels: Record<string, string>) => () => {
+    //debug("choose",ent)
+    togglePopup()
+    const newRes = new ExtRDFResourceWithLabel(ent.subjectQname, prefLabels, {})
+    onChange(newRes, idx, false)
   }
 
   const togglePopup = () => {
@@ -428,18 +444,43 @@ const ResourceSelector: FC<{
       {popupNew && (
         <div className="card popup-new">
           <div className="front">
-            <MenuItem key="0" onClick={createAndUpdate}>
-              new
-            </MenuItem>
-            {/* <MenuItem key="1">link</MenuItem> */}
-            {entities.map(
-              (e, i) => e?.subjectQname != subject.qname && <MenuItem key={i + 1}>{e?.subject?.qname}</MenuItem>
-            )}
+            {entities.map((e, i) => {
+              // TODO: check type as well with property.expectedObjectTypes
+              if (e?.subjectQname != subject.qname && !exists(e?.subjectQname))
+                return (
+                  <MenuItem key={i + 1} className="px-0 py-0">
+                    <LabelWithRID choose={chooseEntity} entity={e} />
+                  </MenuItem>
+                )
+            })}
+            <hr className="my-1" />
+            {property.expectedObjectTypes?.map((r) => (
+              <MenuItem key={r.qname} value={r.qname} onClick={createAndUpdate(r)}>
+                {i18n.t("search.new", { type: r.qname.replace(/^bdo:/, "") })}
+              </MenuItem>
+            ))}
           </div>
           <div className="popup-new-BG" onClick={togglePopup}></div>
         </div>
       )}
     </React.Fragment>
+  )
+}
+
+const LabelWithRID: FC<{ entity: Entity; choose: (e: Entity, labels: Record<string, string>) => () => void }> = ({
+  entity,
+  choose,
+}) => {
+  const [uiLang] = useRecoilState(uiLangState)
+  const [labelValues] = useRecoilState(entity.subjectLabelState)
+  const prefLabels = RDFResource.valuesByLang(labelValues)
+  const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
+
+  return (
+    <div className="px-3 py-1" style={{ width: "100%" }} onClick={choose(entity, prefLabels)}>
+      <div className="label">{label}</div>
+      <div className="RID">{entity.subjectQname}</div>
+    </div>
   )
 }
 

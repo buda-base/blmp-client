@@ -245,7 +245,7 @@ input[type="checkbox"].dmcheck {
     padding:0px;
     a { justify-content: space-between; display:flex; width:100%;  align-items: center; line-height:16px; padding:8px;
       & > span:first-child { max-width:calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;}
-      .RID { opacity:0.5; font-size:12px; }
+      
 
       &:hover { text-decoration: none; 
         & > span:first-child > span:first-child { text-decoration: underline;}
@@ -256,6 +256,7 @@ input[type="checkbox"].dmcheck {
 
     &.Mui-selected { background:#eee;}
   }
+
 
   [role=tablist] + span:last-child { display:none; }
 
@@ -269,6 +270,8 @@ input[type="checkbox"].dmcheck {
   }
 
 }
+
+.RID { opacity:0.5; font-size:12px; }
 
 
 #root > main > div > div > div > .album > .container > .row > div { max-width:100%;}
@@ -303,3 +306,7 @@ iframe { z-index:2; }
 section,
 .facet .container > div,
 .facet .container { width:100%; min-width:0; position: relative; }
+
+.popup-new .front {
+  hr:first-child,hr:last-child { display:none; }
+}
