@@ -4,7 +4,8 @@ import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
 import { useHistory, Link } from "react-router-dom"
-
+import { nodeForType } from "../../../helpers/rdf/construct"
+import * as shapes from "../../../helpers/rdf/shapes"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
 import { ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
@@ -221,6 +222,13 @@ const ResourceSelector: FC<{
     //debug("entities...", entities)
   }
 
+  const linkNewExtRes = () => {
+    // TODO: better way than using first letter for type?
+    const node = nodeForType(type.replace(/^bdo:/, "")[0].toUpperCase(), "")
+    const newRes = new ExtRDFResourceWithLabel(node.uri, {}, {})
+    onChange(newRes, idx, false)
+  }
+
   const label = lang.ValueByLangToStrPrefLang(p.prefLabels, uiLang)
 
   const textOnChange: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
@@ -306,11 +314,10 @@ const ResourceSelector: FC<{
                 {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
               </button>
               <button
-                disabled // TODO: dont open a new entity simultaneously
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
-                onClick={createAndLink}
+                onClick={linkNewExtRes}
               >
                 {i18n.t("search.create")}
               </button>
