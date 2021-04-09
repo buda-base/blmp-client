@@ -11,10 +11,12 @@ import NavBarContainer from "../components/NavBar"
 import EntitySelector from "./EntitySelectorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
-import EntityEditContainer from "../routes/entity/containers/EntityEditContainer"
+import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
+
+import { Subject } from "../helpers/rdf/types"
 
 import enTranslations from "../translations/en"
 
@@ -38,6 +40,9 @@ i18n
 export interface IdTypeParams {
   shapeQname: string
   entityQname: string
+  subjectQname?: string
+  propertyQname?: string
+  index?: string
 }
 
 export interface AppProps extends RouteComponentProps<IdTypeParams> {}
@@ -62,6 +67,16 @@ function App(props: AppProps) {
             <Route exact path="/profile" component={ProfileContainer} />
             <Route exact path="/new" component={NewEntityContainer} />
             <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
+            <Route
+              exact
+              path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
+              component={EntityCreationContainer}
+            />
+            <Route
+              exact
+              path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index"
+              component={EntityEditContainerMayUpdate}
+            />
             <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
             <Route exact path="/edit/:entityQname" component={EntityShapeChooserContainer} />
           </Switch>

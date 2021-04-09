@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react"
 import { TimeTravelObserver } from "../../helpers/observer"
 import { ShapeFetcher, debugStore, EntityFetcher } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
-import { RDFResource, Subject } from "../../../helpers/rdf/types"
+import { RDFResource, Subject, ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { generateNew } from "../../../helpers/rdf/construct"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
@@ -17,8 +17,55 @@ import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 import qs from "query-string"
 import * as ns from "../../../helpers/rdf/ns"
+import { Redirect } from "react-router-dom"
+import { replaceItemAtIndex } from "../../../helpers/atoms"
 
 const debug = require("debug")("bdrc:entity:edit")
+
+export function EntityEditContainerMayUpdate(props: AppProps) {
+  const shapeQname = props.match.params.shapeQname
+  const entityQname = props.match.params.entityQname
+  const subjectQname = props.match.params.subjectQname
+  const propertyQname = props.match.params.propertyQname
+  const index = props.match.params.index
+
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const entity = entities.filter((e) => e.subjectQname === subjectQname)
+  if (entity.length && entity[0].subject && propertyQname && entityQname && index)
+    return (
+      <EntityEditContainerDoUpdate
+        subject={entity[0].subject}
+        propertyQname={propertyQname}
+        objectQname={entityQname}
+        index={Number(index)}
+        {...props}
+      />
+    )
+  // TODO: add 'could not find subject' warning?
+  else return <Redirect to={"/edit/" + subjectQname + "/" + shapeQname} />
+}
+
+interface AppPropsDoUpdate extends AppProps {
+  subject: Subject
+  propertyQname: string
+  objectQname: string
+  index: number
+}
+
+function EntityEditContainerDoUpdate(props: AppPropsDoUpdate) {
+  const shapeQname = props.match.params.shapeQname
+  const atom = props.subject.getAtomForProperty(ns.uriFromQname(props.propertyQname))
+  const [list, setList] = useRecoilState(atom)
+
+  debug("LIST:", list, atom)
+
+  const newObject = new ExtRDFResourceWithLabel(props.objectQname, {}, {})
+  // DONE: must also give set index in url
+  const newList = replaceItemAtIndex(list, props.index, newObject)
+  setList(newList)
+
+  return <Redirect to={"/edit/" + props.objectQname + "/" + shapeQname} />
+}
 
 function EntityEditContainer(props: AppProps) {
   //const [shapeQname, setShapeQname] = useState(props.match.params.shapeQname)

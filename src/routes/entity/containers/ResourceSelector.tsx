@@ -13,6 +13,7 @@ import { PropertyShape } from "../../../helpers/rdf/shapes"
 import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, SettingsIcon } from "../../layout/icons"
 import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
 import { LangSelect } from "./ValueList"
+import { qnameFromUri } from "../../../helpers/rdf/ns"
 
 import config from "../../../config"
 
@@ -49,25 +50,26 @@ type messagePayload = {
 const ResourceSelector: FC<{
   value: ExtRDFResourceWithLabel
   onChange: (value: ExtRDFResourceWithLabel, idx: number, removeFirst: boolean | undefined) => void
-  p: PropertyShape
+  property: PropertyShape
   idx: number
   exists: (uri: string) => boolean
   subject: Subject
-}> = ({ value, onChange, p, idx, exists, subject }) => {
+}> = ({ value, onChange, property, idx, exists, subject }) => {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
-  const [type, setType] = useState(p.expectedObjectTypes ? p.expectedObjectTypes[0].qname : "")
+  const [type, setType] = useState(property.expectedObjectTypes ? property.expectedObjectTypes[0].qname : "")
   const [libraryURL, setLibraryURL] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [error, setError] = useState("")
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const history = useHistory()
-  const msgId = subject.qname + p.qname + idx
+  const msgId = subject.qname + property.qname + idx
+  const [popupNew, setPopupNew] = useState(false)
 
-  if (!p.expectedObjectTypes) {
-    debug(p)
-    throw "can't get the types for property " + p.qname
+  if (!property.expectedObjectTypes) {
+    debug(property)
+    throw "can't get the types for property " + property.qname
   }
 
   // TODO close iframe when clicking anywhere else
@@ -77,8 +79,8 @@ const ResourceSelector: FC<{
 
   const updateRes = (data: messagePayload) => {
     let isTypeOk = false
-    if (p.expectedObjectTypes) {
-      let allow = p.expectedObjectTypes.map((t) => t.qname)
+    if (property.expectedObjectTypes) {
+      let allow = property.expectedObjectTypes.map((t) => t.qname)
       if (!Array.isArray(allow)) allow = [allow]
       let actual = data["tmp:otherData"]["tmp:type"]
       if (!Array.isArray(actual)) actual = [actual]
@@ -215,21 +217,22 @@ const ResourceSelector: FC<{
         "?subject=" +
         subject.qname +
         "&propid=" +
-        p.path?.sparqlString +
+        property.path?.sparqlString +
         "&index=" +
         idx
     )
     //debug("entities...", entities)
   }
 
-  const linkNewExtRes = () => {
-    // TODO: better way than using first letter for type?
-    const node = nodeForType(type.replace(/^bdo:/, "")[0].toUpperCase(), "")
-    const newRes = new ExtRDFResourceWithLabel(node.uri, {}, {})
-    onChange(newRes, idx, false)
+  const createAndUpdate = () => {
+    history.push("/new/bds:PersonShapeTest/bdr:P1583/" + qnameFromUri(property?.path?.sparqlString) + "/" + idx)
   }
 
-  const label = lang.ValueByLangToStrPrefLang(p.prefLabels, uiLang)
+  const togglePopup = () => {
+    setPopupNew(!popupNew)
+  }
+
+  const label = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
   const textOnChange: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
     const newValue = e.currentTarget.value
@@ -287,7 +290,7 @@ const ResourceSelector: FC<{
                 }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : { disabled: false })}
               />
-              {p.expectedObjectTypes?.length > 1 && (
+              {property.expectedObjectTypes?.length > 1 && (
                 <TextField
                   select
                   style={{ width: 100, flexShrink: 0 }}
@@ -298,7 +301,7 @@ const ResourceSelector: FC<{
                   {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                   // TODO we need some prefLabels for types here (ontology? i18n?)
                 >
-                  {p.expectedObjectTypes?.map((r) => (
+                  {property.expectedObjectTypes?.map((r) => (
                     <MenuItem key={r.qname} value={r.qname}>
                       {r.qname.replace(/^bdo:/, "")}
                     </MenuItem>
@@ -317,7 +320,7 @@ const ResourceSelector: FC<{
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
-                onClick={linkNewExtRes}
+                onClick={togglePopup}
               >
                 {i18n.t("search.create")}
               </button>
@@ -420,6 +423,20 @@ const ResourceSelector: FC<{
         >
           <iframe style={{ border: "none" }} height="400" src={libraryURL} />
           <div className="iframe-BG" onClick={closeFrame}></div>
+        </div>
+      )}
+      {popupNew && (
+        <div className="card popup-new">
+          <div className="front">
+            <MenuItem key="0" onClick={createAndUpdate}>
+              new
+            </MenuItem>
+            {/* <MenuItem key="1">link</MenuItem> */}
+            {entities.map(
+              (e, i) => e?.subjectQname != subject.qname && <MenuItem key={i + 1}>{e?.subject?.qname}</MenuItem>
+            )}
+          </div>
+          <div className="popup-new-BG" onClick={togglePopup}></div>
         </div>
       )}
     </React.Fragment>

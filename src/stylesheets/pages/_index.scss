@@ -275,8 +275,14 @@ input[type="checkbox"].dmcheck {
 
 //.facet .blockAdd  { width:calc(100% - 2rem) !important; }
 
+.popup-new .front,
 iframe { z-index:2; }
+.popup-new-BG,
 .iframe-BG { position:fixed; left:0; top:0; width:100vw; height:100vh;background:rgba(0,0,0,0); z-index:1; }
+
+.popup-new { position:absolute; right:0; bottom:calc(100% - 1rem);  
+  p { margin:0; }
+}
 
 // DONE: fix selected resource horizontal stacking
 .extEntity.new,

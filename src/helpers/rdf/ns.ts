@@ -57,7 +57,7 @@ export const setDefaultPrefixes = (s: rdf.Store): void => {
   s.setPrefixForURI("", BDO_uri)
 }
 
-export const qnameFromUri = (uri: string): string => {
+export const qnameFromUri = (uri = ""): string => {
   if (uri.match(/^[^:/#]+:[^:/#]+$/)) return uri
 
   let j = uri.indexOf("#")
@@ -80,7 +80,7 @@ export const lnameFromUri = (uri: string): string => {
   return uri.slice(j + 1)
 }
 
-export const uriFromQname = (qname: string): string => {
+export const uriFromQname = (qname = ""): string => {
   const j = qname.indexOf(":")
 
   if (j < 0) throw new Error("Cannot make uri out of <" + qname + ">")

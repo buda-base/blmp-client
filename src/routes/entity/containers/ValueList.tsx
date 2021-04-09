@@ -599,7 +599,14 @@ const ExtEntityComponent: FC<{
         }}
         {...(extRes.uri !== "tmp:uri" ? { className: "px-2 py-1 mr-2 mb-2 card" } : {})}
       >
-        <ResourceSelector value={extRes} onChange={onChange} p={property} idx={idx} exists={exists} subject={subject} />
+        <ResourceSelector
+          value={extRes}
+          onChange={onChange}
+          property={property}
+          idx={idx}
+          exists={exists}
+          subject={subject}
+        />
         {canDel && (
           <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
             {extRes.uri === "tmp:uri" ? <RemoveIcon /> : <CloseIcon />}
