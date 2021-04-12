@@ -522,7 +522,7 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
 
   const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
 
-  debug("target", property.path.sparqlString, targetShape)
+  //debug("target", property.path.sparqlString, targetShape)
 
   return (
     <div

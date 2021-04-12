@@ -108,7 +108,7 @@ function EntityEditContainer(props: AppProps) {
 
   if (!shape || !entity) return null
 
-  debug("entity:", entity)
+  //debug("entity:", entity)
 
   /* // no need for updateEntitiesRDF
 
@@ -138,7 +138,7 @@ function EntityEditContainer(props: AppProps) {
     debugStore(store)
   }
 
-  debug("entity.store", entity.graph.store.statements)
+  //debug("entity.store", entity.graph.store.statements)
 
   return (
     <React.Fragment>
