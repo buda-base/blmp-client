@@ -92,7 +92,7 @@ export function TimeTravelObserver() {
   )
 
   useRecoilTransactionObserver_UNSTABLE(({ snapshot }) => {
-    debug("uiR", uiReady)
+    //debug("uiR", uiReady)
     if (!uiReady) return
 
     // DONE dont add a previous state as a new one

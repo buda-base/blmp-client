@@ -198,6 +198,11 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   let addBtn = property.objectType === ObjectType.Facet
 
+  const showLabel =
+    !property.displayPriority ||
+    property.displayPriority === 0 ||
+    property.displayPriority === 1 && (force || list.length > 1)
+
   return (
     <React.Fragment>
       <div
@@ -211,6 +216,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
             : {},
         }}
       >
+        {showLabel && <label className="propLabel">{propLabel[0].toUpperCase() + propLabel.substring(1)}</label>}
         {list.map((val, i) => {
           if (val instanceof RDFResourceWithLabel) {
             if (property.objectType == ObjectType.ResExt)
@@ -226,8 +232,10 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                   exists={exists}
                 />
               )
-            else
+            else {
+              addBtn = true
               return <ResSelectComponent key={val.id} subject={subject} property={property} res={val} canDel={canDel} />
+            }
           }
           if (val instanceof Subject) {
             addBtn = true
@@ -323,11 +331,11 @@ const EditLangString: FC<{
   else if (globalError) error = globalError
 
   return (
-    <div className="mb-2" style={{ display: "flex", width: "100%", alignItems: "end" }}>
+    <div className="mb-0" style={{ display: "flex", width: "100%", alignItems: "end" }}>
       <TextField
-        className={classes.root}
+        //className={classes.root}
         //label={lit.id}
-        helperText={label}
+        helperText={"String"}
         style={{ width: "100%" }}
         value={lit.value}
         InputLabelProps={{ shrink: true }}
@@ -336,7 +344,7 @@ const EditLangString: FC<{
           ? {
               helperText: (
                 <React.Fragment>
-                  {label} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                  {/*label*/ "String"} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
                   <br />
                   <i>{error}</i>
                 </React.Fragment>
@@ -389,20 +397,20 @@ const EditYear: FC<{
   let error
   if (lit.value && !lit.value.match(/^-?[0-9]{4}$/)) error = i18n.t("error.gYear")
 
-  const eventType = "<the event type/s>"
+  //const eventType = "<the event type/s>"
 
   return (
     <TextField
-      className={classes.root + " mt-2"}
-      label={label}
-      helperText={eventType}
+      className={/*classes.root +*/ " mt-2"}
+      //label={label}
+      helperText={"Number"}
       style={{ width: 150 }}
       value={lit.value}
       {...(error
         ? {
             helperText: (
               <React.Fragment>
-                {eventType} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                {/*eventType*/ "Number"} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
                 <br />
                 <i>{error}</i>
               </React.Fragment>
@@ -468,7 +476,7 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={label}
+        label={"Text"}
         {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
       />
     )
@@ -476,7 +484,7 @@ const LiteralComponent: FC<{
     classN = "gYear"
     edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
   } else if (t?.value === ns.XSD("integer").value) {
-    edit = <TextField helperText={label} type="number" />
+    edit = <TextField helperText={"Number" /*label*/} type="number" />
   } else throw "literal with unknown datatype value:" + JSON.stringify(t)
   //else if (t?.value === ns.RDF("type").value)
   //  edit = <EditType property={property} lit={lit} onChange={onChange} label={label} />
@@ -485,9 +493,11 @@ const LiteralComponent: FC<{
     <div className={classN} style={{ display: "flex", alignItems: "center" /*, width: "100%"*/ }}>
       {edit}
       {canDel && (
-        <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>
-          <RemoveIcon />
-        </button>
+        <div className="hoverPart">
+          <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
+            <RemoveIcon />
+          </button>
+        </div>
       )}
     </div>
   )
@@ -525,10 +535,8 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   //debug("target", property.path.sparqlString, targetShape)
 
   return (
-    <div
-      className="card facet mb-4 py-2 px-3 mx-1" /*style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }} */
-    >
-      <div>
+    <div className="facet pl-3" /*style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }} */>
+      <div className="card py-2 mt-2">
         {targetShape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
         ))}
@@ -597,7 +605,7 @@ const ExtEntityComponent: FC<{
             : {},
           ...extRes.uri === "tmp:uri" ? { display: "flex" } : {},
         }}
-        {...(extRes.uri !== "tmp:uri" ? { className: "px-2 py-1 mr-2 mb-2 card" } : {})}
+        {...(extRes.uri !== "tmp:uri" ? { className: "px-2 py-1 mr-2 mt-2 card" } : {})}
       >
         <ResourceSelector
           value={extRes}
@@ -664,11 +672,11 @@ const ResSelectComponent: FC<{
     <React.Fragment>
       <TextField
         select
-        className={classes.root + " mr-2"}
+        className={/*classes.root +*/ " mr-2"}
         value={res.uri}
-        style={{ width: 150 }}
+        //style={{ width: 150 }}
         onChange={onChange}
-        helperText="Type"
+        helperText="Select"
       >
         {possibleValues.map((r) => (
           <MenuItem key={r.uri} value={r.uri}>

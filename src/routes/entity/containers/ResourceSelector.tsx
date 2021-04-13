@@ -273,16 +273,16 @@ const ResourceSelector: FC<{
         style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}
       >
         {value.uri === "tmp:uri" && (
-          <div className="py-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
+          <div className="" style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
             <React.Fragment>
               <TextField
-                className={classes.root}
+                //className={classes.root}
                 InputLabelProps={{ shrink: true }}
                 //label={value.status === "filled" ? value["@id"] : null}
                 style={{ width: "90%" }}
                 value={keyword}
                 onChange={textOnChange}
-                helperText={label}
+                helperText={"Keyword"}
                 {...(error
                   ? {
                       helperText: (
