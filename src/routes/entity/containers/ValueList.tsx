@@ -335,7 +335,7 @@ const EditLangString: FC<{
       <TextField
         //className={classes.root}
         //label={lit.id}
-        helperText={"String"}
+        label={"Text"}
         style={{ width: "100%" }}
         value={lit.value}
         InputLabelProps={{ shrink: true }}
@@ -344,9 +344,8 @@ const EditLangString: FC<{
           ? {
               helperText: (
                 <React.Fragment>
-                  {/*label*/ "String"} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                  <br />
-                  <i>{error}</i>
+                  <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                  &nbsp;<i>{error}</i>
                 </React.Fragment>
               ),
               error: true,
@@ -369,11 +368,12 @@ export const LangSelect: FC<{
   return (
     <TextField
       select
+      InputLabelProps={{ shrink: true }}
       className="ml-2"
       //label={lit.id}
-      helperText={"Language"}
+      label={"Language"}
       value={value}
-      style={{ width: 100, flexShrink: 0 }}
+      style={{ minWidth: 100, flexShrink: 0 }}
       onChange={onChangeHandler}
       {...(disabled ? { disabled: true } : {})}
     >
@@ -401,9 +401,9 @@ const EditYear: FC<{
 
   return (
     <TextField
-      className={/*classes.root +*/ " mt-2"}
+      //className={/*classes.root +*/ " mt-2"}
       //label={label}
-      helperText={"Number"}
+      label={"Number"}
       style={{ width: 150 }}
       value={lit.value}
       {...(error
@@ -535,7 +535,7 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   //debug("target", property.path.sparqlString, targetShape)
 
   return (
-    <div className="facet pl-3" /*style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }} */>
+    <div className="facet pl-2" /*style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }} */>
       <div className="card py-2 mt-2">
         {targetShape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
@@ -672,11 +672,11 @@ const ResSelectComponent: FC<{
     <React.Fragment>
       <TextField
         select
-        className={/*classes.root +*/ " mr-2"}
+        className={/*classes.root +*/ "selector mr-2"}
         value={res.uri}
         //style={{ width: 150 }}
         onChange={onChange}
-        helperText="Select"
+        label="Select"
       >
         {possibleValues.map((r) => (
           <MenuItem key={r.uri} value={r.uri}>

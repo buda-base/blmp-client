@@ -36,10 +36,9 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
                   ))}
               </div>
               {hasExtra && (
-                <OtherButton
-                  label={i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
-                  onClick={toggleExtra}
-                />
+                <span className="toggle-btn" onClick={toggleExtra}>
+                  {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
+                </span>
               )}
               <div>
                 {group.properties

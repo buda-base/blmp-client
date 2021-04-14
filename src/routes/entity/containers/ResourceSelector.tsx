@@ -282,7 +282,7 @@ const ResourceSelector: FC<{
                 style={{ width: "90%" }}
                 value={keyword}
                 onChange={textOnChange}
-                helperText={"Keyword"}
+                label={"Keyword"}
                 {...(error
                   ? {
                       helperText: (
@@ -313,7 +313,7 @@ const ResourceSelector: FC<{
                   value={type}
                   className={"mx-2"}
                   onChange={textOnChangeType}
-                  helperText="Type"
+                  label="Type"
                   {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                   // TODO we need some prefLabels for types here (ontology? i18n?)
                 >
