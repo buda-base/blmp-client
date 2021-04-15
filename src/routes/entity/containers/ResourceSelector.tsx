@@ -209,20 +209,16 @@ const ResourceSelector: FC<{
     if (dates) dates = "(" + dates + ")"
   }
 
-  const createAndLink = () => {
-    history.push(
-      "/new/" +
-        type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
-        "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
-        "?subject=" +
-        subject.qname +
-        "&propid=" +
-        property.path?.sparqlString +
-        "&index=" +
-        idx
-    )
-    //debug("entities...", entities)
-  }
+  const createAndLinkUrl =
+    "/new/" +
+    type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
+    "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
+    "?subject=" +
+    subject.qname +
+    "&propid=" +
+    property.path?.sparqlString +
+    "&index=" +
+    idx
 
   const createAndUpdate = (type: RDFResourceWithLabel) => () => {
     history.push(
@@ -336,7 +332,7 @@ const ResourceSelector: FC<{
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
-                to={linkUrl}
+                to={createAndLinkUrl}
               >
                 {i18n.t("search.create")}
               </Link>
