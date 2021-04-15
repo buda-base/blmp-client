@@ -16,6 +16,10 @@ const debug = require("debug")("bdrc:entity:entitycreation")
 function EntityCreationContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
 
+  const subjectQname = props.match.params.subjectQname
+  const propertyQname = props.match.params.propertyQname
+  const index = props.match.params.index
+
   const shapeQname = props.match.params.shapeQname
   let shapeRef = null
   if (shapeQname in shapes.shapeRefsMap) shapeRef = shapes.shapeRefsMap[shapeQname]
@@ -25,10 +29,13 @@ function EntityCreationContainer(props: AppProps) {
   // properly generate the ID
   const { entityLoadingState, entity } = EntityCreator(shapeRef)
   if (entity) {
-    const urlParams = qs.parse(props.history.location.search)
-    let search = ""
-    if (urlParams.subject) search = props.history.location.search
-    return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname + search} />
+    if (subjectQname && propertyQname && index)
+      return (
+        <Redirect
+          to={"/edit/" + entity.qname + "/" + shapeQname + "/" + subjectQname + "/" + propertyQname + "/" + index}
+        />
+      )
+    else return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
   }
 
   // TODO: check if entityLoadingState is in error

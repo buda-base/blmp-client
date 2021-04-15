@@ -335,6 +335,7 @@ export class RDFResource {
 
   public getPropBooleanValue(p: rdf.NamedNode, dflt = false): boolean {
     const lit: rdf.Literal = this.graph.store.any(this.node, p, null) as rdf.Literal
+    if (!lit) return dflt
     const n = Boolean(lit.value)
     if (n) {
       return n
@@ -428,6 +429,8 @@ export class Subject extends RDFResource {
     return this.graph.getAtomForSubjectProperty(pathString, this.uri)
   }
 
+  /* // breaks history
+
   // returns new subject extended with some TTL
   extendWithTTL(ttl: string): Subject {
     const newStore: rdf.Store = rdf.graph()
@@ -450,6 +453,7 @@ export class Subject extends RDFResource {
     const newSubject = new Subject(this.node, newGraph)
     return newSubject
   }
+  */
 
   static createEmpty(): Subject {
     return new Subject(new rdf.NamedNode("tmp:uri"), new EntityGraph(new rdf.Store(), "tmp:uri"))

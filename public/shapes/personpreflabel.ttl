@@ -59,7 +59,7 @@ bds:NotesPropertyGroup
 bds:AdminPropertyGroup
   a sh:PropertyGroup ;
   rdfs:label "Admin data"@en ;
-  sh:order 4 ;
+  sh:order 5 ;
 .
 bds:PersonShape-adminData
   dash:editor dash:DetailsEditor ;
@@ -116,8 +116,8 @@ bds:PersonShapeTest
   sh:property bds:PersonShape-hasGrandfather ;
   sh:property bds:PersonShape-hasGrandmother ;
   sh:property bds:PersonShape-adminData ;
-  # TODO: with this line a duplicate of RelatedPersons block is displayed
-  # sh:property bds:PersonShape-teacherOf ;
+  sh:property bds:PersonShape-teacherOf ;
+  sh:property bds:RootShape-note ;
   sh:targetClass bdo:Person ;
 .
 
@@ -132,6 +132,7 @@ bds:CommonShape-prefLabel
   sh:order "0"^^xsd:decimal ;
   # the rdf path of the predicate
   sh:path skos:prefLabel ;
+  sh:uniqueLang true ;
   # some constraints and error message
   sh:message "There must be at least one skos:prefLabel"@en ;
   sh:minCount 1 ;
@@ -243,6 +244,8 @@ bds:NoteShape
   bds:nodeShapeType bds:FacetShape ;
   sh:property bds:NoteShape-contentLocation ;
   sh:property bds:NoteShape-noteText ;
+  # TODO: fix loading
+  sh:property bds:NoteShape-noteSource ;
 # there are no note types currently well defined
 #  sh:property bds:NoteShape-noteType ;
   sh:targetClass bdo:Note ;
@@ -258,6 +261,7 @@ bds:NoteShape-contentLocation
   dash:editor dash:DetailsEditor ;
   sh:name "source location"@en ;
   sh:order "2"^^xsd:decimal ;
+  bds:propertyShapeType bds:FacetShape ;
 .
 
 bds:NoteShape-noteText
@@ -269,6 +273,17 @@ bds:NoteShape-noteText
   dash:editor dash:TextAreaWithLangEditor ;
   sh:name "text"@en ;
   sh:order "0"^^xsd:decimal ;
+.
+
+bds:NoteShape-noteSource
+  a sh:PropertyShape ;
+  sh:path bdo:noteSource ;
+  sh:datatype rdf:langString ;
+  bds:propertyShapeType bds:ExternalShape ;
+  sh:name "source"@en ;
+  sh:order "1"^^xsd:decimal ;
+  sh:maxCount 1 ;
+  sh:class bdo:Instance ;
 .
 
 bds:ContentLocationShape
@@ -289,7 +304,7 @@ bds:ContentLocationShape
 bds:ContentLocationShape-contentLocationInstance
   a sh:PropertyShape ;
   sh:path bdo:contentLocationInstance ;
-  bds:propertyShapeType bds:ExternalShapeShape ;
+  bds:propertyShapeType bds:ExternalShape ;
   sh:maxCount 1 ;
   sh:minCount 1 ;
   sh:class bdo:ImageInstance ;
@@ -477,7 +492,7 @@ bds:PersonShape-hasFather
   sh:description "this Person may have a father."@en ;
   sh:group bds:KinshipPropertyGroup ;
   sh:name "has father"@en ;
-  sh:order "6"^^xsd:decimal ; 
+  sh:order "6"^^xsd:decimal ;
 .
 bds:PersonShape-hasMother
   dash:editor dash:InstancesSelectEditor ;

@@ -24,11 +24,13 @@ const enTranslations = {
     lookup: "lookup",
     cancel: "cancel",
     change: "change",
-    create: "create",
+    create: "...",
+    new: "new {{type}}",
   },
   error: {
     gYear: 'must be exactly 4 digits (always, even "0001")',
     empty: "should not be empty",
+    unique: "duplicate value/language pair",
   },
   general: {
     add_another: "Add another",

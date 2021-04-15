@@ -245,7 +245,7 @@ input[type="checkbox"].dmcheck {
     padding:0px;
     a { justify-content: space-between; display:flex; width:100%;  align-items: center; line-height:16px; padding:8px;
       & > span:first-child { max-width:calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;}
-      .RID { opacity:0.5; font-size:12px; }
+      
 
       &:hover { text-decoration: none; 
         & > span:first-child > span:first-child { text-decoration: underline;}
@@ -256,6 +256,7 @@ input[type="checkbox"].dmcheck {
 
     &.Mui-selected { background:#eee;}
   }
+
 
   [role=tablist] + span:last-child { display:none; }
 
@@ -270,10 +271,79 @@ input[type="checkbox"].dmcheck {
 
 }
 
+.RID { opacity:0.5; font-size:12px; }
+
 
 #root > main > div > div > div > .album > .container > .row > div { max-width:100%;}
 
 //.facet .blockAdd  { width:calc(100% - 2rem) !important; }
 
+.popup-new .front,
 iframe { z-index:2; }
+.popup-new-BG,
 .iframe-BG { position:fixed; left:0; top:0; width:100vw; height:100vh;background:rgba(0,0,0,0); z-index:1; }
+
+.popup-new { position:absolute; right:0; bottom:calc(100% - 1rem);  
+  p { margin:0; }
+}
+
+// DONE: fix selected resource horizontal stacking
+.extEntity.new,
+.langString { width: 100%; }
+/*
+.facet .extEntity
+.facet .langString { width: calc(100% - 3rem - 1px); }
+*/
+
+
+.maxCount .extEntity.new { display:none;  
+  & + .extEntity > div { margin-top:0 !important; }
+}
+
+.maxCount :not(.card) > .resSelect > div > :first-child:not(.card) { width: calc(100%) !important; opacity:0.65; }
+
+.facet { padding-left:8px; border-left:2px solid #ddd; width:calc(100%); position:relative;}
+
+section,
+.facet .container > div,
+.facet .container { width:100%; min-width:0; position: relative; }
+
+.popup-new .front {
+  hr:first-child,hr:last-child { display:none; }
+}
+
+.hoverPart { visibility: hidden; }
+.langString:hover .hoverPart { visibility: visible; }
+.langString+.langString { padding-top:10px;}
+
+.propLabel { display:block; color:rgb(245, 0, 87); font-size:12px; font-weight:500; margin-bottom:4px; width:100%;  
+  & ~ div { padding-left:8px; border-left:2px solid #ddd; } // rgba(245, 0, 87, 0.25);}  
+  & ~ .selector ~ .selector { padding-left:0; border:none;}
+  & ~ .facet > div:not(.text-center) { padding-left:8px; border-left:2px solid #ddd;}
+  & ~ .extEntity:not(.new) + .extEntity { padding-left:0; border:none; }
+}
+
+.facet + .facet {
+  &::before { display:block; /*border-top:2px solid rgba(245, 0, 87, 0.25);*/ margin-bottom:16px; content:''; }
+}
+
+.row.card, .facet {
+  & > div > [role="main"] + [role="main"] { margin-top:16px; }  
+}
+
+//.row.card > div + .toggle-btn + div > [role="main"] { margin-top:16px; }  
+
+
+
+.MuiInputBase-input,
+.MuiSelect-select.MuiSelect-select { padding-top:0 !important;}
+
+button.py-3 { padding:9px 8px 10px 8px !important; }
+
+.MuiInputBase-input { padding-bottom:4px !important; }
+
+label ~ .selector label { padding-left:10px !important; }
+
+.toggle-btn { position: absolute; right:12px; top:8px; font-size:12px; cursor:pointer;
+  &:hover { text-decoration: underline; }
+}

@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { useGotoRecoilSnapshot, useRecoilTransactionObserver_UNSTABLE, useRecoilState } from "recoil"
 import { useHotkeys } from "react-hotkeys-hook"
 import { uiReadyState } from "../../atoms/common"
+import { LiteralWithId, ExtRDFResourceWithLabel } from "../../helpers/rdf/types"
 
 const debug = require("debug")("bdrc:observer")
 
@@ -91,6 +92,9 @@ export function TimeTravelObserver() {
   )
 
   useRecoilTransactionObserver_UNSTABLE(({ snapshot }) => {
+    //debug("uiR", uiReady)
+    if (!uiReady) return
+
     // DONE dont add a previous state as a new one
     if (
       snapshots.filter((s, i) => {
@@ -108,8 +112,14 @@ export function TimeTravelObserver() {
     for (const a of snapshot.getNodes_UNSTABLE(true)) {
       const info = snapshot.getInfo_UNSTABLE(a)
       if (info.isModified) {
-        modified.push({ a, info })
-        //debug(uiReady, first, a.key, a, info)
+        const tab = info.loadable.getValue()
+        let empty = false
+        if (tab.length && tab[0] instanceof LiteralWithId) empty = tab[0].language === "" && tab[0].value === ""
+        else if (tab.length && tab[0] instanceof ExtRDFResourceWithLabel) empty = tab[0].id === "tmp:uri"
+        if (!empty) {
+          modified.push({ a, info })
+          debug("MODIFIED", uiReady, first, a.key, a, info, tab)
+        }
       }
       // DONE do not not take a snapshot if current change is UI language
       if (["uiLangState", "uiTabState"].includes(a.key) && info.isModified) return
@@ -142,9 +152,11 @@ export function TimeTravelObserver() {
         }
       }
     }
-    setCurrent(snapshots.length)
-    if (uiReady && first === -1) setFirst(snapshots.length)
-    setSnapshots([...snapshots, snapshot])
+    if (modified.length) {
+      setCurrent(snapshots.length)
+      if (uiReady && first === -1) setFirst(snapshots.length)
+      setSnapshots([...snapshots, snapshot])
+    }
   })
 
   const gotoSnapshot = useGotoRecoilSnapshot()

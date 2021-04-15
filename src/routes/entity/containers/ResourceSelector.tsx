@@ -4,14 +4,16 @@ import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
 import { useHistory, Link } from "react-router-dom"
-
+import { nodeForType } from "../../../helpers/rdf/construct"
+import * as shapes from "../../../helpers/rdf/shapes"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
-import { ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
+import { RDFResource, ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, SettingsIcon } from "../../layout/icons"
-import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
+import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 import { LangSelect } from "./ValueList"
+import { qnameFromUri } from "../../../helpers/rdf/ns"
 
 import config from "../../../config"
 
@@ -48,25 +50,26 @@ type messagePayload = {
 const ResourceSelector: FC<{
   value: ExtRDFResourceWithLabel
   onChange: (value: ExtRDFResourceWithLabel, idx: number, removeFirst: boolean | undefined) => void
-  p: PropertyShape
+  property: PropertyShape
   idx: number
   exists: (uri: string) => boolean
   subject: Subject
-}> = ({ value, onChange, p, idx, exists, subject }) => {
+}> = ({ value, onChange, property, idx, exists, subject }) => {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
-  const [type, setType] = useState(p.expectedObjectTypes ? p.expectedObjectTypes[0].qname : "")
+  const [type, setType] = useState(property.expectedObjectTypes ? property.expectedObjectTypes[0].qname : "")
   const [libraryURL, setLibraryURL] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [error, setError] = useState("")
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const history = useHistory()
-  const msgId = subject.qname + p.qname + idx
+  const msgId = subject.qname + property.qname + idx
+  const [popupNew, setPopupNew] = useState(false)
 
-  if (!p.expectedObjectTypes) {
-    debug(p)
-    throw "can't get the types for property " + p.qname
+  if (!property.expectedObjectTypes) {
+    debug(property)
+    throw "can't get the types for property " + property.qname
   }
 
   // TODO close iframe when clicking anywhere else
@@ -76,8 +79,8 @@ const ResourceSelector: FC<{
 
   const updateRes = (data: messagePayload) => {
     let isTypeOk = false
-    if (p.expectedObjectTypes) {
-      let allow = p.expectedObjectTypes.map((t) => t.qname)
+    if (property.expectedObjectTypes) {
+      let allow = property.expectedObjectTypes.map((t) => t.qname)
       if (!Array.isArray(allow)) allow = [allow]
       let actual = data["tmp:otherData"]["tmp:type"]
       if (!Array.isArray(actual)) actual = [actual]
@@ -206,18 +209,46 @@ const ResourceSelector: FC<{
     if (dates) dates = "(" + dates + ")"
   }
 
-  const linkUrl =
-    "/new/" +
-    type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
-    "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
-    "?subject=" +
-    subject.qname +
-    "&propid=" +
-    p.path?.sparqlString +
-    "&index=" +
-    idx
+  const createAndLink = () => {
+    history.push(
+      "/new/" +
+        type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
+        "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
+        "?subject=" +
+        subject.qname +
+        "&propid=" +
+        property.path?.sparqlString +
+        "&index=" +
+        idx
+    )
+    //debug("entities...", entities)
+  }
 
-  const label = lang.ValueByLangToStrPrefLang(p.prefLabels, uiLang)
+  const createAndUpdate = (type: RDFResourceWithLabel) => () => {
+    history.push(
+      "/new/" +
+        type.qname.replace(/^bdo/, "bds") +
+        "ShapeTest/" +
+        subject.qname +
+        "/" +
+        qnameFromUri(property?.path?.sparqlString) +
+        "/" +
+        idx
+    )
+  }
+
+  const chooseEntity = (ent: Entity, prefLabels: Record<string, string>) => () => {
+    //debug("choose",ent)
+    togglePopup()
+    const newRes = new ExtRDFResourceWithLabel(ent.subjectQname, prefLabels, {})
+    onChange(newRes, idx, false)
+  }
+
+  const togglePopup = () => {
+    setPopupNew(!popupNew)
+  }
+
+  const label = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
   const textOnChange: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
     const newValue = e.currentTarget.value
@@ -237,18 +268,21 @@ const ResourceSelector: FC<{
 
   return (
     <React.Fragment>
-      <div style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}>
+      <div
+        className="resSelect"
+        style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}
+      >
         {value.uri === "tmp:uri" && (
-          <div className="py-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
+          <div className="" style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
             <React.Fragment>
               <TextField
-                className={classes.root}
+                //className={classes.root}
                 InputLabelProps={{ shrink: true }}
                 //label={value.status === "filled" ? value["@id"] : null}
                 style={{ width: "90%" }}
                 value={keyword}
                 onChange={textOnChange}
-                helperText={label}
+                label={"Keyword"}
                 {...(error
                   ? {
                       helperText: (
@@ -272,18 +306,18 @@ const ResourceSelector: FC<{
                 }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : { disabled: false })}
               />
-              {p.expectedObjectTypes?.length > 1 && (
+              {property.expectedObjectTypes?.length > 1 && (
                 <TextField
                   select
                   style={{ width: 100, flexShrink: 0 }}
                   value={type}
                   className={"mx-2"}
                   onChange={textOnChangeType}
-                  helperText="Type"
+                  label="Type"
                   {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                   // TODO we need some prefLabels for types here (ontology? i18n?)
                 >
-                  {p.expectedObjectTypes?.map((r) => (
+                  {property.expectedObjectTypes?.map((r) => (
                     <MenuItem key={r.qname} value={r.qname}>
                       {r.qname.replace(/^bdo:/, "")}
                     </MenuItem>
@@ -320,7 +354,7 @@ const ResourceSelector: FC<{
               helperText={label}
               disabled
             /> */}
-            <div>
+            <div className="selected">
               <div style={{ fontSize: "16px" /*, borderBottom:"1px solid #ccc"*/ }}>
                 {lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang) + " " + dates}
               </div>
@@ -407,7 +441,46 @@ const ResourceSelector: FC<{
           <div className="iframe-BG" onClick={closeFrame}></div>
         </div>
       )}
+      {popupNew && (
+        <div className="card popup-new">
+          <div className="front">
+            {entities.map((e, i) => {
+              // TODO: check type as well with property.expectedObjectTypes
+              if (e?.subjectQname != subject.qname && !exists(e?.subjectQname))
+                return (
+                  <MenuItem key={i + 1} className="px-0 py-0">
+                    <LabelWithRID choose={chooseEntity} entity={e} />
+                  </MenuItem>
+                )
+            })}
+            <hr className="my-1" />
+            {property.expectedObjectTypes?.map((r) => (
+              <MenuItem key={r.qname} value={r.qname} onClick={createAndUpdate(r)}>
+                {i18n.t("search.new", { type: r.qname.replace(/^bdo:/, "") })}
+              </MenuItem>
+            ))}
+          </div>
+          <div className="popup-new-BG" onClick={togglePopup}></div>
+        </div>
+      )}
     </React.Fragment>
+  )
+}
+
+const LabelWithRID: FC<{ entity: Entity; choose: (e: Entity, labels: Record<string, string>) => () => void }> = ({
+  entity,
+  choose,
+}) => {
+  const [uiLang] = useRecoilState(uiLangState)
+  const [labelValues] = useRecoilState(entity.subjectLabelState)
+  const prefLabels = RDFResource.valuesByLang(labelValues)
+  const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
+
+  return (
+    <div className="px-3 py-1" style={{ width: "100%" }} onClick={choose(entity, prefLabels)}>
+      <div className="label">{label}</div>
+      <div className="RID">{entity.subjectQname}</div>
+    </div>
   )
 }
 

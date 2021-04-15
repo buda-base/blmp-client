@@ -22,7 +22,7 @@ import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
-import { entitiesAtom } from "../../../containers/EntitySelectorContainer"
+import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 
 export const MinimalAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; className: string }> = ({
   add,
@@ -70,6 +70,28 @@ export const OtherButton: FC<{ onClick: React.MouseEventHandler<HTMLButtonElemen
     </div>
   )
 }
+
+/* // breaks history
+export const updateEntitiesRDF = (
+  subject: Subject,
+  updateFunction: (rdf: string) => Subject,
+  rdf: string,
+  entities: Array<Entity>,
+  setEntities: (newEntities: Array<Entity>) => void
+) => {
+  debug("update with RDF:", rdf)
+  const nEnt = entities.findIndex((e) => e.subjectQname === subject.qname)
+  if (nEnt >= 0 && entities[nEnt].subject) {
+    const subject = entities[nEnt].subject
+    if (subject) {
+      const newSubject = updateFunction.call(subject, rdf)
+      const newEntities = [...entities]
+      newEntities[nEnt] = { ...entities[nEnt], subject: newSubject }
+      setEntities(newEntities)
+    }
+  }
+}
+*/
 
 const debug = require("debug")("bdrc:entity:property:litlist")
 
@@ -164,7 +186,8 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
     } else if (
       property.objectType != ObjectType.Facet &&
       (!property.displayPriority || property.displayPriority === 0 || list.length || force) &&
-      (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField)
+      (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField) &&
+      (!property.maxCount || property.maxCount >= list.length)
     ) {
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
       else setList((oldList) => [...oldList, generateDefault(property, subject)])
@@ -175,18 +198,25 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   let addBtn = property.objectType === ObjectType.Facet
 
+  const showLabel =
+    !property.displayPriority ||
+    property.displayPriority === 0 ||
+    property.displayPriority === 1 && (force || list.length > 1)
+
   return (
     <React.Fragment>
       <div
+        className={property.maxCount && property.maxCount < list.length ? "maxCount" : ""}
         role="main"
         style={{
           display: "flex",
           flexWrap: "wrap",
-          ...list.length > 1 && firstValueIsEmptyField
-            ? { borderBottom: "2px solid #eee", paddingBottom: "16px" }
+          ...list.length > 1 && firstValueIsEmptyField && property.path.sparqlString !== ns.SKOS("prefLabel").value
+            ? { /*borderBottom: "2px solid #eee",*/ paddingBottom: "16px" }
             : {},
         }}
       >
+        {showLabel && <label className="propLabel">{propLabel[0].toUpperCase() + propLabel.substring(1)}</label>}
         {list.map((val, i) => {
           if (val instanceof RDFResourceWithLabel) {
             if (property.objectType == ObjectType.ResExt)
@@ -202,14 +232,19 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                   exists={exists}
                 />
               )
-            else
+            else {
+              addBtn = true
               return <ResSelectComponent key={val.id} subject={subject} property={property} res={val} canDel={canDel} />
+            }
           }
           if (val instanceof Subject) {
             addBtn = true
             return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} canDel={canDel} />
           } else if (val instanceof LiteralWithId) {
             addBtn = val && val.value !== ""
+            const isUnique =
+              list.filter((l) => l instanceof LiteralWithId && l.value === val.value && l.language === val.language)
+                .length === 1
             return (
               <LiteralComponent
                 key={val.id}
@@ -218,6 +253,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                 lit={val}
                 label={propLabel}
                 canDel={canDel}
+                isUnique={isUnique}
               />
             )
           }
@@ -239,13 +275,25 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const addItem = () => {
-    setList((oldList) => [...oldList, generateDefault(property, subject)])
+    /* // no need for updateEntitiesRDF
+    // DONE: also update rdf
+    let rdf = "<" + subject.uri + "> <" + property?.path?.sparqlString + "> "
+    if (item instanceof LiteralWithId) rdf += '"' + item.value + '"' + (item.language ? "@" + item.language : "")
+    else if (item instanceof Subject) rdf += "<" + ns.uriFromQname(item.qname) + ">"
+    rdf += "."
+    debug("addI", rdf)
+    // DONE: make a reusable function
+    updateEntitiesRDF(subject, subject.extendWithTTL, rdf, entities, setEntities)
+    */
+
+    const item = generateDefault(property, subject)
+    setList((oldList) => [...oldList, item])
   }
 
-  if (embedded)
-    // || property.path.sparqlString === ns.SKOS("prefLabel").value)
+  if (embedded || property.path.sparqlString === ns.SKOS("prefLabel").value)
     return <MinimalAddButton add={addItem} className=" " />
   else return <BlockAddButton add={addItem} /*label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)}*/ />
 }
@@ -274,18 +322,20 @@ const EditLangString: FC<{
   lit: LiteralWithId
   onChange: (value: LiteralWithId) => void
   label: string
-}> = ({ property, lit, onChange, label }) => {
+  globalError?: string
+}> = ({ property, lit, onChange, label, globalError }) => {
   const classes = useStyles()
 
-  let error
+  let error = ""
   if (!lit.value) error = i18n.t("error.empty")
+  else if (globalError) error = globalError
 
   return (
-    <div className="mb-2" style={{ display: "flex", width: "100%", alignItems: "end" }}>
+    <div className="mb-0" style={{ display: "flex", width: "100%", alignItems: "end" }}>
       <TextField
-        className={classes.root}
+        //className={classes.root}
         //label={lit.id}
-        helperText={label}
+        label={"Text"}
         style={{ width: "100%" }}
         value={lit.value}
         InputLabelProps={{ shrink: true }}
@@ -294,9 +344,8 @@ const EditLangString: FC<{
           ? {
               helperText: (
                 <React.Fragment>
-                  {label} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                  <br />
-                  <i>{error}</i>
+                  <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                  &nbsp;<i>{error}</i>
                 </React.Fragment>
               ),
               error: true,
@@ -319,11 +368,12 @@ export const LangSelect: FC<{
   return (
     <TextField
       select
+      InputLabelProps={{ shrink: true }}
       className="ml-2"
       //label={lit.id}
-      helperText={"Language"}
+      label={"Language"}
       value={value}
-      style={{ width: 100, flexShrink: 0 }}
+      style={{ minWidth: 100, flexShrink: 0 }}
       onChange={onChangeHandler}
       {...(disabled ? { disabled: true } : {})}
     >
@@ -347,20 +397,20 @@ const EditYear: FC<{
   let error
   if (lit.value && !lit.value.match(/^-?[0-9]{4}$/)) error = i18n.t("error.gYear")
 
-  const eventType = "<the event type/s>"
+  //const eventType = "<the event type/s>"
 
   return (
     <TextField
-      className={classes.root + " mt-2"}
-      label={label}
-      helperText={eventType}
+      //className={/*classes.root +*/ " mt-2"}
+      //label={label}
+      label={"Number"}
       style={{ width: 150 }}
       value={lit.value}
       {...(error
         ? {
             helperText: (
               <React.Fragment>
-                {eventType} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                {/*eventType*/ "Number"} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
                 <br />
                 <i>{error}</i>
               </React.Fragment>
@@ -385,10 +435,12 @@ const LiteralComponent: FC<{
   property: PropertyShape
   label: string
   canDel: boolean
-}> = ({ lit, subject, property, label, canDel }) => {
+  isUnique: boolean
+}> = ({ lit, subject, property, label, canDel, isUnique }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
     const newList = replaceItemAtIndex(list, index, value)
@@ -396,28 +448,56 @@ const LiteralComponent: FC<{
   }
 
   const deleteItem = () => {
+    /* // no need for updateEntitiesRDF
+    const rdf =
+      "<" +
+      subject.uri +
+      "> <" +
+      property?.path?.sparqlString +
+      '> "' +
+      lit.value +
+      '"' +
+      (lit.language ? "@" + lit.language : "") +
+      "."
+    debug("delI", rdf)
+    updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
+    */
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
 
   const t = property.datatype
-  let edit
+  let edit, classN
 
-  if (t?.value === ns.RDF("langString").value)
-    edit = <EditLangString property={property} lit={lit} onChange={onChange} label={label} />
-  else if (t?.value === ns.XSD("gYear").value)
+  if (t?.value === ns.RDF("langString").value) {
+    classN = "langString"
+    edit = (
+      <EditLangString
+        property={property}
+        lit={lit}
+        onChange={onChange}
+        label={"Text"}
+        {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
+      />
+    )
+  } else if (t?.value === ns.XSD("gYear").value) {
+    classN = "gYear"
     edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
-  else throw "literal with unknown datatype value:" + JSON.stringify(t)
+  } else if (t?.value === ns.XSD("integer").value) {
+    edit = <TextField helperText={"Number" /*label*/} type="number" />
+  } else throw "literal with unknown datatype value:" + JSON.stringify(t)
   //else if (t?.value === ns.RDF("type").value)
   //  edit = <EditType property={property} lit={lit} onChange={onChange} label={label} />
 
   return (
-    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+    <div className={classN} style={{ display: "flex", alignItems: "center" /*, width: "100%"*/ }}>
       {edit}
       {canDel && (
-        <button className="btn btn-link ml-2 px-0 mb-3" onClick={deleteItem}>
-          <RemoveIcon />
-        </button>
+        <div className="hoverPart">
+          <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
+            <RemoveIcon />
+          </button>
+        </div>
       )}
     </div>
   )
@@ -434,8 +514,15 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === subNode)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const deleteItem = () => {
+    /* // no need for updateEntitiesRDF
+    const rdf =
+      "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(subNode.qname) + "> ."
+    debug("delI", rdf)
+    updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
+    */
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
@@ -445,9 +532,11 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
 
   const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
 
+  //debug("target", property.path.sparqlString, targetShape)
+
   return (
-    <div className="facet mb-4 py-2" style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }}>
-      <div>
+    <div className="facet pl-2" /*style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }} */>
+      <div className="card py-2 mt-2">
         {targetShape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
         ))}
@@ -488,26 +577,19 @@ const ExtEntityComponent: FC<{
     }
     setList(newList)
 
+    /* // no need for updateEntitiesRDF
+
     // DONE: update entity at RDF level
     // (actually it was not enough, entity had also to be updated from Recoil/entities in top level Container)
 
-    const nEnt = entities.findIndex((e) => e.subjectQname === subject.qname)
-    if (nEnt >= 0 && entities[nEnt].subject) {
-      const subject = entities[nEnt].subject
-      if (subject) {
-        debug("subject to update:", subject.graph.store.statements)
-        const newSubject = subject.removeWithTTL(
-          "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(extRes.qname) + "> ."
-        )
-        const newEntities = [...entities]
-        newEntities[nEnt] = { ...entities[nEnt], subject: newSubject }
-        setEntities(newEntities)
-      }
-    }
+    const rdf = "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(extRes.qname) + "> ."
+    updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
+    */
   }
 
+  //, ...extRes.uri === "tmp:uri" ? { /*width: "100%"*/ } : {} }}>
   return (
-    <div style={{ position: "relative", ...extRes.uri === "tmp:uri" ? { width: "100%" } : {} }}>
+    <div className={"extEntity" + (extRes.uri === "tmp:uri" ? " new" : "")} style={{ position: "relative" }}>
       <div
         style={{
           ...extRes.uri !== "tmp:uri"
@@ -523,9 +605,16 @@ const ExtEntityComponent: FC<{
             : {},
           ...extRes.uri === "tmp:uri" ? { display: "flex" } : {},
         }}
-        {...(extRes.uri !== "tmp:uri" ? { className: "px-2 py-1 mr-2 mb-2 card" } : {})}
+        {...(extRes.uri !== "tmp:uri" ? { className: "px-2 py-1 mr-2 mt-2 card" } : {})}
       >
-        <ResourceSelector value={extRes} onChange={onChange} p={property} idx={idx} exists={exists} subject={subject} />
+        <ResourceSelector
+          value={extRes}
+          onChange={onChange}
+          property={property}
+          idx={idx}
+          exists={exists}
+          subject={subject}
+        />
         {canDel && (
           <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
             {extRes.uri === "tmp:uri" ? <RemoveIcon /> : <CloseIcon />}
@@ -583,11 +672,11 @@ const ResSelectComponent: FC<{
     <React.Fragment>
       <TextField
         select
-        className={classes.root + " mr-2"}
+        className={/*classes.root +*/ "selector mr-2"}
         value={res.uri}
-        style={{ width: 150 }}
+        //style={{ width: 150 }}
         onChange={onChange}
-        helperText="Type"
+        label="Select"
       >
         {possibleValues.map((r) => (
           <MenuItem key={r.uri} value={r.uri}>

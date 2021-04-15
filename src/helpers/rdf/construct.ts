@@ -12,7 +12,7 @@ import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelector
 
 const debug = require("debug")("bdrc:rdf:construct")
 
-const nodeForType = (type: string, parentLname: string): rdf.NamedNode => {
+export const nodeForType = (type: string, parentLname: string): rdf.NamedNode => {
   let prefix = type
   if (parentLname) {
     prefix = parentLname + "_" + type
