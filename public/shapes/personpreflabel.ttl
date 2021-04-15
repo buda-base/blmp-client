@@ -61,6 +61,18 @@ bds:AdminPropertyGroup
   rdfs:label "Admin data"@en ;
   sh:order 5 ;
 .
+bds:PersonShape-type
+  a sh:PropertyShape ;
+  sh:path rdf:type ;
+  sh:in (bdo:Person) ;
+  sh:message "A Person must have type person"@en ;
+  sh:maxCount 1 ;
+  sh:minCount 1 ;
+  dash:editor dash:EnumSelectEditor ;
+  sh:group bds:PersonNamePropertyGroup ;
+  sh:name "type"@en ;
+  sh:order "0"^^xsd:decimal ;
+.
 bds:PersonShape-adminData
   dash:editor dash:DetailsEditor ;
   sh:group bds:AdminPropertyGroup ;
@@ -129,7 +141,7 @@ bds:CommonShape-prefLabel
   # this property is in the name property group
   sh:group bds:PersonNamePropertyGroup ;
   # this property should be displayed first in that group
-  sh:order "0"^^xsd:decimal ;
+  sh:order "1"^^xsd:decimal ;
   # the rdf path of the predicate
   sh:path skos:prefLabel ;
   sh:uniqueLang true ;
