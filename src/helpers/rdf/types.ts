@@ -62,7 +62,8 @@ export class EntityGraphValues {
           if (val instanceof LiteralWithId) {
             throw "can't add literals in inverse path, something's wrong with the data!"
           } else {
-            store.add(val.node, property, subject)
+            if (val.node.value == "tmp:uri") continue
+            store.add(val.node, property, subject, defaultGraphNode)
             if (val instanceof Subject) {
               this.addNewValuestoStore(store, val.uri)
             }
@@ -73,9 +74,10 @@ export class EntityGraphValues {
         const values: Array<Value> = this.newSubjectProps[subjectUri][pathString]
         for (const val of values) {
           if (val instanceof LiteralWithId) {
-            const test = store.add(subject, property, val, defaultGraphNode)
+            store.add(subject, property, val, defaultGraphNode)
           } else {
-            store.add(subject, property, val.node)
+            if (val.node.value == "tmp:uri") continue
+            store.add(subject, property, val.node, defaultGraphNode)
             if (val instanceof Subject) {
               this.addNewValuestoStore(store, val.uri)
             }

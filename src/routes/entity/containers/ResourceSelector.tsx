@@ -209,20 +209,16 @@ const ResourceSelector: FC<{
     if (dates) dates = "(" + dates + ")"
   }
 
-  const createAndLink = () => {
-    history.push(
-      "/new/" +
-        type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
-        "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
-        "?subject=" +
-        subject.qname +
-        "&propid=" +
-        property.path?.sparqlString +
-        "&index=" +
-        idx
-    )
-    //debug("entities...", entities)
-  }
+  const createAndLinkUrl =
+    "/new/" +
+    type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
+    "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
+    "?subject=" +
+    subject.qname +
+    "&propid=" +
+    property.path?.sparqlString +
+    "&index=" +
+    idx
 
   const createAndUpdate = (type: RDFResourceWithLabel) => () => {
     history.push(
@@ -332,14 +328,14 @@ const ResourceSelector: FC<{
               >
                 {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
               </button>
-              <button
+              <Link
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
-                onClick={togglePopup}
+                to={createAndLinkUrl}
               >
                 {i18n.t("search.create")}
-              </button>
+              </Link>
             </React.Fragment>
           </div>
         )}
