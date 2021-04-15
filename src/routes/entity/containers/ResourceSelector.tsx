@@ -429,12 +429,12 @@ const ResourceSelector: FC<{
             minWidth: "670px",
             ...value.uri === "tmp:uri"
               ? {
-                  right: "calc(1rem - 1px + 100px " + (idx == 0 ? "- 34px" : "") + ")",
+                  right: "calc(52px)",
                   width: "calc(100% - 100px)",
-                  bottom: "calc(100% - 1rem)",
+                  bottom: "calc(100%)",
                 }
               : {},
-            ...value.uri !== "tmp:uri" ? { left: "1rem", width: "calc(100%)", bottom: "100%" } : {},
+            ...value.uri !== "tmp:uri" ? { left: "calc(1rem + 8px)", width: "calc(100%)", bottom: "100%" } : {},
           }}
         >
           <iframe style={{ border: "none" }} height="400" src={libraryURL} />

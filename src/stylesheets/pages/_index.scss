@@ -283,7 +283,7 @@ iframe { z-index:2; }
 .popup-new-BG,
 .iframe-BG { position:fixed; left:0; top:0; width:100vw; height:100vh;background:rgba(0,0,0,0); z-index:1; }
 
-.popup-new { position:absolute; right:0; bottom:calc(100% - 1rem);  
+.popup-new { position:absolute; right:0; bottom:calc(100%);  z-index:100;
   p { margin:0; }
 }
 
@@ -312,7 +312,7 @@ section,
   hr:first-child,hr:last-child { display:none; }
 }
 
-.hoverPart { visibility: hidden; }
+.hoverPart { visibility: hidden; display:flex; width:68px; flex-shrink:0; }
 .langString:hover .hoverPart { visibility: visible; }
 .langString+.langString { padding-top:10px;}
 
@@ -328,8 +328,9 @@ section,
 }
 
 .row.card, .facet {
-  & > div > [role="main"] + [role="main"] { margin-top:16px; }  
+  & > div > [role="main"] + [role="main"] .container > [role="main"]:not(:empty) { margin-top:16px; }  
 }
+.card > [role="main"]:first-child [role="main"] { margin-top:0 !important;  }
 
 //.row.card > div + .toggle-btn + div > [role="main"] { margin-top:16px; }  
 
@@ -342,8 +343,20 @@ button.py-3 { padding:9px 8px 10px 8px !important; }
 
 .MuiInputBase-input { padding-bottom:4px !important; }
 
-label ~ .selector label { padding-left:10px !important; }
+label ~ .selector { 
+  label { padding-left:10px !important; }
+  & ~ .selector label { padding-left:0px !important; }
+}
+
 
 .toggle-btn { position: absolute; right:12px; top:8px; font-size:12px; cursor:pointer;
   &:hover { text-decoration: underline; }
 }
+
+
+.row > div > div > section > div > div.minimalAdd { display:none; }
+
+
+
+/* css debug mode */
+// * { background-color: rgba(255,0,128,0.05);}

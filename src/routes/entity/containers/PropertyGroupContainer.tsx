@@ -26,21 +26,19 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
       <div role="main">
         <section className="album">
           <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
-            <div className="row card my-4">
+            <div className="row card my-4 pb-3">
               <p className="col-4 text-uppercase small my-2">{label}</p>
               <div>
+                {hasExtra && (
+                  <span className="toggle-btn" onClick={toggleExtra}>
+                    {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
+                  </span>
+                )}
                 {group.properties
                   .filter((property) => !property.displayPriority)
                   .map((property, index) => (
                     <PropertyContainer key={index} property={property} subject={subject} />
                   ))}
-              </div>
-              {hasExtra && (
-                <span className="toggle-btn" onClick={toggleExtra}>
-                  {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
-                </span>
-              )}
-              <div>
                 {group.properties
                   .filter((property) => property.displayPriority && property.displayPriority >= 1)
                   .map((property, index) => (

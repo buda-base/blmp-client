@@ -29,7 +29,9 @@ export const MinimalAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonEleme
   className,
 }) => {
   return (
-    <div className={className !== undefined ? className : "text-right"} style={{ width: "100%" }}>
+    <div
+      className={"minimalAdd " + (className !== undefined ? className : " text-right")} /*style={{ width: "100%" }}*/
+    >
       <button className="btn btn-link ml-2 px-0" onClick={add}>
         <AddIcon />
       </button>
@@ -43,11 +45,7 @@ export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement
 }) => {
   return (
     <div className="blockAdd text-center pb-1" style={{ width: "100%" }}>
-      <button
-        className="btn btn-sm btn-block btn-outline-primary mb-2 px-0"
-        style={{ boxShadow: "none" }}
-        onClick={add}
-      >
+      <button className="btn btn-sm btn-block btn-outline-primary px-0" style={{ boxShadow: "none" }} onClick={add}>
         {i18n.t("general.add_another")} <AddIcon /> {/* label */}
       </button>
     </div>
@@ -212,7 +210,9 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
           display: "flex",
           flexWrap: "wrap",
           ...list.length > 1 && firstValueIsEmptyField && property.path.sparqlString !== ns.SKOS("prefLabel").value
-            ? { /*borderBottom: "2px solid #eee",*/ paddingBottom: "16px" }
+            ? {
+                /*borderBottom: "2px solid #eee", paddingBottom: "16px"*/
+              }
             : {},
         }}
       >
@@ -254,6 +254,9 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                 label={propLabel}
                 canDel={canDel}
                 isUnique={isUnique}
+                {...(canAdd && addBtn
+                  ? { create: <Create subject={subject} property={property} embedded={embedded} /> }
+                  : {})}
               />
             )
           }
@@ -436,7 +439,8 @@ const LiteralComponent: FC<{
   label: string
   canDel: boolean
   isUnique: boolean
-}> = ({ lit, subject, property, label, canDel, isUnique }) => {
+  create?: unknown
+}> = ({ lit, subject, property, label, canDel, isUnique, create }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
@@ -492,11 +496,14 @@ const LiteralComponent: FC<{
   return (
     <div className={classN} style={{ display: "flex", alignItems: "center" /*, width: "100%"*/ }}>
       {edit}
-      {canDel && (
+      {(canDel || create) && (
         <div className="hoverPart">
-          <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
-            <RemoveIcon />
-          </button>
+          {create}
+          {canDel && (
+            <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
+              <RemoveIcon />
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -536,7 +543,7 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
 
   return (
     <div className="facet pl-2" /*style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }} */>
-      <div className="card py-2 mt-2">
+      <div className="card py-2 pr-3 mt-2">
         {targetShape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
         ))}
@@ -602,8 +609,9 @@ const ExtEntityComponent: FC<{
                 flexDirection: "row",
                 position: "static",
               }
-            : {},
-          ...extRes.uri === "tmp:uri" ? { display: "flex" } : {},
+            : {
+                display: "flex",
+              },
         }}
         {...(extRes.uri !== "tmp:uri" ? { className: "px-2 py-1 mr-2 mt-2 card" } : {})}
       >
