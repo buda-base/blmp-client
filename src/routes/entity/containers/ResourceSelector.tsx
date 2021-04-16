@@ -328,14 +328,14 @@ const ResourceSelector: FC<{
               >
                 {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
               </button>
-              <Link
+              <button
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
-                to={createAndLinkUrl}
+                onClick={togglePopup}
               >
                 {i18n.t("search.create")}
-              </Link>
+              </button>
             </React.Fragment>
           </div>
         )}

@@ -24,15 +24,18 @@ import { uiLangState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 
-export const MinimalAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; className: string }> = ({
-  add,
-  className,
-}) => {
+export const MinimalAddButton: FC<{
+  add: React.MouseEventHandler<HTMLButtonElement>
+  className: string
+  disable?: boolean
+}> = ({ add, className, disable }) => {
   return (
     <div
-      className={"minimalAdd " + (className !== undefined ? className : " text-right")} /*style={{ width: "100%" }}*/
+      className={
+        "minimalAdd " + "disable_" + disable + (className !== undefined ? className : " text-right")
+      } /*style={{ width: "100%" }}*/
     >
-      <button className="btn btn-link ml-2 px-0" onClick={add}>
+      <button className="btn btn-link ml-2 px-0" onClick={add} {...(disable ? { disabled: true } : {})}>
         <AddIcon />
       </button>
     </div>
@@ -140,8 +143,19 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
   const [uiLang] = useRecoilState(uiLangState)
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
+  const alreadyHasEmptyValue: () => boolean = (): boolean => {
+    for (const val of list) {
+      if (val instanceof LiteralWithId && val.value === "") return true
+    }
+    return false
+  }
+
   // TODO: handle the creation of a new value in a more sophisticated way (with the iframe and such)
-  const canAdd = property.objectType != ObjectType.ResExt && property.maxCount ? list.length < property.maxCount : true
+  const canAdd = alreadyHasEmptyValue()
+    ? false
+    : property.objectType != ObjectType.ResExt && property.maxCount
+    ? list.length < property.maxCount
+    : true
 
   const canDel = !property.minCount || property.minCount < list.length
 
@@ -254,9 +268,9 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
                 label={propLabel}
                 canDel={canDel}
                 isUnique={isUnique}
-                {...(canAdd && addBtn
-                  ? { create: <Create subject={subject} property={property} embedded={embedded} /> }
-                  : {})}
+                create={
+                  <Create disable={!canAdd || !addBtn} subject={subject} property={property} embedded={embedded} />
+                }
               />
             )
           }
@@ -270,10 +284,11 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 /**
  * Create component
  */
-const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean }> = ({
+const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean; disable?: boolean }> = ({
   subject,
   property,
   embedded,
+  disable,
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
@@ -297,7 +312,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   }
 
   if (embedded || property.path.sparqlString === ns.SKOS("prefLabel").value)
-    return <MinimalAddButton add={addItem} className=" " />
+    return <MinimalAddButton disable={disable} add={addItem} className=" " />
   else return <BlockAddButton add={addItem} /*label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)}*/ />
 }
 
@@ -496,16 +511,12 @@ const LiteralComponent: FC<{
   return (
     <div className={classN} style={{ display: "flex", alignItems: "center" /*, width: "100%"*/ }}>
       {edit}
-      {(canDel || create) && (
-        <div className="hoverPart">
-          {create}
-          {canDel && (
-            <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
-              <RemoveIcon />
-            </button>
-          )}
-        </div>
-      )}
+      <div className="hoverPart">
+        <button className="btn btn-link ml-2 px-0" onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>
+          <RemoveIcon />
+        </button>
+        {create}
+      </div>
     </div>
   )
 }
