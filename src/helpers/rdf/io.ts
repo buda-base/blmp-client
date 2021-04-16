@@ -13,12 +13,19 @@ export const fetchUrlFromshapeQname = (shapeQname: string): string => {
   return "/shapes/personpreflabel.ttl"
 }
 
-export const fetchUrlFromEntityQname = (shapeQname: string): string => {
-  return "/examples/ptest.ttl"
+export const fetchUrlFromEntityQname = (entityQname: string): string => {
+  if (entityQname == "bdr:PTEST") return "/examples/ptest.ttl"
+  return "https://editserv.bdrc.io/focusGraph/" + entityQname
 }
 
-export const labelQueryUrlFromEntityQname = (shapeQname: string): string => {
-  return "/examples/ptest-assocLabels.ttl"
+export const labelQueryUrlFromEntityQname = (entityQname: string): string => {
+  if (entityQname == "bdr:PTEST") return "/examples/ptest-assocLabels.ttl"
+  // TODO: a little approximative... but should work for now
+  return (
+    "https://ldspdi.bdrc.io/query/graph/getAssociatedLabels?R_GR=bdg:" +
+    entityQname.substring(entityQname.indexOf(":") + 1) +
+    "&format=ttl"
+  )
 }
 
 const debug = require("debug")("bdrc:rdf:io")
@@ -123,7 +130,6 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   useEffect(() => {
     async function fetchResource(entityQname: string) {
       setEntityLoadingState({ status: "fetching", error: undefined })
-      if (entityQname != "bdr:P1583") throw "can't find " + entityQname
       const fetchUrl = fetchUrlFromEntityQname(entityQname)
       const labelQueryUrl = labelQueryUrlFromEntityQname(entityQname)
       const entityUri = uriFromQname(entityQname)
