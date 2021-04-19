@@ -302,7 +302,10 @@ iframe { z-index:2; }
 
 .maxCount :not(.card) > .resSelect > div > :first-child:not(.card) { width: calc(100%) !important; opacity:0.65; }
 
-.facet { padding-left:8px; border-left:2px solid #ddd; width:calc(100%); position:relative;}
+.facet { padding-left:8px; border-left:2px solid #ddd; width:calc(100%); position:relative;
+
+  .close-btn {  position:absolute; right:0.5rem; top:0px; }
+}
 
 section,
 .facet .container > div,

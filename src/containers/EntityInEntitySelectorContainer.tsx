@@ -50,7 +50,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   }
   if (!icon && entity.shapeRef?.qname) {
     // TODO: might be something better than that...
-    icon = entity.shapeRef.qname.replace(/^.*?:([^:]+)Shape[^/]+$/, "$1").toLowerCase()
+    icon = entity.shapeRef.qname.replace(/^[^:]+:([^:]+?)Shape[^/]*$/, "$1").toLowerCase()
   }
 
   return (

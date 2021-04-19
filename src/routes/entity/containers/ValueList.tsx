@@ -47,7 +47,7 @@ export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement
   //label,
 }) => {
   return (
-    <div className="blockAdd text-center pb-1" style={{ width: "100%" }}>
+    <div className="blockAdd text-center pb-1 mt-3" style={{ width: "100%" }}>
       <button className="btn btn-sm btn-block btn-outline-primary px-0" style={{ boxShadow: "none" }} onClick={add}>
         {i18n.t("general.add_another")} <AddIcon /> {/* label */}
       </button>
@@ -615,14 +615,14 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
         {targetShape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
         ))}
+        {canDel && (
+          <div className="close-btn">
+            <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
+              <CloseIcon />
+            </button>
+          </div>
+        )}
       </div>
-      {canDel && (
-        <div className="text-center">
-          <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
-            <RemoveIcon />
-          </button>
-        </div>
-      )}
     </div>
   )
 }

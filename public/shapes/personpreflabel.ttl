@@ -208,6 +208,7 @@ bds:PersonEventShape-type
   sh:message "A PersonEvent must have at least one rdf:type"@en ;
   # note that because there's no max count, we could imagine a list where users can select multiple values
   sh:minCount 1 ;
+  sh:maxCount 1 ;
 .
 
 bds:PersonShape-studentOf
