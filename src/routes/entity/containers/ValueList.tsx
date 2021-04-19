@@ -404,7 +404,7 @@ export const LangSelect: FC<{
   )
 }
 
-const EditYear: FC<{
+const EditString: FC<{
   property: PropertyShape
   lit: LiteralWithId
   onChange: (value: LiteralWithId) => void
@@ -412,10 +412,60 @@ const EditYear: FC<{
 }> = ({ property, lit, onChange, label }) => {
   const classes = useStyles()
 
+  const dt = property.datatype
+
+  const changeCallback = (val: string) => {
+    onChange(lit.copyWithUpdatedValue(val))
+  }
+  return (
+    <TextField
+      //className={/*classes.root +*/ " mt-2"}
+      label={label}
+      style={{ width: "100%" }}
+      value={lit.value}
+      InputLabelProps={{ shrink: true }}
+      onChange={(e) => changeCallback(e.target.value)}
+    />
+  )
+}
+
+const EditInt: FC<{
+  property: PropertyShape
+  lit: LiteralWithId
+  onChange: (value: LiteralWithId) => void
+  label: string
+}> = ({ property, lit, onChange, label }) => {
+  // used for integers and gYear
+
+  const classes = useStyles()
+
+  const dt = property.datatype
+  const minInclusive = property.minInclusive
+  const maxInclusive = property.maxInclusive
+
   let error
   if (lit.value && !lit.value.match(/^-?[0-9]{4}$/)) error = i18n.t("error.gYear")
 
-  //const eventType = "<the event type/s>"
+  const changeCallback = (val: string) => {
+    if (dt && dt.value == xsdgYear) {
+      //pad to four digits in the case of xsdgYear
+      /* eslint-disable no-magic-numbers */
+      if (val.startsWith("-")) {
+        val = "-" + val.substring(1).padStart(4, "0")
+      } else {
+        val = val.padStart(4, "0")
+      }
+      /* eslint-enable no-magic-numbers */
+      if (val.match(/^-?[0-9]{4}$/)) error = i18n.t("error.gYear")
+    }
+    onChange(lit.copyWithUpdatedValue(val))
+  }
+
+  let value = lit.value
+  if (dt && dt.value == xsdgYear) {
+    // don't display the leading 0
+    value = value.replace(/^(-?)0+/, "$1")
+  }
 
   return (
     <TextField
@@ -423,7 +473,7 @@ const EditYear: FC<{
       //label={label}
       label={"Number"}
       style={{ width: 150 }}
-      value={lit.value}
+      value={value}
       {...(error
         ? {
             helperText: (
@@ -437,12 +487,20 @@ const EditYear: FC<{
           }
         : {})}
       type="number"
-      InputProps={{ inputProps: { min: -2000, max: 2100 } }}
+      InputProps={{ inputProps: { min: minInclusive, max: maxInclusive } }}
       InputLabelProps={{ shrink: true }}
-      onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
+      onChange={(e) => changeCallback(e.target.value)}
     />
   )
 }
+
+const xsdgYear = ns.XSD("gYear").value
+const rdflangString = ns.RDF("langString").value
+const xsdinteger = ns.XSD("integer").value
+const xsddecimal = ns.XSD("decimal").value
+const xsdint = ns.XSD("int").value
+
+const intishTypeList = [xsdinteger, xsddecimal, xsdint]
 
 /**
  * Display component, with DeleteButton
@@ -488,7 +546,7 @@ const LiteralComponent: FC<{
   const t = property.datatype
   let edit, classN
 
-  if (t?.value === ns.RDF("langString").value) {
+  if (t?.value === rdflangString) {
     classN = "langString"
     edit = (
       <EditLangString
@@ -499,14 +557,13 @@ const LiteralComponent: FC<{
         {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
       />
     )
-  } else if (t?.value === ns.XSD("gYear").value) {
+    // eslint-disable-next-line no-extra-parens
+  } else if (t?.value === xsdgYear || (t && t?.value in intishTypeList)) {
     classN = "gYear"
-    edit = <EditYear property={property} lit={lit} onChange={onChange} label={label} />
-  } else if (t?.value === ns.XSD("integer").value) {
-    edit = <TextField helperText={"Number" /*label*/} type="number" />
-  } else throw "literal with unknown datatype value:" + JSON.stringify(t)
-  //else if (t?.value === ns.RDF("type").value)
-  //  edit = <EditType property={property} lit={lit} onChange={onChange} label={label} />
+    edit = <EditInt property={property} lit={lit} onChange={onChange} label={label} />
+  } else {
+    edit = <EditString property={property} lit={lit} onChange={onChange} label={label} />
+  }
 
   return (
     <div className={classN} style={{ display: "flex", alignItems: "center" /*, width: "100%"*/ }}>
