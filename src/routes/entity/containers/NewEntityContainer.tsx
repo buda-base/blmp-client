@@ -40,8 +40,8 @@ function NewEntityContainer(props: AppProps) {
       <div>
         Load entity: select an entity to load here by its RID:
         <input type="text" />
-        for the sake of the demo, we are going to pretend that you did input
-        <Link key="edit" to="/edit/bdr:TEST">
+        for the sake of the demo, we are going to pretend that you did input{" "}
+        <Link key="edit" to="/edit/bdr:PTEST">
           PTEST
         </Link>
       </div>
