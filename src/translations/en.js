@@ -30,7 +30,7 @@ const enTranslations = {
   error: {
     gYear: 'must be exactly 4 digits (always, even "0001")',
     empty: "should not be empty",
-    unique: "duplicate value/language pair",
+    unique: "duplicate language",
   },
   general: {
     add_another: "Add another",

@@ -257,7 +257,7 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
           } else if (val instanceof LiteralWithId) {
             addBtn = val && val.value !== ""
             const isUnique =
-              list.filter((l) => l instanceof LiteralWithId && l.value === val.value && l.language === val.language)
+              list.filter((l) => l instanceof LiteralWithId && /*l.value === val.value &&*/ l.language === val.language)
                 .length === 1
             return (
               <LiteralComponent
@@ -348,6 +348,16 @@ const EditLangString: FC<{
   if (!lit.value) error = i18n.t("error.empty")
   else if (globalError) error = globalError
 
+  const errorData = {
+    helperText: (
+      <React.Fragment>
+        <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+        &nbsp;<i>{error}</i>
+      </React.Fragment>
+    ),
+    error: true,
+  }
+
   return (
     <div className="mb-0" style={{ display: "flex", width: "100%", alignItems: "end" }}>
       <TextField
@@ -358,19 +368,13 @@ const EditLangString: FC<{
         value={lit.value}
         InputLabelProps={{ shrink: true }}
         onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
-        {...(error
-          ? {
-              helperText: (
-                <React.Fragment>
-                  <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                  &nbsp;<i>{error}</i>
-                </React.Fragment>
-              ),
-              error: true,
-            }
-          : {})}
+        {...(error ? errorData : {})}
       />
-      <LangSelect value={lit.language || ""} onChange={(value) => onChange(lit.copyWithUpdatedLanguage(value))} />
+      <LangSelect
+        value={lit.language || ""}
+        onChange={(value) => onChange(lit.copyWithUpdatedLanguage(value))}
+        {...(error ? { error: true } : {})}
+      />
     </div>
   )
 }
@@ -379,7 +383,8 @@ export const LangSelect: FC<{
   onChange: (value: string) => void
   value: string
   disabled?: boolean
-}> = ({ onChange, value, disabled }) => {
+  error?: boolean
+}> = ({ onChange, value, disabled, error }) => {
   const onChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
     onChange(event.target.value as string)
   }
@@ -394,6 +399,7 @@ export const LangSelect: FC<{
       style={{ minWidth: 100, flexShrink: 0 }}
       onChange={onChangeHandler}
       {...(disabled ? { disabled: true } : {})}
+      {...(error ? { error: true } : {})}
     >
       {langs.map((option) => (
         <MenuItem key={option.value} value={option.value}>
