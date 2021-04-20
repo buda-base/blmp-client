@@ -366,6 +366,7 @@ const EditLangString: FC<{
         label={"Text"}
         style={{ width: "100%" }}
         value={lit.value}
+        multiline={!property.singleLine}
         InputLabelProps={{ shrink: true }}
         onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
         {...(error ? errorData : {})}
