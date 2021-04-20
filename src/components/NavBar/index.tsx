@@ -17,8 +17,8 @@ function NavBar(props: AppProps) {
 
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   // https://github.com/mui-org/material-ui/issues/15400
-  const uiLangOnChange = (event: React.FormEvent<{ value: unknown }>) => {
-    setUiLang(event.currentTarget.value as string)
+  const uiLangOnChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setUiLang(event.target.value as string)
   }
 
   return (
