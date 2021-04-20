@@ -280,12 +280,15 @@ input[type="checkbox"].dmcheck {
 
 .popup-new .front,
 iframe { z-index:2; }
+.card-edit-BG,
 .popup-new-BG,
 .iframe-BG { position:fixed; left:0; top:0; width:100vw; height:100vh;background:rgba(0,0,0,0); z-index:1; }
 
 .popup-new { position:absolute; right:0; bottom:calc(100%);  z-index:100;
   p { margin:0; }
 }
+
+.extEntity { display:inline-block;}
 
 // DONE: fix selected resource horizontal stacking
 .extEntity.new,
@@ -302,13 +305,22 @@ iframe { z-index:2; }
 
 .maxCount :not(.card) > .resSelect > div > :first-child:not(.card) { width: calc(100%) !important; opacity:0.65; }
 
-.facet { padding-left:8px; border-left:2px solid #ddd; width:calc(100%); position:relative;
+.facet { //padding-left:8px; 
+  width:calc(100%); position:relative;
+  
+    //.card { border-left:2px solid #ddd; }
 
   .close-btn {  position:absolute; right:0.5rem; top:0px; }
 
-  .toggle-btn { z-index:1; right:45px; top:12px; }
+  .toggle-btn { z-index:1; right:45px; top:11px; }
 
-  .card.hasDisplayPriority { padding-top:20px !important; }
+  //.card.hasDisplayPriority { padding-top:20px !important; }
+
+  &.edit { z-index:1000;
+    & > .card {
+      box-shadow: 0 10px 20px rgba(0,0,0, 0.19), 0 6px 6px rgba(0,0,0,0.23);
+    }
+  }
 }
 
 section,
@@ -326,18 +338,22 @@ section,
 .propLabel { display:block; color:rgb(245, 0, 87); font-size:12px; font-weight:500; margin-bottom:4px; width:100%;  
   & ~ div { padding-left:8px; border-left:2px solid #ddd; } // rgba(245, 0, 87, 0.25);}  
   & ~ .selector ~ .selector { padding-left:0; border:none;}
-  & ~ .facet > div:not(.text-center) { padding-left:8px; border-left:2px solid #ddd;}
+  //& ~ .facet > div:not(.text-center) { padding-left:8px; border-left:2px solid #ddd;}
   & ~ .extEntity:not(.new) + .extEntity { padding-left:0; border:none; }
 }
 
-.facet + .facet {
+.facet ~ .facet {
   &::before { display:block; /*border-top:2px solid rgba(245, 0, 87, 0.25);*/ margin-bottom:16px; content:''; }
 }
 
+/*
 .row.card, .facet {
   & > div > [role="main"] + [role="main"] .container > [role="main"]:not(:empty) { margin-top:16px; }  
 }
 .card > [role="main"]:first-child [role="main"] { margin-top:0 !important;  }
+*/
+
+.card [role="main"] + [role="main"] .propLabel { margin-top:16px; }
 
 //.row.card > div + .toggle-btn + div > [role="main"] { margin-top:16px; }  
 
@@ -364,6 +380,7 @@ label ~ .selector {
 
 .row > div > div > section > div > div.minimalAdd { display:none; }
 
+.MuiFormHelperText-root.Mui-error { min-height:20px; }
 
 
 /* css debug mode */

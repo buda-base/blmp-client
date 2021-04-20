@@ -9,12 +9,13 @@ import * as rdf from "rdflib"
 
 const debug = require("debug")("bdrc:entity:property")
 
-const PropertyContainer: FC<{ property: PropertyShape; subject: Subject; embedded?: boolean; force?: boolean }> = ({
-  property,
-  subject,
-  embedded,
-  force,
-}) => {
+const PropertyContainer: FC<{
+  property: PropertyShape
+  subject: Subject
+  embedded?: boolean
+  force?: boolean
+  edit?: boolean
+}> = ({ property, subject, embedded, force, edit }) => {
   const objectType = property.objectType
 
   return (
@@ -22,7 +23,7 @@ const PropertyContainer: FC<{ property: PropertyShape; subject: Subject; embedde
       <div role="main">
         <section className="album">
           <div className={"container" + (embedded ? " px-0" : "")} style={{ border: "dashed 1px none" }}>
-            <ValueList subject={subject} property={property} embedded={embedded} force={force} />
+            <ValueList subject={subject} property={property} embedded={embedded} force={force} edit={edit} />
           </div>
         </section>
       </div>
