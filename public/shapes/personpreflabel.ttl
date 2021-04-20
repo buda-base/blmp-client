@@ -190,6 +190,8 @@ bds:PersonEventShape-onYear
   dash:editor bds:TextFieldEditor ;
   sh:name "on year"@en ;
   sh:order "1"^^xsd:decimal ;
+  sh:minInclusive "-4000"^^xsd:gYear ;
+  sh:maxInclusive "2100"^^xsd:gYear ;
 .
 
 # and then each name has two properties, rdf:type and rdfs:label

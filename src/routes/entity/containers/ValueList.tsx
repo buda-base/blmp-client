@@ -462,7 +462,14 @@ const EditInt: FC<{
   const maxInclusive = property.maxInclusive
 
   let error
-  if (lit.value && !lit.value.match(/^-?[0-9]{4}$/)) error = i18n.t("error.gYear")
+  if (lit.value) {
+    const valueInt = parseInt(lit.value)
+    if (minInclusive && minInclusive > valueInt) {
+      error = i18n.t("error.superiorTo", { val: minInclusive })
+    } else if (maxInclusive && maxInclusive < valueInt) {
+      error = i18n.t("error.inferiorTo", { val: maxInclusive })
+    }
+  }
 
   const changeCallback = (val: string) => {
     if (dt && dt.value == xsdgYear) {

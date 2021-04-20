@@ -28,7 +28,8 @@ const enTranslations = {
     new: "new {{type}}",
   },
   error: {
-    gYear: 'must be exactly 4 digits (always, even "0001")',
+    inferiorTo: "must be inferior to {{val}}",
+    superiorTo: "must be superior to {{val}}",
     empty: "should not be empty",
     unique: "duplicate language",
   },
