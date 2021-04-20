@@ -1,4 +1,4 @@
-import React, { useEffect, FC, ChangeEvent } from "react"
+import React, { useEffect, FC, ChangeEvent, useState } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
 import {
@@ -602,13 +602,14 @@ const FacetComponent: FC<{
   subject: Subject
   property: PropertyShape
   canDel: boolean
-  force?: boolean
-}> = ({ subNode, subject, property, canDel, force }) => {
+  //force?: boolean
+}> = ({ subNode, subject, property, canDel /*, force*/ }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const index = list.findIndex((listItem) => listItem === subNode)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [force, setForce] = useState(false)
 
   const deleteItem = () => {
     /* // no need for updateEntitiesRDF
@@ -626,13 +627,33 @@ const FacetComponent: FC<{
 
   const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
 
-  //debug("target", property.path.sparqlString, targetShape)
+  const withDisplayPriority: PropertyShape[] = [],
+    withoutDisplayPriority: PropertyShape[] = []
+  targetShape.properties.map((subprop) => {
+    if (subprop.displayPriority && subprop.displayPriority >= 1) {
+      withDisplayPriority.push(subprop)
+    } else {
+      withoutDisplayPriority.push(subprop)
+    }
+  })
+  const hasExtra = withDisplayPriority.length > 0 // && isSimplePriority
+  const toggleExtra = () => {
+    setForce(!force)
+  }
 
   return (
     <div className="facet pl-2" /*style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }} */>
-      <div className="card py-2 pr-3 mt-2">
-        {targetShape.properties.map((p, index) => (
-          <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} {...(force ? { force } : {})} />
+      <div className={"card py-2 pr-3 mt-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
+        {hasExtra && (
+          <span className="toggle-btn" onClick={toggleExtra}>
+            {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
+          </span>
+        )}
+        {withoutDisplayPriority.map((p, index) => (
+          <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} force={force} />
+        ))}
+        {withDisplayPriority.map((p, index) => (
+          <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} force={force} />
         ))}
         {canDel && (
           <div className="close-btn">

@@ -17,20 +17,25 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
 
   const withDisplayPriority: PropertyShape[] = [],
     withoutDisplayPriority: PropertyShape[] = []
+  //let isSimplePriority = false
   group.properties.map((property) => {
     if (
-      property.displayPriority && property.displayPriority >= 1 ||
+      property.displayPriority &&
+      property.displayPriority >= 1
+      /* // no need 
+      ||
       property.targetShape &&
         property.targetShape.properties &&
         property.targetShape.properties.filter((subprop) => subprop.displayPriority && subprop.displayPriority >= 1)
-          .length > 0
+          .length > 0 */
     ) {
       withDisplayPriority.push(property)
+      //if(property.displayPriority && property.displayPriority >= 1) isSimplePriority = true
     } else {
       withoutDisplayPriority.push(property)
     }
   })
-  const hasExtra = withDisplayPriority.length > 0
+  const hasExtra = withDisplayPriority.length > 0 // && isSimplePriority
   const toggleExtra = () => {
     setForce(!force)
   }
