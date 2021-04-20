@@ -124,7 +124,17 @@ export class PropertyShape extends RDFResourceWithLabel {
   // different property for prefLabels, property shapes are using sh:name
   @Memoize()
   public get prefLabels(): Record<string, string> {
-    return this.getPropValueByLang(shName)
+    let res = {}
+    if (this.path && (this.path.directPathNode || this.path.inversePathNode)) {
+      const pathNode = this.path.directPathNode || this.path.inversePathNode
+      if (pathNode) {
+        const propInOntology = new RDFResourceWithLabel(pathNode, this.ontologyGraph)
+        res = propInOntology.prefLabels
+      }
+    }
+    const resFromShape = this.getPropValueByLang(shName)
+    res = { ...res, ...resFromShape }
+    return res
   }
 
   @Memoize()
