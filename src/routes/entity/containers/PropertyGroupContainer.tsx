@@ -1,7 +1,7 @@
 import React, { useState, FC, ReactElement } from "react"
 import PropertyContainer from "./PropertyContainer"
 import { RDFResource, Subject } from "../../../helpers/rdf/types"
-import { PropertyGroup } from "../../../helpers/rdf/shapes"
+import { PropertyGroup, PropertyShape } from "../../../helpers/rdf/shapes"
 import { uiLangState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
@@ -15,8 +15,27 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
   const label = lang.ValueByLangToStrPrefLang(group.prefLabels, uiLang)
   const [force, setForce] = useState(false)
 
-  const hasExtra =
-    group.properties.filter((property) => property.displayPriority && property.displayPriority >= 1).length > 0
+  const withDisplayPriority: PropertyShape[] = [],
+    withoutDisplayPriority: PropertyShape[] = []
+  //let isSimplePriority = false
+  group.properties.map((property) => {
+    if (
+      property.displayPriority &&
+      property.displayPriority >= 1
+      /* // no need 
+      ||
+      property.targetShape &&
+        property.targetShape.properties &&
+        property.targetShape.properties.filter((subprop) => subprop.displayPriority && subprop.displayPriority >= 1)
+          .length > 0 */
+    ) {
+      withDisplayPriority.push(property)
+      //if(property.displayPriority && property.displayPriority >= 1) isSimplePriority = true
+    } else {
+      withoutDisplayPriority.push(property)
+    }
+  })
+  const hasExtra = withDisplayPriority.length > 0 // && isSimplePriority
   const toggleExtra = () => {
     setForce(!force)
   }
@@ -34,16 +53,12 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
                     {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
                   </span>
                 )}
-                {group.properties
-                  .filter((property) => !property.displayPriority)
-                  .map((property, index) => (
-                    <PropertyContainer key={index} property={property} subject={subject} />
-                  ))}
-                {group.properties
-                  .filter((property) => property.displayPriority && property.displayPriority >= 1)
-                  .map((property, index) => (
-                    <PropertyContainer key={index} property={property} subject={subject} force={force} />
-                  ))}
+                {withoutDisplayPriority.map((property, index) => (
+                  <PropertyContainer key={index} property={property} subject={subject} />
+                ))}
+                {withDisplayPriority.map((property, index) => (
+                  <PropertyContainer key={index} property={property} subject={subject} force={force} />
+                ))}
               </div>
             </div>
           </div>

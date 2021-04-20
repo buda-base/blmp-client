@@ -305,6 +305,10 @@ iframe { z-index:2; }
 .facet { padding-left:8px; border-left:2px solid #ddd; width:calc(100%); position:relative;
 
   .close-btn {  position:absolute; right:0.5rem; top:0px; }
+
+  .toggle-btn { z-index:1; right:45px; top:12px; }
+
+  .card.hasDisplayPriority { padding-top:20px !important; }
 }
 
 section,
