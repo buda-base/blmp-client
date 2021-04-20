@@ -210,6 +210,8 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
 
   let addBtn = property.objectType === ObjectType.Facet
 
+  //debug("prop:",property.qname,property,force)
+
   const showLabel =
     !property.displayPriority ||
     property.displayPriority === 0 ||
@@ -253,7 +255,16 @@ const ValueList: FC<{ subject: Subject; property: PropertyShape; embedded?: bool
           }
           if (val instanceof Subject) {
             addBtn = true
-            return <FacetComponent key={val.id} subject={subject} property={property} subNode={val} canDel={canDel} />
+            return (
+              <FacetComponent
+                key={val.id}
+                subject={subject}
+                property={property}
+                subNode={val}
+                canDel={canDel}
+                {...(force ? { force } : {})}
+              />
+            )
           } else if (val instanceof LiteralWithId) {
             addBtn = val && val.value !== ""
             const isUnique =
@@ -586,12 +597,13 @@ const LiteralComponent: FC<{
 }
 
 //TODO: should probably go to another file
-const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: PropertyShape; canDel: boolean }> = ({
-  subNode,
-  subject,
-  property,
-  canDel,
-}) => {
+const FacetComponent: FC<{
+  subNode: Subject
+  subject: Subject
+  property: PropertyShape
+  canDel: boolean
+  force?: boolean
+}> = ({ subNode, subject, property, canDel, force }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -620,7 +632,7 @@ const FacetComponent: FC<{ subNode: Subject; subject: Subject; property: Propert
     <div className="facet pl-2" /*style={{ borderBottom: "2px solid rgb(238, 238, 238)", width: "100%" }} */>
       <div className="card py-2 pr-3 mt-2">
         {targetShape.properties.map((p, index) => (
-          <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} />
+          <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} {...(force ? { force } : {})} />
         ))}
         {canDel && (
           <div className="close-btn">

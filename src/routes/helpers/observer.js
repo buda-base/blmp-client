@@ -118,7 +118,7 @@ export function TimeTravelObserver() {
         else if (tab.length && tab[0] instanceof ExtRDFResourceWithLabel) empty = tab[0].id === "tmp:uri"
         if (!empty) {
           modified.push({ a, info })
-          debug("MODIFIED", uiReady, first, a.key, a, info, tab)
+          //debug("MODIFIED", uiReady, first, a.key, a, info, tab)
         }
       }
       // DONE do not not take a snapshot if current change is UI language
