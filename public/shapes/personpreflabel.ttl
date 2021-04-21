@@ -89,8 +89,30 @@ bds:AdmEntityShape
   sh:namespace "http://purl.bdrc.io/admindata/" ;
   rdfs:label "Admin Entity shape"@en ;
   sh:property bds:AdmEntityShape-status ;
+  sh:property bds:AdmEntityShape-ricOptional ;
+  sh:property bds:AdmEntityShape-ricMandatory ;
   sh:targetClass bdo:Entity ;
   sh:targetSubjectsOf adm:adminAbout ;
+.
+bds:AdmEntityShape-ricOptional
+  a sh:PropertyShape ;
+  sh:path adm:restrictedInChina ;
+  dash:editor dash:BooleanSelectEditor ;
+  sh:name "restricted in China (optional)"@en ;
+  sh:order "1" ;
+  sh:maxCount 1 ;
+  sh:datatype xsd:boolean ;
+.
+bds:AdmEntityShape-ricMandatory
+  a sh:PropertyShape ;
+  sh:path adm:restrictedInChinaMandatory ;
+  dash:editor dash:BooleanSelectEditor ;
+  sh:name "restricted in China (mandatory)"@en ;
+  sh:order "2" ;
+  sh:maxCount 1 ;
+  sh:minCount 1 ;
+  sh:datatype xsd:boolean ;
+  bds:defaultValue false ;
 .
 bds:AdmEntityShape-status
   a sh:PropertyShape ;
