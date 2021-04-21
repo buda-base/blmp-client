@@ -226,7 +226,7 @@ input[type="checkbox"].dmcheck {
   }
 }
 
-.navbar { position:fixed; width:100%; background:white; z-index:1; }
+.navbar { position:fixed; width:100%; background:white; z-index:10000; }
 
 .tabs-select { 
   z-index:0;
@@ -382,6 +382,12 @@ label ~ .selector {
 
 .MuiFormHelperText-root.Mui-error { min-height:20px; }
 
+.ValueList .ValueList { overflow: hidden; transition:1500ms; max-height:1000px;transition-delay: 0s;}
+.ValueList .facet:not(.edit) .empty.ValueList { max-height:0; transition:500ms; transition-delay: 0s;}
+
+.facet:not(.edit):not(:hover) {
+  .close-btn, .toggle-btn { display:none; }
+}
 
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}

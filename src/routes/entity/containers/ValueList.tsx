@@ -218,13 +218,20 @@ const ValueList: FC<{
     property.displayPriority === 0 ||
     property.displayPriority === 1 && (force || list.length > 1)
 
-  /* eslint-disable no-magic-numbers */
-  const display = true
+  const isEmptyValue = (val: Value): boolean => {
+    if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri"
+    else if (val instanceof LiteralWithId) return !val.value && !val.language
+    return false
+  }
 
   return (
     <React.Fragment>
       <div
-        className={"ValueList " + (property.maxCount && property.maxCount < list.length ? "maxCount" : "")}
+        className={
+          "ValueList " +
+          (property.maxCount && property.maxCount < list.length ? "maxCount" : "") +
+          (list.filter((v) => !isEmptyValue(v)).length ? "" : "empty")
+        }
         role="main"
         style={{
           display: "flex",
@@ -259,8 +266,7 @@ const ValueList: FC<{
                   <ResSelectComponent key={val.id} subject={subject} property={property} res={val} canDel={canDel} />
                 )
               }
-            }
-            if (val instanceof Subject) {
+            } else if (val instanceof Subject) {
               addBtn = true
               return (
                 <FacetComponent
@@ -664,7 +670,7 @@ const FacetComponent: FC<{
     <React.Fragment>
       {edit && <div className="card-edit-BG" onClick={() => setEdit(false)}></div>}
       <div className={"facet " + (edit ? "edit" : "")} onClick={() => setEdit(true)}>
-        <div className={"card py-2 pr-3 mt-2 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
+        <div className={"card pt-2 pb-3 pr-3 mt-2 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
           {hasExtra && (
             <span className="toggle-btn" onClick={toggleExtra}>
               {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
