@@ -40,12 +40,15 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
     setForce(!force)
   }
 
+  const [edit, setEdit] = useState(false)
+
   return (
     <React.Fragment>
-      <div role="main">
+      {edit && <div className="group-edit-BG" onClick={() => setEdit(false)}></div>}
+      <div role="main" className="group">
         <section className="album">
           <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
-            <div className="row card my-4 pb-3">
+            <div className={"row card my-4 pb-3" + (edit ? " group-edit" : "")} onClick={() => setEdit(true)}>
               <p className="col-4 text-uppercase small my-2">{label}</p>
               <div>
                 {hasExtra && (

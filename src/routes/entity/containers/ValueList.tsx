@@ -230,7 +230,9 @@ const ValueList: FC<{
         className={
           "ValueList " +
           (property.maxCount && property.maxCount < list.length ? "maxCount" : "") +
-          (list.filter((v) => !isEmptyValue(v)).length ? "" : "empty")
+          (list.filter((v) => !isEmptyValue(v)).length ? "" : "empty") +
+          (property.objectType === ObjectType.ResExt ? " ResExt" : "") +
+          (embedded ? "" : " main")
         }
         role="main"
         style={{
@@ -668,8 +670,22 @@ const FacetComponent: FC<{
 
   return (
     <React.Fragment>
-      {edit && <div className="card-edit-BG" onClick={() => setEdit(false)}></div>}
-      <div className={"facet " + (edit ? "edit" : "")} onClick={() => setEdit(true)}>
+      {edit && (
+        <div
+          className="card-edit-BG"
+          onClick={(e) => {
+            setEdit(false)
+            e.stopPropagation()
+          }}
+        ></div>
+      )}
+      <div
+        className={"facet " + (edit ? "edit" : "")}
+        onClick={(e) => {
+          setEdit(true)
+          e.stopPropagation()
+        }}
+      >
         <div className={"card pt-2 pb-3 pr-3 mt-2 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
           {hasExtra && (
             <span className="toggle-btn" onClick={toggleExtra}>

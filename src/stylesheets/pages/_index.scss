@@ -280,6 +280,7 @@ input[type="checkbox"].dmcheck {
 
 .popup-new .front,
 iframe { z-index:2; }
+.group-edit-BG,
 .card-edit-BG,
 .popup-new-BG,
 .iframe-BG { position:fixed; left:0; top:0; width:100vw; height:100vh;background:rgba(0,0,0,0); z-index:1; }
@@ -320,6 +321,32 @@ iframe { z-index:2; }
     & > .card {
       box-shadow: 0 10px 20px rgba(0,0,0, 0.19), 0 6px 6px rgba(0,0,0,0.23);
     }
+  }
+}
+
+.group {
+  .group-edit { z-index:1000; position:relative;
+      box-shadow: 0 10px 20px rgba(0,0,0, 0.19), 0 6px 6px rgba(0,0,0,0.23);
+  }
+  .ValueList.main.ResExt { overflow: hidden; transition:1500ms; max-height:1200px;transition-delay: 0s; 
+    .extEntity.new { max-height:100px; overflow: hidden; transition:1000ms; max-height:1200px;transition-delay: 0s; }
+    & > label { transition:500ms; transition-delay: 0s; }
+  }
+  :not(.facet) > .card:not(.group-edit) .ValueList.main.ResExt {  transition:500ms; transition-delay: 0s; 
+    & > label { margin:0; margin-bottom:5px; transition:500ms; transition-delay: 0s; }    
+    &.empty { max-height:30px; 
+      .propLabel ~ div { border:none; }
+    }
+    .extEntity.new { max-height:0; transition:500ms; transition-delay: 0s; }
+    &:not(.empty) { max-height:95px; margin-bottom:15px;
+      &::after { display:block; content:'...'; position:absolute;top:75px; left:25px; color:#bbb;}
+      & > div { line-height:0; 
+        & > :not(.new) { line-height:1.5;
+          & > div { margin-top:0 !important; margin-bottom:15px; }
+        }
+        & > .new { display:none;}
+      }
+    }    
   }
 }
 
