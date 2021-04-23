@@ -20,7 +20,7 @@ import { AddIcon, RemoveIcon, ErrorIcon, CloseIcon } from "../../layout/icons"
 import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
-import { uiLangState } from "../../../atoms/common"
+import { uiLangState, uiEditState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 
@@ -211,7 +211,7 @@ const ValueList: FC<{
 
   let addBtn = property.objectType === ObjectType.Facet
 
-  //debug("prop:",property.qname,property,force)
+  debug("prop:", property.qname, subject, property, force)
 
   const showLabel =
     !property.displayPriority ||
@@ -666,23 +666,16 @@ const FacetComponent: FC<{
     setForce(!force)
   }
 
-  const [edit, setEdit] = useState(false)
+  const [edit, setEdit] = useRecoilState(uiEditState)
+
+  //debug("facet:",property.qname, withDisplayPriority,withoutDisplayPriority)
 
   return (
     <React.Fragment>
-      {edit && (
-        <div
-          className="card-edit-BG"
-          onClick={(e) => {
-            setEdit(false)
-            e.stopPropagation()
-          }}
-        ></div>
-      )}
       <div
-        className={"facet " + (edit ? "edit" : "")}
+        className={"facet " + (edit === property.path.sparqlString + subNode.qname ? "edit" : "")}
         onClick={(e) => {
-          setEdit(true)
+          if (property?.path?.sparqlString) setEdit(property.path.sparqlString + subNode.qname)
           e.stopPropagation()
         }}
       >
@@ -693,10 +686,22 @@ const FacetComponent: FC<{
             </span>
           )}
           {withoutDisplayPriority.map((p, index) => (
-            <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} force={force} edit={edit} />
+            <PropertyContainer
+              key={p.uri}
+              property={p}
+              subject={subNode}
+              embedded={true}
+              force={force} /*edit={edit}*/
+            />
           ))}
           {withDisplayPriority.map((p, index) => (
-            <PropertyContainer key={p.uri} property={p} subject={subNode} embedded={true} force={force} edit={edit} />
+            <PropertyContainer
+              key={p.uri}
+              property={p}
+              subject={subNode}
+              embedded={true}
+              force={force} /*edit={edit}*/
+            />
           ))}
           {canDel && (
             <div className="close-btn">

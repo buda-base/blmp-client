@@ -324,34 +324,6 @@ iframe { z-index:2; }
   }
 }
 
-.group {
-  .group-edit { z-index:1000; position:relative;
-      box-shadow: 0 10px 20px rgba(0,0,0, 0.19), 0 6px 6px rgba(0,0,0,0.23);
-  }
-  .ValueList.main.ResExt { overflow: hidden; transition:max-height 1500ms, overflow 0ms ease-in-out 500ms; max-height:1200px; background:white;
-    .extEntity.new { max-height:100px; overflow: hidden; transition:1000ms; max-height:1200px; }
-    & > label { transition:margin 500ms; transition-delay: 0s; }
-  }
-  :not(.facet) > .card:not(.group-edit) .ValueList.main.ResExt {  transition:max-height 500ms, overflow 0ms ease-in-out 500ms; 
-    & > label { margin:0; margin-bottom:5px; transition:margin 500ms; }    
-    &.empty { max-height:30px; 
-      .propLabel ~ div { border:none; }
-    }
-    .extEntity.new { max-height:0; transition:500ms;  }
-    &:not(.empty) { max-height:95px; margin-bottom:15px;
-      &::after { display:block; content:'...'; position:absolute;top:75px; left:25px; color:#bbb;}
-      & > div { line-height:0; 
-        & > :not(.new) { line-height:1.5;
-          & > div { margin-top:0 !important; margin-bottom:15px; }
-        }
-        & > .new { display:none;}
-      }
-    }    
-  }
-  :not(.facet) > .card.group-edit .ValueList.main.ResExt { overflow:visible; 
-    .extEntity.new { overflow: visible; } 
-  }
-}
 
 section,
 .facet .container > div,
@@ -385,6 +357,8 @@ section,
 
 .card [role="main"] + [role="main"] .propLabel { margin-top:16px; }
 
+.propLabel+div, .facet, .card { background:white; }
+
 //.row.card > div + .toggle-btn + div > [role="main"] { margin-top:16px; }  
 
 
@@ -408,9 +382,11 @@ label ~ .selector {
 }
 
 
+
 .row > div > div > section > div > div.minimalAdd { display:none; }
 
 .MuiFormHelperText-root.Mui-error { min-height:20px; }
+
 
 .ValueList .ValueList { overflow: hidden; transition:1500ms; max-height:1000px;transition-delay: 0s; background:white;}
 .ValueList .facet:not(.edit) .empty.ValueList { max-height:0; transition:500ms; transition-delay: 0s;}
@@ -419,6 +395,40 @@ label ~ .selector {
 .facet:not(.edit):not(:hover) {
   .close-btn, .toggle-btn { display:none; }
 }
+
+.group {
+  .group-edit { z-index:1000; position:relative;
+      box-shadow: 0 10px 20px rgba(0,0,0, 0.19), 0 6px 6px rgba(0,0,0,0.23);
+  }
+  .ValueList.main.ResExt { overflow: hidden; transition:max-height 1500ms, overflow 0ms ease-in-out 500ms; max-height:1200px; background:white;
+    .extEntity.new { max-height:100px; overflow: hidden; transition:1000ms; max-height:1200px; }
+    & > label { transition:margin 500ms; transition-delay: 0s; }
+    &.empty { 
+      .propLabel ~ div { transition:1500ms; }
+    }
+  }
+  :not(.facet) > .card:not(.group-edit) .ValueList.main.ResExt {  transition:max-height 500ms, overflow 0ms ease-in-out 500ms; 
+    & > label { margin:0; margin-bottom:5px; transition:margin 500ms; }    
+    &.empty { max-height:30px; 
+      .propLabel ~ div { border-color:transparent; transition:500ms; }
+    }
+    .extEntity.new { max-height:0; transition:500ms;  }
+    &:not(.empty) { max-height:95px; margin-bottom:15px;
+      &::after { display:block; content:'...'; position:absolute;top:75px; left:25px; color:#bbb;}
+      & > div { line-height:0; 
+        & > :not(.new) { line-height:1.5;
+          & > div { margin-top:0 !important; margin-bottom:15px; }
+        }
+        & > .new { display:none;}
+      }
+    }    
+  }
+  :not(.facet) > .card.group-edit .ValueList.main.ResExt { overflow:visible; 
+    .extEntity.new { overflow: visible; } 
+  }
+}
+
+.group > .album > .container > .row { z-index:2; position:relative; }
 
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}

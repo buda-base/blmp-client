@@ -2,7 +2,7 @@ import React, { useState, FC, ReactElement } from "react"
 import PropertyContainer from "./PropertyContainer"
 import { RDFResource, Subject } from "../../../helpers/rdf/types"
 import { PropertyGroup, PropertyShape } from "../../../helpers/rdf/shapes"
-import { uiLangState } from "../../../atoms/common"
+import { uiLangState, uiEditState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { OtherButton } from "./ValueList"
@@ -40,15 +40,17 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
     setForce(!force)
   }
 
-  const [edit, setEdit] = useState(false)
+  const [edit, setEdit] = useRecoilState(uiEditState)
 
   return (
     <React.Fragment>
-      {edit && <div className="group-edit-BG" onClick={() => setEdit(false)}></div>}
       <div role="main" className="group">
         <section className="album">
           <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
-            <div className={"row card my-4 pb-3" + (edit ? " group-edit" : "")} onClick={() => setEdit(true)}>
+            <div
+              className={"row card my-4 pb-3" + (edit === group.qname ? " group-edit" : "")}
+              onClick={() => setEdit(group.qname)}
+            >
               <p className="col-4 text-uppercase small my-2">{label}</p>
               <div>
                 {hasExtra && (

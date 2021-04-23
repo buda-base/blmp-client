@@ -9,7 +9,7 @@ import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
 import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/EntitySelectorContainer"
 import PropertyGroupContainer from "./PropertyGroupContainer"
-import { uiLangState } from "../../../atoms/common"
+import { uiLangState, uiEditState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
@@ -75,6 +75,7 @@ function EntityEditContainer(props: AppProps) {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const [uiLang] = useRecoilState(uiLangState)
+  const [edit, setEdit] = useRecoilState(uiEditState)
 
   // useEffect(() => {
   //   debug("params", props.match.params.entityQname)
@@ -150,6 +151,15 @@ function EntityEditContainer(props: AppProps) {
         <TimeTravelObserver />
       </section>
       <div>
+        {edit && (
+          <div
+            className="group-edit-BG"
+            onClick={(e) => {
+              setEdit("")
+              e.stopPropagation()
+            }}
+          ></div>
+        )}
         {shape.groups.map((group, index) => (
           <PropertyGroupContainer key={group.uri} group={group} subject={entity} />
         ))}

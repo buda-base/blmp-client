@@ -19,3 +19,8 @@ export const uiRIDState = atom<string[]>({
   key: "uiRIDState",
   default: [],
 })
+
+export const uiEditState = atom<string>({
+  key: "uiEditState",
+  default: "",
+})
