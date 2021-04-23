@@ -223,6 +223,11 @@ const ValueList: FC<{
     else if (val instanceof LiteralWithId) return !val.value && !val.language
     return false
   }
+  const isErrorValue = (val: Value): boolean => {
+    // TODO: to be continued
+    if (val instanceof LiteralWithId && property?.datatype?.value === ns.RDF("langString").value) return !val.value
+    return false
+  }
 
   return (
     <React.Fragment>
@@ -230,7 +235,7 @@ const ValueList: FC<{
         className={
           "ValueList " +
           (property.maxCount && property.maxCount < list.length ? "maxCount" : "") +
-          (list.filter((v) => !isEmptyValue(v)).length ? "" : "empty") +
+          (list.filter((v) => !isEmptyValue(v) || isErrorValue(v)).length ? "" : "empty") +
           (property.objectType === ObjectType.ResExt ? " ResExt" : "") +
           (embedded ? "" : " main")
         }
@@ -664,7 +669,7 @@ const FacetComponent: FC<{
 
   const [edit, setEdit] = useRecoilState(uiEditState)
 
-  debug("facet:", edit, property.qname, withDisplayPriority, withoutDisplayPriority)
+  //debug("facet:", edit, property.qname, withDisplayPriority, withoutDisplayPriority)
 
   return (
     <React.Fragment>
