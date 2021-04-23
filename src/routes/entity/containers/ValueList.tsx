@@ -211,7 +211,7 @@ const ValueList: FC<{
 
   let addBtn = property.objectType === ObjectType.Facet
 
-  debug("prop:", property.qname, subject, property, force)
+  //debug("prop:", property.qname, subject, property, force)
 
   const showLabel =
     !property.displayPriority ||
@@ -322,21 +322,17 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [edit, setEdit] = useRecoilState(uiEditState)
 
   const addItem = () => {
-    /* // no need for updateEntitiesRDF
-    // DONE: also update rdf
-    let rdf = "<" + subject.uri + "> <" + property?.path?.sparqlString + "> "
-    if (item instanceof LiteralWithId) rdf += '"' + item.value + '"' + (item.language ? "@" + item.language : "")
-    else if (item instanceof Subject) rdf += "<" + ns.uriFromQname(item.qname) + ">"
-    rdf += "."
-    debug("addI", rdf)
-    // DONE: make a reusable function
-    updateEntitiesRDF(subject, subject.extendWithTTL, rdf, entities, setEntities)
-    */
-
     const item = generateDefault(property, subject)
     setList((oldList) => [...oldList, item])
+    if (property.objectType === ObjectType.Facet && item instanceof Subject) {
+      //setEdit(property.qname+item.qname)  // won't work...
+      setImmediate(() => {
+        setEdit(property.qname + item.qname)
+      }) // this must be "delayed" to work
+    }
   }
 
   if (embedded || property.path.sparqlString === ns.SKOS("prefLabel").value)
@@ -668,14 +664,14 @@ const FacetComponent: FC<{
 
   const [edit, setEdit] = useRecoilState(uiEditState)
 
-  //debug("facet:",property.qname, withDisplayPriority,withoutDisplayPriority)
+  debug("facet:", edit, property.qname, withDisplayPriority, withoutDisplayPriority)
 
   return (
     <React.Fragment>
       <div
-        className={"facet " + (edit === property.path.sparqlString + subNode.qname ? "edit" : "")}
+        className={"facet " + (edit === property?.qname + subNode.qname ? "edit" : "")}
         onClick={(e) => {
-          if (property?.path?.sparqlString) setEdit(property.path.sparqlString + subNode.qname)
+          setEdit(property.qname + subNode.qname)
           e.stopPropagation()
         }}
       >

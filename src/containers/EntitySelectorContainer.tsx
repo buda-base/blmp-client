@@ -10,7 +10,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
-import { uiLangState, uiTabState } from "../atoms/common"
+import { uiLangState, uiTabState, uiEditState } from "../atoms/common"
 import { makeStyles } from "@material-ui/core/styles"
 import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
@@ -69,9 +69,10 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
   const handleChange = (event: ChangeEvent<unknown>, newTab: number): void => {
     setTab(newTab)
   }
+  const [edit, setEdit] = useRecoilState(uiEditState)
 
   return (
-    <div className="tabs-select">
+    <div className="tabs-select" onClick={() => setEdit("")}>
       <Tabs value={tab} onChange={handleChange} aria-label="simple tabs example">
         {entities.map((entity: Entity, index) => {
           return <EntityInEntitySelectorContainer entity={entity} index={index} key={index} />

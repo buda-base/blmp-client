@@ -122,7 +122,7 @@ export function TimeTravelObserver() {
         }
       }
       // DONE do not not take a snapshot if current change is UI language
-      if (["uiLangState", "uiTabState"].includes(a.key) && info.isModified) return
+      if (["uiLangState", "uiTabState", "uiEditState"].includes(a.key) && info.isModified) return
     }
 
     // DONE use only one snapshot for all successive modifications of same property value

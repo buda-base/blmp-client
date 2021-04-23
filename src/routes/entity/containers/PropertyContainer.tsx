@@ -18,8 +18,6 @@ const PropertyContainer: FC<{
 }> = ({ property, subject, embedded, force, edit }) => {
   const objectType = property.objectType
 
-  debug("subj:", subject)
-
   return (
     <React.Fragment>
       <div role="main">
