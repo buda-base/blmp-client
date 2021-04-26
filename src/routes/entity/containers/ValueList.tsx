@@ -483,6 +483,38 @@ const EditString: FC<{
   )
 }
 
+const EditBool: FC<{
+  property: PropertyShape
+  lit: LiteralWithId
+  onChange: (value: LiteralWithId) => void
+  label: string
+  editable?: boolean
+}> = ({ property, lit, onChange, label, editable }) => {
+  const classes = useStyles()
+
+  const dt = property.datatype
+
+  const changeCallback = (val: string) => {
+    onChange(lit.copyWithUpdatedValue(val))
+  }
+  return (
+    <TextField
+      select
+      label={i18n.t("types.boolean")}
+      value={!lit.value ? false : true}
+      InputLabelProps={{ shrink: true }}
+      onChange={(e) => changeCallback(e.target.value)}
+      {...(!editable ? { disabled: true } : {})}
+    >
+      {["true", "false"].map((v) => (
+        <MenuItem key={v} value={v}>
+          {i18n.t("types." + v)}
+        </MenuItem>
+      ))}
+    </TextField>
+  )
+}
+
 const EditInt: FC<{
   property: PropertyShape
   lit: LiteralWithId
@@ -562,6 +594,7 @@ const rdflangString = ns.RDF("langString").value
 const xsdinteger = ns.XSD("integer").value
 const xsddecimal = ns.XSD("decimal").value
 const xsdint = ns.XSD("int").value
+const xsdboolean = ns.XSD("boolean").value
 
 const intishTypeList = [xsdinteger, xsddecimal, xsdint]
 
@@ -627,6 +660,16 @@ const LiteralComponent: FC<{
     classN = "gYear"
     edit = (
       <EditInt
+        property={property}
+        lit={lit}
+        onChange={onChange}
+        label={label}
+        editable={editable && !property.readOnly}
+      />
+    )
+  } else if (t?.value === xsdboolean) {
+    edit = (
+      <EditBool
         property={property}
         lit={lit}
         onChange={onChange}

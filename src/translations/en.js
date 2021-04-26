@@ -13,6 +13,9 @@ const enTranslations = {
     version: "Version",
     version_plural: "Versions",
     loading: "Loading...",
+    boolean: "Boolean",
+    true: "True",
+    false: "False",
   },
   search: {
     help: {
