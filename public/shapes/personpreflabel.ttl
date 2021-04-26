@@ -173,7 +173,8 @@ bds:CommonShape-prefLabel
   sh:datatype rdf:langString ;
   # there are predefined values for the type of editor / form:
   dash:editor dash:TextAreaWithLangEditor ;
-  dash:singleLine true ;
+  dash:singleLine true ;  
+  bds:readOnly true ;
 .
 
 bds:PersonShape-personEvent
@@ -185,6 +186,7 @@ bds:PersonShape-personEvent
   sh:order "0"^^xsd:decimal ;
   sh:path bdo:personEvent ;
   bds:propertyShapeType bds:FacetShape ;
+  bds:readOnly true ;
 .
 
 bds:PersonEventShape
@@ -245,7 +247,7 @@ bds:PersonShape-studentOf
   # this means that the object of the property is external to the graph we're editing, we just want to select a person,
   # not edit their properties
   bds:propertyShapeType bds:ExternalShape ;
-  bds:classIn ( bdo:Person bdo:Topic )
+  bds:classIn ( bdo:Person bdo:Topic ) ;
 .
 
 bds:PersonShape-teacherOf
@@ -261,6 +263,7 @@ bds:PersonShape-teacherOf
   # a "see more" (/ "see less") button that will display the form for these properties. If a property with displayPriority 1 has some value
   # it should always be displayed
   bds:displayPriority 1 ;
+  bds:readOnly true ;
 .
 
 bds:RootShape-note

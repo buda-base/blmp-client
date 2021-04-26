@@ -158,7 +158,7 @@ const ValueList: FC<{
     ? list.length < property.maxCount
     : true
 
-  const canDel = !property.minCount || property.minCount < list.length
+  const canDel = (!property.minCount || property.minCount < list.length) && !property.readOnly
 
   // DONE save multiple external resource for property
   const onChange: (value: RDFResourceWithLabel, idx: number, removeFirst: boolean | undefined) => void = (
@@ -261,7 +261,7 @@ const ValueList: FC<{
                     subject={subject}
                     property={property}
                     extRes={val as ExtRDFResourceWithLabel}
-                    canDel={canDel && i > 0 || val.uri !== "tmp:uri"}
+                    canDel={canDel && (i > 0 || val.uri !== "tmp:uri")}
                     onChange={onChange}
                     idx={i}
                     exists={exists}
@@ -704,13 +704,11 @@ const FacetComponent: FC<{
               force={force} /*edit={edit}*/
             />
           ))}
-          {canDel && (
-            <div className="close-btn">
-              <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
-                <CloseIcon />
-              </button>
-            </div>
-          )}
+          <div className="close-btn">
+            <button className="btn btn-link ml-2 px-0" onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>
+              <CloseIcon />
+            </button>
+          </div>
         </div>
       </div>
     </React.Fragment>
@@ -781,8 +779,8 @@ const ExtEntityComponent: FC<{
           exists={exists}
           subject={subject}
         />
-        {canDel && (
-          <button className="btn btn-link ml-2 px-0" onClick={deleteItem}>
+        {extRes.uri !== "tmp:uri" && (
+          <button className={"btn btn-link ml-2 px-0"} onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>
             {extRes.uri === "tmp:uri" ? <RemoveIcon /> : <CloseIcon />}
           </button>
         )}

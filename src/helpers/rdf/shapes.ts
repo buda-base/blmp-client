@@ -59,6 +59,7 @@ export const bdsClassIn = ns.BDS("classIn") as rdf.NamedNode
 export const shIn = ns.SH("in") as rdf.NamedNode
 export const shInversePath = ns.SH("inversePath") as rdf.NamedNode
 export const shUniqueLang = ns.SH("uniqueLang") as rdf.NamedNode
+export const bdsReadOnly = ns.BDS("readOnly") as rdf.NamedNode
 
 export const sortByPropValue = (
   nodelist: Array<rdf.NamedNode>,
@@ -175,6 +176,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get uniqueLang(): boolean | null {
     return this.getPropBooleanValue(shUniqueLang)
+  }
+
+  @Memoize()
+  public get readOnly(): boolean {
+    return this.getPropBooleanValue(bdsReadOnly)
   }
 
   @Memoize()
