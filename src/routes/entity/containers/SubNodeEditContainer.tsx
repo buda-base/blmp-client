@@ -22,7 +22,7 @@ const SubNodeEditContainer: FC<{ shape: NodeShape; subject: Subject }> = ({ shap
       <span>for debug: {subject.lname}</span>
       <div>
         {shape.properties.map((p, index) => (
-          <PropertyContainer key={p.uri} property={p} subject={subject} />
+          <PropertyContainer key={p.uri} property={p} subject={subject} editable={p.readOnly !== true} />
         ))}
       </div>
     </React.Fragment>

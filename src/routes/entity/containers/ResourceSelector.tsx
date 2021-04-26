@@ -54,7 +54,8 @@ const ResourceSelector: FC<{
   idx: number
   exists: (uri: string) => boolean
   subject: Subject
-}> = ({ value, onChange, property, idx, exists, subject }) => {
+  editable: boolean
+}> = ({ value, onChange, property, idx, exists, subject, editable }) => {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
@@ -291,6 +292,7 @@ const ResourceSelector: FC<{
                       error: true,
                     }
                   : {})}
+                {...(!editable ? { disabled: true } : {})}
               />
               <LangSelect
                 value={language}
@@ -301,6 +303,7 @@ const ResourceSelector: FC<{
                   if (libraryURL) updateLibrary(undefined, lang)
                 }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : { disabled: false })}
+                editable={editable}
               />
               {property.expectedObjectTypes?.length > 1 && (
                 <TextField
@@ -311,6 +314,7 @@ const ResourceSelector: FC<{
                   onChange={textOnChangeType}
                   label="Type"
                   {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
+                  {...(!editable ? { disabled: true } : {})}
                   // TODO we need some prefLabels for types here (ontology? i18n?)
                 >
                   {property.expectedObjectTypes?.map((r) => (
@@ -325,6 +329,7 @@ const ResourceSelector: FC<{
                 className="btn btn-sm btn-outline-primary py-3 ml-2"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 onClick={onClick}
+                {...(!editable ? { disabled: true } : {})}
               >
                 {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
               </button>
@@ -333,6 +338,7 @@ const ResourceSelector: FC<{
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                 onClick={togglePopup}
+                {...(!editable ? { disabled: true } : {})}
               >
                 {i18n.t("search.create")}
               </button>

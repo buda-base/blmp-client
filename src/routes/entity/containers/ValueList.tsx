@@ -136,8 +136,8 @@ const ValueList: FC<{
   property: PropertyShape
   embedded?: boolean
   force?: boolean
-  edit?: boolean
-}> = ({ subject, property, embedded, force, edit }) => {
+  editable: boolean
+}> = ({ subject, property, embedded, force, editable }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   //debug(subject)
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
@@ -152,13 +152,14 @@ const ValueList: FC<{
   }
 
   // TODO: handle the creation of a new value in a more sophisticated way (with the iframe and such)
-  const canAdd = alreadyHasEmptyValue()
-    ? false
-    : property.objectType != ObjectType.ResExt && property.maxCount
-    ? list.length < property.maxCount
-    : true
+  const canAdd =
+    alreadyHasEmptyValue() || property.readOnly && property.readOnly === true
+      ? false
+      : property.objectType != ObjectType.ResExt && property.maxCount
+      ? list.length < property.maxCount
+      : true
 
-  const canDel = (!property.minCount || property.minCount < list.length) && !property.readOnly
+  const canDel = (!property.minCount || property.minCount < list.length) && !property.readOnly && editable
 
   // DONE save multiple external resource for property
   const onChange: (value: RDFResourceWithLabel, idx: number, removeFirst: boolean | undefined) => void = (
@@ -265,12 +266,20 @@ const ValueList: FC<{
                     onChange={onChange}
                     idx={i}
                     exists={exists}
+                    editable={editable}
                   />
                 )
               else {
                 addBtn = true
                 return (
-                  <ResSelectComponent key={val.id} subject={subject} property={property} res={val} canDel={canDel} />
+                  <ResSelectComponent
+                    key={val.id}
+                    subject={subject}
+                    property={property}
+                    res={val}
+                    canDel={canDel}
+                    editable={editable}
+                  />
                 )
               }
             } else if (val instanceof Subject) {
@@ -281,8 +290,9 @@ const ValueList: FC<{
                   subject={subject}
                   property={property}
                   subNode={val}
-                  canDel={canDel}
+                  canDel={canDel && editable}
                   {...(force ? { force } : {})}
+                  editable={editable}
                 />
               )
             } else if (val instanceof LiteralWithId) {
@@ -303,6 +313,7 @@ const ValueList: FC<{
                   create={
                     <Create disable={!canAdd || !addBtn} subject={subject} property={property} embedded={embedded} />
                   }
+                  editable={editable}
                 />
               )
             }
@@ -370,7 +381,8 @@ const EditLangString: FC<{
   onChange: (value: LiteralWithId) => void
   label: string
   globalError?: string
-}> = ({ property, lit, onChange, label, globalError }) => {
+  editable?: boolean
+}> = ({ property, lit, onChange, label, globalError, editable }) => {
   const classes = useStyles()
 
   let error = ""
@@ -399,11 +411,13 @@ const EditLangString: FC<{
         InputLabelProps={{ shrink: true }}
         onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
         {...(error ? errorData : {})}
+        {...(!editable ? { disabled: true } : {})}
       />
       <LangSelect
         value={lit.language || ""}
         onChange={(value) => onChange(lit.copyWithUpdatedLanguage(value))}
         {...(error ? { error: true } : {})}
+        editable={editable}
       />
     </div>
   )
@@ -414,7 +428,8 @@ export const LangSelect: FC<{
   value: string
   disabled?: boolean
   error?: boolean
-}> = ({ onChange, value, disabled, error }) => {
+  editable?: boolean
+}> = ({ onChange, value, disabled, error, editable }) => {
   const onChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
     onChange(event.target.value as string)
   }
@@ -430,6 +445,7 @@ export const LangSelect: FC<{
       onChange={onChangeHandler}
       {...(disabled ? { disabled: true } : {})}
       {...(error ? { error: true, helperText: <br /> } : {})}
+      {...(!editable ? { disabled: true } : {})}
     >
       {langs.map((option) => (
         <MenuItem key={option.value} value={option.value}>
@@ -445,7 +461,8 @@ const EditString: FC<{
   lit: LiteralWithId
   onChange: (value: LiteralWithId) => void
   label: string
-}> = ({ property, lit, onChange, label }) => {
+  editable?: boolean
+}> = ({ property, lit, onChange, label, editable }) => {
   const classes = useStyles()
 
   const dt = property.datatype
@@ -461,6 +478,7 @@ const EditString: FC<{
       value={lit.value}
       InputLabelProps={{ shrink: true }}
       onChange={(e) => changeCallback(e.target.value)}
+      {...(!editable ? { disabled: true } : {})}
     />
   )
 }
@@ -470,7 +488,8 @@ const EditInt: FC<{
   lit: LiteralWithId
   onChange: (value: LiteralWithId) => void
   label: string
-}> = ({ property, lit, onChange, label }) => {
+  editable?: boolean
+}> = ({ property, lit, onChange, label, editable }) => {
   // used for integers and gYear
 
   const classes = useStyles()
@@ -533,6 +552,7 @@ const EditInt: FC<{
       InputProps={{ inputProps: { min: minInclusive, max: maxInclusive } }}
       InputLabelProps={{ shrink: true }}
       onChange={(e) => changeCallback(e.target.value)}
+      {...(!editable ? { disabled: true } : {})}
     />
   )
 }
@@ -556,7 +576,8 @@ const LiteralComponent: FC<{
   canDel: boolean
   isUnique: boolean
   create?: unknown
-}> = ({ lit, subject, property, label, canDel, isUnique, create }) => {
+  editable: boolean
+}> = ({ lit, subject, property, label, canDel, isUnique, create, editable }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
@@ -598,14 +619,31 @@ const LiteralComponent: FC<{
         onChange={onChange}
         label={"Text"}
         {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
+        editable={editable && !property.readOnly}
       />
     )
     // eslint-disable-next-line no-extra-parens
   } else if (t?.value === xsdgYear || (t && t?.value in intishTypeList)) {
     classN = "gYear"
-    edit = <EditInt property={property} lit={lit} onChange={onChange} label={label} />
+    edit = (
+      <EditInt
+        property={property}
+        lit={lit}
+        onChange={onChange}
+        label={label}
+        editable={editable && !property.readOnly}
+      />
+    )
   } else {
-    edit = <EditString property={property} lit={lit} onChange={onChange} label={label} />
+    edit = (
+      <EditString
+        property={property}
+        lit={lit}
+        onChange={onChange}
+        label={label}
+        editable={editable && !property.readOnly}
+      />
+    )
   }
 
   return (
@@ -628,7 +666,8 @@ const FacetComponent: FC<{
   property: PropertyShape
   canDel: boolean
   //force?: boolean
-}> = ({ subNode, subject, property, canDel /*, force*/ }) => {
+  editable: boolean
+}> = ({ subNode, subject, property, canDel, /*force,*/ editable }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -674,7 +713,7 @@ const FacetComponent: FC<{
   return (
     <React.Fragment>
       <div
-        className={"facet " + (edit === property?.qname + subNode.qname ? "edit" : "")}
+        className={"facet " + (edit === property?.qname + subNode.qname ? "edit" : "") + " editable-" + editable}
         onClick={(e) => {
           setEdit(property.qname + subNode.qname)
           e.stopPropagation()
@@ -692,7 +731,8 @@ const FacetComponent: FC<{
               property={p}
               subject={subNode}
               embedded={true}
-              force={force} /*edit={edit}*/
+              force={force}
+              editable={editable && !property.readOnly}
             />
           ))}
           {withDisplayPriority.map((p, index) => (
@@ -701,7 +741,8 @@ const FacetComponent: FC<{
               property={p}
               subject={subNode}
               embedded={true}
-              force={force} /*edit={edit}*/
+              force={force}
+              editable={editable && !property.readOnly}
             />
           ))}
           <div className="close-btn">
@@ -725,7 +766,8 @@ const ExtEntityComponent: FC<{
   onChange: (value: ExtRDFResourceWithLabel, idx: number, removeFirst: boolean | undefined) => void
   idx: number
   exists: (uri: string) => boolean
-}> = ({ extRes, subject, property, canDel, onChange, idx, exists }) => {
+  editable: boolean
+}> = ({ extRes, subject, property, canDel, onChange, idx, exists, editable }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === extRes)
@@ -778,6 +820,7 @@ const ExtEntityComponent: FC<{
           idx={idx}
           exists={exists}
           subject={subject}
+          editable={editable}
         />
         {extRes.uri !== "tmp:uri" && (
           <button className={"btn btn-link ml-2 px-0"} onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>
@@ -796,7 +839,8 @@ const ResSelectComponent: FC<{
   subject: Subject
   property: PropertyShape
   canDel: boolean
-}> = ({ res, subject, property, canDel }) => {
+  editable: boolean
+}> = ({ res, subject, property, canDel, editable }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -841,6 +885,7 @@ const ResSelectComponent: FC<{
         //style={{ width: 150 }}
         onChange={onChange}
         label="Select"
+        {...(!editable ? { disabled: true } : {})}
       >
         {possibleValues.map((r) => (
           <MenuItem key={r.uri} value={r.uri}>

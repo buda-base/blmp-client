@@ -14,16 +14,19 @@ const PropertyContainer: FC<{
   subject: Subject
   embedded?: boolean
   force?: boolean
-  edit?: boolean
-}> = ({ property, subject, embedded, force, edit }) => {
+  editable: boolean
+}> = ({ property, subject, embedded, force, editable }) => {
   const objectType = property.objectType
 
   return (
     <React.Fragment>
       <div role="main">
         <section className="album">
-          <div className={"container" + (embedded ? " px-0" : "")} style={{ border: "dashed 1px none" }}>
-            <ValueList subject={subject} property={property} embedded={embedded} force={force} /*edit={edit}*/ />
+          <div
+            className={"container" + (embedded ? " px-0" : "") + " editable-" + editable}
+            style={{ border: "dashed 1px none" }}
+          >
+            <ValueList subject={subject} property={property} embedded={embedded} force={force} editable={editable} />
           </div>
         </section>
       </div>

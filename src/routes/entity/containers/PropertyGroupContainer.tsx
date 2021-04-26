@@ -59,10 +59,21 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
                   </span>
                 )}
                 {withoutDisplayPriority.map((property, index) => (
-                  <PropertyContainer key={index} property={property} subject={subject} />
+                  <PropertyContainer
+                    key={index}
+                    property={property}
+                    subject={subject}
+                    editable={property.readOnly !== true}
+                  />
                 ))}
                 {withDisplayPriority.map((property, index) => (
-                  <PropertyContainer key={index} property={property} subject={subject} force={force} />
+                  <PropertyContainer
+                    key={index}
+                    property={property}
+                    subject={subject}
+                    force={force}
+                    editable={property.readOnly !== true}
+                  />
                 ))}
               </div>
             </div>
