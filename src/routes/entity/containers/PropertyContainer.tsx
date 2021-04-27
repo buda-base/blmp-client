@@ -15,7 +15,8 @@ const PropertyContainer: FC<{
   embedded?: boolean
   force?: boolean
   editable: boolean
-}> = ({ property, subject, embedded, force, editable }) => {
+  owner?: Subject
+}> = ({ property, subject, embedded, force, editable, owner }) => {
   const objectType = property.objectType
 
   return (
@@ -26,7 +27,14 @@ const PropertyContainer: FC<{
             className={"container" + (embedded ? " px-0" : "") + " editable-" + editable}
             style={{ border: "dashed 1px none" }}
           >
-            <ValueList subject={subject} property={property} embedded={embedded} force={force} editable={editable} />
+            <ValueList
+              subject={subject}
+              property={property}
+              embedded={embedded}
+              force={force}
+              editable={editable}
+              {...(owner ? { owner } : {})}
+            />
           </div>
         </section>
       </div>

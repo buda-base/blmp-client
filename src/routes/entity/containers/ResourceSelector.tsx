@@ -55,7 +55,8 @@ const ResourceSelector: FC<{
   exists: (uri: string) => boolean
   subject: Subject
   editable: boolean
-}> = ({ value, onChange, property, idx, exists, subject, editable }) => {
+  owner?: Subject
+}> = ({ value, onChange, property, idx, exists, subject, editable, owner }) => {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
@@ -447,13 +448,22 @@ const ResourceSelector: FC<{
         <div className="card popup-new">
           <div className="front">
             {entities.map((e, i) => {
-              // TODO: check type as well with property.expectedObjectTypes
-              if (e?.subjectQname != subject.qname && !exists(e?.subjectQname))
+              // DONE: check type as well with property.expectedObjectTypes
+              if (
+                !exists(e?.subjectQname) &&
+                e?.subjectQname != subject.qname &&
+                e?.subjectQname != owner?.qname &&
+                property.expectedObjectTypes?.some((t) =>
+                  e.shapeRef?.qname.startsWith(t.qname.replace(/^bdo:/, "bds:"))
+                )
+              ) {
+                //debug("diff ok:",property.expectedObjectTypes,e,e.subjectQname,subject.qname,owner?.qname)
                 return (
                   <MenuItem key={i + 1} className="px-0 py-0">
                     <LabelWithRID choose={chooseEntity} entity={e} />
                   </MenuItem>
                 )
+              }
             })}
             <hr className="my-1" />
             {property.expectedObjectTypes?.map((r) => (

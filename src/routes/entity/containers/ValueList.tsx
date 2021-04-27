@@ -137,7 +137,8 @@ const ValueList: FC<{
   embedded?: boolean
   force?: boolean
   editable: boolean
-}> = ({ subject, property, embedded, force, editable }) => {
+  owner?: Subject
+}> = ({ subject, property, embedded, force, editable, owner }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   //debug(subject)
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
@@ -283,6 +284,7 @@ const ValueList: FC<{
                     idx={i}
                     exists={exists}
                     editable={editable}
+                    {...(owner ? { owner } : {})}
                   />
                 )
               else {
@@ -792,6 +794,7 @@ const FacetComponent: FC<{
               embedded={true}
               force={force}
               editable={editable && !property.readOnly}
+              owner={subject}
             />
           ))}
           {withDisplayPriority.map((p, index) => (
@@ -802,6 +805,7 @@ const FacetComponent: FC<{
               embedded={true}
               force={force}
               editable={editable && !property.readOnly}
+              owner={subject}
             />
           ))}
           <div className="close-btn">
@@ -826,7 +830,8 @@ const ExtEntityComponent: FC<{
   idx: number
   exists: (uri: string) => boolean
   editable: boolean
-}> = ({ extRes, subject, property, canDel, onChange, idx, exists, editable }) => {
+  owner?: Subject
+}> = ({ extRes, subject, property, canDel, onChange, idx, exists, editable, owner }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === extRes)
@@ -880,6 +885,7 @@ const ExtEntityComponent: FC<{
           exists={exists}
           subject={subject}
           editable={editable}
+          {...(owner ? { owner } : {})}
         />
         {extRes.uri !== "tmp:uri" && (
           <button className={"btn btn-link ml-2 px-0"} onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>

@@ -427,7 +427,8 @@ label ~ .selector {
     }    
   }
   :not(.facet) > .card.group-edit .ValueList.main.ResExt { overflow:visible; 
-    .extEntity.new { overflow: visible; } 
+    & > label + div,
+    .extEntity.new { overflow: visible !important; } 
   }
 }
 
