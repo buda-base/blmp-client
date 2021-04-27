@@ -191,6 +191,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   }
 
   @Memoize()
+  public get group(): rdf.NamedNode | null {
+    return this.getPropResValue(shGroup as rdf.NamedNode)
+  }
+
+  @Memoize()
   public get datatype(): rdf.NamedNode | null {
     return this.getPropResValue(shDatatype)
   }

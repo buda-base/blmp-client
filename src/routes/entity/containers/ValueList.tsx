@@ -1,4 +1,4 @@
-import React, { useEffect, FC, ChangeEvent, useState } from "react"
+import React, { useEffect, FC, ChangeEvent, useState, useRef } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
 import {
@@ -230,6 +230,15 @@ const ValueList: FC<{
     return false
   }
 
+  // scroll back to top when loosing focus
+  const scrollElem = useRef<null | HTMLDivElement>(null)
+  const [edit, setEdit] = useRecoilState(uiEditState)
+  useEffect(() => {
+    if (property?.group?.value !== edit && scrollElem?.current) {
+      scrollElem.current.scrollTo({ top: 0, left: 0, behavior: "smooth" })
+    }
+  }, [edit])
+
   return (
     <React.Fragment>
       <div
@@ -252,7 +261,14 @@ const ValueList: FC<{
         }}
       >
         {showLabel && <label className="propLabel">{propLabel[0].toUpperCase() + propLabel.substring(1)}</label>}
-        <div style={{ width: "100%", maxHeight: "378px", overflow: "auto" }}>
+        <div
+          ref={scrollElem}
+          style={{
+            width: "100%",
+            ...!embedded && property.objectType !== ObjectType.Facet ? { maxHeight: "378px", overflow: "auto" } : {},
+            ...property?.group?.value !== edit ? { paddingRight: "0.5rem" } : {},
+          }}
+        >
           {list.map((val, i) => {
             if (val instanceof RDFResourceWithLabel) {
               if (property.objectType == ObjectType.ResExt)
@@ -925,7 +941,7 @@ const ResSelectComponent: FC<{
         select
         className={/*classes.root +*/ "selector mr-2"}
         value={res.uri}
-        //style={{ width: 150 }}
+        style={{ padding: "1px" }}
         onChange={onChange}
         label="Select"
         {...(!editable ? { disabled: true } : {})}
