@@ -252,7 +252,7 @@ const ValueList: FC<{
         }}
       >
         {showLabel && <label className="propLabel">{propLabel[0].toUpperCase() + propLabel.substring(1)}</label>}
-        <div style={{ width: "100%" }}>
+        <div style={{ width: "100%", maxHeight: "378px", overflow: "auto" }}>
           {list.map((val, i) => {
             if (val instanceof RDFResourceWithLabel) {
               if (property.objectType == ObjectType.ResExt)
