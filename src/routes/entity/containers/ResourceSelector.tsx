@@ -214,7 +214,7 @@ const ResourceSelector: FC<{
   const createAndLinkUrl =
     "/new/" +
     type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
-    "ShapeTest" /* TODO: use "Shape" when everything's running fine */ +
+    "Shape" + // DONE: use "Shape" when everything's running fine
     "?subject=" +
     subject.qname +
     "&propid=" +
@@ -226,7 +226,7 @@ const ResourceSelector: FC<{
     history.push(
       "/new/" +
         type.qname.replace(/^bdo/, "bds") +
-        "ShapeTest/" +
+        "Shape/" +
         subject.qname +
         "/" +
         qnameFromUri(property?.path?.sparqlString) +
@@ -262,6 +262,17 @@ const ResourceSelector: FC<{
 
   const onClick: React.MouseEventHandler<HTMLButtonElement> = (e: React.MouseEvent<HTMLButtonElement>) => {
     updateLibrary(e)
+  }
+
+  let name = (
+    <div style={{ fontSize: "16px" /*, borderBottom:"1px solid #ccc"*/ }}>
+      {lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang) + " " + dates}
+    </div>
+  )
+
+  const entity = entities.filter((e) => e.subjectQname === value.qname)
+  if (entity.length) {
+    name = <LabelWithRID entity={entity[0]} />
   }
 
   return (
@@ -358,9 +369,7 @@ const ResourceSelector: FC<{
               disabled
             /> */}
             <div className="selected">
-              <div style={{ fontSize: "16px" /*, borderBottom:"1px solid #ccc"*/ }}>
-                {lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang) + " " + dates}
-              </div>
+              {name}
               <div style={{ fontSize: "12px", opacity: "0.5", display: "flex", alignItems: "center" }}>
                 {value.qname}
                 &nbsp;
@@ -479,7 +488,7 @@ const ResourceSelector: FC<{
   )
 }
 
-const LabelWithRID: FC<{ entity: Entity; choose: (e: Entity, labels: Record<string, string>) => () => void }> = ({
+const LabelWithRID: FC<{ entity: Entity; choose?: (e: Entity, labels: Record<string, string>) => () => void }> = ({
   entity,
   choose,
 }) => {
@@ -488,12 +497,14 @@ const LabelWithRID: FC<{ entity: Entity; choose: (e: Entity, labels: Record<stri
   const prefLabels = RDFResource.valuesByLang(labelValues)
   const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
 
-  return (
-    <div className="px-3 py-1" style={{ width: "100%" }} onClick={choose(entity, prefLabels)}>
-      <div className="label">{label}</div>
-      <div className="RID">{entity.subjectQname}</div>
-    </div>
-  )
+  if (!choose) return <span style={{ fontSize: "16px" }}>{label}</span>
+  else
+    return (
+      <div className="px-3 py-1" style={{ width: "100%" }} onClick={choose(entity, prefLabels)}>
+        <div className="label">{label}</div>
+        <div className="RID">{entity.subjectQname}</div>
+      </div>
+    )
 }
 
 export default ResourceSelector
