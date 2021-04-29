@@ -415,7 +415,7 @@ label ~ .selector {
     .extEntity.new { max-height:0; transition:500ms;  }
     &:not(.empty) { max-height:95px; margin-bottom:15px;
 
-      & > label + div { overflow:hidden !important; }
+      & > label + div + div { overflow:hidden !important; }
 
       &::after { display:block; content:'...'; position:absolute;top:75px; left:25px; color:#bbb;}
       & > div { line-height:0; 
@@ -427,7 +427,7 @@ label ~ .selector {
     }    
   }
   :not(.facet) > .card.group-edit .ValueList.main.ResExt { overflow:visible; 
-    & > label + div,
+    & > label ~ div,
     .extEntity.new { 
       &:not(.overFauto) {  overflow: visible !important;  }
       &.overFauto { overflow:auto; }

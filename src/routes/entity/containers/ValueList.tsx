@@ -246,6 +246,76 @@ const ValueList: FC<{
     }
   }, [edit])
 
+  const hasEmptyExtEntityAsFirst =
+    list.length > 0 &&
+    list[0] instanceof RDFResourceWithLabel &&
+    property.objectType == ObjectType.ResExt &&
+    list[0].uri === "tmp:uri"
+
+  const renderListElem = (val: Value, i: number) => {
+    if (val instanceof RDFResourceWithLabel) {
+      if (property.objectType == ObjectType.ResExt)
+        return (
+          <ExtEntityComponent
+            key={val.id + ":" + i}
+            subject={subject}
+            property={property}
+            extRes={val as ExtRDFResourceWithLabel}
+            canDel={canDel && (i > 0 || val.uri !== "tmp:uri")}
+            onChange={onChange}
+            idx={i}
+            exists={exists}
+            editable={editable}
+            {...(owner ? { owner } : {})}
+          />
+        )
+      else {
+        addBtn = true
+        return (
+          <ResSelectComponent
+            key={val.id}
+            subject={subject}
+            property={property}
+            res={val}
+            canDel={canDel}
+            editable={editable}
+          />
+        )
+      }
+    } else if (val instanceof Subject) {
+      addBtn = true
+      return (
+        <FacetComponent
+          key={val.id}
+          subject={subject}
+          property={property}
+          subNode={val}
+          canDel={canDel && editable}
+          {...(force ? { force } : {})}
+          editable={editable}
+        />
+      )
+    } else if (val instanceof LiteralWithId) {
+      addBtn = val && val.value !== ""
+      const isUnique =
+        list.filter((l) => l instanceof LiteralWithId && /*l.value === val.value &&*/ l.language === val.language)
+          .length === 1
+      return (
+        <LiteralComponent
+          key={val.id}
+          subject={subject}
+          property={property}
+          lit={val}
+          label={propLabel}
+          canDel={canDel}
+          isUnique={isUnique}
+          create={<Create disable={!canAdd || !addBtn} subject={subject} property={property} embedded={embedded} />}
+          editable={editable}
+        />
+      )
+    }
+  }
+
   return (
     <React.Fragment>
       <div
@@ -268,80 +338,18 @@ const ValueList: FC<{
         }}
       >
         {showLabel && <label className="propLabel">{propLabel[0].toUpperCase() + propLabel.substring(1)}</label>}
+        {hasEmptyExtEntityAsFirst && <div style={{ width: "100%" }}>{renderListElem(list[0], 0)}</div>}
         <div
           ref={scrollElem}
           className={!embedded && property.objectType !== ObjectType.Facet ? "overFauto" : ""}
           style={{
             width: "100%",
-            ...!embedded && property.objectType !== ObjectType.Facet ? { maxHeight: "378px" } : {},
+            ...!embedded && property.objectType !== ObjectType.Facet ? { maxHeight: "338px" } : {},
             ...property?.group?.value !== edit ? { paddingRight: "0.5rem" } : {},
           }}
         >
           {list.map((val, i) => {
-            if (val instanceof RDFResourceWithLabel) {
-              if (property.objectType == ObjectType.ResExt)
-                return (
-                  <ExtEntityComponent
-                    key={val.id + ":" + i}
-                    subject={subject}
-                    property={property}
-                    extRes={val as ExtRDFResourceWithLabel}
-                    canDel={canDel && (i > 0 || val.uri !== "tmp:uri")}
-                    onChange={onChange}
-                    idx={i}
-                    exists={exists}
-                    editable={editable}
-                    {...(owner ? { owner } : {})}
-                  />
-                )
-              else {
-                addBtn = true
-                return (
-                  <ResSelectComponent
-                    key={val.id}
-                    subject={subject}
-                    property={property}
-                    res={val}
-                    canDel={canDel}
-                    editable={editable}
-                  />
-                )
-              }
-            } else if (val instanceof Subject) {
-              addBtn = true
-              return (
-                <FacetComponent
-                  key={val.id}
-                  subject={subject}
-                  property={property}
-                  subNode={val}
-                  canDel={canDel && editable}
-                  {...(force ? { force } : {})}
-                  editable={editable}
-                />
-              )
-            } else if (val instanceof LiteralWithId) {
-              addBtn = val && val.value !== ""
-              const isUnique =
-                list.filter(
-                  (l) => l instanceof LiteralWithId && /*l.value === val.value &&*/ l.language === val.language
-                ).length === 1
-              return (
-                <LiteralComponent
-                  key={val.id}
-                  subject={subject}
-                  property={property}
-                  lit={val}
-                  label={propLabel}
-                  canDel={canDel}
-                  isUnique={isUnique}
-                  create={
-                    <Create disable={!canAdd || !addBtn} subject={subject} property={property} embedded={embedded} />
-                  }
-                  editable={editable}
-                />
-              )
-            }
+            if (!hasEmptyExtEntityAsFirst || i > 0) return renderListElem(val, i)
           })}
         </div>
       </div>
