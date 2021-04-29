@@ -154,7 +154,9 @@ const ValueList: FC<{
 
   // TODO: handle the creation of a new value in a more sophisticated way (with the iframe and such)
   const canAdd =
-    alreadyHasEmptyValue() || property.readOnly && property.readOnly === true
+    alreadyHasEmptyValue() ||
+    property.readOnly && property.readOnly === true ||
+    property.displayPriority && property.displayPriority > 1
       ? false
       : property.objectType != ObjectType.ResExt && property.maxCount
       ? list.length < property.maxCount
@@ -200,13 +202,15 @@ const ValueList: FC<{
       }
     } else if (
       property.objectType != ObjectType.Facet &&
-      (!property.displayPriority || property.displayPriority === 0 || list.length || force) &&
+      (!property.displayPriority ||
+        property.displayPriority === 0 ||
+        property.displayPriority === 1 && (list.length || force)) &&
       (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField) &&
       (!property.maxCount || property.maxCount >= list.length)
     ) {
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
       else setList((oldList) => [...oldList, generateDefault(property, subject)])
-    } else if (property.displayPriority && property.displayPriority >= 1 && list.length === 1 && !force) {
+    } else if (property.displayPriority && property.displayPriority === 1 && list.length === 1 && !force) {
       if (firstValueIsEmptyField) setList([])
     }
   }, [subject, list, force])
@@ -215,10 +219,12 @@ const ValueList: FC<{
 
   //debug("prop:", property.qname, subject, property, force)
 
+  /* eslint-disable no-magic-numbers */
   const showLabel =
     !property.displayPriority ||
     property.displayPriority === 0 ||
-    property.displayPriority === 1 && (force || list.length > 1)
+    property.displayPriority === 1 && (force || list.length > 1) ||
+    property.displayPriority === 2 && list.length >= 1
 
   const isEmptyValue = (val: Value): boolean => {
     if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri"
@@ -264,9 +270,10 @@ const ValueList: FC<{
         {showLabel && <label className="propLabel">{propLabel[0].toUpperCase() + propLabel.substring(1)}</label>}
         <div
           ref={scrollElem}
+          className={!embedded && property.objectType !== ObjectType.Facet ? "overFauto" : ""}
           style={{
             width: "100%",
-            ...!embedded && property.objectType !== ObjectType.Facet ? { maxHeight: "378px", overflow: "auto" } : {},
+            ...!embedded && property.objectType !== ObjectType.Facet ? { maxHeight: "378px" } : {},
             ...property?.group?.value !== edit ? { paddingRight: "0.5rem" } : {},
           }}
         >

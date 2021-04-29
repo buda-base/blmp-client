@@ -174,7 +174,8 @@ bds:CommonShape-prefLabel
   # there are predefined values for the type of editor / form:
   dash:editor dash:TextAreaWithLangEditor ;
   dash:singleLine true ;  
-  bds:readOnly true ;
+  #bds:readOnly true ;
+  bds:displayPriority 2 ;
 .
 
 bds:PersonShape-personEvent
@@ -275,6 +276,7 @@ bds:RootShape-note
   bds:propertyShapeType bds:FacetShape ;
   sh:name "notes"@en ;
   dash:editor dash:DetailsEditor ;
+  bds:displayPriority 2 ;
 .
 
 bds:NoteShape
@@ -313,6 +315,7 @@ bds:NoteShape-noteText
   dash:editor dash:TextAreaWithLangEditor ;
   sh:name "text"@en ;
   sh:order "0"^^xsd:decimal ;
+  bds:displayPriority 2 ;
 .
 
 bds:NoteShape-noteSource
@@ -555,7 +558,7 @@ bds:PersonShape-hasGrandmother
   sh:group bds:KinshipPropertyGroup ;
   sh:name "has grandmother"@en ;
   sh:order "12"^^xsd:decimal ;
-  bds:displayPriority 1 ;
+  bds:displayPriority 2 ;
 .
 
 

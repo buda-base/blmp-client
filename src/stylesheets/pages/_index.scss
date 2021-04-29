@@ -404,7 +404,7 @@ label ~ .selector {
     .extEntity.new { max-height:100px; overflow: hidden; transition:1000ms; max-height:1200px; }
     & > label { transition:margin 500ms; transition-delay: 0s; }
     &.empty { 
-      .propLabel ~ div { transition:1500ms; }
+      .propLabel ~ div { transition:max-height 1500ms; }
     }
   }
   :not(.facet) > .card:not(.group-edit) .ValueList.main.ResExt {  transition:max-height 500ms, overflow 0ms ease-in-out 500ms; 
@@ -428,7 +428,10 @@ label ~ .selector {
   }
   :not(.facet) > .card.group-edit .ValueList.main.ResExt { overflow:visible; 
     & > label + div,
-    .extEntity.new { overflow: visible !important; } 
+    .extEntity.new { 
+      &:not(.overFauto) {  overflow: visible !important;  }
+      &.overFauto { overflow:auto; }
+    } 
   }
 }
 
