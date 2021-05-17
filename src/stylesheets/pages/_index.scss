@@ -437,5 +437,10 @@ label ~ .selector {
 
 .group > .album > .container > .row { z-index:2; position:relative; }
 
+.preview-true input,
+.lang-bo input { font-size:18px; padding-top:4px !important; }
+
+.preview-true input { color:#777; }
+
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}

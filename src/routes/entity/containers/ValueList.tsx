@@ -16,13 +16,15 @@ import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem, InputLabel, Select } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
-import { AddIcon, RemoveIcon, ErrorIcon, CloseIcon } from "../../layout/icons"
+import { AddIcon, RemoveIcon, ErrorIcon, CloseIcon, VisibilityIcon, VisibilityOffIcon } from "../../layout/icons"
 import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState, uiEditState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
+
+import { fromWylie } from "jsewts"
 
 export const MinimalAddButton: FC<{
   add: React.MouseEventHandler<HTMLButtonElement>
@@ -417,6 +419,7 @@ const EditLangString: FC<{
   editable?: boolean
 }> = ({ property, lit, onChange, label, globalError, editable }) => {
   const classes = useStyles()
+  const [preview, setPreview] = useState(false)
 
   let error = ""
   if (!lit.value) error = i18n.t("error.empty")
@@ -435,22 +438,27 @@ const EditLangString: FC<{
   return (
     <div className="mb-0" style={{ display: "flex", width: "100%", alignItems: "flex-end" }}>
       <TextField
-        //className={classes.root}
+        className={"preview-" + preview + (lit.language === "bo" ? " lang-bo" : "")} //classes.root }
         //label={lit.id}
         label={"Text"}
         style={{ width: "100%" }}
-        value={lit.value}
+        value={preview && lit.language === "bo-x-ewts" ? fromWylie(lit.value) : lit.value}
         multiline={!property.singleLine}
         InputLabelProps={{ shrink: true }}
         onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
         {...(error ? errorData : {})}
-        {...(!editable ? { disabled: true } : {})}
+        {...(!editable || preview ? { disabled: true } : {})}
       />
       <LangSelect
         value={lit.language || ""}
-        onChange={(value) => onChange(lit.copyWithUpdatedLanguage(value))}
+        onChange={(value) => {
+          if (preview) setPreview(false)
+          onChange(lit.copyWithUpdatedLanguage(value))
+        }}
         {...(error ? { error: true } : {})}
         editable={editable}
+        preview={preview}
+        updatePreview={setPreview}
       />
     </div>
   )
@@ -462,30 +470,43 @@ export const LangSelect: FC<{
   disabled?: boolean
   error?: boolean
   editable?: boolean
-}> = ({ onChange, value, disabled, error, editable }) => {
+  preview?: boolean
+  updatePreview?: React.Dispatch<React.SetStateAction<boolean>>
+}> = ({ onChange, value, disabled, error, editable, preview, updatePreview }) => {
   const onChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
     onChange(event.target.value as string)
   }
   return (
-    <TextField
-      select
-      InputLabelProps={{ shrink: true }}
-      className="ml-2"
-      //label={lit.id}
-      label={"Language"}
-      value={value}
-      style={{ minWidth: 100, flexShrink: 0 }}
-      onChange={onChangeHandler}
-      {...(disabled ? { disabled: true } : {})}
-      {...(error ? { error: true, helperText: <br /> } : {})}
-      {...(!editable ? { disabled: true } : {})}
-    >
-      {langs.map((option) => (
-        <MenuItem key={option.value} value={option.value}>
-          {option.value}
-        </MenuItem>
-      ))}
-    </TextField>
+    <div style={{ position: "relative" }}>
+      <TextField
+        select
+        InputLabelProps={{ shrink: true }}
+        className={"ml-2"}
+        //label={lit.id}
+        label={"Language"}
+        value={value}
+        style={{ minWidth: 100, flexShrink: 0 }}
+        onChange={onChangeHandler}
+        {...(disabled ? { disabled: true } : {})}
+        {...(error ? { error: true, helperText: <br /> } : {})}
+        {...(!editable ? { disabled: true } : {})}
+      >
+        {langs.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.value}
+          </MenuItem>
+        ))}
+      </TextField>
+      {updatePreview && value === "bo-x-ewts" && (
+        <span
+          style={{ position: "absolute", right: 0, top: 0, fontSize: "0px", cursor: "pointer" }}
+          {...(updatePreview ? { onClick: () => updatePreview(!preview) } : {})}
+        >
+          {!preview && <VisibilityIcon style={{ height: "16px", color: "#aaa" }} />}
+          {preview && <VisibilityOffIcon style={{ height: "16px", color: "#333" }} />}
+        </span>
+      )}
+    </div>
   )
 }
 
