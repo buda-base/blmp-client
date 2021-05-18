@@ -445,6 +445,13 @@ const EditLangString: FC<{
     error: true,
   }
 
+  let padBot = "0px"
+  if (preview && lit.language === "bo-x-ewts") {
+    padBot = "34px"
+  } else if (property.singleLine && editMD) {
+    padBot = "1px"
+  }
+
   return (
     <div
       className="mb-0"
@@ -452,7 +459,8 @@ const EditLangString: FC<{
         display: "flex",
         width: "100%",
         alignItems: "flex-end",
-        paddingBottom: property.singleLine ? "0px" : "1px",
+        paddingBottom: padBot,
+        position: "relative",
       }}
     >
       {(property.singleLine || !editMD) && (
@@ -462,12 +470,12 @@ const EditLangString: FC<{
             //label={lit.id}
             label={"Text"}
             style={{ width: "100%" }}
-            value={preview && lit.language === "bo-x-ewts" ? fromWylie(lit.value) : lit.value}
+            value={lit.value}
             multiline={!property.singleLine}
             InputLabelProps={{ shrink: true }}
             onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
             {...(error ? errorData : {})}
-            {...(!editable || preview ? { disabled: true } : {})}
+            {...(!editable ? { disabled: true } : {})}
           />
           {!property.singleLine && (
             <span
@@ -487,7 +495,7 @@ const EditLangString: FC<{
             minHeight={120}
             height={120}
             maxHeight={1000}
-            value={preview && lit.language === "bo-x-ewts" ? fromWylie(lit.value) : lit.value}
+            value={lit.value}
             onChange={(e) => {
               if (e) onChange(lit.copyWithUpdatedValue(e))
             }}
@@ -512,6 +520,13 @@ const EditLangString: FC<{
         preview={preview}
         updatePreview={setPreview}
       />
+      {preview &&
+        lit.language === "bo-x-ewts" && ( // TODO see if fromWylie & MD can both be used ('escape' some chars?)
+          <div style={{ width: "100%", position: "absolute", bottom: 0, opacity: "55%", fontSize: "20px" }}>
+            {fromWylie(lit.value)}
+            {/*editMD && <MDEditor.Markdown source={fromWylie(lit.value)} /> // not really working  */}
+          </div>
+        )}
     </div>
   )
 }
