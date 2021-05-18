@@ -10,6 +10,7 @@ import { AppProps } from "../../../containers/AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
 import React, { ChangeEvent } from "react"
 import qs from "query-string"
+import { TextField, MenuItem } from "@material-ui/core"
 
 const debug = require("debug")("bdrc:entity:newentity")
 
@@ -27,23 +28,45 @@ function NewEntityContainer(props: AppProps) {
   */
 
   // otherwise we want the user to select the appropriate shape
+
+  // "here is a list of all possible shapes" "to choose from in order to create a new entity":
   return (
     <React.Fragment>
       <div>
-        New entity: here is a list of all possible shapes to choose from in order to create a new entity:
-        {shapes.possibleShapeRefs.map((shape: RDFResourceWithLabel, index: number) => (
-          <Link key={shape.qname} to={"/new/" + shape.qname} onClick={handleNewtab}>
-            {lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)}
-          </Link>
-        ))}
+        <b>New entity:</b>
+        <TextField
+          select
+          //label="Choose a shape"
+          helperText={"List of all possible shapes"}
+          id="shapeSelec"
+          className="shapeSelector"
+          value={shapes.possibleShapeRefs[0].qname}
+          style={{ marginTop: "3px", marginLeft: "10px" }}
+        >
+          {/* <MenuItem disabled key={"init"} value={"init"} >Choose a shape</MenuItem> */}
+          {shapes.possibleShapeRefs.map((shape: RDFResourceWithLabel, index: number) => (
+            <MenuItem key={shape.qname} value={shape.qname} style={{ padding: 0 }}>
+              <Link to={"/new/" + shape.qname} onClick={handleNewtab} className="popLink">
+                {lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)}
+              </Link>
+            </MenuItem>
+          ))}
+        </TextField>
       </div>
-      <div>
-        Load entity: select an entity to load here by its RID:
-        <input type="text" />
-        for the sake of the demo, we are going to pretend that you did input{" "}
-        <Link key="edit" to="/edit/bdr:PTEST">
-          PTEST
-        </Link>
+      <div style={{ display: "flex", alignItems: "baseline" }}>
+        <div style={{ marginRight: "10px" }}>
+          <b>Load entity:</b>{" "}
+        </div>
+        <div>
+          {" "}
+          select an entity to load here by its RID:&nbsp;
+          <input type="text" />
+          <br />
+          <i>for the sake of the demo, we are going to pretend that you did input </i>
+          <Link key="edit" to="/edit/bdr:PTEST">
+            PTEST
+          </Link>
+        </div>
       </div>
     </React.Fragment>
   )

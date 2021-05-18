@@ -523,7 +523,7 @@ const EditLangString: FC<{
           />
           <span
             className={"opaHover on"}
-            style={{ position: "absolute", right: "5px", top: "11px", fontSize: "0px", cursor: "pointer" }}
+            style={{ position: "absolute", right: "5px", top: "10px", fontSize: "0px", cursor: "pointer" }}
             onClick={() => setEditMD(!editMD)}
           >
             <MDIcon style={{ height: "14px" }} />

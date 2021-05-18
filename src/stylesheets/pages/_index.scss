@@ -466,5 +466,10 @@ label ~ .selector {
 .opaHover:hover { opacity:75%; }
 
 
+.MuiPaper-root .popLink { padding:6px 16px; width:100%; }
+.popLink:hover { text-decoration:none; }
+
+
+
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}
