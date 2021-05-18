@@ -437,10 +437,29 @@ label ~ .selector {
 
 .group > .album > .container > .row { z-index:2; position:relative; }
 
+
+
+
+
+
 .preview-true input,
 .lang-bo input { font-size:18px; padding-top:4px !important; }
 
 .preview-true input { color:#777; }
+
+
+
+
+.w-md-editor.w-md-editor-show-live { width:100%; }
+
+.w-md-editor-toolbar-divider ~ .active ~ .w-md-editor-toolbar-divider,
+.w-md-editor-toolbar-divider ~ .active ~ .w-md-editor-toolbar-divider + li
+{ display:none}
+
+.opaHover { opacity:50%; }
+.opaHover.on,
+.opaHover:hover { opacity:75%; }
+
 
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}

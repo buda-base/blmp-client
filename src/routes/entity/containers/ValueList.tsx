@@ -16,7 +16,15 @@ import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem, InputLabel, Select } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
-import { AddIcon, RemoveIcon, ErrorIcon, CloseIcon, VisibilityIcon, VisibilityOffIcon } from "../../layout/icons"
+import {
+  AddIcon,
+  RemoveIcon,
+  ErrorIcon,
+  CloseIcon,
+  VisibilityIcon,
+  VisibilityOffIcon,
+  MDIcon,
+} from "../../layout/icons"
 import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
@@ -25,6 +33,7 @@ import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 
 import { fromWylie } from "jsewts"
+import MDEditor from "@uiw/react-md-editor"
 
 export const MinimalAddButton: FC<{
   add: React.MouseEventHandler<HTMLButtonElement>
@@ -420,6 +429,7 @@ const EditLangString: FC<{
 }> = ({ property, lit, onChange, label, globalError, editable }) => {
   const classes = useStyles()
   const [preview, setPreview] = useState(false)
+  const [editMD, setEditMD] = useState(false)
 
   let error = ""
   if (!lit.value) error = i18n.t("error.empty")
@@ -436,19 +446,61 @@ const EditLangString: FC<{
   }
 
   return (
-    <div className="mb-0" style={{ display: "flex", width: "100%", alignItems: "flex-end" }}>
-      <TextField
-        className={"preview-" + preview + (lit.language === "bo" ? " lang-bo" : "")} //classes.root }
-        //label={lit.id}
-        label={"Text"}
-        style={{ width: "100%" }}
-        value={preview && lit.language === "bo-x-ewts" ? fromWylie(lit.value) : lit.value}
-        multiline={!property.singleLine}
-        InputLabelProps={{ shrink: true }}
-        onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
-        {...(error ? errorData : {})}
-        {...(!editable || preview ? { disabled: true } : {})}
-      />
+    <div
+      className="mb-0"
+      style={{
+        display: "flex",
+        width: "100%",
+        alignItems: "flex-end",
+        paddingBottom: property.singleLine ? "0px" : "1px",
+      }}
+    >
+      {(property.singleLine || !editMD) && (
+        <div style={{ width: "100%", position: "relative" }}>
+          <TextField
+            className={"preview-" + preview + (lit.language === "bo" ? " lang-bo" : "")} //classes.root }
+            //label={lit.id}
+            label={"Text"}
+            style={{ width: "100%" }}
+            value={preview && lit.language === "bo-x-ewts" ? fromWylie(lit.value) : lit.value}
+            multiline={!property.singleLine}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
+            {...(error ? errorData : {})}
+            {...(!editable || preview ? { disabled: true } : {})}
+          />
+          {!property.singleLine && (
+            <span
+              className={"opaHover"}
+              style={{ position: "absolute", right: 0, top: 0, fontSize: "0px", cursor: "pointer" }}
+              onClick={() => setEditMD(!editMD)}
+            >
+              {!editMD && <MDIcon style={{ height: "16px" }} />}
+              {editMD && <MDIcon style={{ height: "16px" }} />}
+            </span>
+          )}
+        </div>
+      )}
+      {!property.singleLine && editMD && (
+        <div style={{ width: "100%", position: "relative" }}>
+          <MDEditor
+            minHeight={120}
+            height={120}
+            maxHeight={1000}
+            value={preview && lit.language === "bo-x-ewts" ? fromWylie(lit.value) : lit.value}
+            onChange={(e) => {
+              if (e) onChange(lit.copyWithUpdatedValue(e))
+            }}
+          />
+          <span
+            className={"opaHover on"}
+            style={{ position: "absolute", right: "5px", top: "11px", fontSize: "0px", cursor: "pointer" }}
+            onClick={() => setEditMD(!editMD)}
+          >
+            <MDIcon style={{ height: "14px" }} />
+          </span>
+        </div>
+      )}
       <LangSelect
         value={lit.language || ""}
         onChange={(value) => {

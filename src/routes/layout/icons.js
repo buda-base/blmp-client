@@ -17,5 +17,7 @@ export const WorkIcon = (props) => <Img src="/icons/work.svg" {...props} />
 export const PlaceIcon = (props) => <Img src="/icons/place.svg" {...props} />
 export const VersionIcon = (props) => <Img src="/icons/instance.svg" {...props} />
 
+export const MDIcon = (props) => <Img src="/icons/Markdown-mark.svg" {...props} />
+
 export const AddIcon = AddCircleOutlineIcon
 export const RemoveIcon = RemoveCircleOutlineIcon
