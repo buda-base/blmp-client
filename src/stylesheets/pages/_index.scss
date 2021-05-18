@@ -453,9 +453,13 @@ label ~ .selector {
 
 .w-md-editor.w-md-editor-show-live { width:100%; }
 
+.w-md-editor svg { vertical-align: baseline;}
+
+/*
 .w-md-editor-toolbar-divider ~ .active ~ .w-md-editor-toolbar-divider,
 .w-md-editor-toolbar-divider ~ .active ~ .w-md-editor-toolbar-divider + li
 { display:none}
+*/
 
 .opaHover { opacity:50%; }
 .opaHover.on,

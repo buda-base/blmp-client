@@ -24,6 +24,7 @@ import {
   VisibilityIcon,
   VisibilityOffIcon,
   MDIcon,
+  EditIcon,
 } from "../../layout/icons"
 import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
@@ -33,7 +34,7 @@ import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 
 import { fromWylie } from "jsewts"
-import MDEditor from "@uiw/react-md-editor"
+import MDEditor, { commands } from "@uiw/react-md-editor"
 
 export const MinimalAddButton: FC<{
   add: React.MouseEventHandler<HTMLButtonElement>
@@ -452,6 +453,9 @@ const EditLangString: FC<{
     padBot = "1px"
   }
 
+  const codeEdit = { ...commands.codeEdit, icon: <EditIcon style={{ width: "12px", height: "12px" }} /> },
+    codePreview = { ...commands.codePreview, icon: <VisibilityIcon style={{ width: "12px", height: "12px" }} /> }
+
   return (
     <div
       className="mb-0"
@@ -492,13 +496,30 @@ const EditLangString: FC<{
       {!property.singleLine && editMD && (
         <div style={{ width: "100%", position: "relative" }}>
           <MDEditor
-            minHeight={120}
-            height={120}
-            maxHeight={1000}
             value={lit.value}
+            preview="edit"
             onChange={(e) => {
               if (e) onChange(lit.copyWithUpdatedValue(e))
             }}
+            commands={[
+              commands.bold,
+              commands.italic,
+              commands.strikethrough,
+              commands.hr,
+              commands.title,
+              commands.divider,
+              commands.link,
+              commands.quote,
+              commands.code,
+              commands.image,
+              commands.divider,
+              commands.unorderedListCommand,
+              commands.orderedListCommand,
+              commands.checkedListCommand,
+              commands.divider,
+              codeEdit,
+              codePreview,
+            ]}
           />
           <span
             className={"opaHover on"}
