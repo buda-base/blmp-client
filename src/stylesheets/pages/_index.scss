@@ -430,7 +430,7 @@ label ~ .selector {
     & > label ~ div,
     .extEntity.new { 
       &:not(.overFauto) {  overflow: visible !important;  }
-      &.overFauto { overflow:auto; }
+      &.new.overFauto { overflow:auto; }
     } 
   }
 }

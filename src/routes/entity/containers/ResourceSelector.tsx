@@ -446,7 +446,9 @@ const ResourceSelector: FC<{
                   bottom: "calc(100%)",
                 }
               : {},
-            ...value.uri !== "tmp:uri" ? { left: "calc(1rem + 8px)", width: "calc(100%)", bottom: "100%" } : {},
+            ...value.uri !== "tmp:uri"
+              ? { left: "calc(1rem)", width: "calc(100%)", bottom: "calc(100% - 0.5rem)" }
+              : {},
           }}
         >
           <iframe style={{ border: "none" }} height="400" src={libraryURL} />

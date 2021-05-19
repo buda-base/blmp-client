@@ -356,7 +356,7 @@ const ValueList: FC<{
           className={!embedded && property.objectType !== ObjectType.Facet ? "overFauto" : ""}
           style={{
             width: "100%",
-            ...!embedded && property.objectType !== ObjectType.Facet ? { maxHeight: "338px" } : {},
+            //...!embedded && property.objectType !== ObjectType.Facet ? { maxHeight: "338px" } : {}, // overflow conflict with iframe...
             ...property?.group?.value !== edit ? { paddingRight: "0.5rem" } : {},
           }}
         >
