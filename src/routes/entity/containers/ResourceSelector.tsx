@@ -224,6 +224,7 @@ const ResourceSelector: FC<{
     idx
 
   const createAndUpdate = (type: RDFResourceWithLabel) => () => {
+    setTab(0)
     history.push(
       "/new/" +
         type.qname.replace(/^bdo/, "bds") +
@@ -485,8 +486,10 @@ const ResourceSelector: FC<{
                 !exists(e?.subjectQname) &&
                 e?.subjectQname != subject.qname &&
                 e?.subjectQname != owner?.qname &&
-                property.expectedObjectTypes?.some((t) =>
-                  e.shapeRef?.qname.startsWith(t.qname.replace(/^bdo:/, "bds:"))
+                property.expectedObjectTypes?.some(
+                  (t) =>
+                    // TODO what to do with loaded entities that have no shapeRef... shouldn't it be updated somewhere?
+                    !e.shapeRef || e.shapeRef?.qname.startsWith(t.qname.replace(/^bdo:/, "bds:"))
                 )
               ) {
                 //debug("diff ok:",property.expectedObjectTypes,e,e.subjectQname,subject.qname,owner?.qname)
