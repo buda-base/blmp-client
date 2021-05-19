@@ -7,7 +7,7 @@ import { useHistory, Link } from "react-router-dom"
 import { nodeForType } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
 import * as lang from "../../../helpers/lang"
-import { uiLangState } from "../../../atoms/common"
+import { uiLangState, uiTabState } from "../../../atoms/common"
 import { RDFResource, ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, EditIcon } from "../../layout/icons"
@@ -68,6 +68,7 @@ const ResourceSelector: FC<{
   const history = useHistory()
   const msgId = subject.qname + property.qname + idx
   const [popupNew, setPopupNew] = useState(false)
+  const [tab, setTab] = useRecoilState(uiTabState)
 
   if (!property.expectedObjectTypes) {
     debug(property)
@@ -394,7 +395,27 @@ const ResourceSelector: FC<{
                   <LaunchIcon style={{ width: "16px" }} />
                 </a>
                 &nbsp;
-                <Link title={i18n.t("search.help.edit")} to={"/edit/" + value.qname}>
+                <Link
+                  title={i18n.t("search.help.edit")}
+                  to={"/edit/" + value.qname}
+                  onClick={() => {
+                    const delay = 350
+                    setTimeout(() => {
+                      let found = false
+                      entities.map((e, i) => {
+                        if (e.subjectQname === value.qname) {
+                          debug("found:", i, e)
+                          found = true
+                          setTab(i)
+                        }
+                      })
+                      if (!found) {
+                        debug("not found:", entities.length)
+                        setTab(entities.length)
+                      }
+                    }, delay)
+                  }}
+                >
                   <EditIcon style={{ width: "16px" }} />
                 </Link>
                 &nbsp;

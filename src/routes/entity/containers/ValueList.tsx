@@ -229,7 +229,7 @@ const ValueList: FC<{
 
   let addBtn = property.objectType === ObjectType.Facet
 
-  //debug("prop:", property.qname, subject, property, force)
+  //debug("prop:", property.qname, subject.qname, list) //property, force)
 
   /* eslint-disable no-magic-numbers */
   const showLabel =
@@ -789,7 +789,7 @@ const LiteralComponent: FC<{
   let edit, classN
 
   if (t?.value === rdflangString) {
-    classN = "langString"
+    classN = "langString " + (lit.value ? "lang-" + lit.language : "")
     edit = (
       <EditLangString
         property={property}

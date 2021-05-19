@@ -337,6 +337,8 @@ section,
 .langString:hover .hoverPart { visibility: visible; }
 .langString+.langString { padding-top:10px;}
 
+.langString.lang-bo-x-ewts .hoverPart > * { margin-bottom:36px; }
+
 .propLabel { display:block; color:rgb(245, 0, 87); font-size:12px; font-weight:500; margin-bottom:4px; width:100%;  
   & ~ div { padding-left:8px; border-left:2px solid #ddd; } // rgba(245, 0, 87, 0.25);}  
   & ~ .selector ~ .selector { padding-left:0; border:none;}
@@ -482,6 +484,10 @@ label ~ .selector {
 
 
 #root ~ [role=presentation] { z-index: 10000 !important;}
+
+
+
+
 
 
 /* css debug mode */
