@@ -429,7 +429,7 @@ const EditLangString: FC<{
   editable?: boolean
 }> = ({ property, lit, onChange, label, globalError, editable }) => {
   const classes = useStyles()
-  const [preview, setPreview] = useState(false)
+  //const [preview, setPreview] = useState(false) //always true
   const [editMD, setEditMD] = useState(false)
 
   let error = ""
@@ -447,7 +447,7 @@ const EditLangString: FC<{
   }
 
   let padBot = "0px"
-  if (preview && lit.language === "bo-x-ewts") {
+  if (/*preview &&*/ lit.language === "bo-x-ewts") {
     padBot = "38px"
   } else if (property.singleLine && editMD) {
     padBot = "1px"
@@ -470,7 +470,7 @@ const EditLangString: FC<{
       {(property.singleLine || !editMD) && (
         <div style={{ width: "100%", position: "relative" }}>
           <TextField
-            className={"preview-" + preview + (lit.language === "bo" ? " lang-bo" : "")} //classes.root }
+            className={/*"preview-" + preview +*/ lit.language === "bo" ? " lang-bo" : ""} //classes.root }
             //label={lit.id}
             label={"Text"}
             style={{ width: "100%" }}
@@ -533,21 +533,23 @@ const EditLangString: FC<{
       <LangSelect
         value={lit.language || ""}
         onChange={(value) => {
-          if (preview) setPreview(false)
+          //if (preview) setPreview(false)
           onChange(lit.copyWithUpdatedLanguage(value))
         }}
         {...(error ? { error: true } : {})}
         editable={editable}
-        preview={preview}
-        updatePreview={setPreview}
+        //preview={preview}
+        //updatePreview={setPreview}
       />
-      {preview &&
+      {
+        //preview &&
         lit.language === "bo-x-ewts" && ( // TODO see if fromWylie & MD can both be used ('escape' some chars?)
           <div className="preview-ewts">
             <TextField disabled value={fromWylie(lit.value)} />
             {/*editMD && <MDEditor.Markdown source={fromWylie(lit.value)} /> // not really working  */}
           </div>
-        )}
+        )
+      }
     </div>
   )
 }
@@ -558,9 +560,9 @@ export const LangSelect: FC<{
   disabled?: boolean
   error?: boolean
   editable?: boolean
-  preview?: boolean
-  updatePreview?: React.Dispatch<React.SetStateAction<boolean>>
-}> = ({ onChange, value, disabled, error, editable, preview, updatePreview }) => {
+  //preview?: boolean
+  //updatePreview?: React.Dispatch<React.SetStateAction<boolean>>
+}> = ({ onChange, value, disabled, error, editable /*, preview, updatePreview*/ }) => {
   const onChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
     onChange(event.target.value as string)
   }
@@ -585,7 +587,7 @@ export const LangSelect: FC<{
           </MenuItem>
         ))}
       </TextField>
-      {updatePreview && value === "bo-x-ewts" && (
+      {/*updatePreview && value === "bo-x-ewts" && (  //deprecated
         <span
           style={{ position: "absolute", right: 0, top: 0, fontSize: "0px", cursor: "pointer" }}
           {...(updatePreview ? { onClick: () => updatePreview(!preview) } : {})}
@@ -593,7 +595,7 @@ export const LangSelect: FC<{
           {!preview && <VisibilityIcon style={{ height: "16px", color: "#aaa" }} />}
           {preview && <VisibilityOffIcon style={{ height: "16px", color: "#333" }} />}
         </span>
-      )}
+      ) */}
     </div>
   )
 }

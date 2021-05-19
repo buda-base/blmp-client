@@ -10,7 +10,7 @@ import * as lang from "../../../helpers/lang"
 import { uiLangState } from "../../../atoms/common"
 import { RDFResource, ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
-import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, SettingsIcon } from "../../layout/icons"
+import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, EditIcon } from "../../layout/icons"
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 import { LangSelect } from "./ValueList"
 import { qnameFromUri } from "../../../helpers/rdf/ns"
@@ -395,7 +395,7 @@ const ResourceSelector: FC<{
                 </a>
                 &nbsp;
                 <Link title={i18n.t("search.help.edit")} to={"/edit/" + value.qname}>
-                  <SettingsIcon style={{ width: "16px" }} />
+                  <EditIcon style={{ width: "16px" }} />
                 </Link>
                 &nbsp;
                 {value.otherData["tmp:keyword"] && (
