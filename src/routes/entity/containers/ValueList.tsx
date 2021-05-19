@@ -130,7 +130,7 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
       break
     case ObjectType.Literal:
     default:
-      if (property.datatype == ns.RDF("langString")) {
+      if (property?.datatype?.value === ns.RDF("langString").value) {
         return new LiteralWithId("", "bo-x-ewts")
       } else {
         return new LiteralWithId("", null, property.datatype ? property.datatype : undefined)
@@ -447,7 +447,7 @@ const EditLangString: FC<{
   }
 
   let padBot = "0px"
-  if (/*preview &&*/ lit.language === "bo-x-ewts") {
+  if (/*preview &&*/ lit.language === "bo-x-ewts" && lit.value) {
     padBot = "38px"
   } else if (property.singleLine && editMD) {
     padBot = "1px"
@@ -543,12 +543,13 @@ const EditLangString: FC<{
       />
       {
         //preview &&
-        lit.language === "bo-x-ewts" && ( // TODO see if fromWylie & MD can both be used ('escape' some chars?)
-          <div className="preview-ewts">
-            <TextField disabled value={fromWylie(lit.value)} />
-            {/*editMD && <MDEditor.Markdown source={fromWylie(lit.value)} /> // not really working  */}
-          </div>
-        )
+        lit.language === "bo-x-ewts" &&
+          lit.value && ( // TODO see if fromWylie & MD can both be used ('escape' some chars?)
+            <div className="preview-ewts">
+              <TextField disabled value={fromWylie(lit.value)} />
+              {/*editMD && <MDEditor.Markdown source={fromWylie(lit.value)} /> // not really working  */}
+            </div>
+          )
       }
     </div>
   )
