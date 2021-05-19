@@ -449,6 +449,15 @@ label ~ .selector {
 .preview-true input { color:#777; }
 */
 
+.preview-ewts { width: 100%; position: absolute; bottom: 0; 
+
+  & > div { width:100%; }
+
+  & > div > div::before { content:none; }
+
+  input { width:100%; font-size:20px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45);}
+} 
+
 
 
 .w-md-editor.w-md-editor-show-live { width:100%; }

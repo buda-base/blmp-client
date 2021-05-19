@@ -448,7 +448,7 @@ const EditLangString: FC<{
 
   let padBot = "0px"
   if (preview && lit.language === "bo-x-ewts") {
-    padBot = "34px"
+    padBot = "38px"
   } else if (property.singleLine && editMD) {
     padBot = "1px"
   }
@@ -494,7 +494,7 @@ const EditLangString: FC<{
         </div>
       )}
       {!property.singleLine && editMD && (
-        <div style={{ width: "100%", position: "relative" }}>
+        <div style={{ width: "100%", position: "relative", paddingBottom: "1px" }}>
           <MDEditor
             value={lit.value}
             preview="edit"
@@ -543,8 +543,8 @@ const EditLangString: FC<{
       />
       {preview &&
         lit.language === "bo-x-ewts" && ( // TODO see if fromWylie & MD can both be used ('escape' some chars?)
-          <div style={{ width: "100%", position: "absolute", bottom: 0, opacity: "55%", fontSize: "20px" }}>
-            {fromWylie(lit.value)}
+          <div className="preview-ewts">
+            <TextField disabled value={fromWylie(lit.value)} />
             {/*editMD && <MDEditor.Markdown source={fromWylie(lit.value)} /> // not really working  */}
           </div>
         )}
