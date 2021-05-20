@@ -190,8 +190,9 @@ const ValueList: FC<{
   // DONE prevent adding same resource twice
   const exists: (uri: string) => boolean = (uri: string): boolean => {
     for (const val of list) {
-      if (val instanceof RDFResourceWithLabel && val.uri === uri) return true
+      if (val instanceof RDFResourceWithLabel && (val.qname === uri || val.uri === uri)) return true
     }
+    //debug("not found "+uri+" in ",list)
     return false
   }
 

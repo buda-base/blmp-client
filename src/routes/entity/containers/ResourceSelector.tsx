@@ -420,7 +420,9 @@ const ResourceSelector: FC<{
                   <EditIcon style={{ width: "16px" }} />
                 </Link>
                 &nbsp;
-                {value.otherData["tmp:keyword"] && (
+                {/* // deprecated
+                
+                  value.otherData["tmp:keyword"] && (
                   <a title={i18n.t("search.help.replace")}>
                     <SearchIcon
                       style={{ width: "18px", cursor: "pointer" }}
@@ -441,7 +443,7 @@ const ResourceSelector: FC<{
                       }
                     />
                   </a>
-                )}
+                ) */}
               </div>
             </div>
             {/* <button
@@ -486,10 +488,9 @@ const ResourceSelector: FC<{
                 !exists(e?.subjectQname) &&
                 e?.subjectQname != subject.qname &&
                 e?.subjectQname != owner?.qname &&
-                property.expectedObjectTypes?.some(
-                  (t) =>
-                    // TODO what to do with loaded entities that have no shapeRef... shouldn't it be updated somewhere?
-                    !e.shapeRef || e.shapeRef?.qname.startsWith(t.qname.replace(/^bdo:/, "bds:"))
+                property.expectedObjectTypes?.some((t) =>
+                  // DONE shapeRef is updated upon shape selection
+                  e.shapeRef?.qname.startsWith(t.qname.replace(/^bdo:/, "bds:"))
                 )
               ) {
                 //debug("diff ok:",property.expectedObjectTypes,e,e.subjectQname,subject.qname,owner?.qname)

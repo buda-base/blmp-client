@@ -4,8 +4,8 @@ const config = {
   env: process.env.NODE_ENV || "development",
   SITE_URL: "http://localhost:3001",
   requireAuth: false,
-  //LIBRARY_URL: "http://localhost:3000",
-  LIBRARY_URL: "https://library.bdrc.io",
+  LIBRARY_URL: "http://localhost:3000",
+  //LIBRARY_URL: "http://library.bdrc.io",
 }
 
 export default config

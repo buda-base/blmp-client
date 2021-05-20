@@ -23,7 +23,7 @@ const debug = require("debug")("bdrc:entity:edit")
 function EntityShapeChooserContainer(props: AppProps) {
   const [entityQname, setEntityQname] = useState(props.match.params.entityQname)
   const [uiLang] = useRecoilState(uiLangState)
-  const [entities] = useRecoilState(entitiesAtom)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   useEffect(() => {
     debug("params", props.match.params.entityQname)
@@ -45,6 +45,18 @@ function EntityShapeChooserContainer(props: AppProps) {
       return <span>cannot find any appropriate shape for this entity</span>
     }
     if (possibleShapes.length > 1) {
+      const handleClick = (event: React.MouseEvent<HTMLAnchorElement>, shape: RDFResourceWithLabel) => {
+        const newEntities = [...entities]
+        for (const i in newEntities) {
+          const e = newEntities[i]
+          if (e.subjectQname === entityQname) {
+            newEntities[i] = { ...e, shapeRef: shape }
+            setEntities(newEntities)
+            break
+          }
+        }
+      }
+
       return (
         <div>
           <b>Choose a shape:</b>
@@ -58,7 +70,11 @@ function EntityShapeChooserContainer(props: AppProps) {
           >
             {shapes.possibleShapeRefs.map((shape: RDFResourceWithLabel, index: number) => (
               <MenuItem key={shape.qname} value={shape.qname} style={{ padding: 0 }}>
-                <Link to={"/edit/" + entityQname + "/" + shape.qname} className="popLink">
+                <Link
+                  to={"/edit/" + entityQname + "/" + shape.qname}
+                  className="popLink"
+                  onClick={(ev) => handleClick(ev, shape)}
+                >
                   {lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)}
                 </Link>
               </MenuItem>
