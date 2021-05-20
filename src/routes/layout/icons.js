@@ -12,6 +12,7 @@ export { default as SettingsIcon } from "@material-ui/icons/Settings"
 export { default as VisibilityIcon } from "@material-ui/icons/Visibility"
 export { default as VisibilityOffIcon } from "@material-ui/icons/VisibilityOff"
 export { default as EditIcon } from "@material-ui/icons/Edit"
+export { default as KeyboardIcon } from "@material-ui/icons/Keyboard"
 
 export const PersonIcon = (props) => <Img src="/icons/person.svg" {...props} />
 export const WorkIcon = (props) => <Img src="/icons/work.svg" {...props} />

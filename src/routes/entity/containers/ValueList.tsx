@@ -416,6 +416,7 @@ export const langs = [
   { value: "en" },
   { value: "zh-hans" },
   { value: "zh-hant" },
+  { value: "sa-x-iast" },
 ]
 
 /**
