@@ -9,7 +9,7 @@ import { uiReadyState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
-  if (shapeQname == "bds:PersonShape") return "http://purl.bdrc.io/shapes/core/PersonUIShapes"
+  if (shapeQname == "bds:PersonShape") return "https://purl.bdrc.io/shapes/core/PersonUIShapes"
   return "/shapes/personpreflabel.ttl"
 }
 
