@@ -19,6 +19,7 @@ import qs from "query-string"
 import * as ns from "../../../helpers/rdf/ns"
 import { Redirect } from "react-router-dom"
 import { replaceItemAtIndex } from "../../../helpers/atoms"
+import { HashLink as Link } from "react-router-hash-link"
 
 const debug = require("debug")("bdrc:entity:edit")
 
@@ -146,6 +147,17 @@ function EntityEditContainer(props: AppProps) {
     <React.Fragment>
       <div role="main" className="pt-4" style={{ textAlign: "center" }}>
         {entity.qname} -- {shapeLabel}
+      </div>
+      <div role="navigation" className="innerNav">
+        <p className="text-uppercase small my-2">{i18n.t("home.nav")}</p>
+        {shape.groups.map((group, index) => {
+          const label = lang.ValueByLangToStrPrefLang(group.prefLabels, uiLang)
+          return (
+            <Link key={group.qname} to={"#" + group.qname}>
+              {label}
+            </Link>
+          )
+        })}
       </div>
       <section className="album py-2 my-2">
         <TimeTravelObserver />

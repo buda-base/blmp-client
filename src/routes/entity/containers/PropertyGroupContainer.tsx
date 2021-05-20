@@ -44,7 +44,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
 
   return (
     <React.Fragment>
-      <div role="main" className="group">
+      <div role="main" className="group" id={group.qname} style={{ scrollMargin: "90px" }}>
         <section className="album">
           <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
             <div

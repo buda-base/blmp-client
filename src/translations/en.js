@@ -2,6 +2,7 @@ const enTranslations = {
   home: {
     title: "BUDA Editor",
     uilang: "UI Language",
+    nav: "navigation",
   },
   types: {
     person: "Person",
