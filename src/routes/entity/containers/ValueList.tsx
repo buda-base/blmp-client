@@ -554,6 +554,11 @@ const EditLangString: FC<{
             onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
             {...(error ? errorData : {})}
             {...(!editable ? { disabled: true } : {})}
+            onBlur={() =>
+              setTimeout(() => {
+                if (inputRef.current && document.activeElement != inputRef.current) setKeyboard(false)
+              }, 350)
+            }
           />
           {!property.singleLine && (
             <span
