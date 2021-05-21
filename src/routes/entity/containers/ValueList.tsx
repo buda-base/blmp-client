@@ -462,7 +462,7 @@ export const langs = [
       "ù",
     ],
   },
-  { value: "sa-x-iast" },
+  { value: "sa-x-iast", keyboard: "ā Ā ī Ī ū Ū ṛ Ṛ ṝ Ṝ ḷ Ḷ ḹ Ḹ ṃ Ṃ ḥ Ḥ ṭ Ṭ ḍ Ḍ ṅ Ṅ ṅ Ṅ ṇ Ṇ ś Ś ṣ Ṣ".split(/ +/) },
 ]
 
 /**
@@ -585,7 +585,7 @@ const EditLangString: FC<{
             </span>
           )}
           {hasKB.length && hasKB[0].keyboard && keyboard && (
-            <div className="card px-2 py-2 hasKB" style={{ display: "block", width: "210px" }} onClick={keepFocus}>
+            <div className="card px-2 py-2 hasKB" style={{ display: "block", width: "405px" }} onClick={keepFocus}>
               {hasKB[0].keyboard.map((k, i) => (
                 <span
                   key={i}
