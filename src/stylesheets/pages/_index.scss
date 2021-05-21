@@ -399,7 +399,7 @@ label ~ .selector {
 }
 
 .group {
-  .group-edit { z-index:1000; position:relative;
+  .group-edit { z-index:1000 !important; position:relative;
       box-shadow: 0 10px 20px rgba(0,0,0, 0.19), 0 6px 6px rgba(0,0,0,0.23);
   }
   .ValueList.main.ResExt { overflow: hidden; transition:max-height 1500ms, overflow 0ms ease-in-out 500ms; max-height:1200px; background:white;
@@ -474,7 +474,7 @@ label ~ .selector {
 { display:none}
 */
 
-.opaHover { opacity:50%; }
+.opaHover { opacity:50%; cursor: pointer; }
 .opaHover.on,
 .opaHover:hover { opacity:75%; }
 
@@ -493,6 +493,11 @@ label ~ .selector {
 
 
   a { display:block; font-size:14px; opacity:0.65; }
+}
+
+
+.hasKB { position:absolute; right:0; top:100%; z-index:1;
+
 }
  
 

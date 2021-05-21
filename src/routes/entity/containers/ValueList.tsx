@@ -25,6 +25,7 @@ import {
   VisibilityOffIcon,
   MDIcon,
   EditIcon,
+  KeyboardIcon,
 } from "../../layout/icons"
 import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
@@ -416,6 +417,51 @@ export const langs = [
   { value: "en" },
   { value: "zh-hans" },
   { value: "zh-hant" },
+  {
+    value: "zh-Latn-pinyin",
+    keyboard: [
+      "Ā",
+      "Á",
+      "Ǎ",
+      "À",
+      "ā",
+      "á",
+      "ǎ",
+      "à",
+      "Ē",
+      "É",
+      "Ě",
+      "È",
+      "ē",
+      "é",
+      "ě",
+      "è",
+      "Ī",
+      "Í",
+      "Ǐ",
+      "Ì",
+      "ī",
+      "í",
+      "ǐ",
+      "ì",
+      "Ō",
+      "Ó",
+      "Ǒ",
+      "Ò",
+      "ō",
+      "ó",
+      "ǒ",
+      "ò",
+      "Ū",
+      "Ú",
+      "Ǔ",
+      "Ù",
+      "ū",
+      "ú",
+      "ǔ",
+      "ù",
+    ],
+  },
   { value: "sa-x-iast" },
 ]
 
@@ -433,6 +479,7 @@ const EditLangString: FC<{
   const classes = useStyles()
   //const [preview, setPreview] = useState(false) //always true
   const [editMD, setEditMD] = useState(false)
+  const [keyboard, setKeyboard] = useState(false)
 
   let error = ""
   if (!lit.value) error = i18n.t("error.empty")
@@ -457,6 +504,8 @@ const EditLangString: FC<{
 
   const codeEdit = { ...commands.codeEdit, icon: <EditIcon style={{ width: "12px", height: "12px" }} /> },
     codePreview = { ...commands.codePreview, icon: <VisibilityIcon style={{ width: "12px", height: "12px" }} /> }
+
+  const hasKB = langs.filter((l) => l.value === lit.language)
 
   return (
     <div
@@ -486,12 +535,47 @@ const EditLangString: FC<{
           {!property.singleLine && (
             <span
               className={"opaHover"}
-              style={{ position: "absolute", right: 0, top: 0, fontSize: "0px", cursor: "pointer" }}
+              style={{ position: "absolute", right: 0, top: 0, fontSize: "0px" }}
               onClick={() => setEditMD(!editMD)}
             >
               {!editMD && <MDIcon style={{ height: "16px" }} />}
               {editMD && <MDIcon style={{ height: "16px" }} />}
             </span>
+          )}
+          {hasKB.length && hasKB[0].keyboard && (
+            <span
+              onClick={() => setKeyboard(!keyboard)}
+              className={"opaHover " + (keyboard ? "on" : "")}
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "0px",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <KeyboardIcon />
+            </span>
+          )}
+          {hasKB.length && hasKB[0].keyboard && keyboard && (
+            <div className="card px-2 py-2 hasKB" style={{ display: "block", width: "210px" }}>
+              {hasKB[0].keyboard.map((k, i) => (
+                <span
+                  key={i}
+                  className="card mx-1 my-1"
+                  style={{
+                    display: "inline-flex",
+                    width: "40px",
+                    height: "40px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {k}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       )}
