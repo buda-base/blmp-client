@@ -1,3 +1,9 @@
+
+@import url(//fonts.googleapis.com/earlyaccess/notosanstibetan.css);
+//@import url(//fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap);
+//@import url(//fonts.googleapis.com/css2?family=Noto+Sans+SC&display=swap);
+
+
 body.light-mode {
   background-color: #fff;
   color: #333;
@@ -451,15 +457,18 @@ label ~ .selector {
 .preview-true input { color:#777; }
 */
 
-.preview-ewts { width: 100%; position: absolute; bottom: 0; 
+.preview-ewts { width: 100%; position: absolute; bottom: 0;
 
   & > div { width:100%; }
 
   & > div > div::before { content:none; }
 
-  input { width:100%; font-size:20px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45);}
+  input { width:100%; font-size:20px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45);
+    font-family: 'Noto Sans Tibetan';
+  }
 } 
 
+.lang-bo input {font-family: 'Noto Sans Tibetan'; }
 
 
 .w-md-editor.w-md-editor-show-live { width:100%; }
