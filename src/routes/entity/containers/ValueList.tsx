@@ -507,6 +507,28 @@ const EditLangString: FC<{
 
   const hasKB = langs.filter((l) => l.value === lit.language)
 
+  const inputRef = useRef<HTMLInputElement>()
+
+  const keepFocus = () => {
+    if (inputRef.current && document.activeElement != inputRef.current) inputRef.current.focus()
+  }
+
+  const insertChar = (str: string) => {
+    if (inputRef.current) {
+      const { selectionStart, selectionEnd, value } = inputRef.current
+      debug("input:", selectionStart, selectionEnd, value)
+      const newValue =
+        value.substring(0, selectionStart ? selectionStart : 0) + str + value.substring(selectionEnd ? selectionEnd : 0)
+      onChange(lit.copyWithUpdatedValue(newValue))
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.selectionStart = (selectionStart ? selectionStart : 0) + str.length
+          inputRef.current.selectionEnd = inputRef.current.selectionStart
+        }
+      }, 10)
+    }
+  }
+
   return (
     <div
       className="mb-0"
@@ -521,6 +543,7 @@ const EditLangString: FC<{
       {(property.singleLine || !editMD) && (
         <div style={{ width: "100%", position: "relative" }}>
           <TextField
+            inputRef={inputRef}
             className={/*"preview-" + preview +*/ lit.language === "bo" ? " lang-bo" : ""} //classes.root }
             //label={lit.id}
             label={"Text"}
@@ -544,7 +567,10 @@ const EditLangString: FC<{
           )}
           {hasKB.length && hasKB[0].keyboard && (
             <span
-              onClick={() => setKeyboard(!keyboard)}
+              onClick={() => {
+                setKeyboard(!keyboard)
+                keepFocus()
+              }}
               className={"opaHover " + (keyboard ? "on" : "")}
               style={{
                 position: "absolute",
@@ -559,7 +585,7 @@ const EditLangString: FC<{
             </span>
           )}
           {hasKB.length && hasKB[0].keyboard && keyboard && (
-            <div className="card px-2 py-2 hasKB" style={{ display: "block", width: "210px" }}>
+            <div className="card px-2 py-2 hasKB" style={{ display: "block", width: "210px" }} onClick={keepFocus}>
               {hasKB[0].keyboard.map((k, i) => (
                 <span
                   key={i}
@@ -570,7 +596,9 @@ const EditLangString: FC<{
                     height: "40px",
                     alignItems: "center",
                     justifyContent: "center",
+                    cursor: "pointer",
                   }}
+                  onClick={() => insertChar(k)}
                 >
                   {k}
                 </span>
