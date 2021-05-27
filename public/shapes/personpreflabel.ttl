@@ -276,7 +276,7 @@ bds:RootShape-note
   bds:propertyShapeType bds:FacetShape ;
   sh:name "notes"@en ;
   dash:editor dash:DetailsEditor ;
-  bds:displayPriority 2 ;
+  #bds:displayPriority 2 ;
 .
 
 bds:NoteShape
@@ -315,7 +315,7 @@ bds:NoteShape-noteText
   dash:editor dash:TextAreaWithLangEditor ;
   sh:name "text"@en ;
   sh:order "0"^^xsd:decimal ;
-  bds:displayPriority 2 ;
+  #bds:displayPriority 2 ;
 .
 
 bds:NoteShape-noteSource

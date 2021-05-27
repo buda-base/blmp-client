@@ -398,7 +398,8 @@ label ~ .selector {
 
 .ValueList .ValueList { overflow: hidden; transition:1500ms; max-height:1000px;transition-delay: 0s; background:white;}
 .ValueList .facet:not(.edit) .empty.ValueList { max-height:0; transition:500ms; transition-delay: 0s;}
-.ValueList .facet.edit .ValueList { overflow:visible; }
+.ValueList .facet.edit .ValueList { overflow:visible; } 
+.ValueList .facet.edit .ValueList .facet:not(.edit) .ValueList { overflow:hidden; } 
 
 .facet:not(.edit):not(:hover) {
   .close-btn, .toggle-btn { display:none; }

@@ -393,7 +393,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     if (property.objectType === ObjectType.Facet && item instanceof Subject) {
       //setEdit(property.qname+item.qname)  // won't work...
       setImmediate(() => {
-        setEdit(property.qname + item.qname)
+        setEdit(subject.qname + " " + property.qname + " " + item.qname)
       }) // this must be "delayed" to work
     }
   }
@@ -1015,14 +1015,18 @@ const FacetComponent: FC<{
 
   const [edit, setEdit] = useRecoilState(uiEditState)
 
-  //debug("facet:", edit, property.qname, withDisplayPriority, withoutDisplayPriority)
+  debug("facet:", edit, subject.qname + property.qname + subNode.qname) //, withDisplayPriority, withoutDisplayPriority)
+
+  let editClass = ""
+  if (edit === subject.qname + " " + property.qname + " " + subNode.qname || edit.startsWith(subNode.qname + " "))
+    editClass = "edit"
 
   return (
     <React.Fragment>
       <div
-        className={"facet " + (edit === property?.qname + subNode.qname ? "edit" : "") + " editable-" + editable}
+        className={"facet " + editClass + " editable-" + editable}
         onClick={(e) => {
-          setEdit(property.qname + subNode.qname)
+          setEdit(subject.qname + " " + property.qname + " " + subNode.qname)
           e.stopPropagation()
         }}
       >
