@@ -55,14 +55,15 @@ export const MinimalAddButton: FC<{
   )
 }
 
-export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement> /*; label: string*/ }> = ({
+export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; label?: string }> = ({
   add,
-  //label,
+  label,
 }) => {
   return (
     <div className="blockAdd text-center pb-1 mt-3" style={{ width: "100%" }}>
       <button className="btn btn-sm btn-block btn-outline-primary px-0" style={{ boxShadow: "none" }} onClick={add}>
-        {i18n.t("general.add_another")} <AddIcon /> {/* label */}
+        {i18n.t("general.add_another")} <AddIcon />{" "}
+        {label && label.length > 0 && label[0].toUpperCase() + label.substring(1)}
       </button>
     </div>
   )
@@ -398,9 +399,12 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     }
   }
 
-  if (embedded || property.path.sparqlString === ns.SKOS("prefLabel").value)
+  if (
+    property.objectType !== ObjectType.Facet &&
+    (embedded || property.path.sparqlString === ns.SKOS("prefLabel").value)
+  )
     return <MinimalAddButton disable={disable} add={addItem} className=" " />
-  else return <BlockAddButton add={addItem} /*label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)}*/ />
+  else return <BlockAddButton add={addItem} label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)} />
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -1015,10 +1019,14 @@ const FacetComponent: FC<{
 
   const [edit, setEdit] = useRecoilState(uiEditState)
 
-  debug("facet:", edit, subject.qname + property.qname + subNode.qname) //, withDisplayPriority, withoutDisplayPriority)
+  debug("facet:", edit, subject.qname + " " + property.qname + " " + subNode.qname) //, withDisplayPriority, withoutDisplayPriority)
 
   let editClass = ""
-  if (edit === subject.qname + " " + property.qname + " " + subNode.qname || edit.startsWith(subNode.qname + " "))
+  if (
+    edit === subject.qname + " " + property.qname + " " + subNode.qname ||
+    edit.startsWith(subNode.qname + " ") ||
+    edit.endsWith(" " + subject.qname)
+  )
     editClass = "edit"
 
   return (
