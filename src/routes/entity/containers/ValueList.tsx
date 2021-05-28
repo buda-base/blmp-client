@@ -482,7 +482,7 @@ const EditLangString: FC<{
   const [keyboard, setKeyboard] = useState(false)
 
   let error = ""
-  if (!lit.value) error = i18n.t("error.empty")
+  if (!lit.value && property.minCount) error = i18n.t("error.empty")
   else if (globalError) error = globalError
 
   const errorData = {
