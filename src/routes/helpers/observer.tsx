@@ -1,12 +1,19 @@
-import React, { useState } from "react"
-import { useGotoRecoilSnapshot, useRecoilTransactionObserver_UNSTABLE, useRecoilState } from "recoil"
+import React, { useState, FC } from "react"
+import {
+  useGotoRecoilSnapshot,
+  useRecoilTransactionObserver_UNSTABLE,
+  useRecoilState,
+  Snapshot,
+  RecoilValue,
+} from "recoil"
 import { useHotkeys } from "react-hotkeys-hook"
 import { uiReadyState } from "../../atoms/common"
-import { LiteralWithId, ExtRDFResourceWithLabel } from "../../helpers/rdf/types"
-import { entitiesAtom } from "../../containers/EntitySelectorContainer"
+import { LiteralWithId, RDFResourceWithLabel, ExtRDFResourceWithLabel, Value, Subject } from "../../helpers/rdf/types"
+import { Entity, entitiesAtom } from "../../containers/EntitySelectorContainer"
 
 const debug = require("debug")("bdrc:observer")
 
+/* // TODO rework that piece
 const sameFieldModifiedAgain = (m, s1, s2) => {
   if (!s2 || !s2.a) return true
   const m_content_tab = m.info.loadable.getValue(),
@@ -57,52 +64,55 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
   }
   return false
 }
+*/
 
 //let _manualGoto = false ;
 
-export function TimeTravelObserver(entityQname) {
-  const [snapshots, setSnapshots] = useState([])
+const getModified = (snapshot: Snapshot) => {
+  const modified = []
+  for (const a of snapshot.getNodes_UNSTABLE({ isModified: true })) {
+    if (["uiLangState", "uiTabState", "uiEditState"].includes(a.key)) continue
+
+    const info = snapshot.getInfo_UNSTABLE(a)
+    if (info.isModified) {
+      const tab = info?.loadable?.getValue() as Array<Value>
+      let empty = false
+      if (tab.length) {
+        if (tab[0] instanceof LiteralWithId) empty = tab[0].language === "" && tab[0].value === ""
+        else if (tab.length && tab[0] instanceof RDFResourceWithLabel) empty = tab[0].id === "tmp:uri"
+        else if (tab.length && tab[0] instanceof ExtRDFResourceWithLabel) empty = tab[0].id === "tmp:uri"
+        else if (tab.length && tab[0] instanceof Subject) empty = false
+        else if (tab.length && typeof tab === "string") empty = false
+        else {
+          debug(a, info, tab)
+          throw new Error("unknown history modification")
+        }
+      } else {
+        debug(a, info, tab)
+        throw new Error("no value in history modification")
+      }
+      if (!empty) {
+        modified.push({ a, info, tab })
+      }
+    }
+  }
+  return modified
+}
+
+export function TimeTravelObserver(/* entityQname */) {
+  const [snapshots, setSnapshots] = useState<Array<Snapshot>>([])
   const [current, setCurrent] = useState(0)
-  const [first, setFirst] = useState(-1)
   const [uiReady] = useRecoilState(uiReadyState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
-  useHotkeys(
-    "ctrl+z",
-    () => {
-      debug("UNDO", current, first)
-      if (current > first + 1) {
-        gotoSnapshot(snapshots[current - 1])
-        setCurrent(current - 1)
-        const delay = 150
-        setTimeout(() => document.activeElement.blur(), delay)
-      }
-    },
-    [current]
-  )
-
-  useHotkeys(
-    "ctrl+y,ctrl+shift+z",
-    () => {
-      debug("REDO", current, first)
-      if (current < snapshots.length - 1) {
-        gotoSnapshot(snapshots[current + 1])
-        setCurrent(current + 1)
-        const delay = 150
-        setTimeout(() => document.activeElement.blur(), delay)
-      }
-    },
-    [current]
-  )
-
   useRecoilTransactionObserver_UNSTABLE(({ snapshot }) => {
-    debug("uiR", uiReady) //, _manualGoto)
+    debug("uiR", uiReady, snapshot, snapshot.getID()) //, _manualGoto)
 
     if (!uiReady /*|| _manualGoto*/) return
 
     // DONE dont add a previous state as a new one
     if (
-      snapshots.filter((s, i) => {
+      snapshots.filter((s: Snapshot, i: number) => {
         if (s.getID() === snapshot.getID()) {
           setCurrent(i)
           debug("ID", s.getID(), i)
@@ -113,25 +123,14 @@ export function TimeTravelObserver(entityQname) {
     )
       return
 
-    const modified = []
-    for (const a of snapshot.getNodes_UNSTABLE(true)) {
-      const info = snapshot.getInfo_UNSTABLE(a)
-      if (info.isModified) {
-        const tab = info.loadable.getValue()
-        let empty = false
-        if (tab.length && tab[0] instanceof LiteralWithId) empty = tab[0].language === "" && tab[0].value === ""
-        else if (tab.length && tab[0] instanceof ExtRDFResourceWithLabel) empty = tab[0].id === "tmp:uri"
-        if (!empty) {
-          modified.push({ a, info })
-          //debug("MODIFIED", uiReady, first, a.key, a, info, tab)
-        }
-      }
-      // DONE do not not take a snapshot if current change is UI language
-      if (["uiLangState", "uiTabState", "uiEditState"].includes(a.key) && info.isModified) return
-    }
+    const modified = getModified(snapshot)
+
+    //debug("modified:",JSON.stringify(modified,null,1+1+1))
+
+    // DONE do not not take a snapshot if current change is UI language etc.
+    if (modified.length === 0) return
 
     setCurrent(snapshots.length)
-    if (uiReady && first === -1) setFirst(snapshots.length)
     setSnapshots([...snapshots, snapshot])
 
     /* // disable this for now
@@ -191,18 +190,74 @@ export function TimeTravelObserver(entityQname) {
   }
   */
 
+  const modified = snapshots.map(getModified)
+
+  const makeGotoButton = (snapshot: Snapshot, i: number) => (
+    <button
+      key={i}
+      className={"btn btn-sm btn-danger mx-1 icon btn-circle" + (i == current ? " current" : "")}
+      onClick={() => {
+        debug("snapshot-" + i, snapshot, modified[i])
+        gotoSnapshot(snapshot)
+      }}
+    >
+      {i}
+    </button>
+  )
+
+  let first = -1
+
+  const buttons = modified.map((m, i) => {
+    if (m.length === 1) {
+      if (first === -1) first = i - 1
+      return makeGotoButton(snapshots[i], i)
+    } else return ""
+  })
+
+  if (first >= 0) buttons[first] = makeGotoButton(snapshots[first], first)
+
+  useHotkeys(
+    "ctrl+z",
+    () => {
+      debug("UNDO", current, first)
+      if (current >= first + 1) {
+        gotoSnapshot(snapshots[current - 1])
+        setCurrent(current - 1)
+        const delay = 150
+        setTimeout(() => {
+          if (document && document.activeElement) {
+            const elem = document.activeElement as HTMLElement
+            elem.blur()
+          }
+        }, delay)
+      }
+    },
+    [current]
+  )
+
+  useHotkeys(
+    "ctrl+y,ctrl+shift+z",
+    () => {
+      debug("REDO", current, first)
+      if (current < snapshots.length - 1) {
+        gotoSnapshot(snapshots[current + 1])
+        setCurrent(current + 1)
+        const delay = 150
+        setTimeout(() => {
+          if (document && document.activeElement) {
+            const elem = document.activeElement as HTMLElement
+            elem.blur()
+          }
+        }, delay)
+      }
+    },
+    [current]
+  )
+
   return (
     <div className="small col-md-6 mx-auto text-center text-muted">
       Restore Snapshot:
-      {snapshots.map((snapshot, i) => (
-        <button
-          key={i}
-          className={"btn btn-sm btn-danger mx-1 icon btn-circle" + (i == current ? " current" : "")}
-          onClick={() => gotoSnapshot(snapshot /*,i*/)}
-        >
-          {i}
-        </button>
-      ))}
+      {buttons}
     </div>
   )
 }

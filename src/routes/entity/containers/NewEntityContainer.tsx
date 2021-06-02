@@ -70,11 +70,6 @@ function NewEntityContainer(props: AppProps) {
           </Link>
         </div>
       </div>
-      <div>
-        {entities.map((entity, i) => (
-          <TimeTravelObserver key={i} entityQname={entity.subjectQname} />
-        ))}
-      </div>
     </React.Fragment>
   )
 }
