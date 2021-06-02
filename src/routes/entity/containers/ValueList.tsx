@@ -1019,7 +1019,7 @@ const FacetComponent: FC<{
 
   const [edit, setEdit] = useRecoilState(uiEditState)
 
-  debug("facet:", edit, subject.qname + " " + property.qname + " " + subNode.qname) //, withDisplayPriority, withoutDisplayPriority)
+  //debug("facet:", edit, subject.qname + " " + property.qname + " " + subNode.qname) //, withDisplayPriority, withoutDisplayPriority)
 
   let editClass = ""
   if (

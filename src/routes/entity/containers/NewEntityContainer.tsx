@@ -11,6 +11,7 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
 import React, { ChangeEvent } from "react"
 import qs from "query-string"
 import { TextField, MenuItem } from "@material-ui/core"
+import { TimeTravelObserver } from "../../helpers/observer"
 
 const debug = require("debug")("bdrc:entity:newentity")
 
@@ -20,6 +21,7 @@ function NewEntityContainer(props: AppProps) {
   const handleNewtab = (event: ChangeEvent<unknown>): void => {
     setTab(0)
   }
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   /* // no need
   const urlParams = qs.parse(props.history.location.search)
@@ -67,6 +69,11 @@ function NewEntityContainer(props: AppProps) {
             PTEST
           </Link>
         </div>
+      </div>
+      <div>
+        {entities.map((entity, i) => (
+          <TimeTravelObserver key={i} entityQname={entity.subjectQname} />
+        ))}
       </div>
     </React.Fragment>
   )

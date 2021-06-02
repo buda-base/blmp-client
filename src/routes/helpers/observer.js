@@ -3,6 +3,7 @@ import { useGotoRecoilSnapshot, useRecoilTransactionObserver_UNSTABLE, useRecoil
 import { useHotkeys } from "react-hotkeys-hook"
 import { uiReadyState } from "../../atoms/common"
 import { LiteralWithId, ExtRDFResourceWithLabel } from "../../helpers/rdf/types"
+import { entitiesAtom } from "../../containers/EntitySelectorContainer"
 
 const debug = require("debug")("bdrc:observer")
 
@@ -57,11 +58,14 @@ const sameFieldModifiedAgain = (m, s1, s2) => {
   return false
 }
 
-export function TimeTravelObserver() {
+//let _manualGoto = false ;
+
+export function TimeTravelObserver(entityQname) {
   const [snapshots, setSnapshots] = useState([])
   const [current, setCurrent] = useState(0)
   const [first, setFirst] = useState(-1)
   const [uiReady] = useRecoilState(uiReadyState)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   useHotkeys(
     "ctrl+z",
@@ -92,8 +96,9 @@ export function TimeTravelObserver() {
   )
 
   useRecoilTransactionObserver_UNSTABLE(({ snapshot }) => {
-    //debug("uiR", uiReady)
-    if (!uiReady) return
+    debug("uiR", uiReady) //, _manualGoto)
+
+    if (!uiReady /*|| _manualGoto*/) return
 
     // DONE dont add a previous state as a new one
     if (
@@ -125,6 +130,11 @@ export function TimeTravelObserver() {
       if (["uiLangState", "uiTabState", "uiEditState"].includes(a.key) && info.isModified) return
     }
 
+    setCurrent(snapshots.length)
+    if (uiReady && first === -1) setFirst(snapshots.length)
+    setSnapshots([...snapshots, snapshot])
+
+    /* // disable this for now
     // DONE use only one snapshot for all successive modifications of same property value
     if (snapshots.length && modified.length === 1) {
       const nodes1 = Array.from(snapshots[snapshots.length - 1].getNodes_UNSTABLE(true))
@@ -157,9 +167,29 @@ export function TimeTravelObserver() {
       if (uiReady && first === -1) setFirst(snapshots.length)
       setSnapshots([...snapshots, snapshot])
     }
+    */
   })
 
   const gotoSnapshot = useGotoRecoilSnapshot()
+
+  /* // not working
+  const myGotoSnapshot = (snapshot,i) => {
+    const latests = snapshots[snapshots.length - 1].getLoadable(entitiesAtom).contents, current = snapshot.getLoadable(entitiesAtom).contents    
+    const newEntities = [ ...latests ]
+    const index1 = latests.findIndex((e) => e.entityQname === entityQname )
+    const index2 = current.findIndex((e) => e.entityQname === entityQname )
+    if(index1 === index2) {
+      //gotoSnapshot(snapshot)
+      _manualGoto = true
+      newEntities[index1] = current[index1]      
+      setEntities(newEntities)
+      setCurrent(i)
+      const delay=  150 ;
+      setTimeout(() => { _manualGoto = false; }, delay);
+    }
+    else throw new Error("index mismatch")
+  }
+  */
 
   return (
     <div className="small col-md-6 mx-auto text-center text-muted">
@@ -168,7 +198,7 @@ export function TimeTravelObserver() {
         <button
           key={i}
           className={"btn btn-sm btn-danger mx-1 icon btn-circle" + (i == current ? " current" : "")}
-          onClick={() => gotoSnapshot(snapshot)}
+          onClick={() => gotoSnapshot(snapshot /*,i*/)}
         >
           {i}
         </button>

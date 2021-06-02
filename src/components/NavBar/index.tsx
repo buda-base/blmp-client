@@ -9,6 +9,7 @@ import { useRecoilState, useRecoilValue, selectorFamily } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps } from "../../containers/AppContainer"
+import { TimeTravelObserver } from "../../routes/helpers/observer"
 
 import { uiLangState } from "../../atoms/common"
 
@@ -34,6 +35,8 @@ function NavBar(props: AppProps) {
         </Select>
         <FormHelperText>{i18n.t("home.uilang")}</FormHelperText>
       </FormControl>
+
+      <TimeTravelObserver /*entityQname={entity.qname} */ />
 
       {isAuthenticated ? (
         <div className="btn-group ml-auto" role="group">

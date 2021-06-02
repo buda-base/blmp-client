@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from "react"
-import { TimeTravelObserver } from "../../helpers/observer"
 import { ShapeFetcher, debugStore, EntityFetcher } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject, ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
@@ -159,9 +158,6 @@ function EntityEditContainer(props: AppProps) {
           )
         })}
       </div>
-      <section className="album py-2 my-2">
-        <TimeTravelObserver />
-      </section>
       <div>
         {edit && (
           <div
