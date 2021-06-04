@@ -7,8 +7,15 @@ import {
   RecoilValue,
 } from "recoil"
 import { useHotkeys } from "react-hotkeys-hook"
-import { uiReadyState } from "../../atoms/common"
-import { LiteralWithId, RDFResourceWithLabel, ExtRDFResourceWithLabel, Value, Subject } from "../../helpers/rdf/types"
+import { uiReadyState, uiHistoryState } from "../../atoms/common"
+import {
+  LiteralWithId,
+  RDFResourceWithLabel,
+  ExtRDFResourceWithLabel,
+  Value,
+  Subject,
+  history,
+} from "../../helpers/rdf/types"
 import { Entity, entitiesAtom } from "../../containers/EntitySelectorContainer"
 
 const debug = require("debug")("bdrc:observer")
@@ -260,4 +267,73 @@ export function TimeTravelObserver(/* entityQname */) {
       {buttons}
     </div>
   )
+}
+
+/* // did not work
+
+type HistoryProps = {
+  qname:string,
+  prop:string,
+  val:Array<Value>
+};
+
+export const HistoryContext = createContext<Partial<HistoryProps>>({});
+
+    // <HistoryContext.Provider value={ctx}>
+*/
+
+/*
+// did not work either
+
+const HistoryUpdater:FC<{
+  qname:string
+  prop:string
+  val:Array<Value>
+}> = ({ qname, prop, val }) => {
+  const [history] = useRecoilState(uiHistoryState)
+  debug("updH:",qname,prop,val);
+  return null ;
+}
+
+      // <HistoryUpdater qname={ctx.qname} prop={ctx.prop} val={ctx.val} />
+*/
+
+export function HistoryHandler(/* entityQname: string */) {
+  const [current, setCurrent] = useState(0)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [uiReady] = useRecoilState(uiReadyState)
+  //const [history] = useRecoilState(uiHistoryState)
+
+  const makeGotoButton = (i: string) => (
+    <button
+      key={i}
+      className={"btn btn-sm btn-danger mx-1 icon "}
+      onClick={() => {
+        debug(i + "", current, history)
+        //gotoSnapshot(snapshot)
+      }}
+    >
+      {i}
+    </button>
+  )
+
+  useHotkeys(
+    "ctrl+z",
+    () => {
+      debug("UNDO", current, history)
+    },
+    [current]
+  )
+
+  useHotkeys(
+    "shift+ctrl+z,ctrl+y",
+    () => {
+      debug("REDO", current, history)
+    },
+    [current]
+  )
+
+  const buttons = [makeGotoButton("UNDO"), makeGotoButton("REDO")]
+
+  return <div className="small col-md-6 mx-auto text-center text-muted">{buttons}</div>
 }

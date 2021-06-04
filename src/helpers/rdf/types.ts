@@ -1,3 +1,4 @@
+import React, { FC } from "react"
 import * as rdf from "rdflib"
 import * as ns from "./ns"
 import { idGenerator } from "../id"
@@ -14,12 +15,20 @@ import {
   RecoilState,
 } from "recoil"
 import config from "../../config"
+import { uiHistoryState } from "../../atoms/common"
 
 const debug = require("debug")("bdrc:rdf:types")
 
 const defaultGraphNode = new rdf.NamedNode(rdf.Store.defaultGraphURI)
 const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
+
+export const history: Array<Record<string, any>> = []
+
+const updateHistory = (qname: string, prop: string, val: Array<Value>) => {
+  history.push({ [qname]: { [prop]: val } })
+  debug("history:", history)
+}
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
   const n = Number(lit.value)
@@ -44,6 +53,8 @@ export class EntityGraphValues {
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
     this.newSubjectProps[subjectUri][pathString] = values
+
+    updateHistory(subjectUri, pathString, values)
   }
 
   isInitialized = (subjectUri: string, pathString: string) => {

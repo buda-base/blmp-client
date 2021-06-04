@@ -11,7 +11,6 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
 import React, { ChangeEvent } from "react"
 import qs from "query-string"
 import { TextField, MenuItem } from "@material-ui/core"
-import { TimeTravelObserver } from "../../helpers/observer"
 
 const debug = require("debug")("bdrc:entity:newentity")
 
