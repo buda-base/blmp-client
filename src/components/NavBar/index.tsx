@@ -10,7 +10,8 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
-import { uiLangState } from "../../atoms/common"
+import { uiLangState, uiTabState } from "../../atoms/common"
+import { entitiesAtom } from "../../containers/EntitySelectorContainer"
 
 function NavBar(props: AppProps) {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
@@ -20,6 +21,11 @@ function NavBar(props: AppProps) {
   const uiLangOnChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setUiLang(event.target.value as string)
   }
+
+  const [entities] = useRecoilState(entitiesAtom)
+  const [uiTab] = useRecoilState(uiTabState)
+  const entity = entities.findIndex((e, i) => i === uiTab)
+  const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
 
   return (
     <nav className="navbar navbar-dark navbar-expand-md">
@@ -35,10 +41,7 @@ function NavBar(props: AppProps) {
         <FormHelperText>{i18n.t("home.uilang")}</FormHelperText>
       </FormControl>
 
-      <HistoryHandler /*entityQname={entity.qname} */ />
-
-      {/* <TimeTravelObserver //entityQname={entity.qname} 
-        /> */}
+      <HistoryHandler entityUri={entityUri} />
 
       {isAuthenticated ? (
         <div className="btn-group ml-auto" role="group">

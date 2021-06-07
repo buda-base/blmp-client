@@ -23,10 +23,11 @@ const defaultGraphNode = new rdf.NamedNode(rdf.Store.defaultGraphURI)
 const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
 
-export const history: Array<Record<string, any>> = []
+export const history: Record<string, Array<Record<string, any>>> = {}
 
-const updateHistory = (qname: string, prop: string, val: Array<Value>) => {
-  history.push({ [qname]: { [prop]: val } })
+const updateHistory = (entity: string, qname: string, prop: string, val: Array<Value>) => {
+  if (!history[entity]) history[entity] = []
+  history[entity].push({ [qname]: { [prop]: val } })
   debug("history:", history)
 }
 
@@ -42,6 +43,11 @@ export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
 export class EntityGraphValues {
   oldSubjectProps: Record<string, Record<string, Array<Value>>> = {}
   newSubjectProps: Record<string, Record<string, Array<Value>>> = {}
+  subjectUri = ""
+
+  constructor(subjectUri: string) {
+    this.subjectUri = subjectUri
+  }
 
   onGetInitialValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
     if (!(subjectUri in this.oldSubjectProps)) this.oldSubjectProps[subjectUri] = {}
@@ -54,7 +60,7 @@ export class EntityGraphValues {
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
     this.newSubjectProps[subjectUri][pathString] = values
 
-    updateHistory(subjectUri, pathString, values)
+    updateHistory(this.subjectUri, subjectUri, pathString, values)
   }
 
   isInitialized = (subjectUri: string, pathString: string) => {
@@ -151,7 +157,7 @@ export class EntityGraph {
     this.store = store
     // strange code: we're keeping values in the closure so that when the object freezes
     // the freeze doesn't proagate to it
-    const values = new EntityGraphValues()
+    const values = new EntityGraphValues(topSubjectUri)
     this.topSubjectUri = topSubjectUri
     this.onGetInitialValues = values.onGetInitialValues
     this.getAtomForSubjectProperty = (pathString, subjectUri) =>

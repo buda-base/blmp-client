@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { ShapeFetcher, debugStore, EntityFetcher } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
-import { RDFResource, Subject, ExtRDFResourceWithLabel } from "../../../helpers/rdf/types"
+import { RDFResource, Subject, ExtRDFResourceWithLabel, history } from "../../../helpers/rdf/types"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { generateNew } from "../../../helpers/rdf/construct"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
@@ -110,6 +110,23 @@ function EntityEditContainer(props: AppProps) {
   if (!shape || !entity) return null
 
   //debug("entity:", entity)
+
+  // not clear why it has to be delayed like this to work...
+  let n = -1
+  const delay = 1000,
+    entityUri = ns.uriFromQname(entityQname),
+    init = setInterval(() => {
+      if (history[entityUri]) {
+        if (history[entityUri].some((h) => h["tmp:allValuesLoaded"])) {
+          clearInterval(init)
+        } else if (n === history[entityUri].length) {
+          clearInterval(init)
+          history[entityUri].push({ "tmp:allValuesLoaded": true })
+        } else {
+          n = history[entityUri].length
+        }
+      }
+    }, delay)
 
   /* // no need for updateEntitiesRDF
 

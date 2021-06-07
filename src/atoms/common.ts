@@ -31,3 +31,17 @@ export const uiHistoryState = atom<Record<string, never> | FC<{ string: { string
   key: "uiHistoryState",
   default: {},
 })
+
+export const uiUndoState = atom<number>({
+  key: "uiUndoState",
+  default: 0,
+})
+
+export const uiCurrentState = atom<number>({
+  key: "uiCurrentState",
+  default: -1,
+})
+
+export const canUndo = 1
+export const canRedo = 2
+export const canUndoRedo = 3

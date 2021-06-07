@@ -2,7 +2,7 @@ import * as rdf from "rdflib"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
 import { useRecoilState } from "recoil"
-import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject, Ontology } from "./types"
+import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject, Ontology, history } from "./types"
 import { NodeShape, prefLabel } from "./shapes"
 import { uriFromQname } from "./ns"
 import { uiReadyState } from "../../atoms/common"
@@ -171,6 +171,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
           // DONE: issue #2 fixed, fully using getEntities
           setEntities(newEntities)
+
+          debug("fetched")
         }
       } catch (e) {
         setEntityLoadingState({ status: "error", error: "error fetching entity" })

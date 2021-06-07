@@ -7,7 +7,16 @@ import {
   RecoilValue,
 } from "recoil"
 import { useHotkeys } from "react-hotkeys-hook"
-import { uiReadyState, uiHistoryState } from "../../atoms/common"
+import {
+  uiReadyState,
+  uiHistoryState,
+  uiTabState,
+  uiUndoState,
+  uiCurrentState,
+  canRedo,
+  canUndo,
+  canUndoRedo,
+} from "../../atoms/common"
 import {
   LiteralWithId,
   RDFResourceWithLabel,
@@ -108,7 +117,7 @@ const getModified = (snapshot: Snapshot) => {
 
 export function TimeTravelObserver(/* entityQname */) {
   const [snapshots, setSnapshots] = useState<Array<Snapshot>>([])
-  const [current, setCurrent] = useState(0)
+  const [current, setCurrent] = useRecoilState(uiUndoState)
   const [uiReady] = useRecoilState(uiReadyState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
@@ -298,24 +307,33 @@ const HistoryUpdater:FC<{
       // <HistoryUpdater qname={ctx.qname} prop={ctx.prop} val={ctx.val} />
 */
 
-export function HistoryHandler(/* entityQname: string */) {
-  const [current, setCurrent] = useState(0)
+export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [uiReady] = useRecoilState(uiReadyState)
+  const [uiTab] = useRecoilState(uiTabState)
+  const [undo] = useRecoilState(uiUndoState)
+  const [current, setCurrent] = useRecoilState(uiCurrentState)
   //const [history] = useRecoilState(uiHistoryState)
 
-  const makeGotoButton = (i: string) => (
-    <button
-      key={i}
-      className={"btn btn-sm btn-danger mx-1 icon "}
-      onClick={() => {
-        debug(i + "", current, history)
-        //gotoSnapshot(snapshot)
-      }}
-    >
-      {i}
-    </button>
-  )
+  const makeGotoButton = (i: string) => {
+    const disabled =
+      i === "REDO" && ![canRedo, canUndoRedo].includes(undo) ||
+      i === "UNDO" && ![canUndo, canUndoRedo].includes(undo)
+
+    return (
+      <button
+        disabled={disabled}
+        key={i}
+        className={"btn btn-sm btn-danger mx-1 icon "}
+        onClick={() => {
+          debug(i + "", current, history)
+          //gotoSnapshot(snapshot)
+        }}
+      >
+        {i}
+      </button>
+    )
+  }
 
   useHotkeys(
     "ctrl+z",
