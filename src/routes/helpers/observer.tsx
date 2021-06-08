@@ -11,11 +11,11 @@ import {
   uiReadyState,
   uiHistoryState,
   uiTabState,
-  uiUndoState,
-  uiCurrentState,
+  uiUndosState,
   canRedo,
   canUndo,
   canUndoRedo,
+  undoState,
 } from "../../atoms/common"
 import {
   LiteralWithId,
@@ -118,7 +118,7 @@ const getModified = (snapshot: Snapshot) => {
 
 export function TimeTravelObserver(/* entityQname */) {
   const [snapshots, setSnapshots] = useState<Array<Snapshot>>([])
-  const [current, setCurrent] = useRecoilState(uiCurrentState)
+  //const [current, setCurrent] = useRecoilState(uiCurrentState)
   const [uiReady] = useRecoilState(uiReadyState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
@@ -131,7 +131,7 @@ export function TimeTravelObserver(/* entityQname */) {
     if (
       snapshots.filter((s: Snapshot, i: number) => {
         if (s.getID() === snapshot.getID()) {
-          setCurrent(i)
+          //setCurrent(i)
           debug("ID", s.getID(), i)
           return true
         }
@@ -147,7 +147,7 @@ export function TimeTravelObserver(/* entityQname */) {
     // DONE do not not take a snapshot if current change is UI language etc.
     if (modified.length === 0) return
 
-    setCurrent(snapshots.length)
+    //setCurrent(snapshots.length)
     setSnapshots([...snapshots, snapshot])
 
     /* // disable this for now
@@ -212,7 +212,7 @@ export function TimeTravelObserver(/* entityQname */) {
   const makeGotoButton = (snapshot: Snapshot, i: number) => (
     <button
       key={i}
-      className={"btn btn-sm btn-danger mx-1 icon btn-circle" + (i == current ? " current" : "")}
+      className={"btn btn-sm btn-danger mx-1 icon btn-circle"} //(i == current ? " current" : "")}
       onClick={() => {
         debug("snapshot-" + i, snapshot, modified[i])
         gotoSnapshot(snapshot)
@@ -233,6 +233,7 @@ export function TimeTravelObserver(/* entityQname */) {
 
   if (first >= 0) buttons[first] = makeGotoButton(snapshots[first], first)
 
+  /*
   useHotkeys(
     "ctrl+z",
     () => {
@@ -270,6 +271,7 @@ export function TimeTravelObserver(/* entityQname */) {
     },
     [current]
   )
+  */
 
   return (
     <div className="small col-md-6 mx-auto text-center text-muted">
@@ -308,11 +310,15 @@ const HistoryUpdater:FC<{
       // <HistoryUpdater qname={ctx.qname} prop={ctx.prop} val={ctx.val} />
 */
 
-const GotoButton: FC<{ label: string; subject: Subject }> = ({ label, subject }) => {
+const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo: (s: undoState) => void }> = ({
+  label,
+  subject,
+  undo,
+  setUndo,
+}) => {
   const [uiReady] = useRecoilState(uiReadyState)
-  const [undo, setUndo] = useRecoilState(uiUndoState)
-  const [current, setCurrent] = useRecoilState(uiCurrentState)
-  //const [history] = useRecoilState(uiHistoryState)
+  //const [current, setCurrent] = useRecoilState(uiCurrentState)
+  const entityUri = subject.uri
 
   // TODO: pass subject to UndoButton subcomponent
   const [list, setList] = useRecoilState(subject.getAtomForProperty(undo.propertyPath))
@@ -320,6 +326,8 @@ const GotoButton: FC<{ label: string; subject: Subject }> = ({ label, subject })
   const disabled =
     label === "REDO" && ![canRedo, canUndoRedo].includes(undo.mask) ||
     label === "UNDO" && ![canUndo, canUndoRedo].includes(undo.mask)
+
+  debug(label + ":", undo)
 
   const previousValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
     const histo = history[entityUri]
@@ -351,7 +359,7 @@ const GotoButton: FC<{ label: string; subject: Subject }> = ({ label, subject })
   const clickHandler = () => {
     const entityUri = subject.uri
     if (entityUri) {
-      let idx = current
+      let idx = undo.current
       if (idx === -1) idx = history[entityUri].length - 1
 
       debug("click:", idx)
@@ -363,23 +371,23 @@ const GotoButton: FC<{ label: string; subject: Subject }> = ({ label, subject })
               const { vals, isInit, prev } = previousValues(entityUri, k, p, idx)
 
               // can't undo anymore if found initial value
-              if (isInit) setUndo({ ...undo, mask: canRedo })
-              else setUndo({ ...undo, mask: canUndoRedo })
+              if (isInit) setUndo({ ...undo, mask: canRedo, current: prev })
+              else setUndo({ ...undo, mask: canUndoRedo, current: prev })
 
               subject.graph.getValues().noHisto = true
               setList(vals)
-              setCurrent(prev)
+
               debug(label, "v:", vals, "l:", list, isInit, prev)
             } else if (label === "REDO") {
               const { vals, isLast, next } = nextValues(entityUri, k, p, idx)
 
               // can't redo anymore if found latest value
-              if (isLast) setUndo({ ...undo, mask: canUndo })
-              else setUndo({ ...undo, mask: canUndoRedo })
+              if (isLast) setUndo({ ...undo, mask: canUndo, current: next })
+              else setUndo({ ...undo, mask: canUndoRedo, current: next })
 
               subject.graph.getValues().noHisto = true
               setList(vals)
-              setCurrent(next)
+
               debug(label, "v:", vals, "l:", list, isLast, next)
             }
           }
@@ -392,18 +400,18 @@ const GotoButton: FC<{ label: string; subject: Subject }> = ({ label, subject })
     "ctrl+z",
     () => {
       if (label !== "UNDO") return
-      debug("UNDO", current, history)
+      debug("UNDO", undo.current, history)
     },
-    [current]
+    []
   )
 
   useHotkeys(
     "shift+ctrl+z,ctrl+y",
     () => {
       if (label !== "REDO") return
-      debug("REDO", current, history)
+      debug("REDO", undo.current, history)
     },
-    [current]
+    []
   )
 
   return (
@@ -421,7 +429,9 @@ const GotoButton: FC<{ label: string; subject: Subject }> = ({ label, subject })
 export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [uiTab] = useRecoilState(uiTabState)
-  const [undo, setUndo] = useRecoilState(uiUndoState)
+  const [undos, setUndos] = useRecoilState(uiUndosState)
+  const undo = undos[entityUri]
+  const setUndo = (s: undoState) => setUndos({ ...undos, [entityUri]: s })
 
   if (!entities[uiTab]) return null
 
@@ -429,8 +439,8 @@ export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
 
   return (
     <div className="small col-md-6 mx-auto text-center text-muted">
-      {subject && <GotoButton label="UNDO" subject={subject} />}
-      {subject && <GotoButton label="REDO" subject={subject} />}
+      {subject && undo && <GotoButton label="UNDO" subject={subject} undo={undo} setUndo={setUndo} />}
+      {subject && undo && <GotoButton label="REDO" subject={subject} undo={undo} setUndo={setUndo} />}
     </div>
   )
 }

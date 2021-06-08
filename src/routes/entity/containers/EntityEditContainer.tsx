@@ -8,7 +8,7 @@ import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
 import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/EntitySelectorContainer"
 import PropertyGroupContainer from "./PropertyGroupContainer"
-import { uiLangState, uiEditState } from "../../../atoms/common"
+import { uiLangState, uiEditState, uiUndosState, noUndoRedo } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
@@ -77,6 +77,8 @@ function EntityEditContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
   const [edit, setEdit] = useRecoilState(uiEditState)
 
+  const [undos, setUndos] = useRecoilState(uiUndosState)
+
   // useEffect(() => {
   //   debug("params", props.match.params.entityQname)
   //   if (props.match.params.entityQname) setEntityQname(props.match.params.entityQname)
@@ -113,15 +115,18 @@ function EntityEditContainer(props: AppProps) {
 
   // not clear why it has to be delayed like this to work...
   let n = -1
-  const delay = 650,
+  const delay = 350,
     entityUri = ns.uriFromQname(entityQname),
     init = setInterval(() => {
       if (history[entityUri]) {
         if (history[entityUri].some((h) => h["tmp:allValuesLoaded"])) {
           clearInterval(init)
+          //debug("(no init)",entityUri,n,history[entityUri])
         } else if (n === history[entityUri].length) {
           clearInterval(init)
           history[entityUri].push({ "tmp:allValuesLoaded": true })
+          //debug("init:",entityUri,n,history[entityUri])
+          setUndos({ ...undos, [entityUri]: noUndoRedo })
         } else {
           n = history[entityUri].length
         }

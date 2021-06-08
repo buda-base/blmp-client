@@ -16,7 +16,7 @@ import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/ent
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
-import { uiTabState, uiUndoState, uiCurrentState, canUndo, canRedo, canUndoRedo, noUndoRedo } from "../atoms/common"
+import { uiTabState, uiUndosState, canUndo, canRedo, canUndoRedo, noUndoRedo, undoState } from "../atoms/common"
 
 import { Subject, history } from "../helpers/rdf/types"
 
@@ -51,12 +51,13 @@ export interface AppProps extends RouteComponentProps<IdTypeParams> {}
 
 function App(props: AppProps) {
   const { isAuthenticated, isLoading } = useAuth0()
-  const [undo, setUndo] = useRecoilState(uiUndoState)
-  const [current, setCurrent] = useRecoilState(uiCurrentState)
+  const [undos, setUndos] = useRecoilState(uiUndosState)
   const [entities] = useRecoilState(entitiesAtom)
   const [uiTab] = useRecoilState(uiTabState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
+  const undo = undos[entityUri]
+  const setUndo = (s: undoState) => setUndos({ ...undos, [entityUri]: s })
 
   if (isLoading) return <span>Loading</span>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
@@ -65,25 +66,34 @@ function App(props: AppProps) {
 
   const delay = 150,
     updateUndo = (ev: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent) => {
-      debug("ev:", ev.currentTarget, ev.target)
+      debug("ev:", ev.currentTarget, ev.target, history, undos)
       ev.persist()
-      setTimeout(() => {
-        const target = ev.target as Element
-        if (target?.classList?.contains("undo-btn")) return
+      const timer = setTimeout(() => {
+        debug("timer", timer, entityUri)
 
-        if (!history[entityUri]) setUndo(noUndoRedo)
-        else if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) setUndo(noUndoRedo)
-        else {
+        const target = ev.target as Element
+        if (target?.classList?.contains("undo-btn")) {
+          clearInterval(timer)
+          return
+        }
+
+        if (!history[entityUri] || !history[entityUri].some((h) => h["tmp:allValuesLoaded"])) return
+        else clearInterval(timer)
+
+        if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) {
+          debug("no undo")
+          setUndo(noUndoRedo)
+        } else {
           const first = history[entityUri].findIndex((h) => h["tmp:allValuesLoaded"]),
             top = history[entityUri].length - 1
-          debug(":", current, first, top)
+          debug("has undo:", undo.current, first, top)
           if (first !== -1) {
-            if (current === -1 && first < top) {
+            if (undo.current === -1 && first < top) {
               const histo = history[entityUri][top]
               if (history[entityUri][top][entityUri]) {
                 const prop = Object.keys(history[entityUri][top][entityUri])
                 if (prop && prop.length && entities[entity].subject !== null)
-                  setUndo({ mask: canUndo, subjectUri: entityUri, propertyPath: prop[0] })
+                  setUndo({ mask: canUndo, subjectUri: entityUri, propertyPath: prop[0], current: -1 })
               }
             }
             //else if(current >=== first) setUndo(canRedo)
