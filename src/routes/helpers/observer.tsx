@@ -333,11 +333,15 @@ const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo
     const histo = history[entityUri]
     if (histo && histo.length > idx) {
       let isInit = false
+      histo[idx]["tmp:undone"] = true
       for (let j = idx - 1; j >= 0; j--) {
         if (histo[j] && histo[j]["tmp:allValuesLoaded"]) {
           isInit = true
-        } else if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
-          return { vals: histo[j][subjectUri][pathString], isInit, prev: j }
+        } else {
+          if (!isInit) histo[j]["tmp:undone"] = true
+          if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
+            return { vals: histo[j][subjectUri][pathString], isInit, prev: j }
+          }
         }
       }
     }
@@ -349,6 +353,7 @@ const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo
     if (histo && histo.length > idx) {
       for (let j = idx + 1; j < histo.length; j++) {
         if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
+          delete histo[j]["tmp:undone"]
           return { vals: histo[j][subjectUri][pathString], isLast: j === histo.length - 1, next: j }
         }
       }
@@ -366,31 +371,32 @@ const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo
 
       if (history[entityUri][idx]) {
         for (const k of Object.keys(history[entityUri][idx])) {
-          for (const p of Object.keys(history[entityUri][idx][k])) {
-            if (label === "UNDO") {
-              const { vals, isInit, prev } = previousValues(entityUri, k, p, idx)
+          if (!["tmp:undone", "tmp:current"].includes(k))
+            for (const p of Object.keys(history[entityUri][idx][k])) {
+              if (label === "UNDO") {
+                const { vals, isInit, prev } = previousValues(entityUri, k, p, idx)
 
-              // can't undo anymore if found initial value
-              if (isInit) setUndo({ ...undo, mask: canRedo, current: prev })
-              else setUndo({ ...undo, mask: canUndoRedo, current: prev })
+                // can't undo anymore if found initial value
+                if (isInit) setUndo({ ...undo, mask: canRedo, current: prev })
+                else setUndo({ ...undo, mask: canUndoRedo, current: prev })
 
-              subject.graph.getValues().noHisto = true
-              setList(vals)
+                subject.graph.getValues().noHisto = true
+                setList(vals)
 
-              debug(label, "v:", vals, "l:", list, isInit, prev)
-            } else if (label === "REDO") {
-              const { vals, isLast, next } = nextValues(entityUri, k, p, idx)
+                debug(label, "v:", vals, "l:", list, isInit, prev)
+              } else if (label === "REDO") {
+                const { vals, isLast, next } = nextValues(entityUri, k, p, idx)
 
-              // can't redo anymore if found latest value
-              if (isLast) setUndo({ ...undo, mask: canUndo, current: next })
-              else setUndo({ ...undo, mask: canUndoRedo, current: next })
+                // can't redo anymore if found latest value
+                if (isLast) setUndo({ ...undo, mask: canUndo, current: next })
+                else setUndo({ ...undo, mask: canUndoRedo, current: next })
 
-              subject.graph.getValues().noHisto = true
-              setList(vals)
+                subject.graph.getValues().noHisto = true
+                setList(vals)
 
-              debug(label, "v:", vals, "l:", list, isLast, next)
+                debug(label, "v:", vals, "l:", list, isLast, next)
+              }
             }
-          }
         }
       }
     }

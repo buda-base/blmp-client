@@ -88,7 +88,12 @@ function App(props: AppProps) {
             top = history[entityUri].length - 1
           debug("has undo:", undo.current, first, top)
           if (first !== -1) {
-            if (undo.current === -1 && first < top) {
+            let current = undo.current
+            if (current != -1 && history[entityUri][top]["tmp:current"]) {
+              current = -1
+              delete history[entityUri][top]["tmp:current"]
+            }
+            if (current === -1 && first < top) {
               const histo = history[entityUri][top]
               if (history[entityUri][top][entityUri]) {
                 const prop = Object.keys(history[entityUri][top][entityUri])
@@ -96,6 +101,8 @@ function App(props: AppProps) {
                   setUndo({ mask: canUndo, subjectUri: entityUri, propertyPath: prop[0], current: -1 })
               }
             }
+
+            //else if(undo.current !== -1 && first  top )
             //else if(current >=== first) setUndo(canRedo)
             //else setUndo(canUndoRedo)
           }
