@@ -16,7 +16,7 @@ import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/ent
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
-import { uiTabState, uiUndoState, uiCurrentState, canUndo, canRedo, canUndoRedo } from "../atoms/common"
+import { uiTabState, uiUndoState, uiCurrentState, canUndo, canRedo, canUndoRedo, noUndoRedo } from "../atoms/common"
 
 import { Subject, history } from "../helpers/rdf/types"
 
@@ -61,22 +61,37 @@ function App(props: AppProps) {
   if (isLoading) return <span>Loading</span>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
 
-  // TODO: refresh when switching between two open resources
   //debug("hello?", props)
 
   const delay = 150,
-    updateUndo = () =>
+    updateUndo = (ev: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent) => {
+      debug("ev:", ev.currentTarget, ev.target)
+      ev.persist()
       setTimeout(() => {
-        if (!history[entityUri]) setUndo(0)
-        else if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) setUndo(0)
+        const target = ev.target as Element
+        if (target?.classList?.contains("undo-btn")) return
+
+        if (!history[entityUri]) setUndo(noUndoRedo)
+        else if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) setUndo(noUndoRedo)
         else {
-          const first = history[entityUri].findIndex((h) => h["tmp:allValuesLoaded"])
-          debug(":", current, first, history[entityUri].length - 1)
-          if (current === -1) setUndo(canUndo)
-          //else if(current >=== first) setUndo(canRedo)
-          //else setUndo(canUndoRedo)
+          const first = history[entityUri].findIndex((h) => h["tmp:allValuesLoaded"]),
+            top = history[entityUri].length - 1
+          debug(":", current, first, top)
+          if (first !== -1) {
+            if (current === -1 && first < top) {
+              const histo = history[entityUri][top]
+              if (history[entityUri][top][entityUri]) {
+                const prop = Object.keys(history[entityUri][top][entityUri])
+                if (prop && prop.length && entities[entity].subject !== null)
+                  setUndo({ mask: canUndo, subjectUri: entityUri, propertyPath: prop[0] })
+              }
+            }
+            //else if(current >=== first) setUndo(canRedo)
+            //else setUndo(canUndoRedo)
+          }
         }
       }, delay)
+    }
 
   return (
     <div onClick={updateUndo} onKeyUp={updateUndo}>

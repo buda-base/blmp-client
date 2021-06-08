@@ -26,6 +26,7 @@ import {
   history,
 } from "../../helpers/rdf/types"
 import { Entity, entitiesAtom } from "../../containers/EntitySelectorContainer"
+import { replaceItemAtIndex, removeItemAtIndex } from "../../helpers/atoms"
 
 const debug = require("debug")("bdrc:observer")
 
@@ -117,7 +118,7 @@ const getModified = (snapshot: Snapshot) => {
 
 export function TimeTravelObserver(/* entityQname */) {
   const [snapshots, setSnapshots] = useState<Array<Snapshot>>([])
-  const [current, setCurrent] = useRecoilState(uiUndoState)
+  const [current, setCurrent] = useRecoilState(uiCurrentState)
   const [uiReady] = useRecoilState(uiReadyState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
@@ -307,37 +308,90 @@ const HistoryUpdater:FC<{
       // <HistoryUpdater qname={ctx.qname} prop={ctx.prop} val={ctx.val} />
 */
 
-export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
+const GotoButton: FC<{ label: string; subject: Subject }> = ({ label, subject }) => {
   const [uiReady] = useRecoilState(uiReadyState)
-  const [uiTab] = useRecoilState(uiTabState)
-  const [undo] = useRecoilState(uiUndoState)
+  const [undo, setUndo] = useRecoilState(uiUndoState)
   const [current, setCurrent] = useRecoilState(uiCurrentState)
   //const [history] = useRecoilState(uiHistoryState)
 
-  const makeGotoButton = (i: string) => {
-    const disabled =
-      i === "REDO" && ![canRedo, canUndoRedo].includes(undo) ||
-      i === "UNDO" && ![canUndo, canUndoRedo].includes(undo)
+  // TODO: pass subject to UndoButton subcomponent
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(undo.propertyPath))
 
-    return (
-      <button
-        disabled={disabled}
-        key={i}
-        className={"btn btn-sm btn-danger mx-1 icon "}
-        onClick={() => {
-          debug(i + "", current, history)
-          //gotoSnapshot(snapshot)
-        }}
-      >
-        {i}
-      </button>
-    )
+  const disabled =
+    label === "REDO" && ![canRedo, canUndoRedo].includes(undo.mask) ||
+    label === "UNDO" && ![canUndo, canUndoRedo].includes(undo.mask)
+
+  const previousValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
+    const histo = history[entityUri]
+    if (histo && histo.length > idx) {
+      let isInit = false
+      for (let j = idx - 1; j >= 0; j--) {
+        if (histo[j] && histo[j]["tmp:allValuesLoaded"]) {
+          isInit = true
+        } else if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
+          return { vals: histo[j][subjectUri][pathString], isInit, prev: j }
+        }
+      }
+    }
+    return { vals: [], isInit: true, prev: -1 }
+  }
+
+  const nextValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
+    const histo = history[entityUri]
+    if (histo && histo.length > idx) {
+      for (let j = idx + 1; j < histo.length; j++) {
+        if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
+          return { vals: histo[j][subjectUri][pathString], isLast: j === histo.length - 1, next: j }
+        }
+      }
+    }
+    return { vals: [], isLast: true, next: -1 }
+  }
+
+  const clickHandler = () => {
+    const entityUri = subject.uri
+    if (entityUri) {
+      let idx = current
+      if (idx === -1) idx = history[entityUri].length - 1
+
+      debug("click:", idx)
+
+      if (history[entityUri][idx]) {
+        for (const k of Object.keys(history[entityUri][idx])) {
+          for (const p of Object.keys(history[entityUri][idx][k])) {
+            if (label === "UNDO") {
+              const { vals, isInit, prev } = previousValues(entityUri, k, p, idx)
+
+              // can't undo anymore if found initial value
+              if (isInit) setUndo({ ...undo, mask: canRedo })
+              else setUndo({ ...undo, mask: canUndoRedo })
+
+              subject.graph.getValues().noHisto = true
+              setList(vals)
+              setCurrent(prev)
+              debug(label, "v:", vals, "l:", list, isInit, prev)
+            } else if (label === "REDO") {
+              const { vals, isLast, next } = nextValues(entityUri, k, p, idx)
+
+              // can't redo anymore if found latest value
+              if (isLast) setUndo({ ...undo, mask: canUndo })
+              else setUndo({ ...undo, mask: canUndoRedo })
+
+              subject.graph.getValues().noHisto = true
+              setList(vals)
+              setCurrent(next)
+              debug(label, "v:", vals, "l:", list, isLast, next)
+            }
+          }
+        }
+      }
+    }
   }
 
   useHotkeys(
     "ctrl+z",
     () => {
+      if (label !== "UNDO") return
       debug("UNDO", current, history)
     },
     [current]
@@ -346,12 +400,37 @@ export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
   useHotkeys(
     "shift+ctrl+z,ctrl+y",
     () => {
+      if (label !== "REDO") return
       debug("REDO", current, history)
     },
     [current]
   )
 
-  const buttons = [makeGotoButton("UNDO"), makeGotoButton("REDO")]
+  return (
+    <button
+      disabled={disabled}
+      key={label}
+      className={"btn btn-sm btn-danger mx-1 icon undo-btn"}
+      onClick={clickHandler}
+    >
+      {label}
+    </button>
+  )
+}
 
-  return <div className="small col-md-6 mx-auto text-center text-muted">{buttons}</div>
+export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [uiTab] = useRecoilState(uiTabState)
+  const [undo, setUndo] = useRecoilState(uiUndoState)
+
+  if (!entities[uiTab]) return null
+
+  const subject = entities[uiTab].subject
+
+  return (
+    <div className="small col-md-6 mx-auto text-center text-muted">
+      {subject && <GotoButton label="UNDO" subject={subject} />}
+      {subject && <GotoButton label="REDO" subject={subject} />}
+    </div>
+  )
 }

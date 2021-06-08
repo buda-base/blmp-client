@@ -44,6 +44,7 @@ export class EntityGraphValues {
   oldSubjectProps: Record<string, Record<string, Array<Value>>> = {}
   newSubjectProps: Record<string, Record<string, Array<Value>>> = {}
   subjectUri = ""
+  noHisto = false
 
   constructor(subjectUri: string) {
     this.subjectUri = subjectUri
@@ -57,6 +58,11 @@ export class EntityGraphValues {
   }
 
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
+    if (this.noHisto) {
+      this.noHisto = false
+      return
+    }
+
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
     this.newSubjectProps[subjectUri][pathString] = values
 

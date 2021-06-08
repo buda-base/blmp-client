@@ -113,7 +113,7 @@ function EntityEditContainer(props: AppProps) {
 
   // not clear why it has to be delayed like this to work...
   let n = -1
-  const delay = 1000,
+  const delay = 650,
     entityUri = ns.uriFromQname(entityQname),
     init = setInterval(() => {
       if (history[entityUri]) {

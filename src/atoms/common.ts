@@ -1,6 +1,6 @@
 import { atom } from "recoil"
 import { FC } from "react"
-import { Value } from "../helpers/rdf/types"
+import { Value, Subject } from "../helpers/rdf/types"
 
 export const uiLangState = atom<string>({
   key: "uiLangState",
@@ -32,16 +32,23 @@ export const uiHistoryState = atom<Record<string, never> | FC<{ string: { string
   default: {},
 })
 
-export const uiUndoState = atom<number>({
-  key: "uiUndoState",
-  default: 0,
-})
-
 export const uiCurrentState = atom<number>({
   key: "uiCurrentState",
   default: -1,
 })
 
+type undoState = {
+  mask: number
+  subjectUri: string
+  propertyPath: string
+}
+
 export const canUndo = 1
 export const canRedo = 2
 export const canUndoRedo = 3
+export const noUndoRedo = { mask: 0, subjectUri: "", propertyPath: "" }
+
+export const uiUndoState = atom<undoState>({
+  key: "uiUndoState",
+  default: noUndoRedo,
+})
