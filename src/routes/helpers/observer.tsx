@@ -327,7 +327,7 @@ const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo
     label === "REDO" && ![canRedo, canUndoRedo].includes(undo.mask) ||
     label === "UNDO" && ![canUndo, canUndoRedo].includes(undo.mask)
 
-  debug(label + ":", undo)
+  //debug(label + ":", undo)
 
   const previousValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
     const histo = history[entityUri]
@@ -336,9 +336,8 @@ const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo
       histo[idx]["tmp:undone"] = true
       for (let j = idx - 1; j >= 0; j--) {
         if (histo[j] && histo[j]["tmp:allValuesLoaded"]) {
-          isInit = true
+          isInit = histo[j + 1]["tmp:undone"]
         } else {
-          if (!isInit) histo[j]["tmp:undone"] = true
           if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
             return { vals: histo[j][subjectUri][pathString], isInit, prev: j }
           }
@@ -383,7 +382,7 @@ const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo
                 subject.graph.getValues().noHisto = true
                 setList(vals)
 
-                debug(label, "v:", vals, "l:", list, isInit, prev)
+                debug(label, "l:", list, "v:", vals, isInit, prev)
               } else if (label === "REDO") {
                 const { vals, isLast, next } = nextValues(entityUri, k, p, idx)
 
@@ -394,7 +393,7 @@ const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo
                 subject.graph.getValues().noHisto = true
                 setList(vals)
 
-                debug(label, "v:", vals, "l:", list, isLast, next)
+                debug(label, "l:", list, "v:", vals, isLast, next)
               }
             }
         }

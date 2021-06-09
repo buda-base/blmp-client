@@ -34,7 +34,7 @@ const updateHistory = (entity: string, qname: string, prop: string, val: Array<V
       newCurrent = history[entity].length
     }
   history[entity].push({ [qname]: { [prop]: val }, ...newCurrent ? { "tmp:current": newCurrent } : {} })
-  debug("history:", history)
+  debug("history:", history, newCurrent)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {

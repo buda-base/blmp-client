@@ -92,6 +92,8 @@ function App(props: AppProps) {
             if (current != -1 && history[entityUri][top]["tmp:current"]) {
               current = -1
               delete history[entityUri][top]["tmp:current"]
+            } else if (current === top) {
+              current = -1
             }
             if (current === -1 && first < top) {
               const histo = history[entityUri][top]
