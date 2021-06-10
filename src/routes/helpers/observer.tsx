@@ -395,21 +395,19 @@ const GotoButton: FC<{
       let idx = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1 + (label === "REDO" ? 1 : 0)
       if (idx < 0) idx = history[entityUri].length - 1
 
-      debug("click:", idx)
-
       if (history[entityUri][idx]) {
         for (const k of Object.keys(history[entityUri][idx])) {
           if (!["tmp:undone", "tmp:current"].includes(k)) {
             for (const p of Object.keys(history[entityUri][idx][k])) {
               if (label === "UNDO") {
                 const { vals, prevUndo } = previousValues(entityUri, k, p, idx)
-                subject.graph.getValues().noHisto = true
+                subject.noHisto()
                 setList(vals)
                 setUndo(prevUndo)
                 debug(label, "l:", list, "v:", vals, prevUndo)
               } else if (label === "REDO") {
                 const { vals, nextUndo } = nextValues(entityUri, k, p, idx)
-                subject.graph.getValues().noHisto = true
+                subject.noHisto()
                 setList(vals)
                 setUndo(nextUndo)
                 debug(label, "l:", list, "v:", vals, nextUndo)

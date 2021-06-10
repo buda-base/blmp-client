@@ -26,15 +26,13 @@ const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
 export const history: Record<string, Array<Record<string, any>>> = {}
 
 const updateHistory = (entity: string, qname: string, prop: string, val: Array<Value>) => {
-  //let newCurrent = 0
   if (!history[entity]) history[entity] = []
   else
     while (history[entity][history[entity].length - 1]["tmp:undone"]) {
       history[entity].pop()
-      //newCurrent = history[entity].length
     }
-  history[entity].push({ [qname]: { [prop]: val } }) //, ...newCurrent ? { "tmp:current": newCurrent } : {} })
-  debug("history:", history) //, newCurrent)
+  history[entity].push({ [qname]: { [prop]: val } })
+  //debug("history:", history)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
@@ -65,6 +63,7 @@ export class EntityGraphValues {
 
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
     if (this.noHisto) {
+      debug("(history)", history)
       this.noHisto = false
       return
     }
@@ -460,31 +459,11 @@ export class Subject extends RDFResource {
     return this.graph.getAtomForSubjectProperty(pathString, this.uri)
   }
 
-  /* // breaks history
-
-  // returns new subject extended with some TTL
-  extendWithTTL(ttl: string): Subject {
-    const newStore: rdf.Store = rdf.graph()
-    // DONE: merge with current store
-    newStore.addAll(this.graph.store.statements)
-    rdf.parse(ttl, newStore, rdf.Store.defaultGraphURI, "text/turtle")
-    const newGraph = new EntityGraph(newStore, this.graph.topSubjectUri, this.graph.associatedLabelsStore)
-    const newSubject = new Subject(this.node, newGraph)
-    return newSubject
+  noHisto() {
+    // DONE: default values need to be added to history when entoty is loading
+    if (history[this.uri] && history[this.uri].some((h) => h["tmp:allValuesLoaded"]))
+      this.graph.getValues().noHisto = true
   }
-
-  removeWithTTL(ttl: string): Subject {
-    const newStore: rdf.Store = rdf.graph()
-    newStore.addAll(this.graph.store.statements)
-    const delStore: rdf.Store = rdf.graph()
-    rdf.parse(ttl, delStore, rdf.Store.defaultGraphURI, "text/turtle")
-    //debug("del:",delStore)
-    newStore.remove(delStore.statements)
-    const newGraph = new EntityGraph(newStore, this.graph.topSubjectUri, this.graph.associatedLabelsStore)
-    const newSubject = new Subject(this.node, newGraph)
-    return newSubject
-  }
-  */
 
   static createEmpty(): Subject {
     return new Subject(new rdf.NamedNode("tmp:uri"), new EntityGraph(new rdf.Store(), "tmp:uri"))

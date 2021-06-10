@@ -64,42 +64,29 @@ function App(props: AppProps) {
 
   //debug("hello?", props)
 
-  const delay = 350,
+  const delay = 10,
     updateUndo = (ev: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent) => {
-      debug("ev:", ev.currentTarget, ev.target, history, undos)
+      //debug("ev:", ev.currentTarget, ev.target, history, undos)
       ev.persist()
       const timer = setTimeout(() => {
         debug("timer", timer, entityUri)
 
         const target = ev.target as Element
         if (target?.classList?.contains("undo-btn")) {
-          clearInterval(timer)
           return
         }
 
         if (!history[entityUri] || !history[entityUri].some((h) => h["tmp:allValuesLoaded"])) return
-        else clearInterval(timer)
 
         if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) {
-          debug("no undo")
+          //debug("no undo")
           setUndo(noUndoRedo)
         } else {
           const first = history[entityUri].findIndex((h) => h["tmp:allValuesLoaded"]),
             top = history[entityUri].length - 1
-          debug("has undo:", JSON.stringify(undo, null, 1), first, top)
+          debug("has undo:", JSON.stringify(undo, null, 1), first, top, history)
           if (first !== -1) {
             const current = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1
-
-            /*
-            if (history[entityUri][top]["tmp:current"]) {
-              current = -1
-              delete history[entityUri][top]["tmp:current"]
-            } 
-            else if (current === top) {
-              current = -1
-            }
-            */
-
             if (current < 0 && first < top) {
               const histo = history[entityUri][top]
               if (history[entityUri][top][entityUri]) {
@@ -108,10 +95,6 @@ function App(props: AppProps) {
                   setUndo({ next: noUndo, prev: { enabled: true, subjectUri: entityUri, propertyPath: prop[0] } })
               }
             }
-
-            //else if(undo.current !== -1 && first  top )
-            //else if(current >=== first) setUndo(canRedo)
-            //else setUndo(canUndoRedo)
           }
         }
       }, delay)

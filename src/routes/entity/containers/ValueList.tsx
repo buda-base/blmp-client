@@ -211,6 +211,7 @@ const ValueList: FC<{
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
     if (vals && vals.length) {
       if (property.minCount && vals.length < property.minCount) {
+        subject.noHisto()
         setList([...vals, generateDefault(property, subject)])
       } else {
         setList(vals)
@@ -223,6 +224,7 @@ const ValueList: FC<{
       (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField) &&
       (!property.maxCount || property.maxCount >= list.length)
     ) {
+      subject.noHisto()
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
       else setList((oldList) => [...oldList, generateDefault(property, subject)])
     } else if (property.displayPriority && property.displayPriority === 1 && list.length === 1 && !force) {
@@ -1033,9 +1035,11 @@ const FacetComponent: FC<{
     <React.Fragment>
       <div
         className={"facet " + editClass + " editable-" + editable}
-        onClick={(e) => {
+        onClick={(ev) => {
           setEdit(subject.qname + " " + property.qname + " " + subNode.qname)
-          e.stopPropagation()
+          const target = ev.target as Element
+          debug("target:", target)
+          if (!target?.classList?.contains("close-facet-btn")) ev.stopPropagation()
         }}
       >
         <div className={"card pt-2 pb-3 pr-3 mt-2 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
@@ -1067,8 +1071,12 @@ const FacetComponent: FC<{
             />
           ))}
           <div className="close-btn">
-            <button className="btn btn-link ml-2 px-0" onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>
-              <CloseIcon />
+            <button
+              className="btn btn-link ml-2 px-0 close-facet-btn"
+              onClick={deleteItem}
+              {...(!canDel ? { disabled: true } : {})}
+            >
+              <CloseIcon className="close-facet-btn" />
             </button>
           </div>
         </div>
