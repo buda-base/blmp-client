@@ -16,7 +16,7 @@ import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/ent
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
-import { uiTabState, uiUndosState, canUndo, canRedo, canUndoRedo, noUndoRedo, undoState } from "../atoms/common"
+import { uiTabState, uiUndosState, noUndo, noUndoRedo, undoState } from "../atoms/common"
 
 import { Subject, history } from "../helpers/rdf/types"
 
@@ -57,14 +57,14 @@ function App(props: AppProps) {
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
   const undo = undos[entityUri]
-  const setUndo = (s: undoState) => setUndos({ ...undos, [entityUri]: s })
+  const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
 
   if (isLoading) return <span>Loading</span>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
 
   //debug("hello?", props)
 
-  const delay = 150,
+  const delay = 350,
     updateUndo = (ev: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent) => {
       debug("ev:", ev.currentTarget, ev.target, history, undos)
       ev.persist()
@@ -86,21 +86,26 @@ function App(props: AppProps) {
         } else {
           const first = history[entityUri].findIndex((h) => h["tmp:allValuesLoaded"]),
             top = history[entityUri].length - 1
-          debug("has undo:", undo.current, first, top)
+          debug("has undo:", JSON.stringify(undo, null, 1), first, top)
           if (first !== -1) {
-            let current = undo.current
-            if (current != -1 && history[entityUri][top]["tmp:current"]) {
+            const current = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1
+
+            /*
+            if (history[entityUri][top]["tmp:current"]) {
               current = -1
               delete history[entityUri][top]["tmp:current"]
-            } else if (current === top) {
+            } 
+            else if (current === top) {
               current = -1
             }
-            if (current === -1 && first < top) {
+            */
+
+            if (current < 0 && first < top) {
               const histo = history[entityUri][top]
               if (history[entityUri][top][entityUri]) {
                 const prop = Object.keys(history[entityUri][top][entityUri])
                 if (prop && prop.length && entities[entity].subject !== null)
-                  setUndo({ mask: canUndo, subjectUri: entityUri, propertyPath: prop[0], current: -1 })
+                  setUndo({ next: noUndo, prev: { enabled: true, subjectUri: entityUri, propertyPath: prop[0] } })
               }
             }
 

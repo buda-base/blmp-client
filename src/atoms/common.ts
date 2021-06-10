@@ -33,18 +33,16 @@ export const uiHistoryState = atom<Record<string, never> | FC<{ string: { string
 })
 
 export type undoState = {
-  mask: number
+  enabled: boolean
   subjectUri: string
   propertyPath: string
-  current: number
 }
 
-export const canUndo = 1
-export const canRedo = 2
-export const canUndoRedo = 3
-export const noUndoRedo = { mask: 0, subjectUri: "", propertyPath: "", current: -1 }
+export const noUndo = { enabled: false, subjectUri: "", propertyPath: "" }
 
-export const uiUndosState = atom<Record<string, undoState>>({
+export const noUndoRedo = { prev: noUndo, next: noUndo }
+
+export const uiUndosState = atom<Record<string, Record<string, undoState>>>({
   key: "uiUndosState",
   default: {},
 })

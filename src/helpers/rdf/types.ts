@@ -26,15 +26,15 @@ const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
 export const history: Record<string, Array<Record<string, any>>> = {}
 
 const updateHistory = (entity: string, qname: string, prop: string, val: Array<Value>) => {
-  let newCurrent = 0
+  //let newCurrent = 0
   if (!history[entity]) history[entity] = []
   else
     while (history[entity][history[entity].length - 1]["tmp:undone"]) {
       history[entity].pop()
-      newCurrent = history[entity].length
+      //newCurrent = history[entity].length
     }
-  history[entity].push({ [qname]: { [prop]: val }, ...newCurrent ? { "tmp:current": newCurrent } : {} })
-  debug("history:", history, newCurrent)
+  history[entity].push({ [qname]: { [prop]: val } }) //, ...newCurrent ? { "tmp:current": newCurrent } : {} })
+  debug("history:", history) //, newCurrent)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {

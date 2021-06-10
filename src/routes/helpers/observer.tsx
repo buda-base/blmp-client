@@ -12,9 +12,8 @@ import {
   uiHistoryState,
   uiTabState,
   uiUndosState,
-  canRedo,
-  canUndo,
-  canUndoRedo,
+  noUndo,
+  noUndoRedo,
   undoState,
 } from "../../atoms/common"
 import {
@@ -310,92 +309,113 @@ const HistoryUpdater:FC<{
       // <HistoryUpdater qname={ctx.qname} prop={ctx.prop} val={ctx.val} />
 */
 
-const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo: (s: undoState) => void }> = ({
-  label,
-  subject,
-  undo,
-  setUndo,
-}) => {
+const GotoButton: FC<{
+  label: string
+  subject: Subject
+  undo: Record<string, undoState>
+  setUndo: (s: Record<string, undoState>) => void
+}> = ({ label, subject, undo, setUndo }) => {
   const [uiReady] = useRecoilState(uiReadyState)
   //const [current, setCurrent] = useRecoilState(uiCurrentState)
   const entityUri = subject.uri
 
-  // TODO: pass subject to UndoButton subcomponent
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(undo.propertyPath))
-
-  const disabled =
-    label === "REDO" && ![canRedo, canUndoRedo].includes(undo.mask) ||
-    label === "UNDO" && ![canUndo, canUndoRedo].includes(undo.mask)
+  // DONE: pass subject to UndoButton subcomponent
+  const which = label === "UNDO" ? "prev" : "next"
+  const [list, setList] = useRecoilState(subject.getAtomForProperty(undo[which].propertyPath))
+  const disabled = !undo[which].enabled
 
   //debug(label + ":", undo)
 
   const previousValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
-    const histo = history[entityUri]
+    const histo = history[entityUri],
+      prevUndo = { ...noUndoRedo }
+    let vals = []
     if (histo && histo.length > idx) {
-      let isInit = false
+      let isInit = false,
+        first = -1
       histo[idx]["tmp:undone"] = true
       for (let j = idx - 1; j >= 0; j--) {
         if (histo[j] && histo[j]["tmp:allValuesLoaded"]) {
           isInit = histo[j + 1]["tmp:undone"]
+          first = j + 1
         } else {
           if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
-            return { vals: histo[j][subjectUri][pathString], isInit, prev: j }
+            // we found previous value list for subject/property
+            vals = histo[j][subjectUri][pathString]
+            prevUndo.next = { enabled: true, subjectUri, propertyPath: pathString }
+            // update undo state to previous one if any
+            if (!isInit) {
+              for (const subj of Object.keys(histo[idx - 1])) {
+                for (const prop of Object.keys(histo[idx - 1][subj])) {
+                  prevUndo.prev = { enabled: true, subjectUri: subj, propertyPath: prop }
+                  break
+                }
+                if (prevUndo) break
+              }
+              return { vals, prevUndo }
+            } else break
           }
         }
       }
     }
-    return { vals: [], isInit: true, prev: -1 }
+    return { vals, prevUndo }
   }
 
   const nextValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
-    const histo = history[entityUri]
+    const histo = history[entityUri],
+      nextUndo = { ...noUndoRedo }
+    let vals = []
     if (histo && histo.length > idx) {
-      for (let j = idx + 1; j < histo.length; j++) {
+      for (let j = idx; j < histo.length; j++) {
         if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
+          // we found next value list for subject/property
+          vals = histo[j][subjectUri][pathString]
           delete histo[j]["tmp:undone"]
-          return { vals: histo[j][subjectUri][pathString], isLast: j === histo.length - 1, next: j }
+          nextUndo.prev = { enabled: true, subjectUri, propertyPath: pathString }
+          // update undo state to next one if any
+          if (idx < histo.length - 1) {
+            for (const subj of Object.keys(histo[idx + 1])) {
+              for (const prop of Object.keys(histo[idx + 1][subj])) {
+                nextUndo.next = { enabled: true, subjectUri: subj, propertyPath: prop }
+                break
+              }
+              if (nextUndo) break
+            }
+            return { vals, nextUndo }
+          } else break
         }
       }
     }
-    return { vals: [], isLast: true, next: -1 }
+    return { vals, nextUndo }
   }
 
   const clickHandler = () => {
     const entityUri = subject.uri
     if (entityUri) {
-      let idx = undo.current
-      if (idx === -1) idx = history[entityUri].length - 1
+      let idx = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1 + (label === "REDO" ? 1 : 0)
+      if (idx < 0) idx = history[entityUri].length - 1
 
       debug("click:", idx)
 
       if (history[entityUri][idx]) {
         for (const k of Object.keys(history[entityUri][idx])) {
-          if (!["tmp:undone", "tmp:current"].includes(k))
+          if (!["tmp:undone", "tmp:current"].includes(k)) {
             for (const p of Object.keys(history[entityUri][idx][k])) {
               if (label === "UNDO") {
-                const { vals, isInit, prev } = previousValues(entityUri, k, p, idx)
-
-                // can't undo anymore if found initial value
-                if (isInit) setUndo({ ...undo, mask: canRedo, current: prev })
-                else setUndo({ ...undo, mask: canUndoRedo, current: prev })
-
+                const { vals, prevUndo } = previousValues(entityUri, k, p, idx)
                 subject.graph.getValues().noHisto = true
                 setList(vals)
-
-                debug(label, "l:", list, "v:", vals, isInit, prev)
+                setUndo(prevUndo)
+                debug(label, "l:", list, "v:", vals, prevUndo)
               } else if (label === "REDO") {
-                const { vals, isLast, next } = nextValues(entityUri, k, p, idx)
-
-                // can't redo anymore if found latest value
-                if (isLast) setUndo({ ...undo, mask: canUndo, current: next })
-                else setUndo({ ...undo, mask: canUndoRedo, current: next })
-
+                const { vals, nextUndo } = nextValues(entityUri, k, p, idx)
                 subject.graph.getValues().noHisto = true
                 setList(vals)
-
-                debug(label, "l:", list, "v:", vals, isLast, next)
+                setUndo(nextUndo)
+                debug(label, "l:", list, "v:", vals, nextUndo)
               }
             }
+          }
         }
       }
     }
@@ -405,7 +425,7 @@ const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo
     "ctrl+z",
     () => {
       if (label !== "UNDO") return
-      debug("UNDO", undo.current, history)
+      debug("UNDO", undo, history)
     },
     []
   )
@@ -414,7 +434,7 @@ const GotoButton: FC<{ label: string; subject: Subject; undo: undoState; setUndo
     "shift+ctrl+z,ctrl+y",
     () => {
       if (label !== "REDO") return
-      debug("REDO", undo.current, history)
+      debug("REDO", undo, history)
     },
     []
   )
@@ -436,7 +456,7 @@ export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
   const [uiTab] = useRecoilState(uiTabState)
   const [undos, setUndos] = useRecoilState(uiUndosState)
   const undo = undos[entityUri]
-  const setUndo = (s: undoState) => setUndos({ ...undos, [entityUri]: s })
+  const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
 
   if (!entities[uiTab]) return null
 
