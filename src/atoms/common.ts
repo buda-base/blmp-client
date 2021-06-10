@@ -36,9 +36,10 @@ export type undoState = {
   enabled: boolean
   subjectUri: string
   propertyPath: string
+  parentPath: Array<string>
 }
 
-export const noUndo = { enabled: false, subjectUri: "", propertyPath: "" }
+export const noUndo = { enabled: false, subjectUri: "", propertyPath: "", parentPath: [] }
 
 export const noUndoRedo = { prev: noUndo, next: noUndo }
 

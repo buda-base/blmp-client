@@ -31,8 +31,8 @@ const updateHistory = (entity: string, qname: string, prop: string, val: Array<V
     while (history[entity][history[entity].length - 1]["tmp:undone"]) {
       history[entity].pop()
     }
-  history[entity].push({ [qname]: { [prop]: val } })
-  //debug("history:", history)
+  history[entity].push({ [qname]: { [prop]: val }, ...entity != qname ? { "tmp:parent": entity } : {} })
+  debug("history:", entity, qname, prop, val, history)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
@@ -62,8 +62,10 @@ export class EntityGraphValues {
   }
 
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
+    debug("oUv:", this, this.noHisto)
+
     if (this.noHisto) {
-      debug("(history)", history)
+      //debug("(history)", history)
       this.noHisto = false
       return
     }
@@ -459,9 +461,10 @@ export class Subject extends RDFResource {
     return this.graph.getAtomForSubjectProperty(pathString, this.uri)
   }
 
-  noHisto() {
-    // DONE: default values need to be added to history when entoty is loading
-    if (history[this.uri] && history[this.uri].some((h) => h["tmp:allValuesLoaded"]))
+  noHisto(force = false) {
+    debug("noHisto:", this)
+    // DONE: default values need to be added to history when entity is loading
+    if (force || history[this.uri] && history[this.uri].some((h) => h["tmp:allValuesLoaded"]))
       this.graph.getValues().noHisto = true
   }
 

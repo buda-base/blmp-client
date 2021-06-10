@@ -1038,7 +1038,6 @@ const FacetComponent: FC<{
         onClick={(ev) => {
           setEdit(subject.qname + " " + property.qname + " " + subNode.qname)
           const target = ev.target as Element
-          debug("target:", target)
           if (!target?.classList?.contains("close-facet-btn")) ev.stopPropagation()
         }}
       >

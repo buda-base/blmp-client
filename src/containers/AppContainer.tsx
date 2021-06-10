@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useRef } from "react"
 import { BrowserRouter as Router, Route, RouteComponentProps, Switch } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import i18n from "i18next"
@@ -58,18 +58,26 @@ function App(props: AppProps) {
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
   const undo = undos[entityUri]
   const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
+  const appEl = useRef<HTMLDivElement>(null)
+
+  // DONE: update undo buttons status after selecting entity in iframe
+  useEffect(() => {
+    const updateUndoOnMsg = (ev: MessageEvent) => appEl?.current?.click()
+    window.addEventListener("message", updateUndoOnMsg)
+    return () => {
+      window.removeEventListener("message", updateUndoOnMsg)
+    }
+  }, [])
 
   if (isLoading) return <span>Loading</span>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
 
-  //debug("hello?", props)
-
   const delay = 10,
-    updateUndo = (ev: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent) => {
+    updateUndo = (ev: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent | MessageEvent) => {
       //debug("ev:", ev.currentTarget, ev.target, history, undos)
-      ev.persist()
+      if (!(ev instanceof MessageEvent)) ev.persist()
       const timer = setTimeout(() => {
-        debug("timer", timer, entityUri)
+        //debug("timer", timer, entityUri)
 
         const target = ev.target as Element
         if (target?.classList?.contains("undo-btn")) {
@@ -83,16 +91,53 @@ function App(props: AppProps) {
           setUndo(noUndoRedo)
         } else {
           const first = history[entityUri].findIndex((h) => h["tmp:allValuesLoaded"]),
-            top = history[entityUri].length - 1
-          debug("has undo:", JSON.stringify(undo, null, 1), first, top, history)
+            top = history[entityUri].length - 1,
+            current = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1
+          //debug("has undo:", JSON.stringify(undo, null, 1), first, top, history, current)
           if (first !== -1) {
-            const current = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1
             if (current < 0 && first < top) {
               const histo = history[entityUri][top]
               if (history[entityUri][top][entityUri]) {
                 const prop = Object.keys(history[entityUri][top][entityUri])
                 if (prop && prop.length && entities[entity].subject !== null)
-                  setUndo({ next: noUndo, prev: { enabled: true, subjectUri: entityUri, propertyPath: prop[0] } })
+                  setUndo({
+                    next: noUndo,
+                    prev: { enabled: true, subjectUri: entityUri, propertyPath: prop[0], parentPath: [] },
+                  })
+              } else {
+                // TODO: enable undo when change in subnode
+                if (history[entityUri][top]["tmp:parent"] === entityUri) {
+                  const sub = Object.keys(history[entityUri][top]).filter(
+                    (k) => !["tmp:parent", "tmp:undone"].includes(k)
+                  )
+                  const parentPath = []
+                  if (sub && sub.length) {
+                    // manually check which property has this subnode as value
+                    for (const h of history[entityUri]) {
+                      if (h[entityUri]) {
+                        const subprop = Object.keys(h[entityUri]).filter(
+                          (k) => !["tmp:parent", "tmp:undone"].includes(k)
+                        )
+                        for (const p of subprop) {
+                          for (const v of h[entityUri][p]) {
+                            if (v instanceof Subject && v.uri === sub[0]) {
+                              if (parentPath.length)
+                                throw new Error("multiple property (" + parentPath + "," + p + ") for node " + sub[0])
+                              parentPath.push(entityUri)
+                              parentPath.push(p)
+                            }
+                          }
+                        }
+                      }
+                    }
+                    const prop = Object.keys(history[entityUri][top][sub[0]])
+                    if (prop && prop.length && entities[entity].subject !== null)
+                      setUndo({
+                        next: noUndo,
+                        prev: { enabled: true, subjectUri: sub[0], propertyPath: prop[0], parentPath },
+                      })
+                  }
+                }
               }
             }
           }
@@ -100,8 +145,10 @@ function App(props: AppProps) {
       }, delay)
     }
 
+  //debug("hello?", props)
+
   return (
-    <div onClick={updateUndo} onKeyUp={updateUndo}>
+    <div ref={appEl} onClick={updateUndo} onKeyUp={updateUndo}>
       <NavBarContainer />
       <EntitySelector />
       <main>
