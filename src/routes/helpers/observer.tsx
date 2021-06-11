@@ -309,6 +309,27 @@ const HistoryUpdater:FC<{
       // <HistoryUpdater qname={ctx.qname} prop={ctx.prop} val={ctx.val} />
 */
 
+export function getParentPath(entityUri: string, sub: string) {
+  const parentPath: Array<string> = []
+  // manually check which property has this subnode as value
+  for (const h of history[entityUri]) {
+    if (h[entityUri]) {
+      const subprop = Object.keys(h[entityUri]).filter((k) => !["tmp:parent", "tmp:undone"].includes(k))
+      for (const p of subprop) {
+        for (const v of h[entityUri][p]) {
+          if (v instanceof Subject && v.uri === sub) {
+            if (parentPath.length > 1 && parentPath[1] !== p)
+              throw new Error("multiple property (" + parentPath + "," + p + ") for node " + sub)
+            parentPath.push(entityUri)
+            parentPath.push(p)
+          }
+        }
+      }
+    }
+  }
+  return parentPath
+}
+
 const GotoButton: FC<{
   label: string
   subject: Subject
@@ -330,8 +351,6 @@ const GotoButton: FC<{
   )
   const disabled = !undo[which].enabled
 
-  //debug(label + ":", undo)
-
   const previousValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
     const histo = history[entityUri],
       prevUndo: Record<string, undoState> = { ...noUndoRedo }
@@ -351,9 +370,10 @@ const GotoButton: FC<{
             prevUndo.next = { enabled: true, subjectUri, propertyPath: pathString, parentPath: undo[which].parentPath }
             // update undo state to previous one if any
             if (!isInit) {
+              const parentPath = histo[idx - 1]["tmp:parentPath"] || []
               for (const subj of Object.keys(histo[idx - 1])) {
                 for (const prop of Object.keys(histo[idx - 1][subj])) {
-                  prevUndo.prev = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath: [] }
+                  prevUndo.prev = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath }
                   break
                 }
                 if (prevUndo) break
@@ -369,7 +389,7 @@ const GotoButton: FC<{
 
   const nextValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
     const histo = history[entityUri],
-      nextUndo = { ...noUndoRedo }
+      nextUndo: Record<string, undoState> = { ...noUndoRedo }
     let vals = []
     if (histo && histo.length > idx) {
       for (let j = idx; j < histo.length; j++) {
@@ -377,12 +397,13 @@ const GotoButton: FC<{
           // we found next value list for subject/property
           vals = histo[j][subjectUri][pathString]
           delete histo[j]["tmp:undone"]
-          nextUndo.prev = { enabled: true, subjectUri, propertyPath: pathString, parentPath: [] }
+          nextUndo.prev = { enabled: true, subjectUri, propertyPath: pathString, parentPath: undo[which].parentPath }
           // update undo state to next one if any
           if (idx < histo.length - 1) {
+            const parentPath = histo[idx + 1]["tmp:parentPath"] || []
             for (const subj of Object.keys(histo[idx + 1])) {
               for (const prop of Object.keys(histo[idx + 1][subj])) {
-                nextUndo.next = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath: [] }
+                nextUndo.next = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath }
                 break
               }
               if (nextUndo) break
@@ -400,26 +421,19 @@ const GotoButton: FC<{
     if (entityUri) {
       let idx = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1 + (label === "REDO" ? 1 : 0)
       if (idx < 0) idx = history[entityUri].length - 1
-
       if (history[entityUri][idx]) {
-        for (const k of Object.keys(history[entityUri][idx])) {
-          if (!["tmp:undone", "tmp:parent"].includes(k)) {
-            for (const p of Object.keys(history[entityUri][idx][k])) {
-              if (label === "UNDO") {
-                const { vals, prevUndo } = previousValues(entityUri, k, p, idx)
-                subject.noHisto(true)
-                setList(vals)
-                setUndo(prevUndo)
-                debug(label, "l:", list, "v:", vals, prevUndo)
-              } else if (label === "REDO") {
-                const { vals, nextUndo } = nextValues(entityUri, k, p, idx)
-                subject.noHisto(true)
-                setList(vals)
-                setUndo(nextUndo)
-                debug(label, "l:", list, "v:", vals, nextUndo)
-              }
-            }
-          }
+        if (label === "UNDO") {
+          const { vals, prevUndo } = previousValues(entityUri, undo[which].subjectUri, undo[which].propertyPath, idx)
+          subject.noHisto(true)
+          setList(vals)
+          setUndo(prevUndo)
+          //debug(label, "l:", list, "v:", vals, prevUndo)
+        } else if (label === "REDO") {
+          const { vals, nextUndo } = nextValues(entityUri, undo[which].subjectUri, undo[which].propertyPath, idx)
+          subject.noHisto(true)
+          setList(vals)
+          setUndo(nextUndo)
+          //debug(label, "l:", list, "v:", vals, nextUndo)
         }
       }
     }
@@ -427,30 +441,44 @@ const GotoButton: FC<{
 
   useHotkeys(
     "ctrl+z",
-    () => {
-      if (label !== "UNDO") return
-      debug("UNDO", undo, history)
+    (ev) => {
+      //debug("UNDO", undo, history)
+      //if(!disabled) clickHandler()
+      ev.stopPropagation()
+      ev.preventDefault()
+      return false
     },
     []
   )
 
   useHotkeys(
     "shift+ctrl+z,ctrl+y",
-    () => {
-      if (label !== "REDO") return
-      debug("REDO", undo, history)
+    (ev) => {
+      //debug("REDO", undo, history)
+      //if(!disabled) clickHandler()
+      ev.stopPropagation()
+      ev.preventDefault()
+      return false
     },
     []
   )
 
   if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) {
+    //debug("parent:",entityUri,undo[which].subjectUri,list,subject,undo)
     const subnode = list.filter((l) => l instanceof Subject && l.uri === undo[which].subjectUri)
-    if (subnode.length) return <GotoButton label={label} undo={undo} setUndo={setUndo} subject={list[0] as Subject} />
-    else {
-      debug(subject, undo, subnode)
-      throw new Error("undo failure (wrong subject?)")
+    if (subnode.length) {
+      //debug("SUB:",list)
+      return <GotoButton label={label} undo={undo} setUndo={setUndo} subject={subnode[0] as Subject} />
+    } else {
+      // we don't need this:
+      // debug("ERROR:", entityUri, list, undo)
+      // throw new Error("could not find subnode")
+
+      return null
     }
   }
+
+  //debug(label + " button:", entityUri, list)
 
   return (
     <button

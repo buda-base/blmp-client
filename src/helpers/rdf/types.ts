@@ -16,6 +16,7 @@ import {
 } from "recoil"
 import config from "../../config"
 import { uiHistoryState } from "../../atoms/common"
+import { getParentPath } from "../../routes/helpers/observer"
 
 const debug = require("debug")("bdrc:rdf:types")
 
@@ -31,7 +32,10 @@ const updateHistory = (entity: string, qname: string, prop: string, val: Array<V
     while (history[entity][history[entity].length - 1]["tmp:undone"]) {
       history[entity].pop()
     }
-  history[entity].push({ [qname]: { [prop]: val }, ...entity != qname ? { "tmp:parent": entity } : {} })
+  history[entity].push({
+    [qname]: { [prop]: val },
+    ...entity != qname ? { "tmp:parentPath": getParentPath(entity, qname) } : {},
+  })
   debug("history:", entity, qname, prop, val, history)
 }
 
@@ -62,7 +66,7 @@ export class EntityGraphValues {
   }
 
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
-    debug("oUv:", this, this.noHisto)
+    //debug("oUv:", this, this.noHisto)
 
     if (this.noHisto) {
       //debug("(history)", history)
@@ -462,7 +466,7 @@ export class Subject extends RDFResource {
   }
 
   noHisto(force = false) {
-    debug("noHisto:", this)
+    //debug("noHisto:", this)
     // DONE: default values need to be added to history when entity is loading
     if (force || history[this.uri] && history[this.uri].some((h) => h["tmp:allValuesLoaded"]))
       this.graph.getValues().noHisto = true

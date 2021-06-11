@@ -106,30 +106,12 @@ function App(props: AppProps) {
                   })
               } else {
                 // TODO: enable undo when change in subnode
-                if (history[entityUri][top]["tmp:parent"] === entityUri) {
+                const parentPath = history[entityUri][top]["tmp:parentPath"]
+                if (parentPath && parentPath[0] === entityUri) {
                   const sub = Object.keys(history[entityUri][top]).filter(
-                    (k) => !["tmp:parent", "tmp:undone"].includes(k)
+                    (k) => !["tmp:parentPath", "tmp:undone"].includes(k)
                   )
-                  const parentPath = []
                   if (sub && sub.length) {
-                    // manually check which property has this subnode as value
-                    for (const h of history[entityUri]) {
-                      if (h[entityUri]) {
-                        const subprop = Object.keys(h[entityUri]).filter(
-                          (k) => !["tmp:parent", "tmp:undone"].includes(k)
-                        )
-                        for (const p of subprop) {
-                          for (const v of h[entityUri][p]) {
-                            if (v instanceof Subject && v.uri === sub[0]) {
-                              if (parentPath.length)
-                                throw new Error("multiple property (" + parentPath + "," + p + ") for node " + sub[0])
-                              parentPath.push(entityUri)
-                              parentPath.push(p)
-                            }
-                          }
-                        }
-                      }
-                    }
                     const prop = Object.keys(history[entityUri][top][sub[0]])
                     if (prop && prop.length && entities[entity].subject !== null)
                       setUndo({
