@@ -52,7 +52,7 @@ export class EntityGraphValues {
   oldSubjectProps: Record<string, Record<string, Array<Value>>> = {}
   newSubjectProps: Record<string, Record<string, Array<Value>>> = {}
   subjectUri = ""
-  noHisto = false
+  noHisto: boolean | number = false
 
   constructor(subjectUri: string) {
     this.subjectUri = subjectUri
@@ -68,9 +68,11 @@ export class EntityGraphValues {
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
     //debug("oUv:", this, this.noHisto)
 
-    if (this.noHisto) {
+    if (this.noHisto === 1) {
+      this.noHisto = -1
+    } else if (this.noHisto || this.noHisto === -1) {
       //debug("(history)", history)
-      this.noHisto = false
+      if (this.noHisto === true) this.noHisto = false
       return
     }
 
@@ -465,10 +467,11 @@ export class Subject extends RDFResource {
     return this.graph.getAtomForSubjectProperty(pathString, this.uri)
   }
 
-  noHisto(force = false) {
-    //debug("noHisto:", this)
+  noHisto(force = false, start: boolean | number = true) {
+    //debug("noHisto:", force, start)
     // DONE: default values need to be added to history when entity is loading
-    if (force || history[this.uri] && history[this.uri].some((h) => h["tmp:allValuesLoaded"]))
+    if (start !== true) this.graph.getValues().noHisto = start
+    else if (force || history[this.uri] && history[this.uri].some((h) => h["tmp:allValuesLoaded"]))
       this.graph.getValues().noHisto = true
   }
 

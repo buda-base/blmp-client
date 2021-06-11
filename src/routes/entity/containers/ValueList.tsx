@@ -390,14 +390,28 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [edit, setEdit] = useRecoilState(uiEditState)
 
+  let waitForNoHisto = false
+
   const addItem = () => {
+    if (waitForNoHisto) return
+
+    if (property.objectType === ObjectType.Facet) {
+      waitForNoHisto = true
+      subject.noHisto(false, 1) // allow parent node in history but not default empty subnodes
+    }
     const item = generateDefault(property, subject)
     setList((oldList) => [...oldList, item])
     if (property.objectType === ObjectType.Facet && item instanceof Subject) {
       //setEdit(property.qname+item.qname)  // won't work...
       setImmediate(() => {
+        // this must be "delayed" to work
         setEdit(subject.qname + " " + property.qname + " " + item.qname)
-      }) // this must be "delayed" to work
+      })
+
+      setTimeout(() => {
+        subject.noHisto(false, false) // history back to normal
+        waitForNoHisto = false
+      }, 350) // *arbitrary long* delay during which add button can't be used
     }
   }
 
@@ -1015,8 +1029,20 @@ const FacetComponent: FC<{
 
   const [force, setForce] = useState(false)
   const hasExtra = withDisplayPriority.length > 0 // && isSimplePriority
+  let waitForNoHisto = false
   const toggleExtra = () => {
+    if (waitForNoHisto) return
+
+    waitForNoHisto = true
+    subject.noHisto(false, -1) // don't allow empty subnodes in history
+
     setForce(!force)
+
+    const delay = 350
+    setTimeout(() => {
+      subject.noHisto(false, false) // history back to normal
+      waitForNoHisto = false
+    }, delay) // *arbitrary long* delay during which add button can't be used
   }
 
   const [edit, setEdit] = useRecoilState(uiEditState)
