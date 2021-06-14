@@ -26,17 +26,30 @@ const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
 
 export const history: Record<string, Array<Record<string, any>>> = {}
 
-const updateHistory = (entity: string, qname: string, prop: string, val: Array<Value>) => {
+const updateHistory = (
+  entity: string,
+  qname: string,
+  prop: string,
+  val: Array<Value>,
+  noHisto: boolean | number = true
+) => {
   if (!history[entity]) history[entity] = []
   else
-    while (history[entity][history[entity].length - 1]["tmp:undone"]) {
+    while (history[entity].length && history[entity][history[entity].length - 1]["tmp:undone"]) {
       history[entity].pop()
     }
-  history[entity].push({
+  const newVal = {
     [qname]: { [prop]: val },
     ...entity != qname ? { "tmp:parentPath": getParentPath(entity, qname) } : {},
-  })
-  debug("history:", entity, qname, prop, val, history)
+  }
+
+  if (noHisto === -1) {
+    const first = history[entity].findIndex((h) => h["tmp:allValuesLoaded"])
+    if (first > 0) history[entity].splice(first, 0, newVal)
+    else history[entity].push(newVal)
+  } else history[entity].push(newVal)
+
+  debug("history:", entity, qname, prop, val, history, noHisto)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
@@ -68,18 +81,16 @@ export class EntityGraphValues {
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
     //debug("oUv:", this, this.noHisto)
 
-    if (this.noHisto === 1) {
-      this.noHisto = -1
-    } else if (this.noHisto || this.noHisto === -1) {
-      //debug("(history)", history)
-      if (this.noHisto === true) this.noHisto = false
+    if (this.noHisto === true) {
+      this.noHisto = false
       return
     }
 
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
     this.newSubjectProps[subjectUri][pathString] = values
+    updateHistory(this.subjectUri, subjectUri, pathString, values, this.noHisto)
 
-    updateHistory(this.subjectUri, subjectUri, pathString, values)
+    if (this.noHisto === 1) this.noHisto = -1
   }
 
   isInitialized = (subjectUri: string, pathString: string) => {
@@ -471,6 +482,7 @@ export class Subject extends RDFResource {
     //debug("noHisto:", force, start)
     // DONE: default values need to be added to history when entity is loading
     if (start !== true) this.graph.getValues().noHisto = start
+    // TODO: update test to be true when adding empty val after having selected ExtEntity in a Facet (use getParentPath?)
     else if (force || history[this.uri] && history[this.uri].some((h) => h["tmp:allValuesLoaded"]))
       this.graph.getValues().noHisto = true
   }

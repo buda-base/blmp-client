@@ -397,7 +397,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
 
     if (property.objectType === ObjectType.Facet) {
       waitForNoHisto = true
-      subject.noHisto(false, 1) // allow parent node in history but not default empty subnodes
+      subject.noHisto(false, 1) // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
     }
     const item = generateDefault(property, subject)
     setList((oldList) => [...oldList, item])
@@ -1034,7 +1034,7 @@ const FacetComponent: FC<{
     if (waitForNoHisto) return
 
     waitForNoHisto = true
-    subject.noHisto(false, -1) // don't allow empty subnodes in history
+    subject.noHisto(false, -1) // put empty subnodes in history before tmp:allValuesLoaded
 
     setForce(!force)
 
