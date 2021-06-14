@@ -310,17 +310,19 @@ const HistoryUpdater:FC<{
 */
 
 export function getParentPath(entityUri: string, sub: string) {
-  const parentPath: Array<string> = []
+  let parentPath: Array<string> = []
   // manually check which property has this subnode as value
   for (const h of history[entityUri]) {
-    if (h[entityUri]) {
-      const subprop = Object.keys(h[entityUri]).filter((k) => !["tmp:parent", "tmp:undone"].includes(k))
+    const subSubj = Object.keys(h).filter((k) => !["tmp:parent", "tmp:undone"].includes(k))
+    for (const s of subSubj) {
+      const subprop = Object.keys(h[s]).filter((k) => !["tmp:parent", "tmp:undone"].includes(k))
       for (const p of subprop) {
-        for (const v of h[entityUri][p]) {
+        for (const v of h[s][p]) {
           if (v instanceof Subject && v.uri === sub) {
             if (parentPath.length > 1 && parentPath[1] !== p)
               throw new Error("multiple property (" + parentPath + "," + p + ") for node " + sub)
-            parentPath.push(entityUri)
+            if (s !== entityUri) parentPath = getParentPath(entityUri, s)
+            parentPath.push(s)
             parentPath.push(p)
           }
         }

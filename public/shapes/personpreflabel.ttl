@@ -187,7 +187,7 @@ bds:PersonShape-personEvent
   sh:order "0"^^xsd:decimal ;
   sh:path bdo:personEvent ;
   bds:propertyShapeType bds:FacetShape ;
-  bds:readOnly true ;
+  #bds:readOnly true ;
 .
 
 bds:PersonEventShape
