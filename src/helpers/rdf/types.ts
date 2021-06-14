@@ -479,7 +479,7 @@ export class Subject extends RDFResource {
   }
 
   noHisto(force = false, start: boolean | number = true) {
-    //debug("noHisto:", force, start)
+    //debug("noHisto:", force, start, this)
     // DONE: default values need to be added to history when entity is loading
     if (start !== true) this.graph.getValues().noHisto = start
     // TODO: update test to be true when adding empty val after having selected ExtEntity in a Facet (use getParentPath?)

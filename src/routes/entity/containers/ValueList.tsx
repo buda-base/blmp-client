@@ -211,7 +211,8 @@ const ValueList: FC<{
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
     if (vals && vals.length) {
       if (property.minCount && vals.length < property.minCount) {
-        subject.noHisto()
+        if (!owner) subject.noHisto()
+        else owner.noHisto()
         setList([...vals, generateDefault(property, subject)])
       } else {
         setList(vals)
@@ -224,7 +225,8 @@ const ValueList: FC<{
       (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField) &&
       (!property.maxCount || property.maxCount >= list.length)
     ) {
-      subject.noHisto()
+      if (!owner) subject.noHisto()
+      else owner.noHisto()
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
       else setList((oldList) => [...oldList, generateDefault(property, subject)])
     } else if (property.displayPriority && property.displayPriority === 1 && list.length === 1 && !force) {
