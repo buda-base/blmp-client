@@ -50,6 +50,8 @@ bdr:EV00B857229AAA1BF0
    a             bdo:PersonDeath ;
    bdo:onYear    "1364"^^xsd:gYear .
 
+bdr:EVBJ73KGWX5F5I7T85    
+   bdo:contentLocationVolume 1.
 
 bdr:EVDD9AB2BD104D0A7D
    a             bdo:PersonBirth ;
@@ -61,6 +63,7 @@ bdr:NT93D338F6A346B51D
    bdo:contentLocationStatement  "v. 2, pp.104-112" ;
    bdo:noteSource  bdr:MW25268 ;
    bdo:noteText  "biography\ndates: 1308-1363"@en ;
+   bdo:contentLocation bdr:EVBJ73KGWX5F5I7T85;
 .
 
 bdr:PTEST  a     bdo:Person ;

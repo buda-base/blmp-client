@@ -337,7 +337,8 @@ const GotoButton: FC<{
   subject: Subject
   undo: Record<string, undoState>
   setUndo: (s: Record<string, undoState>) => void
-}> = ({ label, subject, undo, setUndo }) => {
+  propFromParentPath?: string
+}> = ({ label, subject, undo, setUndo, propFromParentPath }) => {
   const [uiReady] = useRecoilState(uiReadyState)
   //const [current, setCurrent] = useRecoilState(uiCurrentState)
   const entityUri = subject.uri
@@ -346,7 +347,9 @@ const GotoButton: FC<{
   const which = label === "UNDO" ? "prev" : "next"
   const [list, setList] = useRecoilState(
     subject.getAtomForProperty(
-      undo[which].parentPath.length && undo[which].parentPath[0] === entityUri
+      propFromParentPath
+        ? propFromParentPath
+        : undo[which].parentPath.length && undo[which].parentPath[0] === entityUri
         ? undo[which].parentPath[1]
         : undo[which].propertyPath
     )
@@ -361,31 +364,25 @@ const GotoButton: FC<{
       }
     let vals = []
     if (histo && histo.length > idx) {
-      debug("undoing:", entityUri, subjectUri, pathString, histo[idx], idx)
-      let isInit = false,
-        first = -1
+      const first = histo.findIndex((h) => h["tmp:allValuesLoaded"])
       histo[idx]["tmp:undone"] = true
       for (let j = idx - 1; j >= 0; j--) {
-        if (histo[j] && histo[j]["tmp:allValuesLoaded"]) {
-          isInit = histo[j + 1]["tmp:undone"]
-          first = j + 1
-        } else {
-          if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
-            // we found previous value list for subject/property
-            vals = histo[j][subjectUri][pathString]
-            // update undo state to previous one if any
-            if (!isInit) {
-              const parentPath = histo[idx - 1]["tmp:parentPath"] || []
-              for (const subj of Object.keys(histo[idx - 1])) {
-                for (const prop of Object.keys(histo[idx - 1][subj])) {
-                  prevUndo.prev = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath }
-                  break
-                }
-                if (prevUndo.prev.enabled) break
-              }
-              return { vals, prevUndo }
-            } else break
+        if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
+          // we found previous value list for subject/property
+          vals = histo[j][subjectUri][pathString]
+          break
+        }
+      }
+      // update undo state to previous one if any
+      if (first >= 0 && idx > first) {
+        const parentPath = histo[idx - 1]["tmp:parentPath"] || []
+        for (const subj of Object.keys(histo[idx - 1])) {
+          for (const prop of Object.keys(histo[idx - 1][subj])) {
+            if (["tmp:parentPath", "tmp:undone"].includes(prop)) continue
+            prevUndo.prev = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath }
+            break
           }
+          if (prevUndo.prev.enabled) break
         }
       }
     }
@@ -405,18 +402,19 @@ const GotoButton: FC<{
           // we found next value list for subject/property
           vals = histo[j][subjectUri][pathString]
           delete histo[j]["tmp:undone"]
-          // update undo state to next one if any
-          if (idx < histo.length - 1) {
-            const parentPath = histo[idx + 1]["tmp:parentPath"] || []
-            for (const subj of Object.keys(histo[idx + 1])) {
-              for (const prop of Object.keys(histo[idx + 1][subj])) {
-                nextUndo.next = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath }
-                break
-              }
-              if (nextUndo.next.enabled) break
-            }
-            return { vals, nextUndo }
-          } else break
+          break
+        }
+      }
+      // update undo state to next one if any
+      if (idx < histo.length - 1) {
+        const parentPath = histo[idx + 1]["tmp:parentPath"] || []
+        for (const subj of Object.keys(histo[idx + 1])) {
+          for (const prop of Object.keys(histo[idx + 1][subj])) {
+            if (["tmp:parentPath", "tmp:undone"].includes(prop)) continue
+            nextUndo.next = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath }
+            break
+          }
+          if (nextUndo.next.enabled) break
         }
       }
     }
@@ -471,17 +469,34 @@ const GotoButton: FC<{
   )
 
   if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) {
-    //debug("parent:",entityUri,undo[which].subjectUri,list,subject,undo)
+    debug("parent:", entityUri, undo[which].subjectUri, list, subject, undo[which].parentPath)
     const subnode = list.filter((l) => l instanceof Subject && l.uri === undo[which].subjectUri)
     if (subnode.length) {
-      //debug("SUB:",list)
+      debug("SUB:", list)
       return <GotoButton label={label} undo={undo} setUndo={setUndo} subject={subnode[0] as Subject} />
     } else {
-      // we don't need this:
-      // debug("ERROR:", entityUri, list, undo)
-      // throw new Error("could not find subnode")
+      const midnode = list.filter((l) => l instanceof Subject && undo[which].parentPath.includes(l.uri))
+      if (midnode.length) {
+        const s = midnode[0] as Subject
+        const p = undo[which].parentPath.findIndex((h) => h === s.uri)
+        debug("MID:", midnode, s, p)
+        return (
+          <GotoButton
+            label={label}
+            undo={undo}
+            setUndo={setUndo}
+            subject={s}
+            propFromParentPath={undo[which].parentPath[p + 1]}
+          />
+        )
+      } else {
+        debug("NULL:", entityUri, list, undo)
 
-      return null
+        // we don't need this:
+        // throw new Error("could not find subnode")
+
+        return null
+      }
     }
   }
 
@@ -509,6 +524,8 @@ export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
   if (!entities[uiTab]) return null
 
   const subject = entities[uiTab].subject
+
+  debug("uiTab:", uiTab, subject, undo)
 
   return (
     <div className="small col-md-6 mx-auto text-center text-muted">
