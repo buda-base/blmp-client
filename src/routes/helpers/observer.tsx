@@ -355,9 +355,13 @@ const GotoButton: FC<{
 
   const previousValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
     const histo = history[entityUri],
-      prevUndo: Record<string, undoState> = { ...noUndoRedo }
+      prevUndo: Record<string, undoState> = {
+        ...noUndoRedo,
+        next: { enabled: true, subjectUri, propertyPath: pathString, parentPath: undo[which].parentPath },
+      }
     let vals = []
     if (histo && histo.length > idx) {
+      debug("undoing:", entityUri, subjectUri, pathString, histo[idx], idx)
       let isInit = false,
         first = -1
       histo[idx]["tmp:undone"] = true
@@ -369,7 +373,6 @@ const GotoButton: FC<{
           if (histo[j] && histo[j][subjectUri] && histo[j][subjectUri][pathString]) {
             // we found previous value list for subject/property
             vals = histo[j][subjectUri][pathString]
-            prevUndo.next = { enabled: true, subjectUri, propertyPath: pathString, parentPath: undo[which].parentPath }
             // update undo state to previous one if any
             if (!isInit) {
               const parentPath = histo[idx - 1]["tmp:parentPath"] || []
@@ -378,7 +381,7 @@ const GotoButton: FC<{
                   prevUndo.prev = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath }
                   break
                 }
-                if (prevUndo) break
+                if (prevUndo.prev.enabled) break
               }
               return { vals, prevUndo }
             } else break
@@ -391,7 +394,10 @@ const GotoButton: FC<{
 
   const nextValues = (entityUri: string, subjectUri: string, pathString: string, idx: number) => {
     const histo = history[entityUri],
-      nextUndo: Record<string, undoState> = { ...noUndoRedo }
+      nextUndo: Record<string, undoState> = {
+        ...noUndoRedo,
+        prev: { enabled: true, subjectUri, propertyPath: pathString, parentPath: undo[which].parentPath },
+      }
     let vals = []
     if (histo && histo.length > idx) {
       for (let j = idx; j < histo.length; j++) {
@@ -399,7 +405,6 @@ const GotoButton: FC<{
           // we found next value list for subject/property
           vals = histo[j][subjectUri][pathString]
           delete histo[j]["tmp:undone"]
-          nextUndo.prev = { enabled: true, subjectUri, propertyPath: pathString, parentPath: undo[which].parentPath }
           // update undo state to next one if any
           if (idx < histo.length - 1) {
             const parentPath = histo[idx + 1]["tmp:parentPath"] || []
@@ -408,7 +413,7 @@ const GotoButton: FC<{
                 nextUndo.next = { enabled: true, subjectUri: subj, propertyPath: prop, parentPath }
                 break
               }
-              if (nextUndo) break
+              if (nextUndo.next.enabled) break
             }
             return { vals, nextUndo }
           } else break

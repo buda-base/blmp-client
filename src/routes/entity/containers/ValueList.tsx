@@ -1066,7 +1066,8 @@ const FacetComponent: FC<{
         onClick={(ev) => {
           setEdit(subject.qname + " " + property.qname + " " + subNode.qname)
           const target = ev.target as Element
-          if (!target?.classList?.contains("close-facet-btn")) ev.stopPropagation()
+          if (!target?.classList?.contains("close-facet-btn") && !target?.classList?.contains("MuiSvgIcon-root"))
+            ev.stopPropagation()
         }}
       >
         <div className={"card pt-2 pb-3 pr-3 mt-2 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
