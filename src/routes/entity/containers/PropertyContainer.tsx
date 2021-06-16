@@ -16,7 +16,8 @@ const PropertyContainer: FC<{
   force?: boolean
   editable: boolean
   owner?: Subject
-}> = ({ property, subject, embedded, force, editable, owner }) => {
+  topEntity?: Subject
+}> = ({ property, subject, embedded, force, editable, owner, topEntity }) => {
   const objectType = property.objectType
 
   return (
@@ -34,6 +35,7 @@ const PropertyContainer: FC<{
               force={force}
               editable={editable}
               {...(owner ? { owner } : {})}
+              {...(topEntity ? { topEntity } : {})}
             />
           </div>
         </section>

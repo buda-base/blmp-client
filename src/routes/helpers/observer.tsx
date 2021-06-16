@@ -469,17 +469,17 @@ const GotoButton: FC<{
   )
 
   if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) {
-    debug("parent:", entityUri, undo[which].subjectUri, list, subject, undo[which].parentPath)
+    //debug("parent:", entityUri, undo[which].subjectUri, list, subject, undo[which].parentPath)
     const subnode = list.filter((l) => l instanceof Subject && l.uri === undo[which].subjectUri)
     if (subnode.length) {
-      debug("SUB:", list)
+      //debug("SUB:", list)
       return <GotoButton label={label} undo={undo} setUndo={setUndo} subject={subnode[0] as Subject} />
     } else {
       const midnode = list.filter((l) => l instanceof Subject && undo[which].parentPath.includes(l.uri))
       if (midnode.length) {
         const s = midnode[0] as Subject
         const p = undo[which].parentPath.findIndex((h) => h === s.uri)
-        debug("MID:", midnode, s, p)
+        //debug("MID:", midnode, s, p)
         return (
           <GotoButton
             label={label}
@@ -490,7 +490,7 @@ const GotoButton: FC<{
           />
         )
       } else {
-        debug("NULL:", entityUri, list, undo)
+        //debug("NULL:", entityUri, list, undo)
 
         // we don't need this:
         // throw new Error("could not find subnode")
@@ -525,7 +525,7 @@ export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
 
   const subject = entities[uiTab].subject
 
-  debug("uiTab:", uiTab, subject, undo)
+  //debug("uiTab:", uiTab, subject, undo)
 
   return (
     <div className="small col-md-6 mx-auto text-center text-muted">

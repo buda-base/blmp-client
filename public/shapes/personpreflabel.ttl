@@ -348,7 +348,8 @@ bds:ContentLocationShape-contentLocationInstance
   a sh:PropertyShape ;
   sh:path bdo:contentLocationInstance ;
   bds:propertyShapeType bds:ExternalShape ;
-  sh:maxCount 1 ;
+  # testing without maxCount
+  #sh:maxCount 1 ; 
   sh:minCount 1 ;
   # TODO: some work needed to make it work in library with type bdo:ImageInstance (would bdo:Scan be ok?)
   sh:class bdo:Instance ; 

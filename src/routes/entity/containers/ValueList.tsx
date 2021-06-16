@@ -152,7 +152,8 @@ const ValueList: FC<{
   force?: boolean
   editable: boolean
   owner?: Subject
-}> = ({ subject, property, embedded, force, editable, owner }) => {
+  topEntity?: Subject
+}> = ({ subject, property, embedded, force, editable, owner, topEntity }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   //debug(subject)
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
@@ -211,8 +212,10 @@ const ValueList: FC<{
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
     if (vals && vals.length) {
       if (property.minCount && vals.length < property.minCount) {
-        if (owner) owner.noHisto()
+        if (topEntity) topEntity.noHisto()
+        else if (owner) owner.noHisto()
         else subject.noHisto()
+        //debug("setNoH:1",subject,owner,topEntity)
         setList([...vals, generateDefault(property, subject)])
       } else {
         setList(vals)
@@ -225,8 +228,10 @@ const ValueList: FC<{
       (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField) &&
       (!property.maxCount || property.maxCount >= list.length)
     ) {
-      if (owner) owner.noHisto()
+      if (topEntity) topEntity.noHisto()
+      else if (owner) owner.noHisto()
       else subject.noHisto()
+      //debug("setNoH:2",subject,owner,topEntity)
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
       else setList((oldList) => [...oldList, generateDefault(property, subject)])
     } else if (property.displayPriority && property.displayPriority === 1 && list.length === 1 && !force) {
@@ -312,6 +317,7 @@ const ValueList: FC<{
           canDel={canDel && editable}
           {...(force ? { force } : {})}
           editable={editable}
+          {...(topEntity ? { topEntity } : { topEntity: subject })}
         />
       )
     } else if (val instanceof LiteralWithId) {
@@ -1000,7 +1006,8 @@ const FacetComponent: FC<{
   canDel: boolean
   //force?: boolean
   editable: boolean
-}> = ({ subNode, subject, property, canDel, /*force,*/ editable }) => {
+  topEntity: Subject
+}> = ({ subNode, subject, property, canDel, /*force,*/ editable, topEntity }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -1091,6 +1098,7 @@ const FacetComponent: FC<{
               force={force}
               editable={editable && !property.readOnly}
               owner={subject}
+              topEntity={topEntity}
             />
           ))}
           {withDisplayPriority.map((p, index) => (
@@ -1102,6 +1110,7 @@ const FacetComponent: FC<{
               force={force}
               editable={editable && !property.readOnly}
               owner={subject}
+              topEntity={topEntity}
             />
           ))}
           <div className="close-btn">

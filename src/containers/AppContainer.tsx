@@ -93,7 +93,7 @@ function App(props: AppProps) {
           const first = history[entityUri].findIndex((h) => h["tmp:allValuesLoaded"]),
             top = history[entityUri].length - 1,
             current = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1
-          debug("has undo:", JSON.stringify(undo, null, 1), first, top, history, current)
+          //debug("has undo:", JSON.stringify(undo, null, 1), first, top, history, current)
           if (first !== -1) {
             if (current < 0 && first < top) {
               const histo = history[entityUri][top]

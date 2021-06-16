@@ -26,6 +26,53 @@ const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
 
 export const history: Record<string, Array<Record<string, any>>> = {}
 
+/* // DONE: finally not needed 
+const topUndoHasEmptyVal = (histo: Array<Record<string, any>>) => {
+  if (histo.length >= 1 + 1) {
+    const h1 = histo[histo.length - 1],
+      h2 = histo[histo.length - 1 - 1]
+
+    const h1_k = Object.keys(h1),
+      h2_k = Object.keys(h2)
+    if (h1_k.length === h2_k.length) {
+      if (!h1_k.some((uri) => !h2_k.includes(uri))) {
+        for (const k of h1_k) {
+          if (!["tmp:parentPath", "tmp:undone"].includes(k)) {
+            const h1_k_p = Object.keys(h1[k]),
+              h2_k_p = Object.keys(h2[k])
+            if (!h1_k_p.some((prop) => !h2_k_p.includes(prop))) {
+              for (const p of h1_k_p) {
+                const h1_k_p_v = h1[k][p],
+                  h2_k_p_v = h2[k][p]
+                if (h1_k_p_v.length - 1 === h2_k_p_v.length) {
+                  const isNew = h1_k_p_v[0] as ExtRDFResourceWithLabel
+                  if (isNew.uri === "tmp:uri") {
+                    for (const i in h2_k_p_v) {
+                      const v1 = h1_k_p_v[i + 1],
+                        v2 = h2_k_p_v[i]
+                      if (
+                        v1 instanceof ExtRDFResourceWithLabel &&
+                        v2 instanceof ExtRDFResourceWithLabel &&
+                        v1.uri !== v2.uri
+                      ) {
+                        return false
+                      }
+                    }
+                    debug("same with empty val", h1_k_p_v, h2_k_p_v)
+                    return true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return false
+}
+*/
+
 const updateHistory = (
   entity: string,
   qname: string,
@@ -33,11 +80,14 @@ const updateHistory = (
   val: Array<Value>,
   noHisto: boolean | number = true
 ) => {
+  debug("noH:", noHisto)
+
   if (!history[entity]) history[entity] = []
-  else
+  else {
     while (history[entity].length && history[entity][history[entity].length - 1]["tmp:undone"]) {
       history[entity].pop()
     }
+  }
   const newVal = {
     [qname]: { [prop]: val },
     ...entity != qname ? { "tmp:parentPath": getParentPath(entity, qname) } : {},
@@ -48,6 +98,12 @@ const updateHistory = (
     if (first > 0) history[entity].splice(first, 0, newVal)
     else history[entity].push(newVal)
   } else history[entity].push(newVal)
+
+  /* // DONE: lets try not to use this...
+  while (topUndoHasEmptyVal(history[entity])) {
+    history[entity].pop()
+  }
+  */
 
   debug("history:", entity, qname, prop, val, history, noHisto)
 }
@@ -79,7 +135,7 @@ export class EntityGraphValues {
   }
 
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
-    //debug("oUv:", this, this.noHisto)
+    debug("oUv:", this.subjectUri, this.noHisto, this)
 
     if (this.noHisto === true) {
       this.noHisto = false
