@@ -447,11 +447,11 @@ const GotoButton: FC<{
   useHotkeys(
     "ctrl+z",
     (ev) => {
-      //debug("UNDO", undo, history)
-      //if(!disabled) clickHandler()
-      ev.stopPropagation()
-      ev.preventDefault()
-      return false
+      if (!disabled) {
+        if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) return
+        debug("UNDO", undo, history)
+        clickHandler()
+      }
     },
     []
   )
@@ -459,11 +459,11 @@ const GotoButton: FC<{
   useHotkeys(
     "shift+ctrl+z,ctrl+y",
     (ev) => {
-      //debug("REDO", undo, history)
-      //if(!disabled) clickHandler()
-      ev.stopPropagation()
-      ev.preventDefault()
-      return false
+      if (!disabled) {
+        if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) return
+        debug("REDO", undo, history)
+        clickHandler()
+      }
     },
     []
   )

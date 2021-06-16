@@ -8,6 +8,30 @@ import App from "./containers/AppContainer"
 import LoginContainer from "./routes/account/containers/Login"
 import { AuthContextWrapper } from "./contexts/AuthContext"
 
+/* // not working...
+
+// disable browzser's native undo/redo
+const ctrl1 = 17, ctrl2 = 91, ctrlKey = [ctrl1, ctrl2], yKey = 89, zKey = 90;
+let ctrlDown = false;
+
+document.body.onkeydown = function(e) {
+  if (ctrlKey.includes(e.keyCode)) {
+    ctrlDown = true;
+  }
+  if (ctrlDown && e.keyCode == zKey || ctrlDown && e.keyCode == yKey) {    
+    // TODO: fix conflict with chrome undo inside text input
+    const elem = document.activeElement
+    if(elem) elem.blur()
+    e.preventDefault();
+    return false;
+  }
+}
+document.body.onkeyup = function(e) {
+  if (ctrlKey.includes(e.keyCode)) {
+    ctrlDown = false;
+  }
+};
+*/
 const target = document.querySelector("#root")
 
 render(
