@@ -1060,8 +1060,9 @@ const FacetComponent: FC<{
     edit === subject.qname + " " + property.qname + " " + subNode.qname ||
     edit.startsWith(subNode.qname + " ") ||
     edit.endsWith(" " + subject.qname)
-  )
+  ) {
     editClass = "edit"
+  }
 
   return (
     <React.Fragment>
@@ -1070,8 +1071,7 @@ const FacetComponent: FC<{
         onClick={(ev) => {
           setEdit(subject.qname + " " + property.qname + " " + subNode.qname)
           const target = ev.target as Element
-          if (target?.classList && !target?.classList?.contains("close-facet-btn")) {
-            debug("stopropag:")
+          if (editClass || target?.classList && !target?.classList?.contains("close-facet-btn")) {
             ev.stopPropagation()
           }
         }}

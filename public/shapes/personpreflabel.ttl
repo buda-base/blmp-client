@@ -350,7 +350,8 @@ bds:ContentLocationShape-contentLocationInstance
   bds:propertyShapeType bds:ExternalShape ;
   sh:maxCount 1 ;
   sh:minCount 1 ;
-  sh:class bdo:ImageInstance ;
+  # TODO: some work needed to make it work in library with type bdo:ImageInstance (would bdo:Scan be ok?)
+  sh:class bdo:Instance ; 
   sh:message "At most one instance allowed"@en ;
   dash:editor dash:InstancesSelectEditor ;
   sh:name "source scans"@en ;
