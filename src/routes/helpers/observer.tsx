@@ -1,4 +1,4 @@
-import React, { useState, FC } from "react"
+import React, { useState, FC, useRef, createRef } from "react"
 import {
   useGotoRecoilSnapshot,
   useRecoilTransactionObserver_UNSTABLE,
@@ -28,6 +28,9 @@ import { Entity, entitiesAtom } from "../../containers/EntitySelectorContainer"
 import { replaceItemAtIndex, removeItemAtIndex } from "../../helpers/atoms"
 
 const debug = require("debug")("bdrc:observer")
+
+export let undoRef = null
+export let redoRef = null
 
 /* // TODO rework that piece
 const sameFieldModifiedAgain = (m, s1, s2) => {
@@ -340,6 +343,7 @@ const GotoButton: FC<{
   propFromParentPath?: string
 }> = ({ label, subject, undo, setUndo, propFromParentPath }) => {
   const [uiReady] = useRecoilState(uiReadyState)
+
   //const [current, setCurrent] = useRecoilState(uiCurrentState)
   const entityUri = subject.uri
 
@@ -422,6 +426,7 @@ const GotoButton: FC<{
   }
 
   const clickHandler = () => {
+    if (disabled) return
     const entityUri = undo[which].parentPath.length ? undo[which].parentPath[0] : subject.uri
     if (entityUri) {
       let idx = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1 + (label === "REDO" ? 1 : 0)
@@ -444,12 +449,14 @@ const GotoButton: FC<{
     }
   }
 
+  /* // undo state is not updated in there... trying another way
   useHotkeys(
     "ctrl+z",
     (ev) => {
+      if(label !== "UNDO") return
+      debug("UNDO", subject.uri, undo[which], history)
       if (!disabled) {
-        if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) return
-        debug("UNDO", undo, history)
+        //if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) return
         clickHandler()
       }
     },
@@ -459,14 +466,16 @@ const GotoButton: FC<{
   useHotkeys(
     "shift+ctrl+z,ctrl+y",
     (ev) => {
+      if(label !== "REDO") return
+      debug("REDO", subject.uri, undo[which], history)
       if (!disabled) {
-        if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) return
-        debug("REDO", undo, history)
+        //if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) return
         clickHandler()
       }
     },
     []
   )
+  */
 
   if (undo[which].parentPath.length && entityUri !== undo[which].subjectUri) {
     //debug("parent:", entityUri, undo[which].subjectUri, list, subject, undo[which].parentPath)
@@ -500,10 +509,15 @@ const GotoButton: FC<{
     }
   }
 
-  //debug(label + " button:", entityUri, list)
+  //debug(label + " button:", entityUri, undo[which])
+
+  const ref = createRef()
+  if (label === "UNDO") undoRef = ref
+  else if (label === "REDO") redoRef = ref
 
   return (
     <button
+      ref={ref}
       disabled={disabled}
       key={label}
       className={"btn btn-sm btn-danger mx-1 icon undo-btn"}

@@ -80,8 +80,6 @@ const updateHistory = (
   val: Array<Value>,
   noHisto: boolean | number = true
 ) => {
-  debug("noH:", noHisto)
-
   if (!history[entity]) history[entity] = []
   else {
     while (history[entity].length && history[entity][history[entity].length - 1]["tmp:undone"]) {
@@ -105,7 +103,7 @@ const updateHistory = (
   }
   */
 
-  debug("history:", entity, qname, prop, val, history, noHisto)
+  //debug("history:", entity, qname, prop, val, history, noHisto)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
@@ -135,17 +133,14 @@ export class EntityGraphValues {
   }
 
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
-    debug("oUv:", this.subjectUri, this.noHisto, this)
-
+    //debug("oUv:", this.subjectUri, this.noHisto, this)
     if (this.noHisto === true) {
       this.noHisto = false
       return
     }
-
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
     this.newSubjectProps[subjectUri][pathString] = values
     updateHistory(this.subjectUri, subjectUri, pathString, values, this.noHisto)
-
     if (this.noHisto === 1) this.noHisto = -1
   }
 

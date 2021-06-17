@@ -8,31 +8,38 @@ import App from "./containers/AppContainer"
 import LoginContainer from "./routes/account/containers/Login"
 import { AuthContextWrapper } from "./contexts/AuthContext"
 
-/* // not working...
+import { undoRef, redoRef } from "./routes/helpers/observer"
 
-// disable browzser's native undo/redo
-const ctrl1 = 17, ctrl2 = 91, ctrlKey = [ctrl1, ctrl2], yKey = 89, zKey = 90;
-let ctrlDown = false;
+const debug = require("debug")("bdrc:root")
 
-document.body.onkeydown = function(e) {
-  if (ctrlKey.includes(e.keyCode)) {
-    ctrlDown = true;
-  }
-  if (ctrlDown && e.keyCode == zKey || ctrlDown && e.keyCode == yKey) {    
-    // TODO: fix conflict with chrome undo inside text input
-    const elem = document.activeElement
-    if(elem) elem.blur()
-    e.preventDefault();
-    return false;
+const target = document.querySelector("#root")
+
+let ctrlDown = false
+const ctrl1 = 17,
+  ctrl2 = 91,
+  ctrlKey = [ctrl1, ctrl2],
+  yKey = 89,
+  zKey = 90
+
+document.onkeydown = (e: React.KeyboardEvent) => {
+  ctrlDown = e.metaKey || e.ctrlKey
+  debug("kD", e)
+  if (ctrlDown && e.keyCode == zKey || ctrlDown && e.keyCode == yKey) {
+    debug("UNDO/REDO", undoRef, redoRef)
+
+    if (!e.shiftKey) {
+      if (e.keyCode === zKey && undoRef.current) undoRef.current.click()
+      else if (e.keyCode === yKey && redoRef.current) redoRef.current.click()
+    } else if (e.keyCode === zKey && redoRef.current) redoRef.current.click()
+
+    // DONE: fix conflict with chrome undo inside text input
+    const elem = document.activeElement //as HTMLElement
+    if (elem) elem.blur()
+    e.preventDefault()
+    e.stopPropagation()
+    return false
   }
 }
-document.body.onkeyup = function(e) {
-  if (ctrlKey.includes(e.keyCode)) {
-    ctrlDown = false;
-  }
-};
-*/
-const target = document.querySelector("#root")
 
 render(
   <BrowserRouter>
