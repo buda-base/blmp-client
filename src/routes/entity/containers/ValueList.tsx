@@ -579,7 +579,7 @@ const EditLangString: FC<{
             value={lit.value}
             multiline={!property.singleLine}
             InputLabelProps={{ shrink: true }}
-            inputProps={{ spellCheck: "true" }}
+            inputProps={{ spellCheck: "true", lang: lit.language }}
             onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
             {...(error ? errorData : {})}
             {...(!editable ? { disabled: true } : {})}
