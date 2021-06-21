@@ -12,6 +12,10 @@ import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
 import { uiLangState, uiTabState } from "../../atoms/common"
 import { entitiesAtom } from "../../containers/EntitySelectorContainer"
+import Button from "@material-ui/core/Button"
+import * as rdf from "rdflib"
+import * as ns from "../../helpers/rdf/ns"
+import { debugStore } from "../../helpers/rdf/io"
 
 function NavBar(props: AppProps) {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
@@ -24,8 +28,6 @@ function NavBar(props: AppProps) {
 
   const [entities] = useRecoilState(entitiesAtom)
   const [uiTab] = useRecoilState(uiTabState)
-  const entity = entities.findIndex((e, i) => i === uiTab)
-  const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
 
   return (
     <nav className="navbar navbar-dark navbar-expand-md">
@@ -40,8 +42,6 @@ function NavBar(props: AppProps) {
         </Select>
         <FormHelperText>{i18n.t("home.uilang")}</FormHelperText>
       </FormControl>
-
-      <HistoryHandler entityUri={entityUri} />
 
       {isAuthenticated ? (
         <div className="btn-group ml-auto" role="group">
@@ -86,5 +86,29 @@ function NavBar(props: AppProps) {
     </nav>
   )
 }
+export const NavBarContainer = withRouter(NavBar)
 
-export default withRouter(NavBar)
+function BottomBar(props: AppProps) {
+  const [entities] = useRecoilState(entitiesAtom)
+  const [uiTab] = useRecoilState(uiTabState)
+  const entity = entities.findIndex((e, i) => i === uiTab)
+  const entitySubj = entities[entity]?.subject
+  const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
+
+  const save = (): void => {
+    const store = new rdf.Store()
+    ns.setDefaultPrefixes(store)
+    entitySubj?.graph.addNewValuestoStore(store)
+    debugStore(store)
+  }
+
+  return (
+    <nav className="bottom navbar navbar-dark navbar-expand-md">
+      <HistoryHandler entityUri={entityUri} />
+      <Button variant="outlined" onClick={save}>
+        Save
+      </Button>
+    </nav>
+  )
+}
+export const BottomBarContainer = withRouter(BottomBar)

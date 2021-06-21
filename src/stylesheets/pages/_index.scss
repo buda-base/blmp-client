@@ -232,7 +232,10 @@ input[type="checkbox"].dmcheck {
   }
 }
 
-.navbar { position:fixed; width:100%; background:white; z-index:10000; }
+.navbar { position:fixed; width:100%; background:white; z-index:10000; 
+  &.bottom { height:70px; bottom:0; justify-content: space-between;}
+}
+
 
 .tabs-select { 
   z-index:2;
@@ -270,9 +273,10 @@ input[type="checkbox"].dmcheck {
   .MuiTabs-root { display:inline-block; }
   .MuiTabs-scroller { white-space: normal;}
 
-  & + main { padding-top:70px; padding-left:250px; padding-right:250px;
+  & + main { padding:70px 250px; height:calc(100vh - 2 * 70px); //padding-top:70px; padding-left:250px; padding-right:250px;
+    //overflow:auto;
   
-    & > div { padding:20px; }
+    & > div { padding:20px; padding-bottom:70px; }
   }
 
 }

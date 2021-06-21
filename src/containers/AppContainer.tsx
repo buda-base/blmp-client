@@ -8,7 +8,7 @@ import { useRecoilState } from "recoil"
 import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
-import NavBarContainer from "../components/NavBar"
+import { NavBarContainer, BottomBarContainer } from "../components/NavBar"
 import EntitySelector, { entitiesAtom } from "../containers/EntitySelectorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
@@ -99,15 +99,25 @@ function App(props: AppProps) {
     undoTimer = setInterval(() => {
       //debug("timer",undoTimer, entityUri)
 
-      if (!history[entityUri] || !history[entityUri].some((h) => h["tmp:allValuesLoaded"])) return
+      if (!history[entityUri]) return
+
+      // DONE: optimizing a bit (1 for instead of 2 .findIndex + 1 .some)
+      const top = history[entityUri].length - 1
+      let first = -1,
+        current = -1
+      for (const i in history[entityUri]) {
+        const h = history[entityUri][i]
+        if (h["tmp:allValuesLoaded"]) first = i
+        else if (h["tmp:undone"]) current = i - 1
+        if (first != -1 && current != -1) break
+      }
+
+      if (first === -1) return
 
       if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) {
         //debug("no undo")
         setUndo(noUndoRedo)
       } else {
-        const first = history[entityUri].findIndex((h) => h["tmp:allValuesLoaded"]),
-          top = history[entityUri].length - 1,
-          current = history[entityUri].findIndex((h) => h["tmp:undone"]) - 1
         //debug("has undo:", JSON.stringify(undo, null, 1), first, top, history, current)
         if (first !== -1) {
           if (current < 0 && first < top) {
@@ -168,6 +178,7 @@ function App(props: AppProps) {
           </Switch>
         </div>
       </main>
+      <BottomBarContainer />
     </div>
   )
 }

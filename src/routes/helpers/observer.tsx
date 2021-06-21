@@ -542,7 +542,7 @@ export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
   //debug("uiTab:", uiTab, subject, undo)
 
   return (
-    <div className="small col-md-6 mx-auto text-center text-muted">
+    <div className="small text-muted">
       {subject && undo && <GotoButton label="UNDO" subject={subject} undo={undo} setUndo={setUndo} />}
       {subject && undo && <GotoButton label="REDO" subject={subject} undo={undo} setUndo={setUndo} />}
     </div>

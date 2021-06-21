@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react"
-import { ShapeFetcher, debugStore, EntityFetcher } from "../../../helpers/rdf/io"
+import { ShapeFetcher, EntityFetcher } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject, ExtRDFResourceWithLabel, history } from "../../../helpers/rdf/types"
 import * as shapes from "../../../helpers/rdf/shapes"
@@ -12,7 +12,6 @@ import { uiLangState, uiEditState, uiUndosState, noUndoRedo } from "../../../ato
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
-import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 import qs from "query-string"
 import * as ns from "../../../helpers/rdf/ns"
@@ -155,15 +154,6 @@ function EntityEditContainer(props: AppProps) {
   // creating new entity
   //const subject: Subject = generateNew("P", shape)
 
-  const save = (): void => {
-    const store = new rdf.Store()
-    ns.setDefaultPrefixes(store)
-    entity.graph.addNewValuestoStore(store)
-    debugStore(store)
-  }
-
-  //debug("entity.store", entity.graph.store.statements)
-
   return (
     <React.Fragment>
       <div role="main" className="pt-4" style={{ textAlign: "center" }}>
@@ -193,11 +183,6 @@ function EntityEditContainer(props: AppProps) {
         {shape.groups.map((group, index) => (
           <PropertyGroupContainer key={group.uri} group={group} subject={entity} />
         ))}
-      </div>
-      <div style={{ textAlign: "center" }}>
-        <Button variant="outlined" onClick={save}>
-          Save
-        </Button>
       </div>
     </React.Fragment>
   )
