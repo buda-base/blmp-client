@@ -644,7 +644,7 @@ const EditLangString: FC<{
       {!property.singleLine && editMD && (
         <div style={{ width: "100%", position: "relative", paddingBottom: "1px" }}>
           <MDEditor
-            textareaProps={{ spellCheck: "true" }}
+            textareaProps={{ spellCheck: "true", lang: lit.language === "en" ? "en_US" : lit.language }}
             value={lit.value}
             preview="edit"
             onChange={(e) => {
