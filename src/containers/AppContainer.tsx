@@ -155,9 +155,9 @@ function App(props: AppProps) {
   return (
     <div ref={appEl} /*onClick={updateUndo} onKeyUp={updateUndo}*/>
       <NavBarContainer />
-      <EntitySelector />
       <main>
         <div>
+          <EntitySelector />
           <Switch>
             <Route exact path="/" component={NewEntityContainer} />
             <Route exact path="/profile" component={ProfileContainer} />
