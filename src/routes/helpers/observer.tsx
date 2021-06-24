@@ -520,7 +520,7 @@ const GotoButton: FC<{
       ref={ref}
       disabled={disabled}
       key={label}
-      className={"btn btn-sm btn-danger mx-1 icon undo-btn"}
+      className={"btn btn-sm btn-danger mx-1 icon undo-btn btn-blanc"}
       onClick={clickHandler}
     >
       {label}

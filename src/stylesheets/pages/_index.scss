@@ -523,6 +523,15 @@ label ~ .selector {
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
 
 
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('/fonts/NotoSans-Medium.woff2') format('woff2'),
+      url('/fonts/NotoSans-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+}
+
+
 .MuiButtonBase-root.MuiMenuItem-root,
 textarea.MuiInputBase-input,
 .MuiFormLabel-root.MuiInputLabel-shrink,
@@ -531,27 +540,98 @@ input.MuiInputBase-input,
 .MuiSelect-root.MuiInputBase-input,
 * { font-family: "Noto Sans", "Roboto", "Helvetica", "Arial", sans-serif ; }
 
+
+.btn-blanc:not(#a),
+.btn-rouge:not(#a) { 
+  border-radius: 3px;
+  //width:100px; height:45px; 
+  padding:8px 12px;
+  line-height:14px; 
+  text-align: center;
+  border:none;
+  font-weight:700;
+  font-size: 12px;
+  text-transform: uppercase;
+  box-shadow:none !important;
+
+  &:hover { text-decoration: none; }
+}
+
+
+.btn-rouge:not(#a) { 
+  background-color: #d73449;
+  color:white !important;
+}
+
+.btn-blanc:not(#a) { 
+  background-color: white;
+  color: #343434!important;
+}
+
+body { overflow-y:scroll !important; padding-right:0 !important; }
+
 #root {
-  background: #EFEFEF;
+  background: #ddd;
+  & > div > nav + main {
+    background: #EFEFEF;
+    width: 1440px;
+    position: relative;
+    margin: auto;
+
+    & > div { padding:70px 0;
+    
+    }
+  }
 }
 
-#root > div > nav + main {
-  width: 1440px;
-  position: relative;
-  margin: auto;
-
-  & > div { padding:70px 0;}
+.innerNav { right:calc((100% - 1516px)/2); padding-left:0; 
+  & + div > .group > section.album { width:1225px; margin:auto; padding-left:125px; text-align:left;
+    & > * { width:810px; max-width:100%; }
+  }
 }
 
-.innerNav { right:calc((100% - 1440px)/2); }
+.navbar { padding:8px calc((100% - 1225px)/2); 
+  font-size:0;
+  box-shadow: 0 2px 4px hsla(0,0%,73.3%,.5) !important;
 
-.navbar { padding:8px calc((100% - 1440px)/2); 
+  &:not(.bottom) {
+    .btn-rouge:not(#a) { width:100px; padding:14px 0; font-size:14px; margin-left:45px !important; display:block;}
 
-  &.bottom { background: #E2E2E2;}
+    & > a:nth-of-type(2),
+    & > a:first-of-type { display:flex; align-items: center;
+      span { font-size:24px; color:#192229; font-weight:500; line-height:24px; display:block; margin:0 10px; margin-left:20px;}
+    }
+
+    & > a:nth-of-type(2) { 
+      span { font-size:14px;line-height:24px;padding-top:7px; font-weight:700;margin:0 5px; margin-right:20px;}
+    }
+
+    .MuiFormHelperText-root { font-size:12px; color:#343434; margin-top:0; }
+    .MuiInput-underline:before { content:none !important; }
+    .MuiSelect-select.MuiSelect-select { font-size:14px; color:#152631; font-weight:700; text-transform: uppercase; padding-bottom:0 !important;}
+    .MuiSelect-icon { color:#152631; }
+  }
+
+  &.bottom { background: #E2E2E2;  
+    box-shadow: 0 -2px 4px hsla(0,0%,73.3%,.5) !important;
+
+    .undo-btn:not(#a) { 
+      &[disabled],
+      &:disabled,
+      &.disabled { opacity:1; background:#E9E9E9; color:#727272 !important;}
+    }
+  }
 }
 
+.tabs-select { top:0; left:calc((100% - 1225px) / 2); //width:calc((1225px - 810px) / 2);
+    button { 
+      a { padding-left:0; }  
+      &:last-of-type { width:auto; opacity:1; min-width:0;  margin-top:20px;
+        &.btn-rouge { width:auto; }
+      }
+    }
+}
 
-.tabs-select { top:0; }
 
 
 /* css debug mode */

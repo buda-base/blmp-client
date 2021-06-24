@@ -78,7 +78,15 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
         {entities.map((entity: Entity, index) => {
           return <EntityInEntitySelectorContainer entity={entity} index={index} key={index} />
         })}
-        <Tab key="new" {...a11yProps(entities.length)} label={<Link to="/new">NEW / LOAD</Link>} />
+        <Tab
+          key="new"
+          {...a11yProps(entities.length)}
+          label={
+            <Link to="/new" className="btn-rouge">
+              NEW / LOAD
+            </Link>
+          }
+        />
       </Tabs>
     </div>
   )

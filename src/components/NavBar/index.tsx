@@ -31,10 +31,15 @@ function NavBar(props: AppProps) {
 
   return (
     <nav className="navbar navbar-dark navbar-expand-md">
+      <a href="https://bdrc.io">
+        <img className="" src="/images/BDRC.svg" alt="bdrc" height="50" />
+        <span>BDRC</span>
+      </a>
       <Link to={"/"} className="navbar-left">
-        <img className="mx-auto" src="/images/BUDA-small.svg" height="50px" alt="buda editor" />
+        <span>EDITOR</span>
+        <img className="" src="/images/BUDA-small.svg" height="50px" alt="buda editor" />
       </Link>
-      <FormControl className="ml-3">
+      <FormControl className="ml-auto">
         <Select labelId="uilanglabel" id="select" value={uiLang} onChange={uiLangOnChange}>
           <MenuItem value="en">English</MenuItem>
           <MenuItem value="bo">བོད་ཡིག</MenuItem>
@@ -44,7 +49,7 @@ function NavBar(props: AppProps) {
       </FormControl>
 
       {isAuthenticated ? (
-        <div className="btn-group ml-auto" role="group">
+        <div className="btn-group ml-1" role="group">
           <button
             id="userDropDown"
             type="button"
@@ -78,7 +83,7 @@ function NavBar(props: AppProps) {
         </div>
       ) : !isLoading ? (
         <React.Fragment>
-          <Link className="btn btn-light mx-1 ml-auto" to="/login">
+          <Link className="btn btn-light mx-1 btn-rouge" to="/login">
             Login
           </Link>
         </React.Fragment>
@@ -105,7 +110,8 @@ function BottomBar(props: AppProps) {
   return (
     <nav className="bottom navbar navbar-dark navbar-expand-md">
       <HistoryHandler entityUri={entityUri} />
-      <Button variant="outlined" onClick={save}>
+      <span />
+      <Button variant="outlined" onClick={save} className="btn-rouge">
         Save
       </Button>
     </nav>
