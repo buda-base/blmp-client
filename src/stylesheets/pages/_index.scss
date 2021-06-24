@@ -470,7 +470,7 @@ label ~ .selector {
 
   & > div > div::before { content:none; }
 
-  input { width:100%; font-size:20px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45);
+  input.MuiInputBase-input { width:100%; font-size:20px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45);
     font-family: 'Noto Sans Tibetan';
   }
 } 
@@ -519,6 +519,17 @@ label ~ .selector {
 
 
 // ------------------------------------------------ Tania's design ---------------------------------------------------------
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
+
+
+.MuiButtonBase-root.MuiMenuItem-root,
+textarea.MuiInputBase-input,
+.MuiFormLabel-root.MuiInputLabel-shrink,
+.MuiFormHelperText-filled.MuiFormHelperText-root,
+input.MuiInputBase-input,
+.MuiSelect-root.MuiInputBase-input,
+* { font-family: "Noto Sans", "Roboto", "Helvetica", "Arial", sans-serif ; }
 
 #root {
   background: #EFEFEF;
