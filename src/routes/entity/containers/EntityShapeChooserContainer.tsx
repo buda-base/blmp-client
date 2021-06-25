@@ -58,7 +58,7 @@ function EntityShapeChooserContainer(props: AppProps) {
       }
 
       return (
-        <div>
+        <div className="new-fix">
           <b>Choose a shape:</b>
           <TextField
             select
@@ -87,7 +87,7 @@ function EntityShapeChooserContainer(props: AppProps) {
     }
   }
 
-  return <span>loading...</span>
+  return <span className="new-fix">loading...</span>
 }
 
 export default EntityShapeChooserContainer

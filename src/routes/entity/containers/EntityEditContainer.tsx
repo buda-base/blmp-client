@@ -95,7 +95,7 @@ function EntityEditContainer(props: AppProps) {
   // TODO: check that shape can be properly applied to entuty
 
   if (loadingState.status === "fetching" || entityLoadingState.status === "fetching") {
-    return <span>{i18n.t("loading")}</span>
+    return <span className="new-fix">{i18n.t("loading")}</span>
   }
   if (loadingState.status === "error" || entityLoadingState.status === "error") {
     return (

@@ -32,7 +32,7 @@ function NewEntityContainer(props: AppProps) {
 
   // "here is a list of all possible shapes" "to choose from in order to create a new entity":
   return (
-    <React.Fragment>
+    <div className="new-fix">
       <div>
         <b>New entity:</b>
         <TextField
@@ -69,7 +69,7 @@ function NewEntityContainer(props: AppProps) {
           </Link>
         </div>
       </div>
-    </React.Fragment>
+    </div>
   )
 }
 

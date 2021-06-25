@@ -39,7 +39,7 @@ function EntityCreationContainer(props: AppProps) {
   }
 
   // TODO: check if entityLoadingState is in error
-  return <span>creating...</span>
+  return <span className="new-fix">creating...</span>
 }
 
 export default EntityCreationContainer
