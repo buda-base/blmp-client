@@ -8,7 +8,7 @@ import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
 import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/EntitySelectorContainer"
 import PropertyGroupContainer from "./PropertyGroupContainer"
-import { uiLangState, uiEditState, uiUndosState, noUndoRedo } from "../../../atoms/common"
+import { uiLangState, uiEditState, uiUndosState, noUndoRedo, uiTabState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
@@ -72,6 +72,7 @@ function EntityEditContainer(props: AppProps) {
   const shapeQname = props.match.params.shapeQname
   const entityQname = props.match.params.entityQname
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [tab, setTab] = useRecoilState(uiTabState)
 
   const [uiLang] = useRecoilState(uiLangState)
   const [edit, setEdit] = useRecoilState(uiEditState)
@@ -154,6 +155,14 @@ function EntityEditContainer(props: AppProps) {
   // creating new entity
   //const subject: Subject = generateNew("P", shape)
 
+  /*
+  // WIP: how to change displayed entity after closing it? 
+  // --> these <Redirect />s trigger "Rendered fewer hooks than expected"...
+  if(!entities.length) return <Redirect to="/new"/>  
+  else if(tab < entities.length && entityQname && entities[tab].subjectQname !== entityQname)  {    
+    return <Redirect to={"/edit/"+entities[tab].subjectQname+"/"+entities[tab].shapeQname}/>
+  }
+  else */
   return (
     <React.Fragment>
       <div role="main" className="pt-4" style={{ textAlign: "center" }}>

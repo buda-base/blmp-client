@@ -9,15 +9,16 @@ import { atom, useRecoilState, useRecoilValue, selectorFamily } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
+import { BrowserRouter as Router, Switch, Route, Link, useHistory } from "react-router-dom"
 import { uiLangState, uiTabState } from "../atoms/common"
 import { makeStyles } from "@material-ui/core/styles"
 import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
 import * as lang from "../helpers/lang"
 import * as ns from "../helpers/rdf/ns"
-import { Entity, EditedEntityState } from "./EntitySelectorContainer"
+import { Entity, EditedEntityState, entitiesAtom } from "./EntitySelectorContainer"
 import * as rdf from "rdflib"
+import { CloseIcon } from "../routes/layout/icons"
 
 const debug = require("debug")("bdrc:entity:selector")
 
@@ -38,6 +39,8 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const handleClick = (event: ChangeEvent<unknown>, newTab: number): void => {
     setTab(newTab)
   }
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const history = useHistory()
 
   let icon
   if (entity.subject) {
@@ -53,6 +56,22 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     icon = entity.shapeRef.qname.replace(/^[^:]+:([^:]+?)Shape[^/]*$/, "$1").toLowerCase()
   }
 
+  const closeEntity = () => {
+    if (entity.state === EditedEntityState.NeedsSaving) {
+      const go = window.confirm("unsaved data will be lost")
+      if (!go) return
+    }
+    const newList = [...entities.filter((e, i) => i !== index)]
+    setEntities(newList)
+    const newTab = index === tab ? index : index && newList.length ? index - 1 : 0
+    setTab(newTab)
+    if (!newList.length) history.push("/new")
+    else
+      history.push(
+        "/edit/" + newList[newTab].subjectQname + (newList[newTab].shapeQname ? "/" + newList[newTab].shapeQname : "")
+      )
+  }
+
   return (
     <Tab
       key={entity.subjectQname}
@@ -60,20 +79,23 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       className={index === tab ? "Mui-selected" : ""}
       onClick={(e) => handleClick(e, index)}
       label={
-        <Link to={link}>
-          {icon && (
-            <img
-              src={"/icons/" + icon + (index === tab ? "_" : "") + ".svg"}
-              style={{ height: 25, position: "absolute" }}
-            />
-          )}
-          <span style={{ marginLeft: 30, marginRight: "auto", textAlign: "left" }}>
-            <span>{label}</span>
-            <br />
-            <span className="RID">{entity.subjectQname}</span>
-          </span>
-          <span>{entity.state}</span>
-        </Link>
+        <>
+          <Link to={link}>
+            {icon && (
+              <img
+                src={"/icons/" + icon + (index === tab ? "_" : "") + ".svg"}
+                style={{ height: 25, position: "absolute" }}
+              />
+            )}
+            <span style={{ marginLeft: 30, marginRight: "auto", textAlign: "left" }}>
+              <span>{label}</span>
+              <br />
+              <span className="RID">{entity.subjectQname}</span>
+            </span>
+          </Link>
+          <span className={"state state-" + entity.state}></span>
+          <CloseIcon className="close-facet-btn" onClick={closeEntity} />
+        </>
       }
     />
   )
