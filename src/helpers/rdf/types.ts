@@ -1,7 +1,6 @@
 import React, { FC } from "react"
 import * as rdf from "rdflib"
 import * as ns from "./ns"
-import { idGenerator } from "../id"
 import { PropertyShape, Path } from "./shapes"
 import { Memoize } from "typescript-memoize"
 import {
@@ -17,6 +16,7 @@ import {
 import config from "../../config"
 import { uiHistoryState } from "../../atoms/common"
 import { getParentPath } from "../../routes/helpers/observer"
+import { nanoid } from "nanoid"
 
 const debug = require("debug")("bdrc:rdf:types")
 
@@ -209,6 +209,10 @@ export class EntityGraphValues {
       dangerouslyAllowMutability: !config.__DEV__,
     })
   }
+
+  hasSubject(subjectUri: string): boolean {
+    return subjectUri in this.newSubjectProps
+  }
 }
 
 type setSelfOnSelf = {
@@ -283,6 +287,11 @@ export class EntityGraph {
         return new ExtRDFResourceWithLabel(res.uri, perLang)
       }
     )
+  }
+
+  hasSubject(subjectUri: string): boolean {
+    if (this.values.hasSubject(subjectUri)) return true
+    return this.store.any(new rdf.NamedNode(subjectUri), null, null) != null
   }
 
   static subjectify = (resList: Array<rdf.NamedNode>, graph: EntityGraph): Array<Subject> => {
@@ -365,6 +374,10 @@ export class RDFResource {
     return ns.lnameFromUri(this.node.value)
   }
 
+  public get namespace(): string {
+    return ns.namespaceFromUri(this.node.value)
+  }
+
   public get qname(): string {
     return ns.qnameFromUri(this.node.value)
   }
@@ -412,6 +425,12 @@ export class RDFResource {
     const lit: rdf.Literal | null = this.graph.store.any(this.node, p, null) as rdf.Literal | null
     if (lit === null) return null
     return rdfLitAsNumber(lit)
+  }
+
+  public getPropStringValue(p: rdf.NamedNode): string | null {
+    const lit: rdf.Literal | null = this.graph.store.any(this.node, p, null) as rdf.Literal | null
+    if (lit === null) return null
+    return lit.value
   }
 
   public getPropResValue(p: rdf.NamedNode): rdf.NamedNode | null {
@@ -505,7 +524,7 @@ export class LiteralWithId extends rdf.Literal {
     if (id) {
       this.id = id
     } else {
-      this.id = idGenerator()
+      this.id = nanoid()
     }
   }
 

@@ -1,4 +1,5 @@
 import { EntityCreator } from "../../../helpers/rdf/construct"
+import { ShapeFetcher } from "../../../helpers/rdf/io"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { RDFResourceWithLabel, Subject, EntityGraph } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
@@ -10,6 +11,8 @@ import { AppProps } from "../../../containers/AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link, Redirect } from "react-router-dom"
 import React from "react"
 import qs from "query-string"
+import NotFoundIcon from "@material-ui/icons/BrokenImage"
+import i18n from "i18next"
 
 const debug = require("debug")("bdrc:entity:entitycreation")
 
@@ -21,13 +24,7 @@ function EntityCreationContainer(props: AppProps) {
   const index = props.match.params.index
 
   const shapeQname = props.match.params.shapeQname
-  let shapeRef = null
-  if (shapeQname in shapes.shapeRefsMap) shapeRef = shapes.shapeRefsMap[shapeQname]
-  else return <span>invalid shape!</span>
-  // if we know what shape we want, we can just create the entity:
-  // TODO: perhaps the shape should be fetched there too, so that we can
-  // properly generate the ID
-  const { entityLoadingState, entity } = EntityCreator(shapeRef)
+  const { entityLoadingState, entity } = EntityCreator(shapeQname)
   if (entity) {
     if (subjectQname && propertyQname && index)
       return (
@@ -37,8 +34,14 @@ function EntityCreationContainer(props: AppProps) {
       )
     else return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
   }
-
-  // TODO: check if entityLoadingState is in error
+  if (entityLoadingState.status === "error") {
+    return (
+      <p className="text-center text-muted">
+        <NotFoundIcon className="icon mr-2" />
+        {entityLoadingState.error}
+      </p>
+    )
+  }
   return <span className="new-fix">creating...</span>
 }
 

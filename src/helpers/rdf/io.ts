@@ -7,6 +7,7 @@ import { NodeShape, prefLabel } from "./shapes"
 import { uriFromQname } from "./ns"
 import { uiReadyState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
+import { useAuth0 } from "@auth0/auth0-react"
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
   if (shapeQname == "bds:PersonShape") return "https://purl.bdrc.io/shapes/core/PersonUIShapes"
@@ -60,7 +61,7 @@ export const shapesMap: Record<string, NodeShape> = {}
 export let ontologyConst: EntityGraph | undefined = undefined
 export const ontologyUrl = "https://purl.bdrc.io/ontology/data/ttl"
 
-async function loadOntology(): Promise<EntityGraph> {
+export async function loadOntology(): Promise<EntityGraph> {
   debug("loading ontology")
   if (ontologyConst) {
     return Promise.resolve(ontologyConst)

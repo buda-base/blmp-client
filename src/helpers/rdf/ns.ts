@@ -80,6 +80,14 @@ export const lnameFromUri = (uri: string): string => {
   return uri.slice(j + 1)
 }
 
+export const namespaceFromUri = (uri: string): string => {
+  let j = uri.indexOf("#")
+  if (j < 0) j = uri.lastIndexOf("/")
+  if (j < 0) throw new Error("Cannot make namespace out of <" + uri + ">")
+
+  return uri.slice(0, j)
+}
+
 export const uriFromQname = (qname = ""): string => {
   const j = qname.indexOf(":")
 

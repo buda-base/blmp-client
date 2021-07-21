@@ -11,7 +11,7 @@ import {
 } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import * as ns from "../../../helpers/rdf/ns"
-import { generateNew } from "../../../helpers/rdf/construct"
+import { generateSubnode } from "../../../helpers/rdf/construct"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem, InputLabel, Select } from "@material-ui/core"
@@ -123,7 +123,7 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
       return new ExtRDFResourceWithLabel("tmp:uri", {})
       break
     case ObjectType.Facet:
-      return generateNew("EV", property.targetShape, parent)
+      return generateSubnode(property.targetShape, parent)
       break
     case ObjectType.ResInList:
       const propIn: Array<RDFResourceWithLabel> | null = property.in

@@ -60,6 +60,8 @@ export const shIn = ns.SH("in") as rdf.NamedNode
 export const shInversePath = ns.SH("inversePath") as rdf.NamedNode
 export const shUniqueLang = ns.SH("uniqueLang") as rdf.NamedNode
 export const bdsReadOnly = ns.BDS("readOnly") as rdf.NamedNode
+export const bdsIdentifierPrefix = ns.BDS("identifierPrefix") as rdf.NamedNode
+export const shNamespace = ns.SH("namespace") as rdf.NamedNode
 
 export const sortByPropValue = (
   nodelist: Array<rdf.NamedNode>,
