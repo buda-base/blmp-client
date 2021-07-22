@@ -29,19 +29,8 @@ function a11yProps(index: number) {
   }
 }
 
-export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number }> = ({ entity, index }) => {
-  const [uiLang] = useRecoilState(uiLangState)
-  const [labelValues] = useRecoilState(entity.subjectLabelState)
-  const prefLabels = RDFResource.valuesByLang(labelValues)
-  const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
-  const link = "/edit/" + entity.subjectQname + (entity.shapeRef ? "/" + entity.shapeRef.qname : "")
-  const [tab, setTab] = useRecoilState(uiTabState)
-  const handleClick = (event: ChangeEvent<unknown>, newTab: number): void => {
-    setTab(newTab)
-  }
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const history = useHistory()
-
+export const getIcon = (entity: Entity) => {
+  if (!entity) return
   let icon
   if (entity.subject) {
     const rdfType = ns.RDF("type") as rdf.NamedNode
@@ -55,6 +44,22 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     // TODO: might be something better than that...
     icon = entity.shapeRef.qname.replace(/^[^:]+:([^:]+?)Shape[^/]*$/, "$1").toLowerCase()
   }
+  return icon
+}
+
+export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number }> = ({ entity, index }) => {
+  const [uiLang] = useRecoilState(uiLangState)
+  const [labelValues] = useRecoilState(entity.subjectLabelState)
+  const prefLabels = RDFResource.valuesByLang(labelValues)
+  const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
+  const link = "/edit/" + entity.subjectQname + (entity.shapeRef ? "/" + entity.shapeRef.qname : "")
+  const [tab, setTab] = useRecoilState(uiTabState)
+  const handleClick = (event: ChangeEvent<unknown>, newTab: number): void => {
+    setTab(newTab)
+  }
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const history = useHistory()
+  const icon = getIcon(entity)
 
   const closeEntity = () => {
     if (entity.state === EditedEntityState.NeedsSaving) {

@@ -95,7 +95,7 @@ function App(props: AppProps) {
   if (undoTimer === 0 || entityUri !== undoEntity) {
     undoEntity = entityUri
     clearInterval(undoTimer)
-    const delay = 3000
+    const delay = 2000
     undoTimer = setInterval(() => {
       //debug("timer",undoTimer, entityUri)
 

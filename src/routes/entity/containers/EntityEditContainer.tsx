@@ -7,6 +7,7 @@ import { generateNew } from "../../../helpers/rdf/construct"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
 import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/EntitySelectorContainer"
+import { getIcon } from "../../../containers/EntityInEntitySelectorContainer"
 import PropertyGroupContainer from "./PropertyGroupContainer"
 import { uiLangState, uiEditState, uiUndosState, noUndoRedo, uiTabState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
@@ -155,18 +156,19 @@ function EntityEditContainer(props: AppProps) {
   // creating new entity
   //const subject: Subject = generateNew("P", shape)
 
-  /*
-  // WIP: how to change displayed entity after closing it? 
-  // --> these <Redirect />s trigger "Rendered fewer hooks than expected"...
-  if(!entities.length) return <Redirect to="/new"/>  
-  else if(tab < entities.length && entityQname && entities[tab].subjectQname !== entityQname)  {    
-    return <Redirect to={"/edit/"+entities[tab].subjectQname+"/"+entities[tab].shapeQname}/>
-  }
-  else */
+  const entityObj = entities.filter((e) => e.subjectQname === entityQname)
+  const icon = getIcon(entityObj.length ? entityObj[0] : null)
+
   return (
     <React.Fragment>
       <div role="main" className="pt-4" style={{ textAlign: "center" }}>
-        {entity.qname} -- {shapeLabel}
+        <div className={"header " + icon}>
+          <div className="shape-icon"></div>
+          <div>
+            <h1>{shapeLabel}</h1>
+            <span>{entity.qname}</span>
+          </div>
+        </div>
       </div>
       <div role="navigation" className="innerNav">
         <p className="text-uppercase small my-2">{i18n.t("home.nav")}</p>
