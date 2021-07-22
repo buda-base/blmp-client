@@ -74,6 +74,8 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
 
   return (
     <div className="tabs-select" onClick={() => setEdit("")}>
+      <h3>Edition</h3>
+      <h4>Open entities</h4>
       <Tabs value={tab} onChange={handleChange} aria-label="simple tabs example">
         {entities.map((entity: Entity, index) => {
           return <EntityInEntitySelectorContainer entity={entity} index={index} key={index} />

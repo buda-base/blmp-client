@@ -250,7 +250,7 @@ input[type="checkbox"].dmcheck {
     outline:none; 
     text-transform: none;
     min-height:16px;
-    width:250px;
+    width:240px;
     padding:0px;
     a { justify-content: space-between; display:flex; width:100%;  align-items: center; line-height:16px; padding:8px;
       & > span:first-child { max-width:calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;}
@@ -585,7 +585,11 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 }
 
-.innerNav { right:calc((100% - 1516px)/2); padding-left:0; 
+.innerNav { right:calc((100% - 1516px)/2); padding-left:0; padding-top:165px;
+
+  & > p { font-size:18px; font-weight:900; text-transform: capitalize !important; }
+  & > a { color: #4a4a4a; font-size:10px; font-weight:700; text-transform: uppercase; margin-top:25px; opacity:1; }
+
   & + div > .group > section.album { width:1225px; margin:auto; padding-left:125px; text-align:left;
     & > * { width:810px; max-width:100%; }
   }
@@ -624,7 +628,13 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 }
 
-.tabs-select { top:0; left:calc((100% - 1225px) / 2); //width:calc((1225px - 810px) / 2);
+.tabs-select { top:0; padding-top:165px; left:calc((100% - 1225px) / 2); //width:calc((1225px - 810px) / 2);
+
+  h3 { font-size:18px; font-weight:900; text-transform: capitalize !important; width:100%; margin:10px 0 ;}
+  h4 { color: #4a4a4a; font-size:10px; font-weight:700; text-transform: uppercase; margin-top:25px; opacity:1;   
+    padding-bottom:10px; border-bottom:1px solid #aaaaaa; margin-bottom:15px;
+  }
+
   button { 
     a { padding-left:0; }  
     &:last-of-type { width:auto; opacity:1; min-width:0;  margin-top:20px;
@@ -642,7 +652,7 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
     &:hover .close-facet-btn { display:block;}
   }
   
-  & + div { width:1225px; margin:auto; padding-left:125px; text-align:left; font-size:0;
+  & + div { width:1225px; margin:auto; padding-left:125px; text-align:left; padding-top:65px !important;
       & > div { width:810px; max-width:100%; min-width:660px; margin:auto; padding:35px; background:white;         
         & > div.shape-icon { background: #fce08e; width:100%; height:200px;box-sizing: border-box; display:flex; align-items:center;  justify-content: center;
           &::before { content:''; background-color:white; width:130px; height:130px; border-radius:50%; display:block; }
