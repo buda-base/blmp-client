@@ -58,28 +58,30 @@ function EntityShapeChooserContainer(props: AppProps) {
       }
 
       return (
-        <div className="new-fix">
-          <b>Choose a shape:</b>
-          <TextField
-            select
-            helperText={"List of all possible shapes"}
-            id="shapeSelec"
-            className="shapeSelector"
-            value={shapes.possibleShapeRefs[0].qname}
-            style={{ marginTop: "3px", marginLeft: "10px" }}
-          >
-            {shapes.possibleShapeRefs.map((shape: RDFResourceWithLabel, index: number) => (
-              <MenuItem key={shape.qname} value={shape.qname} style={{ padding: 0 }}>
-                <Link
-                  to={"/edit/" + entityQname + "/" + shape.qname}
-                  className="popLink"
-                  onClick={(ev) => handleClick(ev, shape)}
-                >
-                  {lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)}
-                </Link>
-              </MenuItem>
-            ))}
-          </TextField>
+        <div className="centered-ctn">
+          <div>
+            <b>Choose a shape:</b>
+            <TextField
+              select
+              helperText={"List of all possible shapes"}
+              id="shapeSelec"
+              className="shapeSelector"
+              value={shapes.possibleShapeRefs[0].qname}
+              style={{ marginTop: "3px", marginLeft: "10px" }}
+            >
+              {shapes.possibleShapeRefs.map((shape: RDFResourceWithLabel, index: number) => (
+                <MenuItem key={shape.qname} value={shape.qname} style={{ padding: 0 }}>
+                  <Link
+                    to={"/edit/" + entityQname + "/" + shape.qname}
+                    className="popLink"
+                    onClick={(ev) => handleClick(ev, shape)}
+                  >
+                    {lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)}
+                  </Link>
+                </MenuItem>
+              ))}
+            </TextField>
+          </div>
         </div>
       )
     } else {
