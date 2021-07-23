@@ -299,7 +299,13 @@ iframe { z-index:2; }
   p { margin:0; }
 }
 
-.extEntity { display:inline-block;}
+.extEntity { display:inline-block; 
+  & > .card:not(#a) { padding:4px 8px !important;   
+    filter: drop-shadow(0px 3px 2.5px #e3cc8a);
+    background-color: #fce08e !important;
+    border:none; box-shadow:none;
+  }
+}
 
 // DONE: fix selected resource horizontal stacking
 .extEntity.new,
@@ -349,11 +355,19 @@ section,
 
 .langString.lang-bo-x-ewts .hoverPart > * { margin-bottom:36px; }
 
-.propLabel { display:block; color:rgb(245, 0, 87); font-size:12px; font-weight:500; margin-bottom:4px; width:100%;  
+.propLabel { display:block; //color:rgb(245, 0, 87); font-size:12px; font-weight:500; 
+  margin-bottom:4px; 
+  width:100%;  
+  font-size: 14px;
+  color: #d73449;
+  font-weight: 700;
+
   //& ~ div { padding-left:8px; border-left:2px solid #ddd; } // rgba(245, 0, 87, 0.25);}  
   & ~ .selector ~ .selector { padding-left:0; border:none;}
   //& ~ .facet > div:not(.text-center) { padding-left:8px; border-left:2px solid #ddd;}
   & ~ .extEntity:not(.new) + .extEntity { padding-left:0; border:none; }
+
+  & + div > .facet > .card:first-child  { margin-top:4px !important; }
 }
 
 .facet ~ .facet {
@@ -369,7 +383,7 @@ section,
 
 .card [role="main"] + [role="main"] .propLabel { margin-top:16px; }
 
-.propLabel+div, .facet, .card { background:white; }
+// .propLabel+div, .facet, .card { background:white; }
 
 //.row.card > div + .toggle-btn + div > [role="main"] { margin-top:16px; }  
 
@@ -432,7 +446,7 @@ label ~ .selector {
 
       & > label + div + div { overflow:hidden !important; }
 
-      &::after { display:block; content:'...'; position:absolute;top:75px; left:25px; color:#bbb;}
+      &::after { display:block; content:'...'; position:absolute;top:75px; left:0; color:#bbb;}
       & > div { line-height:0; 
         & > :not(.new) { line-height:1.5;
           & > div { margin-top:0 !important; margin-bottom:15px; }
@@ -609,18 +623,27 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
         
           & + div > div > section > .container { padding:0; 
           
-            /*
-            .facet { padding: 40px; 
+            .card { padding: 40px !important; 
               filter: drop-shadow(0px 1px 1.5px #cecccc);
               background-color: #f8f8f8; 
 
-              .facet {
+              .ValueList { background:#f8f8f8; }
+              
+              .card {  
+                background-color: white;
+  
+                .ValueList { background:white; }
+              }
 
-                filter: drop-shadow(0px 3px 5.5px #cecccc);
-                background-color: #fefefe;
+              .facet:not(.edit) {
+                & > .card > div > section > div > .ValueList:not(.empty) > .propLabel:first-child,
+                & > .card > div:first-of-type > section > div > .ValueList.empty > .propLabel:first-child { display:none; }
+              }
+
+              .facet {
+                & > .card > div:first-of-type > section > div >.ValueList > .propLabel:first-child { margin-top:0;  }
               }
             }
-            */
           }
         }
       }
@@ -707,5 +730,17 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 .new-fix { width:810px; margin:auto; padding-left:70px; padding-top: 15px; display:block;}
 
 
+.propLabel[data-prop$="type"],
+.propLabel[data-prop$="gender"],
+.propLabel[data-prop$="prefLabel"],
+.card .card .propLabel:not([data-type="3"],[data-prop="bds:NoteShape-contentLocation"]) {
+  font-size:0;
+}
+
+//.litComp + .litComp { margin-top:12px; }
+
+
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}
+
+

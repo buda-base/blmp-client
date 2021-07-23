@@ -362,7 +362,11 @@ const ValueList: FC<{
             : {},
         }}
       >
-        {showLabel && <label className="propLabel">{propLabel[0].toUpperCase() + propLabel.substring(1)}</label>}
+        {showLabel && (
+          <label className={"propLabel"} data-prop={property.qname} data-type={property.objectType}>
+            {propLabel[0].toUpperCase() + propLabel.substring(1)}
+          </label>
+        )}
         {hasEmptyExtEntityAsFirst && <div style={{ width: "100%" }}>{renderListElem(list[0], 0)}</div>}
         <div
           ref={scrollElem}
@@ -574,7 +578,7 @@ const EditLangString: FC<{
             inputRef={inputRef}
             className={/*"preview-" + preview +*/ lit.language === "bo" ? " lang-bo" : ""} //classes.root }
             //label={lit.id}
-            label={"Text"}
+            label={label}
             style={{ width: "100%" }}
             value={lit.value}
             multiline={!property.singleLine}
@@ -794,7 +798,7 @@ const EditBool: FC<{
   return (
     <TextField
       select
-      label={i18n.t("types.boolean")}
+      //label={i18n.t("types.boolean")}
       value={!lit.value ? false : true}
       InputLabelProps={{ shrink: true }}
       onChange={(e) => changeCallback(e.target.value)}
@@ -858,9 +862,9 @@ const EditInt: FC<{
   return (
     <TextField
       //className={/*classes.root +*/ " mt-2"}
-      //label={label}
-      label={"Number"}
-      style={{ width: 150 }}
+      label={label}
+      //label={"Number"}
+      style={{ width: 240 }}
       value={value}
       {...(error
         ? {
@@ -944,7 +948,7 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={"Text"}
+        label={label}
         {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
         editable={editable && !property.readOnly}
       />
@@ -1085,7 +1089,7 @@ const FacetComponent: FC<{
           }
         }}
       >
-        <div className={"card pt-2 pb-3 pr-3 mt-2 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
+        <div className={"card pt-2 pb-3 pr-3 mt-4 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
           {hasExtra && (
             <span className="toggle-btn" onClick={toggleExtra}>
               {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
@@ -1258,9 +1262,9 @@ const ResSelectComponent: FC<{
         select
         className={/*classes.root +*/ "selector mr-2"}
         value={res.uri}
-        style={{ padding: "1px" }}
+        style={{ padding: "1px", minWidth: "100px" }}
         onChange={onChange}
-        label="Select"
+        label={propLabel}
         {...(!editable ? { disabled: true } : {})}
       >
         {possibleValues.map((r) => (
