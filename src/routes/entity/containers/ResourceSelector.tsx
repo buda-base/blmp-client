@@ -178,6 +178,8 @@ const ResourceSelector: FC<{
         if (newtype) t = newtype
         if (!t) throw "there should be a type here"
         t = t.replace(/^bdo:/, "")
+        // TODO: we should not have to do that
+        t = t.replace(/ImageInstance/, "Scan")
         // DONE move url to config + use dedicated route in library
         // TODO get type from ontology
         setLibraryURL(config.LIBRARY_URL + "/simplesearch?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + msgId)
