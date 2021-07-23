@@ -70,7 +70,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     setEntities(newList)
     const newTab = index === tab ? index : index && newList.length ? index - 1 : 0
     setTab(newTab)
-    if (!newList.length) history.push("/new")
+    if (!newList.length) history.push("/")
     else
       history.push(
         "/edit/" + newList[newTab].subjectQname + (newList[newTab].shapeQname ? "/" + newList[newTab].shapeQname : "")

@@ -51,7 +51,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
               className={"row card my-4 pb-3" + (edit === group.qname ? " group-edit" : "")}
               onClick={() => setEdit(group.qname)}
             >
-              <p className="col-4 text-uppercase small my-2">{label}</p>
+              <p className="">{label}</p>
               <div>
                 {hasExtra && (
                   <span className="toggle-btn" onClick={toggleExtra}>
