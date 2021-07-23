@@ -180,7 +180,7 @@ const ResourceSelector: FC<{
         t = t.replace(/^bdo:/, "")
 
         // #529: how to find scans
-        if (t.includes("ImageInstance")) t = "Instance&f=asset,inc,tmp:hasImage"
+        if (t.includes("ImageInstance")) t = "Scan"
 
         // DONE move url to config + use dedicated route in library
         // TODO get type from ontology
