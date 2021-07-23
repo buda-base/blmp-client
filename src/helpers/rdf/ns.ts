@@ -85,7 +85,7 @@ export const namespaceFromUri = (uri: string): string => {
   if (j < 0) j = uri.lastIndexOf("/")
   if (j < 0) throw new Error("Cannot make namespace out of <" + uri + ">")
 
-  return uri.slice(0, j)
+  return uri.slice(0, j + 1)
 }
 
 export const uriFromQname = (qname = ""): string => {

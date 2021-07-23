@@ -44,6 +44,8 @@ acceptTtl.set("Accept", "text/turtle")
 
 export const loadTtl = async (url: string): Promise<rdf.Store> => {
   const response = await fetch(url, { headers: acceptTtl })
+  // eslint-disable-next-line no-magic-numbers
+  if (response.status != 200) throw "cannot fetch " + url
   const body = await response.text()
   const store: rdf.Store = rdf.graph()
   rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")

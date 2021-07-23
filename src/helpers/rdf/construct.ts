@@ -18,9 +18,10 @@ const nanoidCustom = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", NANO
 
 export const generateSubnode = (subshape: NodeShape, parent: RDFResource): Subject => {
   let parentLname = ""
-  const prefix = subshape.getPropStringValue(shapes.bdsIdentifierPrefix) + parentLname
+  let prefix = subshape.getPropStringValue(shapes.bdsIdentifierPrefix)
+  if (prefix == null) throw "cannot find entity prefix for " + subshape.qname
+  prefix += parentLname
   let namespace = subshape.getPropStringValue(shapes.shNamespace)
-  if (prefix == null) throw "cannot find entity prefix!"
   parentLname = parent.lname
   if (namespace == null) namespace = parent.namespace
   let uri = namespace + prefix + nanoidCustom()
