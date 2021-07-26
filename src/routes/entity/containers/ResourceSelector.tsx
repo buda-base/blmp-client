@@ -344,7 +344,7 @@ const ResourceSelector: FC<{
               )}
               <button
                 {...(!keyword || !keyword.startsWith("bdr:") && (!language || !type) ? { disabled: true } : {})}
-                className="btn btn-sm btn-outline-primary py-3 ml-2"
+                className="btn btn-sm btn-outline-primary py-3 ml-2 lookup btn-rouge"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 onClick={onClick}
                 {...(!editable ? { disabled: true } : {})}
@@ -352,7 +352,7 @@ const ResourceSelector: FC<{
                 {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
               </button>
               <button
-                className="btn btn-sm btn-outline-primary py-3 ml-2"
+                className="btn btn-sm btn-outline-primary py-3 ml-2 dots btn-rouge"
                 style={{ boxShadow: "none", alignSelf: "center" }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                 onClick={togglePopup}
