@@ -9,7 +9,7 @@ import i18n from "i18next"
 import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/EntitySelectorContainer"
 import { getIcon } from "../../../containers/EntityInEntitySelectorContainer"
 import PropertyGroupContainer from "./PropertyGroupContainer"
-import { uiLangState, uiEditState, uiUndosState, noUndoRedo, uiTabState } from "../../../atoms/common"
+import { uiLangState, uiEditState, uiUndosState, noUndoRedo, uiTabState, uiNavState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
@@ -79,6 +79,8 @@ function EntityEditContainer(props: AppProps) {
   const [edit, setEdit] = useRecoilState(uiEditState)
 
   const [undos, setUndos] = useRecoilState(uiUndosState)
+
+  const [nav, setNav] = useRecoilState(uiNavState)
 
   // useEffect(() => {
   //   debug("params", props.match.params.entityQname)
@@ -175,8 +177,13 @@ function EntityEditContainer(props: AppProps) {
         {shape.groups.map((group, index) => {
           const label = lang.ValueByLangToStrPrefLang(group.prefLabels, uiLang)
           return (
-            <Link key={group.qname} to={"#" + group.qname}>
-              {label}
+            <Link
+              key={group.qname}
+              to={"#" + group.qname}
+              onClick={() => setNav(group.qname)}
+              className={nav === group.qname ? "on" : ""}
+            >
+              <span>{label}</span>
             </Link>
           )
         })}

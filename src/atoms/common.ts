@@ -47,3 +47,8 @@ export const uiUndosState = atom<Record<string, Record<string, undoState>>>({
   key: "uiUndosState",
   default: {},
 })
+
+export const uiNavState = atom<string>({
+  key: "uiNavState",
+  default: "",
+})

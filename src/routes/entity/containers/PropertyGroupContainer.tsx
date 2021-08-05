@@ -2,11 +2,12 @@ import React, { useState, FC, ReactElement } from "react"
 import PropertyContainer from "./PropertyContainer"
 import { RDFResource, Subject } from "../../../helpers/rdf/types"
 import { PropertyGroup, PropertyShape } from "../../../helpers/rdf/shapes"
-import { uiLangState, uiEditState } from "../../../atoms/common"
+import { uiLangState, uiEditState, uiNavState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { OtherButton } from "./ValueList"
 import i18n from "i18next"
+import { Waypoint } from "react-waypoint"
 
 const debug = require("debug")("bdrc:entity:propertygroup")
 
@@ -42,8 +43,10 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
 
   const [edit, setEdit] = useRecoilState(uiEditState)
 
+  const [nav, setNav] = useRecoilState(uiNavState)
+
   return (
-    <React.Fragment>
+    <Waypoint scrollableAncestor={window} onEnter={() => setNav(group.qname)} topOffset={500} bottomOffset={500}>
       <div role="main" className="group" id={group.qname} style={{ scrollMargin: "90px" }}>
         <section className="album">
           <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
@@ -80,7 +83,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
           </div>
         </section>
       </div>
-    </React.Fragment>
+    </Waypoint>
   )
 }
 
