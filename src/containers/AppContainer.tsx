@@ -152,7 +152,7 @@ function App(props: AppProps) {
     }, delay)
   }
 
-  debug(props)
+  //debug(props)
 
   return (
     <div

@@ -180,7 +180,8 @@ function EntityEditContainer(props: AppProps) {
             <Link
               key={group.qname}
               to={"#" + group.qname}
-              onClick={() => setNav(group.qname)}
+              // eslint-disable-next-line no-magic-numbers
+              onClick={() => setTimeout(() => setNav(group.qname), 150)}
               className={nav === group.qname ? "on" : ""}
             >
               <span>{label}</span>

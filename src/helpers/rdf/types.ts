@@ -25,6 +25,7 @@ const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
 
 export const history: Record<string, Array<Record<string, any>>> = {}
+export const errors: Record<string, Array<Record<string, boolean>>> = {}
 
 /* // DONE: finally not needed 
 const topUndoHasEmptyVal = (histo: Array<Record<string, any>>) => {

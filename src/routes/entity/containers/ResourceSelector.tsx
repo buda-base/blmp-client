@@ -81,11 +81,13 @@ const ResourceSelector: FC<{
   }
 
   const updateRes = (data: messagePayload) => {
-    let isTypeOk = false
+    let isTypeOk = false,
+      actual,
+      allow
     if (property.expectedObjectTypes) {
-      let allow = property.expectedObjectTypes.map((t) => t.qname)
+      allow = property.expectedObjectTypes.map((t) => t.qname)
       if (!Array.isArray(allow)) allow = [allow]
-      let actual = data["tmp:otherData"]["tmp:type"]
+      actual = data["tmp:otherData"]["tmp:type"]
       if (!Array.isArray(actual)) actual = [actual]
       if (actual.filter((t) => allow.includes(t)).length) isTypeOk = true
       //debug("typeOk",isTypeOk,actual,allow)
@@ -94,7 +96,7 @@ const ResourceSelector: FC<{
           .filter((a) => a)
           .map((a) => a.replace(/^bdo:/, ""))
           .join(", ") // TODO: translation (ontology?)
-      setError("Has type: " + displayTypes(actual) + "; but should have one of: " + displayTypes(allow))
+      if (!isTypeOk) setError("Has type: " + displayTypes(actual) + "; but should have one of: " + displayTypes(allow))
     }
 
     if (isTypeOk) {
@@ -280,6 +282,14 @@ const ResourceSelector: FC<{
   if (entity.length) {
     name = <LabelWithRID entity={entity[0]} />
   }
+
+  useEffect(() => {
+    if (error) {
+      debug("error:", error)
+    } else {
+      //
+    }
+  }, [error])
 
   return (
     <React.Fragment>

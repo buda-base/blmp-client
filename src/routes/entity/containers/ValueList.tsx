@@ -8,6 +8,7 @@ import {
   ObjectType,
   RDFResourceWithLabel,
   ExtRDFResourceWithLabel,
+  errors,
 } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import * as ns from "../../../helpers/rdf/ns"
@@ -32,7 +33,7 @@ import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState, uiEditState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
-import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
+import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
 
 import { fromWylie } from "jsewts"
 import MDEditor, { commands } from "@uiw/react-md-editor"
@@ -339,6 +340,7 @@ const ValueList: FC<{
           isUnique={isUnique}
           create={<Create disable={!canAdd || !addBtn} subject={subject} property={property} embedded={embedded} />}
           editable={editable}
+          topEntity={topEntity}
         />
       )
     }
@@ -510,7 +512,8 @@ const EditLangString: FC<{
   label: string
   globalError?: string
   editable?: boolean
-}> = ({ property, lit, onChange, label, globalError, editable }) => {
+  updateEntityState: (EditedEntityState) => void
+}> = ({ property, lit, onChange, label, globalError, editable, updateEntityState }) => {
   const classes = useStyles()
   //const [preview, setPreview] = useState(false) //always true
   const [editMD, setEditMD] = useState(false)
@@ -519,6 +522,8 @@ const EditLangString: FC<{
   let error = ""
   if (!lit.value && property.minCount) error = i18n.t("error.empty")
   else if (globalError) error = globalError
+
+  updateEntityState(error ? EditedEntityState.Error : EditedEntityState.NeedsSaving)
 
   const errorData = {
     helperText: (
@@ -911,7 +916,8 @@ const LiteralComponent: FC<{
   isUnique: boolean
   create?: unknown
   editable: boolean
-}> = ({ lit, subject, property, label, canDel, isUnique, create, editable }) => {
+  topEntity?: Subject
+}> = ({ lit, subject, property, label, canDel, isUnique, create, editable, topEntity }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
@@ -941,6 +947,30 @@ const LiteralComponent: FC<{
     setList(newList)
   }
 
+  const updateEntityState = (status: EditedEntityState) => {
+    const n = entities.findIndex((e) => e.subjectQname === (topEntity ? topEntity.qname : subject.qname))
+    if (n > -1) {
+      const ent = entities[n]
+      if (ent.state != status && status === EditedEntityState.Error) {
+        debug("status:", status, n, ent, errors, property.qname, index)
+        const newEntities = [...entities]
+        newEntities[n] = { ...entities[n], state: status }
+        setEntities(newEntities)
+        if (!errors[ent.qname]) errors[ent.qname] = {}
+        errors[ent.qname][property.qname + ":" + index] = true
+      } else if (ent.state != status && status !== EditedEntityState.Error) {
+        if (errors[ent.qname] && errors[ent.qname][property.qname + ":" + index]) {
+          delete errors[ent.qname][property.qname + ":" + index]
+          const newEntities = [...entities]
+          if (!Object.keys(errors[ent.qname]).length) {
+            newEntities[n] = { ...entities[n], state: status }
+          }
+          setEntities(newEntities)
+        }
+      }
+    }
+  }
+
   const t = property.datatype
   let edit, classN
 
@@ -954,6 +984,7 @@ const LiteralComponent: FC<{
         label={label}
         {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
         editable={editable && !property.readOnly}
+        updateEntityState={updateEntityState}
       />
     )
     // eslint-disable-next-line no-extra-parens
