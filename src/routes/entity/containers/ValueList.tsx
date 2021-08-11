@@ -31,7 +31,7 @@ import {
 import i18n from "i18next"
 import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
-import { uiLangState, uiEditState } from "../../../atoms/common"
+import { uiLangState, uiEditState, uiUndosState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
 
@@ -523,7 +523,7 @@ const EditLangString: FC<{
   if (!lit.value && property.minCount) error = i18n.t("error.empty")
   else if (globalError) error = globalError
 
-  updateEntityState(error ? EditedEntityState.Error : EditedEntityState.NeedsSaving)
+  updateEntityState(error ? EditedEntityState.Error : EditedEntityState.Saved)
 
   const errorData = {
     helperText: (
@@ -922,6 +922,7 @@ const LiteralComponent: FC<{
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [undos, setUndos] = useRecoilState(uiUndosState)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
     const newList = replaceItemAtIndex(list, index, value)
@@ -948,7 +949,10 @@ const LiteralComponent: FC<{
   }
 
   const updateEntityState = (status: EditedEntityState) => {
-    const n = entities.findIndex((e) => e.subjectQname === (topEntity ? topEntity.qname : subject.qname))
+    const entityQname = topEntity ? topEntity.qname : subject.qname
+    const undo = undos[ns.uriFromQname(entityQname)]
+    debug("undo:", undo, entityQname, undos)
+    const n = entities.findIndex((e) => e.subjectQname === entityQname)
     if (n > -1) {
       const ent = entities[n]
       if (ent.state != status && status === EditedEntityState.Error) {
@@ -963,7 +967,11 @@ const LiteralComponent: FC<{
           delete errors[ent.qname][property.qname + ":" + index]
           const newEntities = [...entities]
           if (!Object.keys(errors[ent.qname]).length) {
-            newEntities[n] = { ...entities[n], state: status }
+            newEntities[n] = {
+              ...entities[n],
+              state:
+                !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving,
+            }
           }
           setEntities(newEntities)
         }
