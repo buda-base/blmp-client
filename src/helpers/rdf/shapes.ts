@@ -55,6 +55,7 @@ export const shTargetSubjectsOf = ns.SH("targetSubjectsOf") as rdf.NamedNode
 export const bdsPropertyShapeType = ns.BDS("propertyShapeType") as rdf.NamedNode
 export const bdsFacetShape = ns.BDS("FacetShape") as rdf.NamedNode
 export const bdsExternalShape = ns.BDS("ExternalShape") as rdf.NamedNode
+export const bdsIgnoreShape = ns.BDS("IgnoreShape") as rdf.NamedNode
 export const bdsClassIn = ns.BDS("classIn") as rdf.NamedNode
 export const shIn = ns.SH("in") as rdf.NamedNode
 export const shInversePath = ns.SH("inversePath") as rdf.NamedNode
@@ -250,7 +251,8 @@ export class PropertyShape extends RDFResourceWithLabel {
     // for some reason direct comparison doesn't work...
     if (propertyShapeType.value == bdsFacetShape.value) return ObjectType.Facet
     else if (propertyShapeType.value == bdsExternalShape.value) return ObjectType.ResExt
-    throw "can't handle propert shape type " + propertyShapeType.value + " for property shape " + this.qname
+    else if (propertyShapeType.value == bdsIgnoreShape.value) return ObjectType.ResIgnore
+    throw "can't handle property shape type " + propertyShapeType.value + " for property shape " + this.qname
   }
 
   @Memoize()

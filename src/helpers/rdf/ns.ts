@@ -4,6 +4,8 @@ export const BDR_uri = "http://purl.bdrc.io/resource/"
 export const BDR = rdf.Namespace(BDR_uri)
 export const BDS_uri = "http://purl.bdrc.io/ontology/shapes/core/"
 export const BDS = rdf.Namespace(BDS_uri)
+export const BDSA_uri = "http://purl.bdrc.io/ontology/shapes/adm/"
+export const BDSA = rdf.Namespace(BDSA_uri)
 export const BDO_uri = "http://purl.bdrc.io/ontology/core/"
 export const BDO = rdf.Namespace(BDO_uri)
 export const ADM_uri = "http://purl.bdrc.io/ontology/admin/"
@@ -43,6 +45,7 @@ export const prefixToURI: { [key: string]: string } = {
   xsd: XSD_uri,
   bdg: BDG_uri,
   bda: BDA_uri,
+  bdsa: BDSA_uri,
 }
 
 export const URItoPrefix: { [key: string]: string } = {}

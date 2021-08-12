@@ -443,7 +443,7 @@ export class RDFResource {
     if (p.directPathNode) {
       return this.graph.store.each(this.node, p.directPathNode, null) as Array<rdf.NamedNode>
     }
-    return this.graph.store.each(this.node, p.inversePathNode, null) as Array<rdf.NamedNode>
+    return this.graph.store.each(null, p.inversePathNode, this.node) as Array<rdf.NamedNode>
   }
 
   public getPropResValueFromPath(p: Path): rdf.NamedNode | null {
@@ -515,6 +515,7 @@ export enum ObjectType {
   Facet,
   ResInList,
   ResExt,
+  ResIgnore,
 }
 
 export class LiteralWithId extends rdf.Literal {

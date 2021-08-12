@@ -16,7 +16,7 @@ export const fetchUrlFromshapeQname = (shapeQname: string): string => {
 
 export const fetchUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == "bdr:PTEST") return "/examples/ptest.ttl"
-  return "https://editserv.bdrc.io/focusGraph/" + entityQname
+  return "http://editserv-dev.bdrc.io/focusGraph/" + entityQname
 }
 
 export const labelQueryUrlFromEntityQname = (entityQname: string): string => {
