@@ -256,7 +256,6 @@ const ValueList: FC<{
     property.displayPriority === 2 && list.length >= 1
 
   const isEmptyValue = (val: Value): boolean => {
-    debug("isEmpty:", property.qname, val)
     if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri"
     else if (val instanceof LiteralWithId) return !val.value && !val.language
     return false

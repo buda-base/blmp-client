@@ -427,7 +427,7 @@ label ~ .selector {
 .ValueList .facet:not(.edit) .empty.ValueList { max-height:0; transition:500ms; transition-delay: 0s;
   & + .blockAdd { display:none; }
 }
-.ValueList .facet.edit .ValueList { overflow:visible; } 
+.ValueList .facet.edit .ValueList { overflow:visible; max-height:none; } 
 .ValueList .facet.edit .ValueList .facet:not(.edit) .ValueList { overflow:hidden; } 
 
 .facet:not(.edit):not(:hover) {
