@@ -808,7 +808,8 @@ const EditBool: FC<{
   return (
     <TextField
       select
-      //label={i18n.t("types.boolean")}
+      style={{ padding: "1px", minWidth: "150px" }}
+      label={label}
       value={!lit.value ? false : true}
       InputLabelProps={{ shrink: true }}
       onChange={(e) => changeCallback(e.target.value)}
@@ -1306,7 +1307,7 @@ const ResSelectComponent: FC<{
         select
         className={/*classes.root +*/ "selector mr-2"}
         value={res.uri}
-        style={{ padding: "1px", minWidth: "100px" }}
+        style={{ padding: "1px", minWidth: "150px" }}
         onChange={onChange}
         label={propLabel}
         {...(!editable ? { disabled: true } : {})}
