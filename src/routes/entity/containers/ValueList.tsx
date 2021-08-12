@@ -829,7 +829,8 @@ const EditInt: FC<{
   onChange: (value: LiteralWithId) => void
   label: string
   editable?: boolean
-}> = ({ property, lit, onChange, label, editable }) => {
+  updateEntityState: (EditedEntityState) => void
+}> = ({ property, lit, onChange, label, editable, updateEntityState }) => {
   // used for integers and gYear
 
   const classes = useStyles()
@@ -837,16 +838,24 @@ const EditInt: FC<{
   const dt = property.datatype
   const minInclusive = property.minInclusive
   const maxInclusive = property.maxInclusive
+  const minExclusive = property.minExclusive
+  const maxExclusive = property.maxExclusive
 
   let error
-  if (lit.value) {
+  if (lit.value !== undefined && lit.value !== "") {
     const valueInt = parseInt(lit.value)
     if (minInclusive && minInclusive > valueInt) {
       error = i18n.t("error.superiorTo", { val: minInclusive })
     } else if (maxInclusive && maxInclusive < valueInt) {
       error = i18n.t("error.inferiorTo", { val: maxInclusive })
+    } else if (minExclusive && minExclusive >= valueInt) {
+      error = i18n.t("error.superiorToStrict", { val: minExclusive })
+    } else if (maxExclusive && maxExclusive <= valueInt) {
+      error = i18n.t("error.inferiorToStrict", { val: maxExclusive })
     }
   }
+
+  updateEntityState(error ? EditedEntityState.Error : EditedEntityState.Saved)
 
   const changeCallback = (val: string) => {
     if (dt && dt.value == xsdgYear) {
@@ -1007,6 +1016,7 @@ const LiteralComponent: FC<{
         onChange={onChange}
         label={label}
         editable={editable && !property.readOnly}
+        updateEntityState={updateEntityState}
       />
     )
   } else if (t?.value === xsdboolean) {

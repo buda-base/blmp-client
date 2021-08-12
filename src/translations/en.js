@@ -34,6 +34,8 @@ const enTranslations = {
   error: {
     inferiorTo: "must be inferior to {{val}}",
     superiorTo: "must be superior to {{val}}",
+    inferiorToStrict: "must be inferior and not equal to {{val}}",
+    superiorToStrict: "must be superior and not equal to {{val}}",
     empty: "should not be empty",
     unique: "duplicate language",
   },

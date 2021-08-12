@@ -45,9 +45,11 @@ export const shMessage = ns.SH("message") as rdf.NamedNode
 export const bdsDisplayPriority = ns.BDS("displayPriority") as rdf.NamedNode
 export const shMinCount = ns.SH("minCount") as rdf.NamedNode
 export const shMinInclusive = ns.SH("minInclusive") as rdf.NamedNode
+export const shMinExclusive = ns.SH("minExclusive") as rdf.NamedNode
 export const shClass = ns.SH("class") as rdf.NamedNode
 export const shMaxCount = ns.SH("maxCount") as rdf.NamedNode
 export const shMaxInclusive = ns.SH("maxInclusive") as rdf.NamedNode
+export const shMaxExclusive = ns.SH("maxExclusive") as rdf.NamedNode
 export const shDatatype = ns.SH("datatype") as rdf.NamedNode
 export const dashSingleLine = ns.DASH("singleLine") as rdf.NamedNode
 export const shTargetObjectsOf = ns.SH("targetObjectsOf") as rdf.NamedNode
@@ -174,6 +176,16 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get maxInclusive(): number | null {
     return this.getPropIntValue(shMaxInclusive)
+  }
+
+  @Memoize()
+  public get minExclusive(): number | null {
+    return this.getPropIntValue(shMinExclusive)
+  }
+
+  @Memoize()
+  public get maxExclusive(): number | null {
+    return this.getPropIntValue(shMaxExclusive)
   }
 
   @Memoize()
