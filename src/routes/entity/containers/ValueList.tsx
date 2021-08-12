@@ -225,6 +225,7 @@ const ValueList: FC<{
         setList(vals)
       }
     } else if (
+      property.objectType != ObjectType.ResInList &&
       property.objectType != ObjectType.Facet &&
       (!property.displayPriority ||
         property.displayPriority === 0 ||
@@ -255,6 +256,7 @@ const ValueList: FC<{
     property.displayPriority === 2 && list.length >= 1
 
   const isEmptyValue = (val: Value): boolean => {
+    debug("isEmpty:", property.qname, val)
     if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri"
     else if (val instanceof LiteralWithId) return !val.value && !val.language
     return false
@@ -951,12 +953,12 @@ const LiteralComponent: FC<{
   const updateEntityState = (status: EditedEntityState) => {
     const entityQname = topEntity ? topEntity.qname : subject.qname
     const undo = undos[ns.uriFromQname(entityQname)]
-    debug("undo:", undo, entityQname, undos)
+    //debug("undo:", undo, entityQname, undos)
     const n = entities.findIndex((e) => e.subjectQname === entityQname)
     if (n > -1) {
       const ent = entities[n]
       if (ent.state != status && status === EditedEntityState.Error) {
-        debug("status:", status, n, ent, errors, property.qname, index)
+        //debug("status:", status, n, ent, errors, property.qname, index)
         const newEntities = [...entities]
         newEntities[n] = { ...entities[n], state: status }
         setEntities(newEntities)

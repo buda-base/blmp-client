@@ -753,7 +753,7 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 .propLabel[data-prop$="type"],
 .propLabel[data-prop$="gender"],
 .propLabel[data-prop$="prefLabel"],
-.card .card .propLabel:not([data-type="3"],[data-prop="bds:NoteShape-contentLocation"]) {
+.card .card .propLabel:not([data-type="3"],[data-prop="bds:NoteShape-contentLocation"],[data-prop$="restrictedInChina"]) {
   font-size:0;
 }
 
