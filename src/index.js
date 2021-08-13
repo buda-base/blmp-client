@@ -23,9 +23,9 @@ const ctrl1 = 17,
 
 document.onkeydown = (e: React.KeyboardEvent) => {
   ctrlDown = e.metaKey || e.ctrlKey
-  debug("kD", e)
+  //debug("kD", e)
   if (ctrlDown && e.keyCode == zKey || ctrlDown && e.keyCode == yKey) {
-    debug("UNDO/REDO", undoRef, redoRef)
+    //debug("UNDO/REDO", undoRef, redoRef)
 
     if (!e.shiftKey) {
       if (e.keyCode === zKey && undoRef.current) undoRef.current.click()

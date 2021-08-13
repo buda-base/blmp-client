@@ -968,25 +968,27 @@ const LiteralComponent: FC<{
       const n = entities.findIndex((e) => e.subjectQname === entityQname)
       if (n > -1) {
         const ent = entities[n]
-        if (ent.state != status && status === EditedEntityState.Error) {
-          //debug("status:", status, n, ent, errors, property.qname, index)
+        if (status === EditedEntityState.Error && ent.state != status) {
+          //debug("error:", status, n, ent, errors, property.qname, index)
           const newEntities = [...entities]
           newEntities[n] = { ...entities[n], state: status }
           setEntities(newEntities)
           if (!errors[ent.qname]) errors[ent.qname] = {}
           errors[ent.qname][property.qname + ":" + index] = true
-        } else if (ent.state != status && status !== EditedEntityState.Error) {
-          if (errors[ent.qname] && errors[ent.qname][property.qname + ":" + index]) {
-            delete errors[ent.qname][property.qname + ":" + index]
-            const newEntities = [...entities]
-            if (!Object.keys(errors[ent.qname]).length) {
-              newEntities[n] = {
-                ...entities[n],
-                state:
-                  !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving,
-              }
+        } else if (status !== EditedEntityState.Error) {
+          status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
+          //debug("no error:", status, n, ent, errors, property.qname, index)
+          if (ent.state != status) {
+            //debug("status:",ent.state,status)
+            if (errors[ent.qname] && errors[ent.qname][property.qname + ":" + index]) {
+              delete errors[ent.qname][property.qname + ":" + index]
             }
-            setEntities(newEntities)
+            if (!errors[ent.qname] || !Object.keys(errors[ent.qname]).length) {
+              const newEntities = [...entities]
+              newEntities[n] = { ...entities[n], state: status }
+              setEntities(newEntities)
+              //debug("newEnt:",newEntities[n].state)
+            }
           }
         }
       }
