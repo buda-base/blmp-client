@@ -959,36 +959,38 @@ const LiteralComponent: FC<{
     setList(newList)
   }
 
-  const updateEntityState = (status: EditedEntityState) => {
-    const entityQname = topEntity ? topEntity.qname : subject.qname
-    const undo = undos[ns.uriFromQname(entityQname)]
-    //debug("undo:", undo, entityQname, undos)
-    const n = entities.findIndex((e) => e.subjectQname === entityQname)
-    if (n > -1) {
-      const ent = entities[n]
-      if (ent.state != status && status === EditedEntityState.Error) {
-        //debug("status:", status, n, ent, errors, property.qname, index)
-        const newEntities = [...entities]
-        newEntities[n] = { ...entities[n], state: status }
-        setEntities(newEntities)
-        if (!errors[ent.qname]) errors[ent.qname] = {}
-        errors[ent.qname][property.qname + ":" + index] = true
-      } else if (ent.state != status && status !== EditedEntityState.Error) {
-        if (errors[ent.qname] && errors[ent.qname][property.qname + ":" + index]) {
-          delete errors[ent.qname][property.qname + ":" + index]
+  // DONE: use of setImmediate prevents random error 'Cannot update a component while rendering a different component'
+  const updateEntityState = (status: EditedEntityState) =>
+    setImmediate(() => {
+      const entityQname = topEntity ? topEntity.qname : subject.qname
+      const undo = undos[ns.uriFromQname(entityQname)]
+      //debug("undo:", undo, entityQname, undos)
+      const n = entities.findIndex((e) => e.subjectQname === entityQname)
+      if (n > -1) {
+        const ent = entities[n]
+        if (ent.state != status && status === EditedEntityState.Error) {
+          //debug("status:", status, n, ent, errors, property.qname, index)
           const newEntities = [...entities]
-          if (!Object.keys(errors[ent.qname]).length) {
-            newEntities[n] = {
-              ...entities[n],
-              state:
-                !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving,
-            }
-          }
+          newEntities[n] = { ...entities[n], state: status }
           setEntities(newEntities)
+          if (!errors[ent.qname]) errors[ent.qname] = {}
+          errors[ent.qname][property.qname + ":" + index] = true
+        } else if (ent.state != status && status !== EditedEntityState.Error) {
+          if (errors[ent.qname] && errors[ent.qname][property.qname + ":" + index]) {
+            delete errors[ent.qname][property.qname + ":" + index]
+            const newEntities = [...entities]
+            if (!Object.keys(errors[ent.qname]).length) {
+              newEntities[n] = {
+                ...entities[n],
+                state:
+                  !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving,
+              }
+            }
+            setEntities(newEntities)
+          }
         }
       }
-    }
-  }
+    })
 
   const t = property.datatype
   let edit, classN
