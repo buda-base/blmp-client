@@ -4,14 +4,20 @@ import { useState, useEffect, useContext } from "react"
 import { useRecoilState } from "recoil"
 import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject, Ontology, history } from "./types"
 import { NodeShape, prefLabel } from "./shapes"
-import { uriFromQname } from "./ns"
+import { uriFromQname, BDSH_uri } from "./ns"
 import { uiReadyState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 import { useAuth0 } from "@auth0/auth0-react"
 
+export const shapeQnameToUri: Record<string, string> = {
+  "bds:PersonShapeTest": "/shapes/personpreflabel.ttl",
+  "bds:PersonShape": BDSH_uri + "PersonUIShapes",
+  "bds:CorporationShape": BDSH_uri + "CorporationUIShapes",
+  "bds:TopicShape": BDSH_uri + "TopicUIShapes",
+}
+
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
-  if (shapeQname == "bds:PersonShape") return "https://purl.bdrc.io/shapes/core/PersonUIShapes"
-  return "/shapes/personpreflabel.ttl"
+  return shapeQnameToUri[shapeQname]
 }
 
 export const fetchUrlFromEntityQname = (entityQname: string): string => {

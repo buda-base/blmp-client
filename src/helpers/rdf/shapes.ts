@@ -15,22 +15,20 @@ const debug = require("debug")("bdrc:rdf:shapes")
 
 // TODO: this should be fetched somewhere... unclear where yet
 export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
-  "bds:PersonShapeTest": new ExtRDFResourceWithLabel(ns.BDS("PersonShapeTest").value, { en: "Person (test)" }),
+  "bds:PersonShapeTest": new ExtRDFResourceWithLabel(ns.BDS("PersonShapeTest").value, { en: "Test (Person" }),
   "bds:PersonShape": new ExtRDFResourceWithLabel(ns.BDS("PersonShape").value, { en: "Person" }),
+  "bds:CorporationShape": new ExtRDFResourceWithLabel(ns.BDS("CorporationShape").value, { en: "Corporation" }),
+  "bds:TopicShape": new ExtRDFResourceWithLabel(ns.BDS("TopicShape").value, { en: "Topic" }),
 }
 
 export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
   shapeRefsMap["bds:PersonShapeTest"],
   shapeRefsMap["bds:PersonShape"],
+  shapeRefsMap["bds:CorporationShape"],
+  shapeRefsMap["bds:TopicShape"],
 ]
 
-// TODO
-// returns an array of all possible shapes that can be used to edit an entity
-// depending on its type
-export const shapeRefsForEntity = (subject: Subject): Array<RDFResourceWithLabel> => {
-  return [shapeRefsMap["bds:PersonShapeTest"], shapeRefsMap["bds:PersonShape"]]
-}
-
+export const rdfType = ns.RDF("type") as rdf.NamedNode
 export const shProperty = ns.SH("property")
 export const shGroup = ns.SH("group")
 export const shOrder = ns.SH("order") as rdf.NamedNode
@@ -39,7 +37,7 @@ export const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 export const shName = ns.SH("name") as rdf.NamedNode
 export const shPath = ns.SH("path") as rdf.NamedNode
 export const dashEditor = ns.DASH("editor") as rdf.NamedNode
-export const dashEnumSelectEditor = ns.DASH("EnumSelectEditor") as rdf.NamedNode
+export const dashEnumSelectEditor = ns.DASH("EnumSelectEditr") as rdf.NamedNode
 export const shDescription = ns.SH("description") as rdf.NamedNode
 export const shMessage = ns.SH("message") as rdf.NamedNode
 export const bdsDisplayPriority = ns.BDS("displayPriority") as rdf.NamedNode
@@ -65,6 +63,17 @@ export const shUniqueLang = ns.SH("uniqueLang") as rdf.NamedNode
 export const bdsReadOnly = ns.BDS("readOnly") as rdf.NamedNode
 export const bdsIdentifierPrefix = ns.BDS("identifierPrefix") as rdf.NamedNode
 export const shNamespace = ns.SH("namespace") as rdf.NamedNode
+
+export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
+typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"], shapeRefsMap["bds:PersonShapeTest"]]
+typeUriToShape[ns.BDO_uri + "Topic"] = [shapeRefsMap["bds:TopicShape"]]
+typeUriToShape[ns.BDO_uri + "Corporation"] = [shapeRefsMap["bds:CorporationShape"]]
+
+export const shapeRefsForEntity = (subject: Subject): Array<RDFResourceWithLabel> | null => {
+  const type = subject.getPropResValue(rdfType)
+  if (type == null) return null
+  return typeUriToShape[type.uri]
+}
 
 export const sortByPropValue = (
   nodelist: Array<rdf.NamedNode>,

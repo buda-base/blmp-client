@@ -6,6 +6,8 @@ export const BDS_uri = "http://purl.bdrc.io/ontology/shapes/core/"
 export const BDS = rdf.Namespace(BDS_uri)
 export const BDSA_uri = "http://purl.bdrc.io/ontology/shapes/adm/"
 export const BDSA = rdf.Namespace(BDSA_uri)
+export const BDSH_uri = "http://purl.bdrc.io/shapes/core/"
+export const BDSH = rdf.Namespace(BDSH_uri)
 export const BDO_uri = "http://purl.bdrc.io/ontology/core/"
 export const BDO = rdf.Namespace(BDO_uri)
 export const ADM_uri = "http://purl.bdrc.io/ontology/admin/"
@@ -35,6 +37,7 @@ export const prefixToURI: { [key: string]: string } = {
   bdr: BDR_uri,
   bdo: BDO_uri,
   bds: BDS_uri,
+  bdsh: BDSH_uri,
   adm: ADM_uri,
   dash: DASH_uri,
   owl: OWL_uri,
