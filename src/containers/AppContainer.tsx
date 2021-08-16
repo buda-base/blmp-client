@@ -118,7 +118,7 @@ function App(props: AppProps) {
         //debug("no undo")
         setUndo(noUndoRedo)
       } else {
-        //debug("has undo:", JSON.stringify(undo, null, 1), first, top, history, current)
+        debug("has undo:", JSON.stringify(undo, null, 1), first, top, history, current, entities[entity])
         if (first !== -1) {
           if (current < 0 && first < top) {
             const histo = history[entityUri][top]

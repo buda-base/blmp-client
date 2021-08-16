@@ -520,11 +520,22 @@ const EditLangString: FC<{
   const [editMD, setEditMD] = useState(false)
   const [keyboard, setKeyboard] = useState(false)
 
-  let error = ""
-  if (!lit.value && property.minCount) error = i18n.t("error.empty")
-  else if (globalError) error = globalError
+  const getLangStringError = (val: string) => {
+    let err = ""
+    if (!val && property.minCount) err = i18n.t("error.empty")
+    else if (globalError) err = globalError
+    return err
+  }
 
-  updateEntityState(error ? EditedEntityState.Error : EditedEntityState.Saved)
+  const [error, setError] = useState(getLangStringError(lit.value))
+
+  useEffect(() => {
+    const newError = getLangStringError(lit.value)
+    if (newError != error) {
+      setError(newError)
+      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
+    }
+  })
 
   const errorData = {
     helperText: (
@@ -593,7 +604,12 @@ const EditLangString: FC<{
             multiline={!property.singleLine}
             InputLabelProps={{ shrink: true }}
             inputProps={{ spellCheck: "true", lang: lit.language === "en" ? "en_US" : lit.language }}
-            onChange={(e) => onChange(lit.copyWithUpdatedValue(e.target.value))}
+            onChange={(e) => {
+              const newError = getLangStringError(lit.value)
+              if (newError && error != newError) setError(newError)
+              else updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
+              onChange(lit.copyWithUpdatedValue(e.target.value))
+            }}
             {...(error ? errorData : {})}
             {...(!editable ? { disabled: true } : {})}
             onBlur={() =>
@@ -841,23 +857,41 @@ const EditInt: FC<{
   const minExclusive = property.minExclusive
   const maxExclusive = property.maxExclusive
 
-  let error
-  if (lit.value !== undefined && lit.value !== "") {
-    const valueInt = parseInt(lit.value)
-    if (minInclusive && minInclusive > valueInt) {
-      error = i18n.t("error.superiorTo", { val: minInclusive })
-    } else if (maxInclusive && maxInclusive < valueInt) {
-      error = i18n.t("error.inferiorTo", { val: maxInclusive })
-    } else if (minExclusive && minExclusive >= valueInt) {
-      error = i18n.t("error.superiorToStrict", { val: minExclusive })
-    } else if (maxExclusive && maxExclusive <= valueInt) {
-      error = i18n.t("error.inferiorToStrict", { val: maxExclusive })
+  const getIntError = (val: number) => {
+    let err = ""
+    if (val !== undefined && val !== "") {
+      const valueInt = parseInt(val)
+      if (minInclusive && minInclusive > valueInt) {
+        err = i18n.t("error.superiorTo", { val: minInclusive })
+      } else if (maxInclusive && maxInclusive < valueInt) {
+        err = i18n.t("error.inferiorTo", { val: maxInclusive })
+      } else if (minExclusive && minExclusive >= valueInt) {
+        err = i18n.t("error.superiorToStrict", { val: minExclusive })
+      } else if (maxExclusive && maxExclusive <= valueInt) {
+        err = i18n.t("error.inferiorToStrict", { val: maxExclusive })
+      }
     }
+    return err
   }
 
-  updateEntityState(error ? EditedEntityState.Error : EditedEntityState.Saved)
+  const [error, setError] = useState(getIntError(lit.value))
+
+  useEffect(() => {
+    if (!lit.value && lit.value !== 0) return
+    const newError = getIntError(lit.value)
+    if (newError != error) {
+      setError(newError)
+      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
+    }
+  })
 
   const changeCallback = (val: string) => {
+    const newError = getIntError(val)
+    if (newError != error) setError(newError)
+    else updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
+
+    debug("change:", newError)
+
     if (dt && dt.value == xsdgYear) {
       //pad to four digits in the case of xsdgYear
       /* eslint-disable no-magic-numbers */
@@ -866,8 +900,6 @@ const EditInt: FC<{
       } else {
         val = val.padStart(4, "0")
       }
-      /* eslint-enable no-magic-numbers */
-      if (val.match(/^-?[0-9]{4}$/)) error = i18n.t("error.gYear")
     }
     onChange(lit.copyWithUpdatedValue(val))
   }
@@ -959,40 +991,38 @@ const LiteralComponent: FC<{
     setList(newList)
   }
 
-  // DONE: use of setImmediate prevents random error 'Cannot update a component while rendering a different component'
-  const updateEntityState = (status: EditedEntityState) =>
-    setImmediate(() => {
-      const entityQname = topEntity ? topEntity.qname : subject.qname
-      const undo = undos[ns.uriFromQname(entityQname)]
-      //debug("undo:", undo, entityQname, undos)
-      const n = entities.findIndex((e) => e.subjectQname === entityQname)
-      if (n > -1) {
-        const ent = entities[n]
-        if (status === EditedEntityState.Error && ent.state != status) {
-          //debug("error:", status, n, ent, errors, property.qname, index)
-          const newEntities = [...entities]
-          newEntities[n] = { ...entities[n], state: status }
-          setEntities(newEntities)
-          if (!errors[ent.qname]) errors[ent.qname] = {}
-          errors[ent.qname][property.qname + ":" + index] = true
-        } else if (status !== EditedEntityState.Error) {
-          status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
-          //debug("no error:", status, n, ent, errors, property.qname, index)
-          if (ent.state != status) {
-            //debug("status:",ent.state,status)
-            if (errors[ent.qname] && errors[ent.qname][property.qname + ":" + index]) {
-              delete errors[ent.qname][property.qname + ":" + index]
-            }
-            if (!errors[ent.qname] || !Object.keys(errors[ent.qname]).length) {
-              const newEntities = [...entities]
-              newEntities[n] = { ...entities[n], state: status }
-              setEntities(newEntities)
-              //debug("newEnt:",newEntities[n].state)
-            }
+  const updateEntityState = (status: EditedEntityState) => {
+    const entityQname = topEntity ? topEntity.qname : subject.qname
+    const undo = undos[ns.uriFromQname(entityQname)]
+    //debug("undo:", undo, entityQname, undos)
+    const n = entities.findIndex((e) => e.subjectQname === entityQname)
+    if (n > -1) {
+      const ent = entities[n]
+      if (status === EditedEntityState.Error && ent.state != status) {
+        //debug("error:", status, n, ent, errors, property.qname, index)
+        const newEntities = [...entities]
+        newEntities[n] = { ...entities[n], state: status }
+        setEntities(newEntities)
+        if (!errors[ent.qname]) errors[ent.qname] = {}
+        errors[ent.qname][property.qname + ":" + index] = true
+      } else if (status !== EditedEntityState.Error) {
+        status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
+        //debug("no error:", status, n, ent, errors, property.qname, index)
+        if (ent.state != status) {
+          //debug("status:",ent.state,status)
+          if (errors[ent.qname] && errors[ent.qname][property.qname + ":" + index]) {
+            delete errors[ent.qname][property.qname + ":" + index]
+          }
+          if (!errors[ent.qname] || !Object.keys(errors[ent.qname]).length) {
+            const newEntities = [...entities]
+            newEntities[n] = { ...entities[n], state: status }
+            setEntities(newEntities)
+            //debug("newEnt:",newEntities[n].state)
           }
         }
       }
-    })
+    }
+  }
 
   const t = property.datatype
   let edit, classN
