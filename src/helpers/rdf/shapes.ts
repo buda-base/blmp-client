@@ -19,6 +19,9 @@ export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
   "bds:PersonShape": new ExtRDFResourceWithLabel(ns.BDS("PersonShape").value, { en: "Person" }),
   "bds:CorporationShape": new ExtRDFResourceWithLabel(ns.BDS("CorporationShape").value, { en: "Corporation" }),
   "bds:TopicShape": new ExtRDFResourceWithLabel(ns.BDS("TopicShape").value, { en: "Topic" }),
+  "bds:PlaceShape": new ExtRDFResourceWithLabel(ns.BDS("PlaceShape").value, { en: "Place" }),
+  "bds:WorkShape": new ExtRDFResourceWithLabel(ns.BDS("WorkShape").value, { en: "Work" }),
+  "bds:SerialWorkShape": new ExtRDFResourceWithLabel(ns.BDS("SerialWorkShape").value, { en: "Serial Work" }),
 }
 
 export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
@@ -26,6 +29,9 @@ export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
   shapeRefsMap["bds:PersonShape"],
   shapeRefsMap["bds:CorporationShape"],
   shapeRefsMap["bds:TopicShape"],
+  shapeRefsMap["bds:PlaceShape"],
+  shapeRefsMap["bds:WorkShape"],
+  shapeRefsMap["bds:SerialWorkShape"],
 ]
 
 export const rdfType = ns.RDF("type") as rdf.NamedNode
@@ -68,6 +74,8 @@ export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
 typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"], shapeRefsMap["bds:PersonShapeTest"]]
 typeUriToShape[ns.BDO_uri + "Topic"] = [shapeRefsMap["bds:TopicShape"]]
 typeUriToShape[ns.BDO_uri + "Corporation"] = [shapeRefsMap["bds:CorporationShape"]]
+typeUriToShape[ns.BDO_uri + "Work"] = [shapeRefsMap["bds:WorkShape"]]
+typeUriToShape[ns.BDO_uri + "SerialWork"] = [shapeRefsMap["bds:SerialWorkShape"]]
 
 export const shapeRefsForEntity = (subject: Subject): Array<RDFResourceWithLabel> | null => {
   const type = subject.getPropResValue(rdfType)

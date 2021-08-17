@@ -14,6 +14,9 @@ export const shapeQnameToUri: Record<string, string> = {
   "bds:PersonShape": BDSH_uri + "PersonUIShapes",
   "bds:CorporationShape": BDSH_uri + "CorporationUIShapes",
   "bds:TopicShape": BDSH_uri + "TopicUIShapes",
+  "bds:PlaceShape": BDSH_uri + "PlaceUIShapes",
+  "bds:WorkShape": BDSH_uri + "WorkUIShapes",
+  "bds:SerialWorkShape": BDSH_uri + "SerialWorkUIShapes",
 }
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
