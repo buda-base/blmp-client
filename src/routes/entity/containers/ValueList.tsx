@@ -9,6 +9,7 @@ import {
   RDFResourceWithLabel,
   ExtRDFResourceWithLabel,
   errors,
+  history,
 } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import * as ns from "../../../helpers/rdf/ns"
@@ -29,6 +30,7 @@ import {
   KeyboardIcon,
 } from "../../layout/icons"
 import i18n from "i18next"
+import { getHistoryStatus } from "../../../containers/AppContainer"
 import PropertyContainer from "./PropertyContainer"
 import * as lang from "../../../helpers/lang"
 import { uiLangState, uiEditState, uiUndosState } from "../../../atoms/common"
@@ -994,7 +996,8 @@ const LiteralComponent: FC<{
   const updateEntityState = (status: EditedEntityState) => {
     const entityQname = topEntity ? topEntity.qname : subject.qname
     const undo = undos[ns.uriFromQname(entityQname)]
-    //debug("undo:", undo, entityQname, undos)
+    const hStatus = getHistoryStatus(ns.uriFromQname(entityQname))
+    //debug("undo:", undo, hStatus, history, entityQname, undos)
     const n = entities.findIndex((e) => e.subjectQname === entityQname)
     if (n > -1) {
       const ent = entities[n]
@@ -1007,6 +1010,7 @@ const LiteralComponent: FC<{
         errors[ent.qname][property.qname + ":" + index] = true
       } else if (status !== EditedEntityState.Error) {
         status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
+
         //debug("no error:", status, n, ent, errors, property.qname, index)
         if (ent.state != status) {
           //debug("status:",ent.state,status)
@@ -1023,6 +1027,17 @@ const LiteralComponent: FC<{
       }
     }
   }
+
+  useEffect(() => {
+    let error = false
+    const entityQname = topEntity ? topEntity.qname : subject.qname
+    const n = entities.findIndex((e) => e.subjectQname === entityQname)
+    if (n > -1) {
+      const ent = entities[n]
+      if (ent.state === EditedEntityState.Error) error = true
+    }
+    if (!error) updateEntityState(EditedEntityState.Saved)
+  }, [undos])
 
   const t = property.datatype
   let edit, classN

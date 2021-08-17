@@ -16,7 +16,7 @@ import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/ent
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
-import { uiTabState, uiUndosState, noUndo, noUndoRedo, undoState } from "../atoms/common"
+import { uiTabState, uiUndosState, noUndo, noUndoRedo, undoState, sameUndo } from "../atoms/common"
 
 import { Subject, history } from "../helpers/rdf/types"
 
@@ -49,6 +49,22 @@ export interface IdTypeParams {
 
 export interface AppProps extends RouteComponentProps<IdTypeParams> {}
 
+export const getHistoryStatus = (entityUri) => {
+  if (!history[entityUri]) return {}
+
+  // DONE: optimizing a bit (1 for instead of 2 .findIndex + 1 .some)
+  const top = history[entityUri].length - 1
+  let first = -1,
+    current = -1
+  for (const i in history[entityUri]) {
+    const h = history[entityUri][i]
+    if (h["tmp:allValuesLoaded"]) first = i
+    else if (h["tmp:undone"]) current = i - 1
+    if (first != -1 && current != -1) break
+  }
+  return { top, first, current }
+}
+
 let undoTimer = 0,
   undoEntity = "tmp:uri"
 
@@ -73,62 +89,43 @@ function App(props: AppProps) {
     }
   }, [])
 
-  if (isLoading) return <span>Loading</span>
-  if (config.requireAuth && !isAuthenticated) return <AuthRequest />
-
   /*
-  const delay = 10,
-    updateUndo = (ev: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent | MessageEvent) => {
-      //debug("ev:", ev.currentTarget, ev.target, history, undos)
-      if (!(ev instanceof MessageEvent)) ev.persist()
-      const timer = setTimeout(() => {
-        //debug("timer", timer, entityUri)
+  useEffect( () => {
+    debug("undos!",undo,undos)
+  }, [undos])
+  */
 
-        const target = ev.target as Element
-        if (target?.classList?.contains("undo-btn")) {
-          return
-        }
-    */
-
-  //debug("hello?", props)
-
-  if (undoTimer === 0 || entityUri !== undoEntity) {
+  useEffect(() => {
+    //if (undoTimer === 0 || entityUri !== undoEntity) {
     undoEntity = entityUri
     clearInterval(undoTimer)
-    const delay = 2000
+    const delay = 350
     undoTimer = setInterval(() => {
       //debug("timer",undoTimer, entityUri)
-
       if (!history[entityUri]) return
-
-      // DONE: optimizing a bit (1 for instead of 2 .findIndex + 1 .some)
-      const top = history[entityUri].length - 1
-      let first = -1,
-        current = -1
-      for (const i in history[entityUri]) {
-        const h = history[entityUri][i]
-        if (h["tmp:allValuesLoaded"]) first = i
-        else if (h["tmp:undone"]) current = i - 1
-        if (first != -1 && current != -1) break
-      }
-
+      const { top, first, current } = getHistoryStatus(entityUri)
       if (first === -1) return
-
       if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) {
-        //debug("no undo")
-        setUndo(noUndoRedo)
+        if (!sameUndo(undo, noUndoRedo)) {
+          //debug("no undo:",undo)
+          setUndo(noUndoRedo)
+        }
       } else {
-        debug("has undo:", JSON.stringify(undo, null, 1), first, top, history, current, entities[entity])
         if (first !== -1) {
           if (current < 0 && first < top) {
             const histo = history[entityUri][top]
             if (history[entityUri][top][entityUri]) {
               const prop = Object.keys(history[entityUri][top][entityUri])
-              if (prop && prop.length && entities[entity].subject !== null)
-                setUndo({
-                  next: noUndo,
+              if (prop && prop.length && entities[entity].subject !== null) {
+                const newUndo = {
                   prev: { enabled: true, subjectUri: entityUri, propertyPath: prop[0], parentPath: [] },
-                })
+                  next: noUndo,
+                }
+                if (!sameUndo(undo, newUndo)) {
+                  //debug("has undo1:", undo, newUndo, first, top, history, current, entities[entity])
+                  setUndo(newUndo)
+                }
+              }
             } else {
               // TODO: enable undo when change in subnode
               const parentPath = history[entityUri][top]["tmp:parentPath"]
@@ -138,11 +135,16 @@ function App(props: AppProps) {
                 )
                 if (sub && sub.length) {
                   const prop = Object.keys(history[entityUri][top][sub[0]])
-                  if (prop && prop.length && entities[entity].subject !== null)
-                    setUndo({
+                  if (prop && prop.length && entities[entity].subject !== null) {
+                    const newUndo = {
                       next: noUndo,
                       prev: { enabled: true, subjectUri: sub[0], propertyPath: prop[0], parentPath },
-                    })
+                    }
+                    if (!sameUndo(undo, newUndo)) {
+                      //debug("has undo2:", undo, newUndo, first, top, history, current, entities[entity])
+                      setUndo(newUndo)
+                    }
+                  }
                 }
               }
             }
@@ -150,7 +152,15 @@ function App(props: AppProps) {
         }
       }
     }, delay)
-  }
+    //}
+
+    return () => {
+      clearInterval(undoTimer)
+    }
+  }, [entities, undos])
+
+  if (isLoading) return <span>Loading</span>
+  if (config.requireAuth && !isAuthenticated) return <AuthRequest />
 
   //debug(props)
 
