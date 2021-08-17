@@ -11,7 +11,7 @@ import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
 import { uiLangState, uiTabState } from "../../atoms/common"
-import { entitiesAtom } from "../../containers/EntitySelectorContainer"
+import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 import * as ns from "../../helpers/rdf/ns"
@@ -94,7 +94,7 @@ function NavBar(props: AppProps) {
 export const NavBarContainer = withRouter(NavBar)
 
 function BottomBar(props: AppProps) {
-  const [entities] = useRecoilState(entitiesAtom)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [uiTab] = useRecoilState(uiTabState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entitySubj = entities[entity]?.subject
@@ -105,6 +105,9 @@ function BottomBar(props: AppProps) {
     ns.setDefaultPrefixes(store)
     entitySubj?.graph.addNewValuestoStore(store)
     debugStore(store)
+    const newEntities = [...entities]
+    newEntities[entity] = { ...newEntities[entity], state: EditedEntityState.Saved }
+    setEntities(newEntities)
   }
 
   return (
