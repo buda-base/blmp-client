@@ -218,6 +218,7 @@ const ValueList: FC<{
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
     if (vals && vals.length) {
       if (property.minCount && vals.length < property.minCount) {
+        // dont store empty value autocreation
         if (topEntity) topEntity.noHisto()
         else if (owner) owner.noHisto()
         else subject.noHisto()
@@ -235,6 +236,7 @@ const ValueList: FC<{
       (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField) &&
       (!property.maxCount || property.maxCount >= list.length)
     ) {
+      // dont store empty value autocreation
       if (topEntity) topEntity.noHisto()
       else if (owner) owner.noHisto()
       else subject.noHisto()

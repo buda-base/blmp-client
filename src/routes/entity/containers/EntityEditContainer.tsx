@@ -120,6 +120,7 @@ function EntityEditContainer(props: AppProps) {
   let n = -1
   const delay = 350,
     entityUri = ns.uriFromQname(entityQname),
+    // wait for all data to be loaded then add flag in history
     init = setInterval(() => {
       if (history[entityUri]) {
         if (history[entityUri].some((h) => h["tmp:allValuesLoaded"])) {

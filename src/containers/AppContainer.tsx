@@ -49,6 +49,7 @@ export interface IdTypeParams {
 
 export interface AppProps extends RouteComponentProps<IdTypeParams> {}
 
+// get info from history (values modified? values undone?)
 export const getHistoryStatus = (entityUri) => {
   if (!history[entityUri]) return {}
 
@@ -95,6 +96,8 @@ function App(props: AppProps) {
   }, [undos])
   */
 
+  // this is needed to initialize undo/redo without any button being clicked
+  // (link between recoil/react states and data updates automatically stored in EntityGraphValues)
   useEffect(() => {
     //if (undoTimer === 0 || entityUri !== undoEntity) {
     undoEntity = entityUri
@@ -105,6 +108,7 @@ function App(props: AppProps) {
       if (!history[entityUri]) return
       const { top, first, current } = getHistoryStatus(entityUri)
       if (first === -1) return
+      // check if flag is on top => nothing modified
       if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) {
         if (!sameUndo(undo, noUndoRedo)) {
           //debug("no undo:",undo)
@@ -115,6 +119,7 @@ function App(props: AppProps) {
           if (current < 0 && first < top) {
             const histo = history[entityUri][top]
             if (history[entityUri][top][entityUri]) {
+              // we can undo a modification of simple property value
               const prop = Object.keys(history[entityUri][top][entityUri])
               if (prop && prop.length && entities[entity].subject !== null) {
                 const newUndo = {
@@ -134,6 +139,7 @@ function App(props: AppProps) {
                   (k) => !["tmp:parentPath", "tmp:undone"].includes(k)
                 )
                 if (sub && sub.length) {
+                  // we can undo a modification of simple value of subproperty of a property
                   const prop = Object.keys(history[entityUri][top][sub[0]])
                   if (prop && prop.length && entities[entity].subject !== null) {
                     const newUndo = {

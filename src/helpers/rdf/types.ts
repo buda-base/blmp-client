@@ -27,53 +27,6 @@ const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
 export const history: Record<string, Array<Record<string, any>>> = {}
 export const errors: Record<string, Array<Record<string, boolean>>> = {}
 
-/* // DONE: finally not needed 
-const topUndoHasEmptyVal = (histo: Array<Record<string, any>>) => {
-  if (histo.length >= 1 + 1) {
-    const h1 = histo[histo.length - 1],
-      h2 = histo[histo.length - 1 - 1]
-
-    const h1_k = Object.keys(h1),
-      h2_k = Object.keys(h2)
-    if (h1_k.length === h2_k.length) {
-      if (!h1_k.some((uri) => !h2_k.includes(uri))) {
-        for (const k of h1_k) {
-          if (!["tmp:parentPath", "tmp:undone"].includes(k)) {
-            const h1_k_p = Object.keys(h1[k]),
-              h2_k_p = Object.keys(h2[k])
-            if (!h1_k_p.some((prop) => !h2_k_p.includes(prop))) {
-              for (const p of h1_k_p) {
-                const h1_k_p_v = h1[k][p],
-                  h2_k_p_v = h2[k][p]
-                if (h1_k_p_v.length - 1 === h2_k_p_v.length) {
-                  const isNew = h1_k_p_v[0] as ExtRDFResourceWithLabel
-                  if (isNew.uri === "tmp:uri") {
-                    for (const i in h2_k_p_v) {
-                      const v1 = h1_k_p_v[i + 1],
-                        v2 = h2_k_p_v[i]
-                      if (
-                        v1 instanceof ExtRDFResourceWithLabel &&
-                        v2 instanceof ExtRDFResourceWithLabel &&
-                        v1.uri !== v2.uri
-                      ) {
-                        return false
-                      }
-                    }
-                    debug("same with empty val", h1_k_p_v, h2_k_p_v)
-                    return true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return false
-}
-*/
-
 const updateHistory = (
   entity: string,
   qname: string,
@@ -92,17 +45,12 @@ const updateHistory = (
     ...entity != qname ? { "tmp:parentPath": getParentPath(entity, qname) } : {},
   }
 
+  // some value modifications must not be added to history (some autocreation of empty values for example)
   if (noHisto === -1) {
     const first = history[entity].findIndex((h) => h["tmp:allValuesLoaded"])
     if (first > 0) history[entity].splice(first, 0, newVal)
     else history[entity].push(newVal)
   } else history[entity].push(newVal)
-
-  /* // DONE: lets try not to use this...
-  while (topUndoHasEmptyVal(history[entity])) {
-    history[entity].pop()
-  }
-  */
 
   //debug("history:", entity, qname, prop, val, history, noHisto)
 }
@@ -134,7 +82,7 @@ export class EntityGraphValues {
   }
 
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
-    //debug("oUv:", this.subjectUri, this.noHisto, this)
+    // disable history for current modification (autocreation of new empty simple value)
     if (this.noHisto === true) {
       this.noHisto = false
       return
@@ -142,6 +90,8 @@ export class EntityGraphValues {
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
     this.newSubjectProps[subjectUri][pathString] = values
     updateHistory(this.subjectUri, subjectUri, pathString, values, this.noHisto)
+    // there are some modifications that are chained and we need only first not to be stored
+    // (case of creation of new property with subproperties)
     if (this.noHisto === 1) this.noHisto = -1
   }
 
@@ -550,6 +500,15 @@ export class Subject extends RDFResource {
     return this.graph.getAtomForSubjectProperty(pathString, this.uri)
   }
 
+  /*
+  // sets the flag to store to history or not according to the case,
+  // allows to store value modification not on top of history,
+  // 
+  // ex: noHisto(false, -1)    // put empty subnodes in history before tmp:allValuesLoaded
+  //     noHisto(false, 1)     // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
+  //     noHisto(false, false) // history back to normal
+  //     noHisto(true)         // disable value storing when doing undo/redo
+  */
   noHisto(force = false, start: boolean | number = true) {
     const current = this.graph.getValues().noHisto
     //debug("noHisto:", force, start, this.qname, this, current)

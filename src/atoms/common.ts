@@ -53,7 +53,6 @@ const sameUndoSub = (undo1: undoState, undo2: undoState) => {
 }
 
 export const sameUndo = (undo1: { prev: undoState; next: undoState }, undo2: { prev: undoState; next: undoState }) => {
-  //debug("sameUndo...",undo1,undo2)
   return (
     !undo1 && !undo2 || undo1 && undo2 && sameUndoSub(undo1.prev, undo2.prev) && sameUndoSub(undo1.next, undo2.next)
   )
