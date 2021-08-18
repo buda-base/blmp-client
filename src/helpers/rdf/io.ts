@@ -146,8 +146,24 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       const labelQueryUrl = labelQueryUrlFromEntityQname(entityQname)
       const entityUri = uriFromQname(entityQname)
 
-      const loadRes = loadTtl(fetchUrl)
-      const loadLabels = loadTtl(labelQueryUrl)
+      let loadRes, loadLabels
+      try {
+        loadRes = await loadTtl(fetchUrl)
+        loadLabels = loadTtl(labelQueryUrl)
+      } catch (e) {
+        //debug("no res:",entityQname)
+        let localEntities = localStorage.getItem("localEntities")
+        if (!localEntities) localEntities = "{}"
+        localEntities = await JSON.parse(localEntities)
+        if (localEntities[entityQname] !== undefined) {
+          //debug("found local:",entityQname,localEntities[entityQname])
+          const store: rdf.Store = rdf.graph()
+          rdf.parse(localEntities[entityQname], store, rdf.Store.defaultGraphURI, "text/turtle")
+          loadRes = store
+        } else {
+          throw e
+        }
+      }
 
       try {
         const entityStore = await loadRes
@@ -187,6 +203,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
           debug("fetched")
         }
       } catch (e) {
+        debug(e)
         setEntityLoadingState({ status: "error", error: "error fetching entity" })
       }
     }

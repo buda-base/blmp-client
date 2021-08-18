@@ -114,6 +114,13 @@ export function EntityCreator(shapeQname: string) {
       setEntities([newEntity, ...entities])
       setEntity(newSubject)
       setEntityLoadingState({ status: "created", error: undefined })
+
+      // save RID to localStorage
+      let localEntities = localStorage.getItem("localEntities")
+      if (!localEntities) localEntities = "{}"
+      localEntities = await JSON.parse(localEntities)
+      localEntities[newSubject.qname] = ""
+      localStorage.setItem("localEntities", JSON.stringify(localEntities))
     }
     createResource(shapeQname)
   }, [shapeQname])
