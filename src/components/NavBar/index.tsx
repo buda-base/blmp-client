@@ -108,6 +108,16 @@ function BottomBar(props: AppProps) {
     const newEntities = [...entities]
     newEntities[entity] = { ...newEntities[entity], state: EditedEntityState.Saved }
     setEntities(newEntities)
+
+    // save ttl to localStorage
+    const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+    rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
+      let localEntities = localStorage.getItem("localEntities")
+      if (!localEntities) localEntities = "{}"
+      localEntities = await JSON.parse(localEntities)
+      localEntities[entities[entity].subjectQname] = str
+      localStorage.setItem("localEntities", JSON.stringify(localEntities))
+    })
   }
 
   return (

@@ -146,23 +146,29 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       const labelQueryUrl = labelQueryUrlFromEntityQname(entityQname)
       const entityUri = uriFromQname(entityQname)
 
-      let loadRes, loadLabels
+      // TODO: UI "save draft" / "publish"
+
+      let loadRes, loadLabels, localRes, useLocal, notFound
+      let localEntities = localStorage.getItem("localEntities")
+      if (!localEntities) localEntities = "{}"
+      localEntities = await JSON.parse(localEntities)
+      // 1 - check if entity has local edits
+      if (localEntities[entityQname] !== undefined) {
+        useLocal = window.confirm("found previous local edits for this new resource, load them?")
+        const store: rdf.Store = rdf.graph()
+        if (useLocal) rdf.parse(localEntities[entityQname], store, rdf.Store.defaultGraphURI, "text/turtle")
+        else rdf.parse("", store, rdf.Store.defaultGraphURI, "text/turtle")
+        localRes = store
+      }
+
+      // 2 - try to load data from server if not or if user wants to
       try {
-        loadRes = await loadTtl(fetchUrl)
-        loadLabels = loadTtl(labelQueryUrl)
+        if (!useLocal) loadRes = await loadTtl(fetchUrl)
+        else loadRes = localRes
+        loadLabels = await loadTtl(labelQueryUrl)
       } catch (e) {
-        //debug("no res:",entityQname)
-        let localEntities = localStorage.getItem("localEntities")
-        if (!localEntities) localEntities = "{}"
-        localEntities = await JSON.parse(localEntities)
-        if (localEntities[entityQname] !== undefined) {
-          //debug("found local:",entityQname,localEntities[entityQname])
-          const store: rdf.Store = rdf.graph()
-          rdf.parse(localEntities[entityQname], store, rdf.Store.defaultGraphURI, "text/turtle")
-          loadRes = store
-        } else {
-          throw e
-        }
+        // 3 - case when entity is not on server and user does not want to use local edits that already exist
+        if (localRes) loadRes = localRes
       }
 
       try {
