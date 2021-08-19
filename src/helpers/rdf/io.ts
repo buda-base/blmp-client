@@ -152,11 +152,12 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       let localEntities = localStorage.getItem("localEntities")
       if (!localEntities) localEntities = "{}"
       localEntities = await JSON.parse(localEntities)
-      // 1 - check if entity has local edits
-      if (localEntities[entityQname] !== undefined) {
+      // 1 - check if entity has local edits (once shape is defined)
+      if (shapeRef && localEntities[entityQname] !== undefined) {
         useLocal = window.confirm("found previous local edits for this new resource, load them?")
         const store: rdf.Store = rdf.graph()
-        if (useLocal) rdf.parse(localEntities[entityQname], store, rdf.Store.defaultGraphURI, "text/turtle")
+        if (useLocal)
+          rdf.parse(localEntities[entityQname][shapeRef.qname], store, rdf.Store.defaultGraphURI, "text/turtle")
         else rdf.parse("", store, rdf.Store.defaultGraphURI, "text/turtle")
         localRes = store
       }

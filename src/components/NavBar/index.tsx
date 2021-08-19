@@ -115,7 +115,7 @@ function BottomBar(props: AppProps) {
       let localEntities = localStorage.getItem("localEntities")
       if (!localEntities) localEntities = "{}"
       localEntities = await JSON.parse(localEntities)
-      localEntities[entities[entity].subjectQname] = str
+      localEntities[entities[entity].subjectQname] = { [entities[entity].shapeRef.qname]: str }
       localStorage.setItem("localEntities", JSON.stringify(localEntities))
     })
   }

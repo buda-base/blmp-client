@@ -119,7 +119,7 @@ export function EntityCreator(shapeQname: string) {
       let localEntities = localStorage.getItem("localEntities")
       if (!localEntities) localEntities = "{}"
       localEntities = await JSON.parse(localEntities)
-      localEntities[newSubject.qname] = ""
+      localEntities[newSubject.qname] = { [shape.qname]: "" }
       localStorage.setItem("localEntities", JSON.stringify(localEntities))
     }
     createResource(shapeQname)
