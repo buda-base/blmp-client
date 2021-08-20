@@ -15,7 +15,7 @@ import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelector
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 import * as ns from "../../helpers/rdf/ns"
-import { debugStore } from "../../helpers/rdf/io"
+import { debugStore, setUserLocalEntities } from "../../helpers/rdf/io"
 
 function NavBar(props: AppProps) {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
@@ -99,6 +99,7 @@ function BottomBar(props: AppProps) {
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entitySubj = entities[entity]?.subject
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
+  const auth0 = useAuth0()
 
   const save = (): void => {
     const store = new rdf.Store()
@@ -112,11 +113,7 @@ function BottomBar(props: AppProps) {
     // save ttl to localStorage
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
     rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
-      let localEntities = localStorage.getItem("localEntities")
-      if (!localEntities) localEntities = "{}"
-      localEntities = await JSON.parse(localEntities)
-      localEntities[entities[entity].subjectQname] = { [entities[entity].shapeRef.qname]: str }
-      localStorage.setItem("localEntities", JSON.stringify(localEntities))
+      setUserLocalEntities(auth0, entities[entity].subjectQname, entities[entity].shapeRef.qname, str)
     })
   }
 

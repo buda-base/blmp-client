@@ -5,7 +5,7 @@ import { useRecoilState } from "recoil"
 import * as ns from "./ns"
 import { RDFResource, Subject, EntityGraph, RDFResourceWithLabel } from "./types"
 import { NodeShape } from "./shapes"
-import { IFetchState, shapesMap, fetchUrlFromshapeQname, loadOntology, loadTtl } from "./io"
+import { IFetchState, shapesMap, fetchUrlFromshapeQname, loadOntology, loadTtl, setUserLocalEntities } from "./io"
 import * as shapes from "./shapes"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import { useAuth0 } from "@auth0/auth0-react"
@@ -49,6 +49,7 @@ export function EntityCreator(shapeQname: string) {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const { getAccessTokenSilently } = useAuth0()
   const [shape, setShape] = useState<NodeShape>()
+  const auth0 = useAuth0()
 
   const reset = () => {
     setEntity(undefined)
@@ -115,12 +116,8 @@ export function EntityCreator(shapeQname: string) {
       setEntity(newSubject)
       setEntityLoadingState({ status: "created", error: undefined })
 
-      // save RID to localStorage
-      let localEntities = localStorage.getItem("localEntities")
-      if (!localEntities) localEntities = "{}"
-      localEntities = await JSON.parse(localEntities)
-      localEntities[newSubject.qname] = { [shape.qname]: "" }
-      localStorage.setItem("localEntities", JSON.stringify(localEntities))
+      // save to localStorage
+      setUserLocalEntities(auth0, newSubject.qname, shape.qname, "")
     }
     createResource(shapeQname)
   }, [shapeQname])

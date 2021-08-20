@@ -128,11 +128,35 @@ export function ShapeFetcher(shapeQname: string) {
   return { loadingState, shape, reset }
 }
 
+export const getUserLocalEntities = async (auth: Auth0) => {
+  debug("auth:", auth)
+  let data = localStorage.getItem("localEntities")
+  if (!data) data = '{"unregistered":{}}'
+  data = await JSON.parse(data)
+  if (auth && auth.user && auth.user.email && data[auth.user.email]) return data[auth.user.email]
+  return data["unregistered"]
+}
+
+export const setUserLocalEntities = async (auth: Auth0, rid: string, shape: string, ttl: string) => {
+  debug("auth:", auth)
+  let data = localStorage.getItem("localEntities"),
+    userData
+  if (!data) data = '{"unregistered":{}}'
+  data = await JSON.parse(data)
+  if (auth && auth.user && auth.user.email) {
+    if (!data[auth.user.email]) data[auth.user.email] = {}
+    userData = data[auth.user.email]
+  } else userData = data["unregistered"]
+  userData[rid] = { [shape]: ttl }
+  localStorage.setItem("localEntities", JSON.stringify(data))
+}
+
 export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabel | null) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>(Subject.createEmpty())
   const [uiReady, setUiReady] = useRecoilState(uiReadyState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const auth0 = useAuth0()
 
   const reset = () => {
     setEntity(Subject.createEmpty())
@@ -149,12 +173,10 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       // TODO: UI "save draft" / "publish"
 
       let loadRes, loadLabels, localRes, useLocal, notFound
-      let localEntities = localStorage.getItem("localEntities")
-      if (!localEntities) localEntities = "{}"
-      localEntities = await JSON.parse(localEntities)
+      const localEntities = await getUserLocalEntities(auth0)
       // 1 - check if entity has local edits (once shape is defined)
       if (shapeRef && localEntities[entityQname] !== undefined) {
-        useLocal = window.confirm("found previous local edits for this new resource, load them?")
+        useLocal = window.confirm("found previous local edits for this resource, load them?")
         const store: rdf.Store = rdf.graph()
         if (useLocal)
           rdf.parse(localEntities[entityQname][shapeRef.qname], store, rdf.Store.defaultGraphURI, "text/turtle")
@@ -170,9 +192,13 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       } catch (e) {
         // 3 - case when entity is not on server and user does not want to use local edits that already exist
         if (localRes) loadRes = localRes
+        else notFound = true
       }
 
       try {
+        // TODO: redirection to /new instead of "error fetching entity"? create missing entity?
+        if (notFound) throw error("not found")
+
         const entityStore = await loadRes
         const labelsStore = await loadLabels
         const subject: Subject = new Subject(
