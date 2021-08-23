@@ -51,8 +51,10 @@ export const debugStore = (s: rdf.Store, debugNs?: string) => {
 const acceptTtl = new Headers()
 acceptTtl.set("Accept", "text/turtle")
 
-export const loadTtl = async (url: string): Promise<rdf.Store> => {
+export const loadTtl = async (url: string, allow404 = false): Promise<rdf.Store> => {
   const response = await fetch(url, { headers: acceptTtl })
+  // eslint-disable-next-line no-magic-numbers
+  if (allow404 && response.status == 404) return rdf.graph()
   // eslint-disable-next-line no-magic-numbers
   if (response.status != 200) throw "cannot fetch " + url
   const body = await response.text()
@@ -188,7 +190,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       try {
         if (!useLocal) loadRes = await loadTtl(fetchUrl)
         else loadRes = localRes
-        loadLabels = await loadTtl(labelQueryUrl)
+        loadLabels = await loadTtl(labelQueryUrl, true)
       } catch (e) {
         // 3 - case when entity is not on server and user does not want to use local edits that already exist
         if (localRes) loadRes = localRes
