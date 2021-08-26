@@ -86,12 +86,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       label={
         <>
           <Link to={link}>
-            {icon && (
-              <img
-                src={"/icons/" + icon + (index === tab ? "_" : "") + ".svg"}
-                style={{ height: 25, position: "absolute" }}
-              />
-            )}
+            {icon && <img className="entity-type" src={"/icons/" + icon + (index === tab ? "_" : "") + ".svg"} />}
             <span style={{ marginLeft: 30, marginRight: "auto", textAlign: "left" }}>
               <span>{label}</span>
               <br />
