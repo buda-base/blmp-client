@@ -128,8 +128,15 @@ export function ShapeFetcher(shapeQname: string) {
   return { loadingState, shape, reset }
 }
 
+/*
+export const setUserLocalEntities = async (auth: Auth0) => {
+  //debug("auth:", auth)
+  let data = localStorage.getItem("localEntities")
+}
+*/
+
 export const getUserLocalEntities = async (auth: Auth0) => {
-  debug("auth:", auth)
+  //debug("auth:", auth)
   let data = localStorage.getItem("localEntities")
   if (!data) data = '{"unregistered":{}}'
   data = await JSON.parse(data)
@@ -138,7 +145,7 @@ export const getUserLocalEntities = async (auth: Auth0) => {
 }
 
 export const setUserLocalEntities = async (auth: Auth0, rid: string, shape: string, ttl: string) => {
-  debug("auth:", auth)
+  //debug("auth:", auth)
   let data = localStorage.getItem("localEntities"),
     userData
   if (!data) data = '{"unregistered":{}}'
@@ -197,7 +204,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       try {
         // TODO: redirection to /new instead of "error fetching entity"? create missing entity?
-        if (notFound) throw error("not found")
+        if (notFound) throw Error("not found")
 
         const entityStore = await loadRes
         const labelsStore = await loadLabels

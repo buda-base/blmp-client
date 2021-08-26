@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { BrowserRouter as Router, Route, RouteComponentProps, Switch } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import i18n from "i18next"
@@ -9,7 +9,7 @@ import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import { NavBarContainer, BottomBarContainer } from "../components/NavBar"
-import EntitySelector, { entitiesAtom } from "../containers/EntitySelectorContainer"
+import EntitySelector, { entitiesAtom, EditedEntityState } from "../containers/EntitySelectorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
@@ -79,6 +79,36 @@ function App(props: AppProps) {
   const undo = undos[entityUri]
   const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
   const appEl = useRef<HTMLDivElement>(null)
+  // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
+  const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+
+  useEffect(() => {
+    let warn = false
+    for (const e of entities) {
+      if (e.state !== EditedEntityState.Saved) {
+        warn = true
+        break
+      }
+    }
+    if (warn) {
+      window.removeEventListener("beforeunload", warning, true)
+      setWarning(() => (event) => {
+        // Cancel the event as stated by the standard.
+        event.preventDefault()
+        // Chrome requires returnValue to be set.
+        event.returnValue = ""
+      })
+    } else {
+      window.removeEventListener("beforeunload", warning, true)
+      setWarning(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+    }
+  }, [entities])
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", warning, true)
+  }, [warning])
+
+  //debug("warning:",warning)
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {
