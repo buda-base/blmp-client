@@ -30,6 +30,7 @@ const enTranslations = {
     change: "change",
     create: "...",
     new: "new {{type}}",
+    open: "open",
   },
   error: {
     inferiorTo: "must be inferior to {{val}}",

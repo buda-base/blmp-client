@@ -564,14 +564,14 @@ label ~ .selector {
   font-style: normal;
 }
 
-
+.MuiFormHelperText-root,
 .MuiButtonBase-root.MuiMenuItem-root,
 textarea.MuiInputBase-input,
 .MuiFormLabel-root.MuiInputLabel-shrink,
 .MuiFormHelperText-filled.MuiFormHelperText-root,
 input.MuiInputBase-input,
 .MuiSelect-root.MuiInputBase-input,
-* { font-family: "Noto Sans", "Roboto", "Helvetica", "Arial", sans-serif ; }
+* { font-family: "Noto Sans", "Roboto", "Helvetica", "Arial", sans-serif !important; }
 
 
 .btn-blanc:not(#a),

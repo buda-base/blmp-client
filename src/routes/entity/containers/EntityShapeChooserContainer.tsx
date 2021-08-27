@@ -42,6 +42,7 @@ function EntityShapeChooserContainer(props: AppProps) {
   if (entity) {
     const possibleShapes = shapes.shapeRefsForEntity(entity)
     if (!possibleShapes) {
+      debug("cannot find", entity, entityLoadingState)
       return <span>cannot find any appropriate shape for this entity</span>
     }
     if (possibleShapes.length > 1) {
