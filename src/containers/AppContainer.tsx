@@ -9,7 +9,11 @@ import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import { NavBarContainer, BottomBarContainer } from "../components/NavBar"
-import EntitySelector, { entitiesAtom, EditedEntityState } from "../containers/EntitySelectorContainer"
+import EntitySelector, {
+  entitiesAtom,
+  EditedEntityState,
+  defaultEntityLabelAtom,
+} from "../containers/EntitySelectorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
@@ -18,6 +22,7 @@ import EntityCreationContainer from "../routes/entity/containers/EntityCreationC
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
 import { uiTabState, uiUndosState, noUndo, noUndoRedo, undoState, sameUndo } from "../atoms/common"
 
+import { getUserSession } from "../helpers/rdf/io"
 import { Subject, history } from "../helpers/rdf/types"
 
 import enTranslations from "../translations/en"
@@ -72,7 +77,7 @@ let undoTimer = 0,
 function App(props: AppProps) {
   const { isAuthenticated, isLoading } = useAuth0()
   const [undos, setUndos] = useRecoilState(uiUndosState)
-  const [entities] = useRecoilState(entitiesAtom)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [uiTab] = useRecoilState(uiTabState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
@@ -81,11 +86,12 @@ function App(props: AppProps) {
   const appEl = useRef<HTMLDivElement>(null)
   // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
   const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+  const auth0 = useAuth0()
 
   useEffect(() => {
     let warn = false
     for (const e of entities) {
-      if (e.state !== EditedEntityState.Saved) {
+      if (e.state !== EditedEntityState.Saved && e.state !== EditedEntityState.NotLoaded) {
         warn = true
         break
       }
@@ -194,6 +200,29 @@ function App(props: AppProps) {
       clearInterval(undoTimer)
     }
   }, [entities, undos])
+
+  // restore user session on startup
+  useEffect(() => {
+    if (!isLoading && !entities.length) {
+      const session = getUserSession(auth0)
+      session.then((obj) => {
+        debug("session:", obj)
+        if (!obj) return
+        const newEntities = []
+        for (const k of Object.keys(obj)) {
+          newEntities.push({
+            subjectQname: k,
+            subject: null,
+            shapeRef: obj[k].shape,
+            subjectLabelState: defaultEntityLabelAtom,
+            state: EditedEntityState.NotLoaded,
+            preloadedLabel: obj[k].label,
+          })
+        }
+        if (newEntities.length) setEntities(newEntities)
+      })
+    }
+  }, [isLoading])
 
   if (isLoading) return <span>Loading</span>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />

@@ -1,6 +1,7 @@
 /* eslint-disable no-extra-parens */
 import React, { useState, FC, useEffect, ChangeEvent } from "react"
 import { Subject, RDFResourceWithLabel, RDFResource } from "../helpers/rdf/types"
+import { setUserSession } from "../helpers/rdf/io"
 import * as shapes from "../helpers/rdf/shapes"
 import { FiPower as LogoutIcon } from "react-icons/fi"
 import { InputLabel, Select, MenuItem } from "@material-ui/core"
@@ -16,7 +17,7 @@ import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
 import * as lang from "../helpers/lang"
 import * as ns from "../helpers/rdf/ns"
-import { Entity, EditedEntityState, entitiesAtom } from "./EntitySelectorContainer"
+import { Entity, EditedEntityState, entitiesAtom, defaultEntityLabelAtom } from "./EntitySelectorContainer"
 import * as rdf from "rdflib"
 import { CloseIcon } from "../routes/layout/icons"
 
@@ -40,25 +41,32 @@ export const getIcon = (entity: Entity) => {
       }
     }
   }
-  if (!icon && entity.shapeRef?.qname) {
+  let shapeQname = entity.shapeRef
+  if (entity.shapeRef && entity.shapeRef.qname) shapeQname = entity.shapeRef.qname
+  if (!icon && shapeQname) {
     // TODO: might be something better than that...
-    icon = entity.shapeRef.qname.replace(/^[^:]+:([^:]+?)Shape[^/]*$/, "$1").toLowerCase()
+    icon = shapeQname.replace(/^[^:]+:([^:]+?)Shape[^/]*$/, "$1").toLowerCase()
   }
   return icon
 }
 
 export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number }> = ({ entity, index }) => {
   const [uiLang] = useRecoilState(uiLangState)
-  const [labelValues] = useRecoilState(entity.subjectLabelState)
-  const prefLabels = RDFResource.valuesByLang(labelValues)
-  const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
-  const link = "/edit/" + entity.subjectQname + (entity.shapeRef ? "/" + entity.shapeRef.qname : "")
+  const [labelValues] = useRecoilState(!entity.preloadedLabel ? entity.subjectLabelState : defaultEntityLabelAtom)
   const [tab, setTab] = useRecoilState(uiTabState)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const history = useHistory()
+  const auth0 = useAuth0()
+
+  const prefLabels = labelValues ? RDFResource.valuesByLang(labelValues) : ""
+  const label = !entity.preloadedLabel ? lang.ValueByLangToStrPrefLang(prefLabels, uiLang) : entity.preloadedLabel
+  const shapeQname = entity.shapeRef ? (entity.shapeRef.qname ? entity.shapeRef.qname : entity.shapeRef) : ""
+  const link = "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
+
   const handleClick = (event: ChangeEvent<unknown>, newTab: number): void => {
     setTab(newTab)
   }
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const history = useHistory()
+
   const icon = getIcon(entity)
 
   const closeEntity = () => {
@@ -76,6 +84,9 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
         "/edit/" + newList[newTab].subjectQname + (newList[newTab].shapeQname ? "/" + newList[newTab].shapeQname : "")
       )
   }
+
+  // update user session
+  setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel)
 
   return (
     <Tab
