@@ -22,6 +22,8 @@ export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
   "bds:PlaceShape": new ExtRDFResourceWithLabel(ns.BDS("PlaceShape").value, { en: "Place" }),
   "bds:WorkShape": new ExtRDFResourceWithLabel(ns.BDS("WorkShape").value, { en: "Work" }),
   "bds:SerialWorkShape": new ExtRDFResourceWithLabel(ns.BDS("SerialWorkShape").value, { en: "Serial Work" }),
+  "bds:InstanceShape": new ExtRDFResourceWithLabel(ns.BDS("InstanceShape").value, { en: "Instance" }),
+  "bds:ImagegroupShape": new ExtRDFResourceWithLabel(ns.BDS("ImagegroupShape").value, { en: "Imagegroup" }),
 }
 
 export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
@@ -32,6 +34,8 @@ export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
   shapeRefsMap["bds:PlaceShape"],
   shapeRefsMap["bds:WorkShape"],
   shapeRefsMap["bds:SerialWorkShape"],
+  shapeRefsMap["bds:InstanceShape"],
+  shapeRefsMap["bds:ImagegroupShape"],
 ]
 
 export const rdfType = ns.RDF("type") as rdf.NamedNode
