@@ -65,9 +65,7 @@ export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement
   return (
     <div className="blockAdd text-center pb-1 mt-3" style={{ width: "100%" }}>
       <button className="btn btn-sm btn-block btn-outline-primary px-0" style={{ boxShadow: "none" }} onClick={add}>
-        {i18n.t("general.add_another")}
-        &nbsp;
-        {label && label.length > 0 && label[0].toUpperCase() + label.substring(1)}
+        {i18n.t("general.add_another", { val: label })}
         &nbsp;
         <AddIcon />
       </button>

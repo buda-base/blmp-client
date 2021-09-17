@@ -9,14 +9,21 @@ import { uiReadyState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 import { useAuth0 } from "@auth0/auth0-react"
 
+let shapesbase = BDSH_uri
+if (config.TEMPLATES_BASE) {
+  shapesbase = shapesbase.replace("http://purl.bdrc.io/", config.TEMPLATES_BASE)
+}
+
 export const shapeQnameToUri: Record<string, string> = {
   "bds:PersonShapeTest": "/shapes/personpreflabel.ttl",
-  "bds:PersonShape": BDSH_uri + "PersonUIShapes",
-  "bds:CorporationShape": BDSH_uri + "CorporationUIShapes",
-  "bds:TopicShape": BDSH_uri + "TopicUIShapes",
-  "bds:PlaceShape": BDSH_uri + "PlaceUIShapes",
-  "bds:WorkShape": BDSH_uri + "WorkUIShapes",
-  "bds:SerialWorkShape": BDSH_uri + "SerialWorkUIShapes",
+  "bds:PersonShape": shapesbase + "PersonUIShapes",
+  "bds:CorporationShape": shapesbase + "CorporationUIShapes",
+  "bds:TopicShape": shapesbase + "TopicUIShapes",
+  "bds:PlaceShape": shapesbase + "PlaceUIShapes",
+  "bds:WorkShape": shapesbase + "WorkUIShapes",
+  "bds:SerialWorkShape": shapesbase + "SerialWorkUIShapes",
+  "bds:InstanceShape": shapesbase + "InstanceUIShapes",
+  "bds:ImagegroupShape": shapesbase + "ImagegroupUIShapes",
 }
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {

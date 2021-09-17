@@ -40,7 +40,7 @@ const enTranslations = {
     unique: "duplicate language",
   },
   general: {
-    add_another: "Add another",
+    add_another: "Add {{val}}",
     toggle: "{{show}} empty secondary properties",
     show: "Show",
     hide: "Hide",
