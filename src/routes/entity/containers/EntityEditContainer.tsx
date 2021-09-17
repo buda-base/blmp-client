@@ -155,6 +155,7 @@ function EntityEditContainer(props: AppProps) {
   */
 
   const shapeLabel = lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)
+  //const entityLabel = lang.ValueByLangToStrPrefLang(entity.prefLabels, uiLang)
 
   // creating new entity
   //const subject: Subject = generateNew("P", shape)

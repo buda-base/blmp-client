@@ -45,9 +45,10 @@ export enum EditedEntityState {
 export type Entity = {
   subjectQname: string
   subject: Subject | null
-  shapeRef: RDFResourceWithLabel | null
+  shapeRef: RDFResourceWithLabel | null | string
   state: EditedEntityState
-  subjectLabelState: RecoilState<Array<Value>>
+  subjectLabelState: RecoilState<Array<Value>> | null
+  preloadedLabel?: string
 }
 
 export const entitiesAtom = atom<Array<Entity>>({

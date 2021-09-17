@@ -137,17 +137,50 @@ export function ShapeFetcher(shapeQname: string) {
   return { loadingState, shape, reset }
 }
 
+/*
+export const setUserLocalEntities = async (auth: Auth0) => {
+  //debug("auth:", auth)
+  let data = localStorage.getItem("localEntities")
+}
+*/
+
+export const getUserSession = async (auth: Auth0) => {
+  //debug("auth:", auth)
+  let data = localStorage.getItem("session")
+  if (!data) data = '{"unregistered":{}}'
+  data = await JSON.parse(data)
+  if (auth && auth.user && auth.user.email && data[auth.user.email]) return data[auth.user.email]
+  else if (auth && !auth.isAuthenticated) return data["unregistered"]
+  else return {}
+}
+
+export const setUserSession = async (auth: Auth0, rid: string, shape: string, label: string, del? = false) => {
+  //debug("auth:", auth)
+  let data = localStorage.getItem("session"),
+    userData
+  if (!data) data = '{"unregistered":{}}'
+  data = await JSON.parse(data)
+  if (auth && auth.user && auth.user.email) {
+    if (!data[auth.user.email]) data[auth.user.email] = {}
+    userData = data[auth.user.email]
+  } else userData = data["unregistered"]
+  if (!del) userData[rid] = { shape, label }
+  else delete userData[rid]
+  localStorage.setItem("session", JSON.stringify(data))
+}
+
 export const getUserLocalEntities = async (auth: Auth0) => {
-  debug("auth:", auth)
+  //debug("auth:", auth)
   let data = localStorage.getItem("localEntities")
   if (!data) data = '{"unregistered":{}}'
   data = await JSON.parse(data)
   if (auth && auth.user && auth.user.email && data[auth.user.email]) return data[auth.user.email]
-  return data["unregistered"]
+  else if (auth && !auth.isAuthenticated) return data["unregistered"]
+  else return {}
 }
 
 export const setUserLocalEntities = async (auth: Auth0, rid: string, shape: string, ttl: string) => {
-  debug("auth:", auth)
+  //debug("auth:", auth)
   let data = localStorage.getItem("localEntities"),
     userData
   if (!data) data = '{"unregistered":{}}'
@@ -188,7 +221,12 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         useLocal = window.confirm("found previous local edits for this resource, load them?")
         const store: rdf.Store = rdf.graph()
         if (useLocal)
-          rdf.parse(localEntities[entityQname][shapeRef.qname], store, rdf.Store.defaultGraphURI, "text/turtle")
+          rdf.parse(
+            localEntities[entityQname][shapeRef.qname ? shapeRef.qname : shapeRef],
+            store,
+            rdf.Store.defaultGraphURI,
+            "text/turtle"
+          )
         else rdf.parse("", store, rdf.Store.defaultGraphURI, "text/turtle")
         localRes = store
       }
@@ -206,7 +244,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       try {
         // TODO: redirection to /new instead of "error fetching entity"? create missing entity?
-        if (notFound) throw error("not found")
+        if (notFound) throw Error("not found")
 
         const entityStore = await loadRes
         const labelsStore = await loadLabels
@@ -237,6 +275,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             subject,
             state: EditedEntityState.Saved,
             subjectLabelState: subject.getAtomForProperty(prefLabel.uri),
+            preloadedLabel: "",
           }
 
           // DONE: issue #2 fixed, fully using getEntities

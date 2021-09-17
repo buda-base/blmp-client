@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { BrowserRouter as Router, Route, RouteComponentProps, Switch } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import i18n from "i18next"
@@ -9,7 +9,11 @@ import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import { NavBarContainer, BottomBarContainer } from "../components/NavBar"
-import EntitySelector, { entitiesAtom } from "../containers/EntitySelectorContainer"
+import EntitySelector, {
+  entitiesAtom,
+  EditedEntityState,
+  defaultEntityLabelAtom,
+} from "../containers/EntitySelectorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
@@ -18,6 +22,7 @@ import EntityCreationContainer from "../routes/entity/containers/EntityCreationC
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
 import { uiTabState, uiUndosState, noUndo, noUndoRedo, undoState, sameUndo } from "../atoms/common"
 
+import { getUserSession } from "../helpers/rdf/io"
 import { Subject, history } from "../helpers/rdf/types"
 
 import enTranslations from "../translations/en"
@@ -103,13 +108,44 @@ let undoTimer = 0,
 function App(props: AppProps) {
   const { isAuthenticated, isLoading } = useAuth0()
   const [undos, setUndos] = useRecoilState(uiUndosState)
-  const [entities] = useRecoilState(entitiesAtom)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [uiTab] = useRecoilState(uiTabState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
   const undo = undos[entityUri]
   const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
   const appEl = useRef<HTMLDivElement>(null)
+  // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
+  const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+  const auth0 = useAuth0()
+
+  useEffect(() => {
+    let warn = false
+    for (const e of entities) {
+      if (e.state !== EditedEntityState.Saved && e.state !== EditedEntityState.NotLoaded) {
+        warn = true
+        break
+      }
+    }
+    if (warn) {
+      window.removeEventListener("beforeunload", warning, true)
+      setWarning(() => (event) => {
+        // Cancel the event as stated by the standard.
+        event.preventDefault()
+        // Chrome requires returnValue to be set.
+        event.returnValue = ""
+      })
+    } else {
+      window.removeEventListener("beforeunload", warning, true)
+      setWarning(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+    }
+  }, [entities])
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", warning, true)
+  }, [warning])
+
+  //debug("warning:",warning)
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {
@@ -195,6 +231,29 @@ function App(props: AppProps) {
       clearInterval(undoTimer)
     }
   }, [entities, undos])
+
+  // restore user session on startup
+  useEffect(() => {
+    if (!isLoading && !entities.length) {
+      const session = getUserSession(auth0)
+      session.then((obj) => {
+        debug("session:", obj)
+        if (!obj) return
+        const newEntities = []
+        for (const k of Object.keys(obj)) {
+          newEntities.push({
+            subjectQname: k,
+            subject: null,
+            shapeRef: obj[k].shape,
+            subjectLabelState: defaultEntityLabelAtom,
+            state: EditedEntityState.NotLoaded,
+            preloadedLabel: obj[k].label,
+          })
+        }
+        if (newEntities.length) setEntities(newEntities)
+      })
+    }
+  }, [isLoading])
 
   if (isLoading) return <span>Loading</span>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />

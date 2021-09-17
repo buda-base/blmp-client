@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { EntityCreator } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { RDFResourceWithLabel } from "../../../helpers/rdf/types"
@@ -10,6 +11,7 @@ import { AppProps } from "../../../containers/AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
 import React, { ChangeEvent } from "react"
 import qs from "query-string"
+import i18n from "i18next"
 import { TextField, MenuItem } from "@material-ui/core"
 
 const debug = require("debug")("bdrc:entity:newentity")
@@ -21,6 +23,7 @@ function NewEntityContainer(props: AppProps) {
     setTab(0)
   }
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [RID, setRID] = useState("")
 
   /* // no need
   const urlParams = qs.parse(props.history.location.search)
@@ -59,13 +62,24 @@ function NewEntityContainer(props: AppProps) {
           <b>Load entity:</b>{" "}
         </div>
         <div>
-          {" "}
-          select an entity to load here by its RID:&nbsp;
-          <input type="text" />
-          <br />
-          <i>for the sake of the demo, we are going to pretend that you did input </i>
-          <Link key="edit" to="/edit/bdr:PTEST">
-            PTEST
+          <TextField
+            style={{ width: "100%" }}
+            value={RID}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => setRID(e.target.value)}
+            helperText={"select an entity to load here by its RID"}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") props.history.push("/edit/" + (RID.startsWith("bdr:") ? "" : "bdr:") + RID)
+            }}
+          />
+        </div>
+        <div>
+          <Link
+            to={"/edit/" + (RID.startsWith("bdr:") ? "" : "bdr:") + RID}
+            className={"btn btn-sm btn-outline-primary py-3 ml-2 lookup btn-rouge " + (!RID ? "disabled" : "")}
+            style={{ boxShadow: "none", alignSelf: "center", marginBottom: "15px" }}
+          >
+            {i18n.t("search.open")}
           </Link>
         </div>
       </div>
