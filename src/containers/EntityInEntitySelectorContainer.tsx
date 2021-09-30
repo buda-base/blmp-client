@@ -78,7 +78,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     setEntities(newList)
     const newTab = index === tab ? index : index && newList.length ? index - 1 : 0
     setTab(newTab)
-    if (!newList.length) history.push("/")
+    if (!newList.length || newTab >= newList.length) history.push("/")
     else {
       let shapeName = newList[newTab].shapeQname
       if (!shapeName && newList[newTab].shapeRef) {
@@ -91,7 +91,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     // update user session
     //setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
     // remove data in local storage
-    //setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "")
+    //setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true)
   }
 
   // update user session

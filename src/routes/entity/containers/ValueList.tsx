@@ -455,13 +455,17 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     }
   }
 
+  debug("path/type:", property.objectType, property.path.sparqlString)
+
   if (
     property.objectType !== ObjectType.Facet &&
-    (embedded ||
+    (embedded || property.objectType === ObjectType.Literal)
+    /*
       property.path.sparqlString === ns.SKOS("prefLabel").value ||
       property.path.sparqlString === ns.SKOS("altLabel").value ||
       property.path.sparqlString === ns.BDO("catalogInfo").value ||
       property.path.sparqlString === ns.RDFS("comment").value)
+    */
   )
     return <MinimalAddButton disable={disable} add={addItem} className=" " />
   else return <BlockAddButton add={addItem} label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)} />

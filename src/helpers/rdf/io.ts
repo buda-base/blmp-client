@@ -187,7 +187,7 @@ export const getUserLocalEntities = async (auth: Auth0) => {
   else return {}
 }
 
-export const setUserLocalEntities = async (auth: Auth0, rid: string, shape: string, ttl: string) => {
+export const setUserLocalEntities = async (auth: Auth0, rid: string, shape: string, ttl: string, del?: boolean) => {
   //debug("auth:", auth)
   let data = localStorage.getItem("localEntities"),
     userData
@@ -197,7 +197,7 @@ export const setUserLocalEntities = async (auth: Auth0, rid: string, shape: stri
     if (!data[auth.user.email]) data[auth.user.email] = {}
     userData = data[auth.user.email]
   } else userData = data["unregistered"]
-  if (ttl) userData[rid] = { [shape]: ttl }
+  if (!del) userData[rid] = { [shape]: ttl }
   else if (userData[rid]) delete userData[rid]
   localStorage.setItem("localEntities", JSON.stringify(data))
 }
