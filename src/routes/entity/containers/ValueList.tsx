@@ -40,6 +40,8 @@ import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/Ent
 import { fromWylie } from "jsewts"
 import MDEditor, { commands } from "@uiw/react-md-editor"
 
+const debug = require("debug")("bdrc:entity:container:ValueList")
+
 export const MinimalAddButton: FC<{
   add: React.MouseEventHandler<HTMLButtonElement>
   className: string
@@ -112,8 +114,6 @@ export const updateEntitiesRDF = (
 }
 */
 
-const debug = require("debug")("bdrc:entity:property:litlist")
-
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
   switch (property.objectType) {
     case ObjectType.ResExt:
@@ -130,6 +130,9 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
       return generateSubnode(property.targetShape, parent)
       break
     case ObjectType.ResInList:
+      // if a select property is not required, we don't select anything by default
+      if (property.minCount) return new ExtRDFResourceWithLabel("tmp:none", { en: "" })
+      // else we select the first one automatically
       const propIn: Array<RDFResourceWithLabel> | null = property.in
       if (!propIn) throw "can't find a list for " + property.uri
       return propIn[0]
@@ -167,6 +170,7 @@ const ValueList: FC<{
   const alreadyHasEmptyValue: () => boolean = (): boolean => {
     for (const val of list) {
       if (val instanceof LiteralWithId && val.value === "") return true
+      if (val instanceof RDFResourceWithLabel && val.node.value === "tmp:none") return true
     }
     return false
   }
@@ -209,7 +213,8 @@ const ValueList: FC<{
     // TODO: check maxCount
     if (list.length) {
       const first = list[0]
-      if (first instanceof ExtRDFResourceWithLabel && first.uri !== "tmp:uri") firstValueIsEmptyField = false
+      if (first instanceof ExtRDFResourceWithLabel && first.uri !== "tmp:uri" && first.uri !== "tmp:none")
+        firstValueIsEmptyField = false
     }
 
     // reinitializing the property values atom if it hasn't been initialized yet
@@ -241,8 +246,23 @@ const ValueList: FC<{
       //debug("setNoH:2",subject,owner,topEntity)
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
       else setList((oldList) => [...oldList, generateDefault(property, subject)])
-    } else if (property.displayPriority && property.displayPriority === 1 && list.length === 1 && !force) {
+    } else if (
+      property.objectType != ObjectType.ResInList &&
+      property.displayPriority &&
+      property.displayPriority === 1 &&
+      list.length === 1 &&
+      !force
+    ) {
+      // TODO: comment: what does it do?
+      // guess: it removes the first tmp:uri first object of hidden properties
       if (firstValueIsEmptyField) setList([])
+    } else if (!list.length && property.objectType == ObjectType.ResInList) {
+      // this makes sure that there's at least one value for select forms, and the value is either
+      // the first one (when it's mandatory that there's a value), or tmp:none
+      if (topEntity) topEntity.noHisto()
+      else if (owner) owner.noHisto()
+      else subject.noHisto()
+      setList([generateDefault(property, subject)])
     }
   }, [subject, list, force])
 
