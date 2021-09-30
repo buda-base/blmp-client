@@ -1,7 +1,7 @@
 /* eslint-disable no-extra-parens */
 import React, { useState, FC, useEffect, ChangeEvent } from "react"
 import { Subject, RDFResourceWithLabel, RDFResource } from "../helpers/rdf/types"
-import { setUserSession } from "../helpers/rdf/io"
+import { setUserSession, setUserLocalEntities } from "../helpers/rdf/io"
 import * as shapes from "../helpers/rdf/shapes"
 import { FiPower as LogoutIcon } from "react-icons/fi"
 import { InputLabel, Select, MenuItem } from "@material-ui/core"
@@ -79,10 +79,19 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     const newTab = index === tab ? index : index && newList.length ? index - 1 : 0
     setTab(newTab)
     if (!newList.length) history.push("/")
-    else
-      history.push(
-        "/edit/" + newList[newTab].subjectQname + (newList[newTab].shapeQname ? "/" + newList[newTab].shapeQname : "")
-      )
+    else {
+      let shapeName = newList[newTab].shapeQname
+      if (!shapeName && newList[newTab].shapeRef) {
+        if (newList[newTab].shapeRef.qname) shapeName = newList[newTab].shapeRef.qname
+        else shapeName = newList[newTab].shapeRef
+      }
+      history.push("/edit/" + newList[newTab].subjectQname + (shapeName ? "/" + shapeName : ""))
+    }
+    // WIP
+    // update user session
+    //setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
+    // remove data in local storage
+    //setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "")
   }
 
   // update user session

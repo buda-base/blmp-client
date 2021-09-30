@@ -159,14 +159,22 @@ export const setUserSession = async (auth: Auth0, rid: string, shape: string, la
   let data = localStorage.getItem("session"),
     userData
   if (!data) data = '{"unregistered":{}}'
+  //debug("get:",data)
+
+  const dataSav = data
+
   data = await JSON.parse(data)
   if (auth && auth.user && auth.user.email) {
     if (!data[auth.user.email]) data[auth.user.email] = {}
     userData = data[auth.user.email]
   } else userData = data["unregistered"]
+
   if (!del) userData[rid] = { shape, label }
-  else delete userData[rid]
-  localStorage.setItem("session", JSON.stringify(data))
+  else if (userData[rid]) delete userData[rid]
+
+  const dataNew = JSON.stringify(data)
+  //debug("set:",dataNew)
+  if (dataNew != dataSav) localStorage.setItem("session", dataNew)
 }
 
 export const getUserLocalEntities = async (auth: Auth0) => {
@@ -189,7 +197,8 @@ export const setUserLocalEntities = async (auth: Auth0, rid: string, shape: stri
     if (!data[auth.user.email]) data[auth.user.email] = {}
     userData = data[auth.user.email]
   } else userData = data["unregistered"]
-  userData[rid] = { [shape]: ttl }
+  if (ttl) userData[rid] = { [shape]: ttl }
+  else if (userData[rid]) delete userData[rid]
   localStorage.setItem("localEntities", JSON.stringify(data))
 }
 
