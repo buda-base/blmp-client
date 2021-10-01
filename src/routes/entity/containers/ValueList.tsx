@@ -459,7 +459,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
 
   if (
     property.objectType !== ObjectType.Facet &&
-    (embedded || property.objectType === ObjectType.Literal)
+    (embedded || property.objectType === ObjectType.Literal || property.objectType === ObjectType.ResInList)
     /*
       property.path.sparqlString === ns.SKOS("prefLabel").value ||
       property.path.sparqlString === ns.SKOS("altLabel").value ||
