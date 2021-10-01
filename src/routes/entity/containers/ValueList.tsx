@@ -782,7 +782,7 @@ export const LangSelect: FC<{
         InputLabelProps={{ shrink: true }}
         className={"ml-2"}
         //label={lit.id}
-        label={"Language"}
+        //label={"Language"}
         value={value}
         style={{ minWidth: 100, flexShrink: 0 }}
         onChange={onChangeHandler}
