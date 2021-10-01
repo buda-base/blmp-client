@@ -359,10 +359,13 @@ section,
 }
 
 .hoverPart { visibility: hidden; display:flex; width:68px; flex-shrink:0; }
+.resSelect:hover .hoverPart,
 .langString:hover .hoverPart { visibility: visible; }
 .langString+.langString { padding-top:10px;}
 
 .langString.lang-bo-x-ewts .hoverPart > * { margin-bottom:36px; }
+
+.resSelect .hoverPart > button:first-child { margin-right:0 !important; }
 
 .propLabel { display:block; //color:rgb(245, 0, 87); font-size:12px; font-weight:500; 
   margin-bottom:4px; 

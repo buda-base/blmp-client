@@ -330,6 +330,7 @@ const ValueList: FC<{
             res={val}
             canDel={canDel}
             editable={editable}
+            create={<Create disable={!canAdd || !addBtn} subject={subject} property={property} embedded={embedded} />}
           />
         )
       }
@@ -455,7 +456,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     }
   }
 
-  debug("path/type:", property.objectType, property.path.sparqlString)
+  debug("path/type:", property.objectType, property.path.sparqlString, disable)
 
   if (
     property.objectType !== ObjectType.Facet &&
@@ -987,7 +988,7 @@ const LiteralComponent: FC<{
   label: string
   canDel: boolean
   isUnique: boolean
-  create?: unknown
+  create?: Create
   editable: boolean
   topEntity?: Subject
 }> = ({ lit, subject, property, label, canDel, isUnique, create, editable, topEntity }) => {
@@ -1351,7 +1352,8 @@ const ResSelectComponent: FC<{
   property: PropertyShape
   canDel: boolean
   editable: boolean
-}> = ({ res, subject, property, canDel, editable }) => {
+  create?: create
+}> = ({ res, subject, property, canDel, editable, create }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -1388,7 +1390,7 @@ const ResSelectComponent: FC<{
   const classes = useStyles()
 
   return (
-    <React.Fragment>
+    <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
       <TextField
         select
         className={/*classes.root +*/ "selector mr-2"}
@@ -1404,12 +1406,15 @@ const ResSelectComponent: FC<{
           </MenuItem>
         ))}
       </TextField>
-      {canDel && (
-        <button className="btn btn-link ml-0 mr-3 px-0" onClick={deleteItem}>
-          <RemoveIcon />
-        </button>
-      )}
-    </React.Fragment>
+      <div className="hoverPart">
+        {canDel && (
+          <button className="btn btn-link ml-0 mr-3 px-0" onClick={deleteItem}>
+            <RemoveIcon />
+          </button>
+        )}
+        {create}
+      </div>
+    </div>
   )
 }
 
