@@ -359,10 +359,13 @@ section,
 }
 
 .hoverPart { visibility: hidden; display:flex; width:68px; flex-shrink:0; }
+.resSelect:hover .hoverPart,
 .langString:hover .hoverPart { visibility: visible; }
 .langString+.langString { padding-top:10px;}
 
 .langString.lang-bo-x-ewts .hoverPart > * { margin-bottom:36px; }
+
+.resSelect .hoverPart > button:first-child { margin-right:0 !important; }
 
 .propLabel { display:block; //color:rgb(245, 0, 87); font-size:12px; font-weight:500; 
   margin-bottom:4px; 
@@ -448,11 +451,11 @@ label ~ .selector {
     }
   }
   :not(.facet) > .card:not(.group-edit) .ValueList.main.ResExt {  transition:max-height 500ms, overflow 0ms ease-in-out 500ms; 
-    & > label { margin:0; margin-bottom:5px; transition:margin 500ms; }    
-    &.empty { max-height:30px; 
+    //& > label { margin:0; margin-bottom:5px; transition:margin 500ms; }    
+    &.empty { //max-height:30px; 
       .propLabel ~ div { border-color:transparent; transition:500ms; }
     }
-    .extEntity.new { max-height:0; transition:500ms;  }
+    //.extEntity.new { max-height:0; transition:500ms;  }
     &:not(.empty) { max-height:95px; margin-bottom:15px;
 
       & > label + div + div { overflow:hidden !important; }

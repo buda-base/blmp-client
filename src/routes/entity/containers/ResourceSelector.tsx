@@ -10,7 +10,16 @@ import * as lang from "../../../helpers/lang"
 import { uiLangState, uiTabState } from "../../../atoms/common"
 import { RDFResource, ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
-import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, EditIcon } from "../../layout/icons"
+import {
+  SearchIcon,
+  LaunchIcon,
+  InfoIcon,
+  InfoOutlinedIcon,
+  ErrorIcon,
+  EditIcon,
+  LookupIcon,
+  CloseIcon,
+} from "../../layout/icons"
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 import { LangSelect } from "./ValueList"
 import { qnameFromUri } from "../../../helpers/rdf/ns"
@@ -303,11 +312,11 @@ const ResourceSelector: FC<{
               <TextField
                 //className={classes.root}
                 InputLabelProps={{ shrink: true }}
-                //label={value.status === "filled" ? value["@id"] : null}
                 style={{ width: "90%" }}
                 value={keyword}
                 onChange={textOnChange}
-                label={"Keyword"}
+                //label={value.status === "filled" ? value["@id"] : null}
+                //label={"Keyword"}
                 {...(error
                   ? {
                       helperText: (
@@ -354,12 +363,12 @@ const ResourceSelector: FC<{
               )}
               <button
                 {...(!keyword || !keyword.startsWith("bdr:") && (!language || !type) ? { disabled: true } : {})}
-                className="btn btn-sm btn-outline-primary py-3 ml-2 lookup btn-rouge"
-                style={{ boxShadow: "none", alignSelf: "center" }}
+                className="btn btn-sm btn-outline-primary ml-2 lookup btn-rouge"
+                style={{ boxShadow: "none", alignSelf: "center", padding: "5px 4px 4px 4px" }}
                 onClick={onClick}
                 {...(!editable ? { disabled: true } : {})}
               >
-                {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
+                {libraryURL ? <CloseIcon /> : <LookupIcon />}
               </button>
               <button
                 className="btn btn-sm btn-outline-primary py-3 ml-2 dots btn-rouge"
@@ -504,7 +513,7 @@ const ResourceSelector: FC<{
                 e?.subjectQname != owner?.qname &&
                 property.expectedObjectTypes?.some((t) =>
                   // DONE shapeRef is updated upon shape selection
-                  e.shapeRef?.qname.startsWith(t.qname.replace(/^bdo:/, "bds:"))
+                  (e.shapeRef?.qname ?? e.shapeRef).startsWith(t.qname.replace(/^bdo:/, "bds:"))
                 )
               ) {
                 //debug("diff ok:",property.expectedObjectTypes,e,e.subjectQname,subject.qname,owner?.qname)
