@@ -385,6 +385,7 @@ const ValueList: FC<{
           (embedded ? "" : " main")
         }
         role="main"
+        data-priority={property.displayPriority}
         style={{
           display: "flex",
           flexWrap: "wrap",

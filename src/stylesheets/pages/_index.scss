@@ -761,6 +761,8 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 }
 
+.show-displayPriority-false [data-priority="1"] + .blockAdd,
+.show-displayPriority-false [data-priority="2"] + .blockAdd,
 .show-displayPriority-false .empty .propLabel[data-priority="1"],
 .show-displayPriority-false .empty .propLabel[data-priority="2"] {
   display:none;
