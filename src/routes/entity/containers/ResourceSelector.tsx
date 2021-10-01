@@ -10,7 +10,16 @@ import * as lang from "../../../helpers/lang"
 import { uiLangState, uiTabState } from "../../../atoms/common"
 import { RDFResource, ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
-import { SearchIcon, LaunchIcon, InfoIcon, InfoOutlinedIcon, ErrorIcon, EditIcon } from "../../layout/icons"
+import {
+  SearchIcon,
+  LaunchIcon,
+  InfoIcon,
+  InfoOutlinedIcon,
+  ErrorIcon,
+  EditIcon,
+  LookupIcon,
+  CloseIcon,
+} from "../../layout/icons"
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 import { LangSelect } from "./ValueList"
 import { qnameFromUri } from "../../../helpers/rdf/ns"
@@ -354,12 +363,12 @@ const ResourceSelector: FC<{
               )}
               <button
                 {...(!keyword || !keyword.startsWith("bdr:") && (!language || !type) ? { disabled: true } : {})}
-                className="btn btn-sm btn-outline-primary py-3 ml-2 lookup btn-rouge"
-                style={{ boxShadow: "none", alignSelf: "center" }}
+                className="btn btn-sm btn-outline-primary ml-2 lookup btn-rouge"
+                style={{ boxShadow: "none", alignSelf: "center", padding: "5px 4px 4px 4px" }}
                 onClick={onClick}
                 {...(!editable ? { disabled: true } : {})}
               >
-                {i18n.t(libraryURL ? "search.cancel" : "search.lookup")}
+                {libraryURL ? <CloseIcon /> : <LookupIcon />}
               </button>
               <button
                 className="btn btn-sm btn-outline-primary py-3 ml-2 dots btn-rouge"
