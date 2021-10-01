@@ -391,8 +391,13 @@ const ValueList: FC<{
             : {},
         }}
       >
-        {showLabel && (
-          <label className={"propLabel"} data-prop={property.qname} data-type={property.objectType}>
+        {(true || showLabel) && (
+          <label
+            className={"propLabel"}
+            data-prop={property.qname}
+            data-type={property.objectType}
+            data-priority={property.displayPriority}
+          >
             {propLabel[0].toUpperCase() + propLabel.substring(1)}
           </label>
         )}
@@ -456,7 +461,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     }
   }
 
-  debug("path/type:", property.objectType, property.path.sparqlString, disable)
+  //debug("path/type:", property.objectType, property.path.sparqlString, disable)
 
   if (
     property.objectType !== ObjectType.Facet &&
@@ -1212,7 +1217,7 @@ const FacetComponent: FC<{
   return (
     <React.Fragment>
       <div
-        className={"facet " + editClass + " editable-" + editable}
+        className={"facet " + editClass + " editable-" + editable + " force-" + force}
         onClick={(ev) => {
           setEdit(subject.qname + " " + property.qname + " " + subNode.qname)
           const target = ev.target as Element

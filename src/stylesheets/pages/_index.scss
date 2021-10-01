@@ -365,6 +365,7 @@ section,
 
 .langString.lang-bo-x-ewts .hoverPart > * { margin-bottom:36px; }
 
+.langString .hoverPart > button:first-child { margin-top:2px!important; }
 .resSelect .hoverPart > button:first-child { margin-right:0 !important; }
 
 .propLabel { display:block; //color:rgb(245, 0, 87); font-size:12px; font-weight:500; 
@@ -405,7 +406,7 @@ section,
 .MuiSelect-select.MuiSelect-select { padding-top:0 !important;}
 
 a.btn.py-3,
-button.py-3 { padding:9px 8px 10px 8px !important; }
+button.py-3 { padding:9px 10px 10px 9px !important; }
 
 .MuiInputBase-input { padding-bottom:4px !important; }
 
@@ -758,6 +759,11 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
         h1~p { padding-left:20px; padding-top:35px; font-size:15px; }
       }
   }
+}
+
+.show-displayPriority-false .empty .propLabel[data-priority="1"],
+.show-displayPriority-false .empty .propLabel[data-priority="2"] {
+  display:none;
 }
 
 .new-fix { width:810px; margin:auto; padding-left:70px; padding-top: 15px; display:block;}
