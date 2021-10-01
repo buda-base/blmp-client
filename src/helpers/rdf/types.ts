@@ -532,3 +532,5 @@ export class Ontology {
     this.graph = new EntityGraph(store, url)
   }
 }
+
+export const noneSelected = new ExtRDFResourceWithLabel("tmp:none", { en: "none" })
