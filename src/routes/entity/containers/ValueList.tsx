@@ -10,6 +10,7 @@ import {
   ExtRDFResourceWithLabel,
   errors,
   history,
+  noneSelected,
 } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import * as ns from "../../../helpers/rdf/ns"
@@ -131,7 +132,7 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
       break
     case ObjectType.ResInList:
       // if a select property is not required, we don't select anything by default
-      if (property.minCount) return new ExtRDFResourceWithLabel("tmp:none", { en: "" })
+      if (!property.minCount) return noneSelected
       // else we select the first one automatically
       const propIn: Array<RDFResourceWithLabel> | null = property.in
       if (!propIn) throw "can't find a list for " + property.uri
@@ -303,7 +304,7 @@ const ValueList: FC<{
     property.objectType == ObjectType.ResExt &&
     list[0].uri === "tmp:uri"
 
-  const renderListElem = (val: Value, i: number) => {
+  const renderListElem = (val: Value, i: number, nbvalues: number) => {
     if (val instanceof RDFResourceWithLabel) {
       if (property.objectType == ObjectType.ResExt)
         return (
@@ -322,9 +323,12 @@ const ValueList: FC<{
         )
       else {
         addBtn = true
+        // eslint-disable-next-line no-extra-parens
+        const canSelectNone = (i == 0 && !property.minCount) || (i > 0 && i == nbvalues - 1)
         return (
           <ResSelectComponent
             key={val.id}
+            canSelectNone={canSelectNone}
             subject={subject}
             property={property}
             res={val}
@@ -401,7 +405,7 @@ const ValueList: FC<{
             {propLabel[0].toUpperCase() + propLabel.substring(1)}
           </label>
         )}
-        {hasEmptyExtEntityAsFirst && <div style={{ width: "100%" }}>{renderListElem(list[0], 0)}</div>}
+        {hasEmptyExtEntityAsFirst && <div style={{ width: "100%" }}>{renderListElem(list[0], 0, list.length)}</div>}
         <div
           ref={scrollElem}
           className={!embedded && property.objectType !== ObjectType.Facet ? "overFauto" : ""}
@@ -412,7 +416,7 @@ const ValueList: FC<{
           }}
         >
           {list.map((val, i) => {
-            if (!hasEmptyExtEntityAsFirst || i > 0) return renderListElem(val, i)
+            if (!hasEmptyExtEntityAsFirst || i > 0) return renderListElem(val, i, list.length)
           })}
         </div>
       </div>
@@ -1356,18 +1360,22 @@ const ResSelectComponent: FC<{
   subject: Subject
   property: PropertyShape
   canDel: boolean
+  canSelectNone: boolean
   editable: boolean
-  create?: create
-}> = ({ res, subject, property, canDel, editable, create }) => {
+  create?: typeof Create
+}> = ({ res, subject, property, canDel, canSelectNone, editable, create }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
-  const index = list.findIndex((listItem) => listItem === res)
 
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
 
-  const possibleValues = property.in
+  let possibleValues = property.in
   if (!possibleValues) throw "can't find possible list for " + property.uri
+
+  if (canSelectNone) possibleValues = [noneSelected, ...possibleValues]
+
+  const index = list.findIndex((listItem) => listItem === res)
 
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
@@ -1400,7 +1408,7 @@ const ResSelectComponent: FC<{
         select
         className={/*classes.root +*/ "selector mr-2"}
         value={res.uri}
-        style={{ padding: "1px", minWidth: "150px" }}
+        style={{ padding: "1px", minWidth: "200px" }}
         onChange={onChange}
         label={propLabel}
         {...(!editable ? { disabled: true } : {})}
