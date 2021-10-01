@@ -312,11 +312,11 @@ const ResourceSelector: FC<{
               <TextField
                 //className={classes.root}
                 InputLabelProps={{ shrink: true }}
-                //label={value.status === "filled" ? value["@id"] : null}
                 style={{ width: "90%" }}
                 value={keyword}
                 onChange={textOnChange}
-                label={"Keyword"}
+                //label={value.status === "filled" ? value["@id"] : null}
+                //label={"Keyword"}
                 {...(error
                   ? {
                       helperText: (
@@ -513,7 +513,7 @@ const ResourceSelector: FC<{
                 e?.subjectQname != owner?.qname &&
                 property.expectedObjectTypes?.some((t) =>
                   // DONE shapeRef is updated upon shape selection
-                  e.shapeRef?.qname.startsWith(t.qname.replace(/^bdo:/, "bds:"))
+                  (e.shapeRef?.qname ?? e.shapeRef).startsWith(t.qname.replace(/^bdo:/, "bds:"))
                 )
               ) {
                 //debug("diff ok:",property.expectedObjectTypes,e,e.subjectQname,subject.qname,owner?.qname)

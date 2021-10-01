@@ -785,7 +785,7 @@ export const LangSelect: FC<{
         //label={lit.id}
         //label={"Language"}
         value={value}
-        style={{ minWidth: 100, flexShrink: 0 }}
+        style={{ minWidth: 100, flexShrink: 0, marginTop: "5px" }}
         onChange={onChangeHandler}
         {...(disabled ? { disabled: true } : {})}
         {...(error ? { error: true, helperText: <br /> } : {})}
