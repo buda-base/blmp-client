@@ -32,14 +32,14 @@ export const fetchUrlFromshapeQname = (shapeQname: string): string => {
 
 export const fetchUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == "bdr:PTEST") return "/examples/ptest.ttl"
-  return "https://editserv-dev.bdrc.io/focusGraph/" + entityQname
+  return "//editserv-dev.bdrc.io/focusGraph/" + entityQname
 }
 
 export const labelQueryUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == "bdr:PTEST") return "/examples/ptest-assocLabels.ttl"
   // TODO: a little approximative... but should work for now
   return (
-    "https://ldspdi.bdrc.io/query/graph/getAssociatedLabels?R_GR=bdg:" +
+    "//ldspdi.bdrc.io/query/graph/getAssociatedLabels?R_GR=bdg:" +
     entityQname.substring(entityQname.indexOf(":") + 1) +
     "&format=ttl"
   )

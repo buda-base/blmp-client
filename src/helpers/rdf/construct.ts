@@ -32,7 +32,7 @@ export const generateSubnode = (subshape: NodeShape, parent: RDFResource): Subje
 }
 
 export const reserveId = async (prefix: string, token: string): Promise<string> => {
-  const url = "https://editserv.bdrc.io/ID/prefix/" + prefix
+  const url = "//editserv.bdrc.io/ID/prefix/" + prefix
   const response = await fetch(url, {
     method: "PUT",
     headers: {

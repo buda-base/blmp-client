@@ -69,7 +69,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
 
   const icon = getIcon(entity)
 
-  const closeEntity = () => {
+  const closeEntity = (ev) => {
     if (entity.state === EditedEntityState.NeedsSaving) {
       const go = window.confirm("unsaved data will be lost")
       if (!go) return
@@ -87,11 +87,14 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       }
       history.push("/edit/" + newList[newTab].subjectQname + (shapeName ? "/" + shapeName : ""))
     }
-    // WIP
     // update user session
-    //setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
+    setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
     // remove data in local storage
-    //setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true)
+    setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true)
+    // prevent click event
+    ev.preventDefault()
+    ev.stopPropagation()
+    return false
   }
 
   // update user session
