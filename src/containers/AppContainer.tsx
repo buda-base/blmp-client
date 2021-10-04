@@ -234,26 +234,27 @@ function App(props: AppProps) {
 
   // restore user session on startup
   useEffect(() => {
-    if (!isLoading && !entities.length) {
-      const session = getUserSession(auth0)
-      session.then((obj) => {
-        debug("session:", obj)
-        if (!obj) return
-        const newEntities = []
-        for (const k of Object.keys(obj)) {
-          newEntities.push({
-            subjectQname: k,
-            subject: null,
-            shapeRef: obj[k].shape,
-            subjectLabelState: defaultEntityLabelAtom,
-            state: EditedEntityState.NotLoaded,
-            preloadedLabel: obj[k].label,
-          })
-        }
-        if (newEntities.length) setEntities(newEntities)
-      })
-    }
-  }, [isLoading])
+    // no need for doing it more than once - fixes loading session from open entity tab
+    //if (!isLoading && !entities.length) {
+
+    const session = getUserSession(auth0)
+    session.then((obj) => {
+      debug("session:", obj)
+      if (!obj) return
+      const newEntities = []
+      for (const k of Object.keys(obj)) {
+        newEntities.push({
+          subjectQname: k,
+          subject: null,
+          shapeRef: obj[k].shape,
+          subjectLabelState: defaultEntityLabelAtom,
+          state: EditedEntityState.NotLoaded,
+          preloadedLabel: obj[k].label,
+        })
+      }
+      if (newEntities.length) setEntities(newEntities)
+    })
+  }, [])
 
   if (isLoading) return <span>Loading</span>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
