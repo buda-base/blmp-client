@@ -306,7 +306,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       if (subj) setEntity(subj)
       setUiReady(true)
     }
-  }, [entityQname, shapeRef])
+  }, [entityQname, shapeRef, entities])
 
   return { entityLoadingState, entity, reset }
 }
