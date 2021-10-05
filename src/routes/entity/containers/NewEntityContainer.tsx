@@ -1,10 +1,11 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { EntityCreator } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
+import { getUserSession } from "../../../helpers/rdf/io"
 import { RDFResourceWithLabel } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
-import { entitiesAtom, EditedEntityState } from "../../../containers/EntitySelectorContainer"
-import { uiLangState, uiTabState } from "../../../atoms/common"
+import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../../containers/EntitySelectorContainer"
+import { uiLangState, uiTabState, sessionLoadedState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
@@ -13,6 +14,7 @@ import React, { ChangeEvent } from "react"
 import qs from "query-string"
 import i18n from "i18next"
 import { TextField, MenuItem } from "@material-ui/core"
+import { useAuth0 } from "@auth0/auth0-react"
 
 const debug = require("debug")("bdrc:entity:newentity")
 
@@ -24,6 +26,33 @@ function NewEntityContainer(props: AppProps) {
   }
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [RID, setRID] = useState("")
+  const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
+  const auth0 = useAuth0()
+
+  // restore user session on startup
+  useEffect(() => {
+    // no need for doing it more than once - fixes loading session from open entity tab
+    //if (!isLoading && !entities.length) {
+
+    const session = getUserSession(auth0)
+    session.then((obj) => {
+      debug("session:", obj)
+      if (!obj) return
+      const newEntities = []
+      for (const k of Object.keys(obj)) {
+        newEntities.push({
+          subjectQname: k,
+          subject: null,
+          shapeRef: obj[k].shape,
+          subjectLabelState: defaultEntityLabelAtom,
+          state: EditedEntityState.NotLoaded,
+          preloadedLabel: obj[k].label,
+        })
+      }
+      if (newEntities.length) setEntities(newEntities)
+      if (!sessionLoaded) setSessionLoaded(true)
+    })
+  }, [])
 
   /* // no need
   const urlParams = qs.parse(props.history.location.search)

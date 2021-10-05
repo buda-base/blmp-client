@@ -22,7 +22,6 @@ import EntityCreationContainer from "../routes/entity/containers/EntityCreationC
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
 import { uiTabState, uiUndosState, noUndo, noUndoRedo, undoState, sameUndo } from "../atoms/common"
 
-import { getUserSession } from "../helpers/rdf/io"
 import { Subject, history } from "../helpers/rdf/types"
 
 import enTranslations from "../translations/en"
@@ -117,7 +116,6 @@ function App(props: AppProps) {
   const appEl = useRef<HTMLDivElement>(null)
   // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
   const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
-  const auth0 = useAuth0()
 
   useEffect(() => {
     let warn = false
@@ -231,30 +229,6 @@ function App(props: AppProps) {
       clearInterval(undoTimer)
     }
   }, [entities, undos])
-
-  // restore user session on startup
-  useEffect(() => {
-    // no need for doing it more than once - fixes loading session from open entity tab
-    //if (!isLoading && !entities.length) {
-
-    const session = getUserSession(auth0)
-    session.then((obj) => {
-      debug("session:", obj)
-      if (!obj) return
-      const newEntities = []
-      for (const k of Object.keys(obj)) {
-        newEntities.push({
-          subjectQname: k,
-          subject: null,
-          shapeRef: obj[k].shape,
-          subjectLabelState: defaultEntityLabelAtom,
-          state: EditedEntityState.NotLoaded,
-          preloadedLabel: obj[k].label,
-        })
-      }
-      if (newEntities.length) setEntities(newEntities)
-    })
-  }, [])
 
   if (isLoading) return <span>Loading</span>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />

@@ -71,3 +71,8 @@ export const uiNavState = atom<string>({
   key: "uiNavState",
   default: "",
 })
+
+export const sessionLoadedState = atom<boolean>({
+  key: "sessionLoadedState",
+  default: false,
+})

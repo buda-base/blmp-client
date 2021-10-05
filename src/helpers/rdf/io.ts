@@ -5,7 +5,7 @@ import { useRecoilState } from "recoil"
 import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject, Ontology, history } from "./types"
 import { NodeShape, prefLabel } from "./shapes"
 import { uriFromQname, BDSH_uri } from "./ns"
-import { uiReadyState } from "../../atoms/common"
+import { uiReadyState, sessionLoadedState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 import { useAuth0 } from "@auth0/auth0-react"
 
@@ -173,8 +173,10 @@ export const setUserSession = async (auth: Auth0, rid: string, shape: string, la
   else if (userData[rid]) delete userData[rid]
 
   const dataNew = JSON.stringify(data)
-  //debug("set:",dataNew)
-  if (dataNew != dataSav) localStorage.setItem("session", dataNew)
+  if (dataNew != dataSav) {
+    debug("set:", data, dataNew)
+    localStorage.setItem("session", dataNew)
+  }
 }
 
 export const getUserLocalEntities = async (auth: Auth0) => {
@@ -207,6 +209,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [entity, setEntity] = useState<Subject>(Subject.createEmpty())
   const [uiReady, setUiReady] = useRecoilState(uiReadyState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
   const auth0 = useAuth0()
 
   const reset = () => {
@@ -216,6 +219,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
   useEffect(() => {
     async function fetchResource(entityQname: string) {
+      debug("fetching", entityQname, entities)
+
       setEntityLoadingState({ status: "fetching", error: undefined })
       const fetchUrl = fetchUrlFromEntityQname(entityQname)
       const labelQueryUrl = labelQueryUrlFromEntityQname(entityQname)
@@ -251,6 +256,28 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         else notFound = true
       }
 
+      // load session before updating entities
+      let _entities = entities
+      if (!sessionLoaded) {
+        const obj = await getUserSession(auth0)
+        debug("session:", obj)
+        if (obj) {
+          _entities = []
+          for (const k of Object.keys(obj)) {
+            _entities.push({
+              subjectQname: k,
+              subject: null,
+              shapeRef: obj[k].shape,
+              subjectLabelState: defaultEntityLabelAtom,
+              state: EditedEntityState.NotLoaded,
+              preloadedLabel: obj[k].label,
+            })
+          }
+          //if (newEntities.length) setEntities(newEntities)
+          //setSessionLoaded(true)
+        }
+      }
+
       try {
         // TODO: redirection to /new instead of "error fetching entity"? create missing entity?
         if (notFound) throw Error("not found")
@@ -266,8 +293,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         setUiReady(true)
 
         // update state with loaded entity
-        let index = entities.findIndex((e) => e.subjectQname === entityQname)
-        const newEntities = [...entities]
+        let index = _entities.findIndex((e) => e.subjectQname === entityQname)
+        const newEntities = [..._entities]
         if (index === -1) {
           newEntities.push({
             subjectQname: entityQname,
@@ -295,7 +322,9 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       } catch (e) {
         debug(e)
         setEntityLoadingState({ status: "error", error: "error fetching entity" })
+        if (!entities.length && _entities.length) setEntities(_entities)
       }
+      if (!sessionLoaded) setSessionLoaded(true)
     }
     const index = entities.findIndex((e) => e.subjectQname === entityQname)
     if (index === -1 || entities[index] && !entities[index].subject) {
@@ -306,7 +335,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       if (subj) setEntity(subj)
       setUiReady(true)
     }
-  }, [entityQname, shapeRef, entities])
+  }, [entityQname, shapeRef])
 
   return { entityLoadingState, entity, reset }
 }

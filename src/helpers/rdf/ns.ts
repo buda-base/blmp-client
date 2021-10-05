@@ -30,6 +30,8 @@ export const BDG_uri = "http://purl.bdrc.io/graph/"
 export const BDG = rdf.Namespace(BDG_uri)
 export const BDA_uri = "http://purl.bdrc.io/admindata/"
 export const BDA = rdf.Namespace(BDA_uri)
+export const TMP_uri = "http://purl.bdrc.io/ontology/tmp/"
+export const TMP = rdf.Namespace(TMP_uri)
 
 const debug = require("debug")("bdrc:rdf:ns")
 
@@ -49,6 +51,7 @@ export const prefixToURI: { [key: string]: string } = {
   bdg: BDG_uri,
   bda: BDA_uri,
   bdsa: BDSA_uri,
+  tmp: TMP_uri,
 }
 
 export const URItoPrefix: { [key: string]: string } = {}

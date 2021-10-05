@@ -74,10 +74,16 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       const go = window.confirm("unsaved data will be lost")
       if (!go) return
     }
+    // update user session
+    setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
+    // remove data in local storage
+    setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true)
+
     const newList = [...entities.filter((e, i) => i !== index)]
     setEntities(newList)
     const newTab = index === tab ? index : index && newList.length ? index - 1 : 0
     setTab(newTab)
+
     if (!newList.length || newTab >= newList.length) history.push("/")
     else {
       let shapeName = newList[newTab].shapeQname
@@ -85,12 +91,10 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
         if (newList[newTab].shapeRef.qname) shapeName = newList[newTab].shapeRef.qname
         else shapeName = newList[newTab].shapeRef
       }
-      history.push("/edit/" + newList[newTab].subjectQname + (shapeName ? "/" + shapeName : ""))
+      // must be delayed
+      // eslint-disable-next-line no-magic-numbers
+      setTimeout(() => history.push("/edit/" + newList[newTab].subjectQname + (shapeName ? "/" + shapeName : "")), 150)
     }
-    // update user session
-    setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
-    // remove data in local storage
-    setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true)
     // prevent click event
     ev.preventDefault()
     ev.stopPropagation()
