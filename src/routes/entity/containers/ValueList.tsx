@@ -659,7 +659,7 @@ const EditLangString: FC<{
               }, 350)
             }
           />
-          {!property.singleLine && (
+          {property.allowMarkDown && (
             <span
               className={"opaHover"}
               style={{ position: "absolute", right: 0, top: 0, fontSize: "0px" }}

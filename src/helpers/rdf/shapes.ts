@@ -72,6 +72,7 @@ export const shInversePath = ns.SH("inversePath") as rdf.NamedNode
 export const shUniqueLang = ns.SH("uniqueLang") as rdf.NamedNode
 export const bdsReadOnly = ns.BDS("readOnly") as rdf.NamedNode
 export const bdsIdentifierPrefix = ns.BDS("identifierPrefix") as rdf.NamedNode
+export const bdsAllowMarkDown = ns.BDS("allowMarkDown") as rdf.NamedNode
 export const shNamespace = ns.SH("namespace") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
@@ -207,6 +208,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get maxExclusive(): number | null {
     return this.getPropIntValue(shMaxExclusive)
+  }
+
+  @Memoize()
+  public get allowMarkDown(): boolean | null {
+    return this.getPropBooleanValue(bdsAllowMarkDown)
   }
 
   @Memoize()
