@@ -332,7 +332,7 @@ const ValueList: FC<{
             subject={subject}
             property={property}
             res={val}
-            canDel={canDel}
+            canDel={canDel && val != noneSelected}
             editable={editable}
             create={<Create disable={!canAdd || !addBtn} subject={subject} property={property} embedded={embedded} />}
           />
@@ -1397,7 +1397,12 @@ const ResSelectComponent: FC<{
     if (resForNewValue == null) {
       throw "getting value from ResSelectComponent that's not in the list of possible values " + event.target.value
     }
-    const newList = replaceItemAtIndex(list, index, resForNewValue)
+    let newList
+    if (resForNewValue == noneSelected && canDel) {
+      newList = removeItemAtIndex(list, index)
+    } else {
+      newList = replaceItemAtIndex(list, index, resForNewValue)
+    }
     setList(newList)
   }
 
