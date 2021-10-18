@@ -523,6 +523,10 @@ export class Subject extends RDFResource {
   static createEmpty(): Subject {
     return new Subject(new rdf.NamedNode("tmp:uri"), new EntityGraph(new rdf.Store(), "tmp:uri"))
   }
+
+  isEmpty(): boolean {
+    return this.node.uri == "tmp:uri"
+  }
 }
 
 export class Ontology {

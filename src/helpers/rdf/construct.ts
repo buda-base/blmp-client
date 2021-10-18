@@ -17,6 +17,10 @@ const NANOID_LENGTH = 8
 const nanoidCustom = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", NANOID_LENGTH)
 
 export const generateSubnode = (subshape: NodeShape, parent: RDFResource): Subject => {
+  if (subshape.node.uri == "http://purl.bdrc.io/ontology/shapes/adm/AdmEntityShape") {
+    // special case for admin entities
+    return new Subject(new rdf.NamedNode(ns.BDA_uri + parent.lname), parent.graph)
+  }
   let parentLname = ""
   let prefix = subshape.getPropStringValue(shapes.bdsIdentifierPrefix)
   if (prefix == null) throw "cannot find entity prefix for " + subshape.qname

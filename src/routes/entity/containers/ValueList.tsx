@@ -163,7 +163,6 @@ const ValueList: FC<{
   topEntity?: Subject
 }> = ({ subject, property, embedded, force, editable, owner, topEntity }) => {
   if (property.path == null) throw "can't find path of " + property.qname
-  //debug(subject)
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
@@ -247,6 +246,12 @@ const ValueList: FC<{
       //debug("setNoH:2",subject,owner,topEntity)
       if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
       else setList((oldList) => [...oldList, generateDefault(property, subject)])
+    } else if (property.objectType == ObjectType.Facet && property.minCount && list.length < property.minCount) {
+      // dont store empty value autocreation
+      if (topEntity) topEntity.noHisto()
+      else if (owner) owner.noHisto()
+      else subject.noHisto()
+      setList((oldList) => [generateDefault(property, subject), ...oldList])
     } else if (
       property.objectType != ObjectType.ResInList &&
       property.displayPriority &&
