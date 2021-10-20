@@ -177,6 +177,7 @@ const ValueList: FC<{
 
   // TODO: handle the creation of a new value in a more sophisticated way (with the iframe and such)
   const canAdd =
+    !editable ||
     alreadyHasEmptyValue() ||
     property.readOnly && property.readOnly === true ||
     property.displayPriority && property.displayPriority > 1
@@ -1249,7 +1250,7 @@ const FacetComponent: FC<{
               subject={subNode}
               embedded={true}
               force={force}
-              editable={editable && !property.readOnly}
+              editable={!p.readOnly}
               owner={subject}
               topEntity={topEntity}
             />
@@ -1261,7 +1262,7 @@ const FacetComponent: FC<{
               subject={subNode}
               embedded={true}
               force={force}
-              editable={editable && !property.readOnly}
+              editable={!p.readOnly}
               owner={subject}
               topEntity={topEntity}
             />
