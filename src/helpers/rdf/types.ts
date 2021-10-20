@@ -63,11 +63,17 @@ export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
   return null
 }
 
+const getRandomIntInclusive = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 // an EntityGraphValues represents the global state of an entity we're editing, in a javascript object (and not an RDF store)
 export class EntityGraphValues {
   oldSubjectProps: Record<string, Record<string, Array<Value>>> = {}
   newSubjectProps: Record<string, Record<string, Array<Value>>> = {}
   subjectUri = ""
+  /* eslint-disable no-magic-numbers */
+  idHash = getRandomIntInclusive(1000, 9999).toString()
   noHisto: boolean | number = false
 
   constructor(subjectUri: string) {
@@ -153,7 +159,7 @@ export class EntityGraphValues {
   getAtomForSubjectProperty(pathString: string, subjectUri: string) {
     //debug(this)
     return atom<Array<Value>>({
-      key: subjectUri + pathString,
+      key: this.idHash + subjectUri + pathString,
       default: [],
       effects_UNSTABLE: [this.propsUpdateEffect(subjectUri, pathString)],
       // disable immutability in production
