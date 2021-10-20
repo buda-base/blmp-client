@@ -14,6 +14,8 @@ const enTranslations = {
     version: "Version",
     version_plural: "Versions",
     loading: "Loading...",
+    creating: "Creating...",
+    redirect: "Redirecting...",
     boolean: "Boolean",
     true: "True",
     false: "False",
@@ -39,6 +41,9 @@ const enTranslations = {
     superiorToStrict: "must be superior and not equal to {{val}}",
     empty: "should not be empty",
     unique: "duplicate language",
+    exist: "Entity {{id}} does not exist",
+    shape: "Cannot find any appropriate shape for entity {{id}}}}",
+    redirect: "Create new or load another entity",
   },
   general: {
     add_another: "Add {{val}}",

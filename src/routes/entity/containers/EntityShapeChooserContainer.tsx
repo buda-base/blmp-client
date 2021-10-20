@@ -35,15 +35,47 @@ function EntityShapeChooserContainer(props: AppProps) {
   if (entityFromList && entityFromList.shapeRef) {
     const shapeQname = entityFromList.shapeRef.qname
     props.history.replace("/edit/" + entityQname + "/" + shapeQname)
-    return <span>redirecting...</span>
+    return (
+      <div>
+        <div>{i18n.t("types.redirect")}</div>
+      </div>
+    )
   }
   const { entityLoadingState, entity } = EntityFetcher(entityQname, null)
 
   if (entity) {
     const possibleShapes = shapes.shapeRefsForEntity(entity)
-    if (!possibleShapes) {
+    if (entityLoadingState.status === "fetching") {
+      return (
+        <div>
+          <div>{i18n.t("types.loading")}</div>
+        </div>
+      )
+    } else if (entityLoadingState.error === "not found") {
+      return (
+        <div className="error">
+          <div>
+            <span>{i18n.t("error.exist", { id: entityQname })}</span>
+            <br />
+            <Link style={{ fontWeight: 700 }} to="/new">
+              {i18n.t("error.redirect")}
+            </Link>
+          </div>
+        </div>
+      )
+    } else if (!possibleShapes) {
       debug("cannot find", entity, entityLoadingState)
-      return <span>cannot find any appropriate shape for this entity</span>
+      return (
+        <div className="error">
+          <div>
+            <span>{i18n.t("error.shape", { id: entityQname })}</span>
+            <br />
+            <Link style={{ fontWeight: 700 }} to="/new">
+              {i18n.t("error.redirect")}
+            </Link>
+          </div>
+        </div>
+      )
     }
     if (possibleShapes.length > 1) {
       const handleClick = (event: React.MouseEvent<HTMLAnchorElement>, shape: RDFResourceWithLabel) => {
@@ -90,7 +122,11 @@ function EntityShapeChooserContainer(props: AppProps) {
     }
   }
 
-  return <span className="new-fix">loading...</span>
+  return (
+    <div>
+      <div>{i18n.t("types.loading")}</div>
+    </div>
+  )
 }
 
 export default EntityShapeChooserContainer

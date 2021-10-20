@@ -230,7 +230,7 @@ function App(props: AppProps) {
     }
   }, [entities, undos])
 
-  if (isLoading) return <span>Loading</span>
+  if (isLoading) return <div></div>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
 
   //debug(props)

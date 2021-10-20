@@ -1,6 +1,7 @@
 import React, { useEffect, useContext } from "react"
 import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react"
 import { AuthContext } from "../../../contexts/AuthContext"
+import i18n from "i18next"
 
 function ProfileContainer() {
   const { profile, fetchProfile } = useContext(AuthContext)
@@ -12,8 +13,13 @@ function ProfileContainer() {
     if (!profile) fetchProfile()
   }, [isLoading, isAuthenticated, profile, fetchProfile])
 
-  if (isLoading) return <span>Loading</span>
-  if (!isAuthenticated) return
+  if (isLoading)
+    return (
+      <div>
+        <div>{i18n.t("types.loading")}</div>
+      </div>
+    )
+  if (!isAuthenticated) return <div></div>
 
   return (
     <div role="main">
@@ -65,5 +71,9 @@ function ProfileContainer() {
 }
 
 export default withAuthenticationRequired(ProfileContainer, {
-  onRedirecting: () => <span>Loading</span>,
+  onRedirecting: () => (
+    <div>
+      <div>{i18n.t("types.loading")}</div>
+    </div>
+  ),
 })

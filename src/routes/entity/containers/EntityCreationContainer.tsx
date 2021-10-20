@@ -42,7 +42,11 @@ function EntityCreationContainer(props: AppProps) {
       </p>
     )
   }
-  return <span className="new-fix">creating...</span>
+  return (
+    <div>
+      <div>{i18n.t("types.creating")}</div>
+    </div>
+  )
 }
 
 export default EntityCreationContainer
