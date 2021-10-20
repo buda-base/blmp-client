@@ -73,7 +73,7 @@ export class EntityGraphValues {
   newSubjectProps: Record<string, Record<string, Array<Value>>> = {}
   subjectUri = ""
   /* eslint-disable no-magic-numbers */
-  idHash = getRandomIntInclusive(1000, 9999).toString()
+  idHash = Date.now() //getRandomIntInclusive(1000, 9999).toString()
   noHisto: boolean | number = false
 
   constructor(subjectUri: string) {

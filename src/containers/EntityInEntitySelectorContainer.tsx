@@ -1,6 +1,6 @@
 /* eslint-disable no-extra-parens */
 import React, { useState, FC, useEffect, ChangeEvent } from "react"
-import { Subject, RDFResourceWithLabel, RDFResource } from "../helpers/rdf/types"
+import { Subject, RDFResourceWithLabel, RDFResource, history as undoHistory } from "../helpers/rdf/types"
 import { setUserSession, setUserLocalEntities } from "../helpers/rdf/io"
 import * as shapes from "../helpers/rdf/shapes"
 import { FiPower as LogoutIcon } from "react-icons/fi"
@@ -78,6 +78,11 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
     // remove data in local storage
     setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true)
+    // remove history for entity
+    if (undoHistory) {
+      const uri = ns.uriFromQname(entity.subjectQname)
+      if (undoHistory[uri]) delete undoHistory[uri]
+    }
 
     const newList = [...entities.filter((e, i) => i !== index)]
     setEntities(newList)

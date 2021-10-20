@@ -40,15 +40,16 @@ export function getParentPath(entityUri: string, sub: string) {
     for (const s of subSubj) {
       const subprop = Object.keys(h[s]).filter((k) => !["tmp:parent", "tmp:undone"].includes(k))
       for (const p of subprop) {
-        for (const v of h[s][p]) {
-          if (v instanceof Subject && v.uri === sub) {
-            if (parentPath.length > 1 && parentPath[1] !== p)
-              throw new Error("multiple property (" + parentPath + "," + p + ") for node " + sub)
-            if (s !== entityUri) parentPath = getParentPath(entityUri, s)
-            parentPath.push(s)
-            parentPath.push(p)
+        if (typeof h[s][p] !== "string")
+          for (const v of h[s][p]) {
+            if (v instanceof Subject && v.uri === sub) {
+              if (parentPath.length > 1 && parentPath[1] !== p)
+                throw new Error("multiple property (" + parentPath + "," + p + ") for node " + sub)
+              if (s !== entityUri) parentPath = getParentPath(entityUri, s)
+              parentPath.push(s)
+              parentPath.push(p)
+            }
           }
-        }
       }
     }
   }

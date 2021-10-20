@@ -174,7 +174,7 @@ export const setUserSession = async (auth: Auth0, rid: string, shape: string, la
 
   const dataNew = JSON.stringify(data)
   if (dataNew != dataSav) {
-    debug("set:", data, dataNew)
+    //debug("set:", data, dataNew)
     localStorage.setItem("session", dataNew)
   }
 }
@@ -219,7 +219,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
   useEffect(() => {
     async function fetchResource(entityQname: string) {
-      debug("fetching", entityQname, entities)
+      //debug("fetching", entityQname, entities)
 
       setEntityLoadingState({ status: "fetching", error: undefined })
       const fetchUrl = fetchUrlFromEntityQname(entityQname)
@@ -260,7 +260,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       let _entities = entities
       if (!sessionLoaded) {
         const obj = await getUserSession(auth0)
-        debug("session:", obj)
+        //debug("session:", obj)
         if (obj) {
           _entities = []
           for (const k of Object.keys(obj)) {
@@ -273,8 +273,6 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
               preloadedLabel: obj[k].label,
             })
           }
-          //if (newEntities.length) setEntities(newEntities)
-          //setSessionLoaded(true)
         }
       }
 
@@ -317,7 +315,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
           // DONE: issue #2 fixed, fully using getEntities
           setEntities(newEntities)
 
-          debug("fetched")
+          //debug("fetched")
         }
       } catch (e) {
         debug(e)

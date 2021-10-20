@@ -1245,7 +1245,7 @@ const FacetComponent: FC<{
           )}
           {withoutDisplayPriority.map((p, index) => (
             <PropertyContainer
-              key={p.uri}
+              key={index + p.uri}
               property={p}
               subject={subNode}
               embedded={true}
@@ -1257,7 +1257,7 @@ const FacetComponent: FC<{
           ))}
           {withDisplayPriority.map((p, index) => (
             <PropertyContainer
-              key={p.uri}
+              key={index + p.uri}
               property={p}
               subject={subNode}
               embedded={true}

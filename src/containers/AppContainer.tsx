@@ -253,7 +253,7 @@ function App(props: AppProps) {
                   <div className="centered-ctn">
                     <div>
                       <h1>Welcome!</h1>
-                      <span>BDCR Editor</span>
+                      <span>{i18n.t("home.title")}</span>
                       <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus
                         tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam.

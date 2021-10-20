@@ -41,6 +41,12 @@ document.onkeydown = (e: React.KeyboardEvent) => {
   }
 }
 
+// to fix hot reloading
+// (which was only happening on compilation error not text modification etc.)
+if (module.hot) {
+  module.hot.accept()
+}
+
 render(
   <BrowserRouter>
     <Auth0ProviderWithHistory>
