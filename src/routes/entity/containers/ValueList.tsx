@@ -328,7 +328,7 @@ const ValueList: FC<{
           />
         )
       else {
-        addBtn = true
+        addBtn = false
         // eslint-disable-next-line no-extra-parens
         const canSelectNone = (i == 0 && !property.minCount) || (i > 0 && i == nbvalues - 1)
         return (
@@ -340,7 +340,7 @@ const ValueList: FC<{
             res={val}
             canDel={canDel && val != noneSelected}
             editable={editable}
-            create={<Create disable={!canAdd || !addBtn} subject={subject} property={property} embedded={embedded} />}
+            create={<Create disable={!canAdd} subject={subject} property={property} embedded={embedded} />}
           />
         )
       }
@@ -359,7 +359,7 @@ const ValueList: FC<{
         />
       )
     } else if (val instanceof LiteralWithId) {
-      addBtn = val && val.value !== ""
+      addBtn = false
       const isUnique =
         list.filter((l) => l instanceof LiteralWithId && /*l.value === val.value &&*/ l.language === val.language)
           .length === 1
@@ -372,7 +372,14 @@ const ValueList: FC<{
           label={propLabel}
           canDel={canDel}
           isUnique={isUnique}
-          create={<Create disable={!canAdd || !addBtn} subject={subject} property={property} embedded={embedded} />}
+          create={
+            <Create
+              disable={!canAdd || !(val && val.value !== "")}
+              subject={subject}
+              property={property}
+              embedded={embedded}
+            />
+          }
           editable={editable}
           topEntity={topEntity}
         />
