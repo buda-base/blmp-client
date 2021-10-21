@@ -17,6 +17,8 @@ import Tab from "@material-ui/core/Tab"
 import * as lang from "../helpers/lang"
 import * as ns from "../helpers/rdf/ns"
 import { EntityInEntitySelectorContainer } from "./EntityInEntitySelectorContainer"
+import { getUserSession } from "../helpers/rdf/io"
+import { sessionLoadedState } from "../atoms/common"
 
 const debug = require("debug")("bdrc:entity:selector")
 
@@ -65,6 +67,7 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
   const classes = useStyles()
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
   const [uiLang] = useRecoilState(uiLangState)
   const [tab, setTab] = useRecoilState(uiTabState)
   const handleChange = (event: ChangeEvent<unknown>, newTab: number): void => {
@@ -72,6 +75,33 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
     setTab(newTab)
   }
   const [edit, setEdit] = useRecoilState(uiEditState)
+
+  const auth0 = useAuth0()
+
+  // restore user session on startup
+  useEffect(() => {
+    // no need for doing it more than once - fixes loading session from open entity tab
+    //if (!isLoading && !entities.length) {
+
+    const session = getUserSession(auth0)
+    session.then((obj) => {
+      debug("session:", obj)
+      if (!obj) return
+      const newEntities = []
+      for (const k of Object.keys(obj)) {
+        newEntities.push({
+          subjectQname: k,
+          subject: null,
+          shapeRef: obj[k].shape,
+          subjectLabelState: defaultEntityLabelAtom,
+          state: EditedEntityState.NotLoaded,
+          preloadedLabel: obj[k].label,
+        })
+      }
+      if (newEntities.length) setEntities(newEntities)
+      if (!sessionLoaded) setSessionLoaded(true)
+    })
+  }, [])
 
   return (
     <div className="tabs-select" onClick={() => setEdit("")}>
