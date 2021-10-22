@@ -20,7 +20,9 @@ function NewEntityContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
   const [tab, setTab] = useRecoilState(uiTabState)
   const handleNewtab = (event: ChangeEvent<unknown>): void => {
-    setTab(0)
+    debug("click")
+    //setTab(0)
+    debug("clicked")
   }
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [RID, setRID] = useState("")

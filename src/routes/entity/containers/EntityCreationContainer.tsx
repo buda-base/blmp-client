@@ -26,13 +26,17 @@ function EntityCreationContainer(props: AppProps) {
   const shapeQname = props.match.params.shapeQname
   const { entityLoadingState, entity } = EntityCreator(shapeQname)
   if (entity) {
-    if (subjectQname && propertyQname && index)
+    if (subjectQname && propertyQname && index) {
+      debug("redirect1")
       return (
         <Redirect
           to={"/edit/" + entity.qname + "/" + shapeQname + "/" + subjectQname + "/" + propertyQname + "/" + index}
         />
       )
-    else return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
+    } else {
+      debug("redirect2")
+      return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
+    }
   }
   if (entityLoadingState.status === "error") {
     return (

@@ -110,6 +110,7 @@ export function ShapeFetcher(shapeQname: string) {
   }
 
   useEffect(() => {
+    debug("fetching shape")
     if (shapeQname in shapesMap) {
       setLoadingState({ status: "fetched", error: undefined })
       setShape(shapesMap[shapeQname])
@@ -130,6 +131,7 @@ export function ShapeFetcher(shapeQname: string) {
       } catch (e) {
         setLoadingState({ status: "error", error: "error fetching shape or ontology" })
       }
+      debug("fetched shape")
     }
     fetchResource(shapeQname)
   }, [shapeQname])
@@ -218,6 +220,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   }
 
   useEffect(() => {
+    debug("fetching resource")
     async function fetchResource(entityQname: string) {
       //debug("fetching", entityQname, entities)
 
@@ -326,6 +329,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         if (!entities.length && _entities.length) setEntities(_entities)
       }
       if (!sessionLoaded) setSessionLoaded(true)
+      debug("fetched resource")
     }
     const index = entities.findIndex((e) => e.subjectQname === entityQname)
     if (index === -1 || entities[index] && !entities[index].subject) {

@@ -62,6 +62,7 @@ export function EntityCreator(shapeQname: string) {
   }
 
   useEffect(() => {
+    debug("constructing")
     // we need to load the shape at the same time, which means we need to also
     // load the ontology
     async function createResource(shapeQname: string) {
@@ -76,6 +77,7 @@ export function EntityCreator(shapeQname: string) {
         const shapeUri = ns.uriFromQname(shapeQname)
         shape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri), ontology)
         setShape(shape)
+        debug("end 1st try")
       } catch (e) {
         debug(e)
         setEntityLoadingState({ status: "error", error: "error fetching shape" })
@@ -97,6 +99,7 @@ export function EntityCreator(shapeQname: string) {
         // TODO: uncomment for prod
         //lname = await reserveId(prefix, token)
         lname = prefix + nanoidCustom()
+        debug("end 2nd try")
       } catch (e) {
         debug(e)
         setEntityLoadingState({ status: "error", error: "error logging or reserving id" })
@@ -116,12 +119,15 @@ export function EntityCreator(shapeQname: string) {
         subject: newSubject,
         subjectLabelState: newSubject.getAtomForProperty(shapes.prefLabel.uri),
       }
+      debug("before setEntities")
       setEntities([newEntity, ...entities])
       setEntity(newSubject)
       setEntityLoadingState({ status: "created", error: undefined })
+      debug("after setEntities")
 
       // save to localStorage
       setUserLocalEntities(auth0, newSubject.qname, shape.qname, "")
+      debug("constructed")
     }
     createResource(shapeQname)
   }, [shapeQname])
