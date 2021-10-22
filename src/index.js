@@ -28,9 +28,9 @@ document.onkeydown = (e: React.KeyboardEvent) => {
     //debug("UNDO/REDO", undoRef, redoRef)
 
     if (!e.shiftKey) {
-      if (e.keyCode === zKey && undoRef.current) undoRef.current.click()
-      else if (e.keyCode === yKey && redoRef.current) redoRef.current.click()
-    } else if (e.keyCode === zKey && redoRef.current) redoRef.current.click()
+      if (e.keyCode === zKey && undoRef && undoRef.current) undoRef.current.click()
+      else if (e.keyCode === yKey && redoRef && redoRef.current) redoRef.current.click()
+    } else if (e.keyCode === zKey && redoRef && redoRef.current) redoRef.current.click()
 
     // DONE: fix conflict with chrome undo inside text input
     const elem = document.activeElement //as HTMLElement

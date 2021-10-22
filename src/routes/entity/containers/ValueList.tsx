@@ -752,13 +752,14 @@ const EditLangString: FC<{
               codeEdit,
               codePreview,
             ]}
+            extraCommands={[]}
           />
           <span
             className={"opaHover on"}
-            style={{ position: "absolute", right: "5px", top: "10px", fontSize: "0px", cursor: "pointer" }}
+            style={{ position: "absolute", right: "5px", top: "7px", fontSize: "0px", cursor: "pointer" }}
             onClick={() => setEditMD(!editMD)}
           >
-            <MDIcon style={{ height: "14px" }} />
+            <MDIcon style={{ height: "15px" }} title={"Use rich text editor"} />
           </span>
         </div>
       )}

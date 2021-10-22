@@ -78,6 +78,7 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
 
   const auth0 = useAuth0()
 
+  /*
   // restore user session on startup
   useEffect(() => {
     // no need for doing it more than once - fixes loading session from open entity tab
@@ -102,7 +103,7 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
       if (!sessionLoaded) setSessionLoaded(true)
     })
   }, [])
-
+*/
   return (
     <div className="tabs-select" onClick={() => setEdit("")}>
       <h3>Edition</h3>
