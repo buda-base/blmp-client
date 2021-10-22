@@ -48,7 +48,6 @@ export const shName = ns.SH("name") as rdf.NamedNode
 export const shPath = ns.SH("path") as rdf.NamedNode
 export const dashEditor = ns.DASH("editor") as rdf.NamedNode
 export const dashEnumSelectEditor = ns.DASH("EnumSelectEditor") as rdf.NamedNode
-export const shDescription = ns.SH("description") as rdf.NamedNode
 export const shMessage = ns.SH("message") as rdf.NamedNode
 export const bdsDisplayPriority = ns.BDS("displayPriority") as rdf.NamedNode
 export const shMinCount = ns.SH("minCount") as rdf.NamedNode
@@ -163,11 +162,6 @@ export class PropertyShape extends RDFResourceWithLabel {
     const resFromShape = this.getPropValueByLang(shName)
     res = { ...res, ...resFromShape }
     return res
-  }
-
-  @Memoize()
-  public get descriptions(): Record<string, string> {
-    return this.getPropValueByLang(shDescription)
   }
 
   @Memoize()
