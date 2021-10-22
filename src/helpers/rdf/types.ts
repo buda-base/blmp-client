@@ -23,6 +23,11 @@ const debug = require("debug")("bdrc:rdf:types")
 const defaultGraphNode = new rdf.NamedNode(rdf.Store.defaultGraphURI)
 const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 const rdfsLabel = ns.RDFS("label") as rdf.NamedNode
+const shDescription = ns.SH("description") as rdf.NamedNode
+const admCatalogingConvention = ns.ADM("catalogingConvention") as rdf.NamedNode
+const admUserTooltip = ns.ADM("userTooltip") as rdf.NamedNode
+const skosDefinition = ns.SKOS("definition") as rdf.NamedNode
+const rdfsComment = ns.RDFS("comment") as rdf.NamedNode
 
 export const history: Record<string, Array<Record<string, any>>> = {}
 export const errors: Record<string, Array<Record<string, boolean>>> = {}
@@ -362,6 +367,18 @@ export class RDFResource {
     return res
   }
 
+  public getPropValueOrNullByLang(p: rdf.NamedNode): Record<string, string> | null {
+    const lits: Array<rdf.Literal> = this.graph.store.each(this.node, p, null) as Array<rdf.Literal>
+    const res: Record<string, string> = {}
+    let i = 0
+    for (const lit of lits) {
+      i += 1
+      res[lit.language] = lit.value
+    }
+    if (i == 0) return null
+    return res
+  }
+
   public getPropLitValues(p: rdf.NamedNode): Array<rdf.Literal> {
     return this.graph.store.each(this.node, p, null) as Array<rdf.Literal>
   }
@@ -438,6 +455,23 @@ export class RDFResourceWithLabel extends RDFResource {
   @Memoize()
   public get prefLabels(): Record<string, string> {
     return this.getPropValueByLang(this.labelProp)
+  }
+
+  static messageProps: Array<rdf.NamedNode> = [
+    shDescription,
+    skosDefinition,
+    admCatalogingConvention,
+    admUserTooltip,
+    rdfsComment,
+  ]
+
+  @Memoize()
+  public get helpMessage(): Record<string, string> | null {
+    for (const p of RDFResourceWithLabel.messageProps) {
+      const res = this.getPropValueOrNullByLang(p)
+      if (res != null) return res
+    }
+    return null
   }
 }
 
