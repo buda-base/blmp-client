@@ -56,13 +56,16 @@ export function EntityCreator(shapeQname: string) {
   const auth0 = useAuth0()
 
   const reset = () => {
+    debug("resetting")
     setEntity(undefined)
     setShape(undefined)
     setEntityLoadingState({ status: "idle", error: undefined })
+    debug("resetted")
   }
 
   useEffect(() => {
     debug("constructing")
+    let abort = false
     // we need to load the shape at the same time, which means we need to also
     // load the ontology
     async function createResource(shapeQname: string) {
@@ -76,18 +79,18 @@ export function EntityCreator(shapeQname: string) {
         const ontology = await loadOnto
         const shapeUri = ns.uriFromQname(shapeQname)
         shape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri), ontology)
-        setShape(shape)
-        debug("end 1st try")
+        if (!abort) setShape(shape)
+        debug("end 1st try", abort)
       } catch (e) {
-        debug(e)
-        setEntityLoadingState({ status: "error", error: "error fetching shape" })
+        debug(e, abort)
+        if (!abort) setEntityLoadingState({ status: "error", error: "error fetching shape" })
         return
       }
 
       const shapePrefix = shape.getPropStringValue(shapes.bdsIdentifierPrefix)
       let namespace = shape.getPropStringValue(shapes.shNamespace)
       if (namespace == null) namespace = ns.BDR_uri
-      setEntityLoadingState({ status: "creating", error: undefined })
+      if (!abort) setEntityLoadingState({ status: "creating", error: undefined })
       let userPrefix
       let lname
       try {
@@ -99,10 +102,10 @@ export function EntityCreator(shapeQname: string) {
         // TODO: uncomment for prod
         //lname = await reserveId(prefix, token)
         lname = prefix + nanoidCustom()
-        debug("end 2nd try")
+        debug("end 2nd try", abort)
       } catch (e) {
-        debug(e)
-        setEntityLoadingState({ status: "error", error: "error logging or reserving id" })
+        debug(e, abort)
+        if (!abort) setEntityLoadingState({ status: "error", error: "error logging or reserving id" })
         return
       }
       const prefix = shapePrefix + userPrefix
@@ -119,17 +122,24 @@ export function EntityCreator(shapeQname: string) {
         subject: newSubject,
         subjectLabelState: newSubject.getAtomForProperty(shapes.prefLabel.uri),
       }
-      debug("before setEntities")
-      setEntities([newEntity, ...entities])
-      setEntity(newSubject)
-      setEntityLoadingState({ status: "created", error: undefined })
-      debug("after setEntities")
+      debug("before setEntities", abort)
+      if (!abort) setEntities([newEntity, ...entities])
+      debug("before setEntity", abort)
+      if (!abort) setEntity(newSubject)
+      debug("before setEntityLoadingState", abort)
+      if (!abort) setEntityLoadingState({ status: "created", error: undefined })
+      debug("after setEntities", abort)
 
       // save to localStorage
-      setUserLocalEntities(auth0, newSubject.qname, shape.qname, "")
-      debug("constructed")
+      if (!abort) setUserLocalEntities(auth0, newSubject.qname, shape.qname, "")
+      debug("constructed", abort)
     }
     createResource(shapeQname)
+
+    return () => {
+      abort = true
+      debug("aborting construct")
+    }
   }, [shapeQname])
 
   return { entityLoadingState, entity, reset }

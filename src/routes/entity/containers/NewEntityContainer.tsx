@@ -17,15 +17,26 @@ import { TextField, MenuItem } from "@material-ui/core"
 const debug = require("debug")("bdrc:entity:newentity")
 
 function NewEntityContainer(props: AppProps) {
+  debug("begin new entity")
+
   const [uiLang] = useRecoilState(uiLangState)
   const [tab, setTab] = useRecoilState(uiTabState)
-  const handleNewtab = (event: ChangeEvent<unknown>): void => {
-    debug("click")
-    //setTab(0)
-    debug("clicked")
+  /*
+  const handleNewtab = (event: ChangeEvent<unknown>, shape: RDFResourceWithLabel): void => {
+    event.preventDefault()
+    event.stopPropagation()
+    setTab(0)    
+    setTimeout( () => props.history.push("/new/" + shape.qname), 1500) // eslint-disable-line no-magic-numbers
   }
+  */
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [RID, setRID] = useState("")
+
+  useEffect(() => {
+    return () => {
+      debug("cleaning new entity")
+    }
+  }, [])
 
   /* // no need
   const urlParams = qs.parse(props.history.location.search)
@@ -36,7 +47,7 @@ function NewEntityContainer(props: AppProps) {
   // otherwise we want the user to select the appropriate shape
 
   // "here is a list of all possible shapes" "to choose from in order to create a new entity":
-  return (
+  const ret = (
     <div className="new-fix">
       <div>
         <b>New entity:</b>
@@ -52,7 +63,7 @@ function NewEntityContainer(props: AppProps) {
           {/* <MenuItem disabled key={"init"} value={"init"} >Choose a shape</MenuItem> */}
           {shapes.possibleShapeRefs.map((shape: RDFResourceWithLabel, index: number) => (
             <MenuItem key={shape.qname} value={shape.qname} style={{ padding: 0 }}>
-              <Link to={"/new/" + shape.qname} onClick={handleNewtab} className="popLink">
+              <Link to={"/new/" + shape.qname} /*onClick={(e) => handleNewtab(e,shape)}*/ className="popLink">
                 {lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)}
               </Link>
             </MenuItem>
@@ -68,11 +79,13 @@ function NewEntityContainer(props: AppProps) {
             style={{ width: "100%" }}
             value={RID}
             InputLabelProps={{ shrink: true }}
-            onChange={(e) => setRID(e.target.value)}
+            //onChange={(e) => setRID(e.target.value)}
             helperText={"select an entity to load here by its RID"}
+            /*
             onKeyDown={(event) => {
               if (event.key === "Enter") props.history.push("/edit/" + (RID.startsWith("bdr:") ? "" : "bdr:") + RID)
             }}
+            */
           />
         </div>
         <div>
@@ -87,6 +100,9 @@ function NewEntityContainer(props: AppProps) {
       </div>
     </div>
   )
+
+  debug("return new entity")
+  return ret
 }
 
 export default NewEntityContainer
