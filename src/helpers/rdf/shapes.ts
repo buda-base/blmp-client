@@ -256,7 +256,8 @@ export class PropertyShape extends RDFResourceWithLabel {
     for (const node of nodes) {
       const r = new RDFResourceWithLabel(node, graph)
       // just a way to intialize the value before the object gets frozen like a yogurt by Recoil
-      const justforinit = r.prefLabels
+      let justforinit = r.description
+      justforinit = r.prefLabels
       res.push(r)
     }
     return res
