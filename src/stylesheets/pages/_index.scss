@@ -368,6 +368,16 @@ section,
 .langString .hoverPart > button:first-child { margin-top:2px!important; }
 .resSelect .hoverPart > button:first-child { margin-right:0 !important; }
 
+
+.resSelect { position: relative; overflow:visible;}
+.hoverPart.left { position: absolute; right:100%; width:auto; }
+.selector .help,
+.withDescription .help { visibility:hidden;}
+.selector:hover .help,
+.withDescription:hover .help { visibility:visible;}
+
+.MuiTooltip-popper { z-index:15000; }
+
 .propLabel { display:block; //color:rgb(245, 0, 87); font-size:12px; font-weight:500; 
   margin-bottom:4px; 
   width:100%;  
@@ -649,8 +659,10 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
               filter: drop-shadow(0px 1px 1.5px #cecccc);
               
               &:not(.popup-new) {
-                padding: 40px !important; 
+                padding: 40px 0 !important; 
                 background-color: #f8f8f8; 
+
+                .ValueList { padding:0 40px;}
               }
 
               .ValueList { background:#f8f8f8; }
@@ -761,10 +773,18 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 }
 
-.show-displayPriority-false [data-priority="1"] + .blockAdd,
-.show-displayPriority-false [data-priority="2"] + .blockAdd,
-.show-displayPriority-false .empty .propLabel[data-priority="1"],
-.show-displayPriority-false .empty .propLabel[data-priority="2"] {
+// WIP: too broad (#12)
+.card.show-displayPriority-false .empty .propLabel[data-priority="1"],
+.card.show-displayPriority-false .empty .propLabel[data-priority="2"],
+/*
+.card.show-displayPriority-false .facet.force-false .empty .propLabel[data-priority="1"],
+.card.show-displayPriority-false .facet.force-false .empty .propLabel[data-priority="2"],
+*/
+
+.card.show-displayPriority-false [data-priority="1"] + .blockAdd,
+.card.show-displayPriority-false [data-priority="2"] + .blockAdd,
+.card.show-displayPriority-false .empty > :not(.facet) .propLabel[data-priority="1"],
+.card.show-displayPriority-false .empty > :not(.facet) .propLabel[data-priority="2"] {
   display:none;
 }
 
