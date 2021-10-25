@@ -17,7 +17,7 @@ import * as ns from "../../../helpers/rdf/ns"
 import { generateSubnode } from "../../../helpers/rdf/construct"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
-import { TextField, MenuItem, InputLabel, Select } from "@material-ui/core"
+import { TextField, MenuItem, Tooltip, IconButton, InputLabel, Select } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
 import {
   AddIcon,
@@ -29,6 +29,7 @@ import {
   MDIcon,
   EditIcon,
   KeyboardIcon,
+  HelpIcon,
 } from "../../layout/icons"
 import i18n from "i18next"
 import { getHistoryStatus } from "../../../containers/AppContainer"
@@ -1190,8 +1191,6 @@ const FacetComponent: FC<{
   const targetShape = property.targetShape
   if (!targetShape) throw "unable to find target shape of " + property.lname
 
-  const targetShapeLabel = lang.ValueByLangToStrPrefLang(targetShape.prefLabels, uiLang)
-
   const withDisplayPriority: PropertyShape[] = [],
     withoutDisplayPriority: PropertyShape[] = []
   targetShape.properties.map((subprop) => {
@@ -1384,6 +1383,7 @@ const ResSelectComponent: FC<{
   const [uiLang] = useRecoilState(uiLangState)
 
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
+  const helpMessage = lang.ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
   let possibleValues = property.in
   if (!possibleValues) throw "can't find possible list for " + property.uri
@@ -1444,6 +1444,16 @@ const ResSelectComponent: FC<{
           <button className="btn btn-link ml-0 mr-3 px-0" onClick={deleteItem}>
             <RemoveIcon />
           </button>
+        )}
+        {create}
+      </div>
+      <div className="hoverPart">
+        {helpMessage && (
+          <Tooltip title={helpMessage}>
+            <IconButton>
+              <HelpIcon />
+            </IconButton>
+          </Tooltip>
         )}
         {create}
       </div>

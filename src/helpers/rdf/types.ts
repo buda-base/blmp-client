@@ -466,7 +466,7 @@ export class RDFResourceWithLabel extends RDFResource {
   ]
 
   @Memoize()
-  public get helpMessage(): Record<string, string> | null {
+  public get description(): Record<string, string> | null {
     for (const p of RDFResourceWithLabel.messageProps) {
       const res = this.getPropValueOrNullByLang(p)
       if (res != null) return res
