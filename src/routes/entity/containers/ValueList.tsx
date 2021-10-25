@@ -167,6 +167,7 @@ const ValueList: FC<{
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
+  const helpMessage = lang.ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
   const alreadyHasEmptyValue: () => boolean = (): boolean => {
     for (const val of list) {
@@ -370,7 +371,7 @@ const ValueList: FC<{
           subject={subject}
           property={property}
           lit={val}
-          label={propLabel}
+          help={helpMessage}
           canDel={canDel}
           isUnique={isUnique}
           create={
@@ -568,7 +569,7 @@ const EditLangString: FC<{
   label: string
   globalError?: string
   editable?: boolean
-  updateEntityState: (EditedEntityState) => void
+  updateEntityState: (es: EditedEntityState) => void
 }> = ({ property, lit, onChange, label, globalError, editable, updateEntityState }) => {
   const classes = useStyles()
   //const [preview, setPreview] = useState(false) //always true
@@ -1010,18 +1011,21 @@ const LiteralComponent: FC<{
   lit: LiteralWithId
   subject: Subject
   property: PropertyShape
-  label: string
   canDel: boolean
   isUnique: boolean
   create?: Create
   editable: boolean
   topEntity?: Subject
-}> = ({ lit, subject, property, label, canDel, isUnique, create, editable, topEntity }) => {
+}> = ({ lit, subject, property, canDel, isUnique, create, editable, topEntity }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [undos, setUndos] = useRecoilState(uiUndosState)
+  const [uiLang] = useRecoilState(uiLangState)
+
+  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
+  const helpMessage = lang.ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
     const newList = replaceItemAtIndex(list, index, value)
@@ -1103,7 +1107,7 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={label}
+        label={propLabel}
         {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
@@ -1117,7 +1121,7 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={label}
+        label={propLabel}
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
       />
@@ -1128,7 +1132,7 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={label}
+        label={propLabel}
         editable={editable && !property.readOnly}
       />
     )
@@ -1138,7 +1142,7 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={label}
+        label={propLabel}
         editable={editable && !property.readOnly}
       />
     )
@@ -1156,6 +1160,15 @@ const LiteralComponent: FC<{
           <RemoveIcon className="my-1 close-facet-btn" />
         </button>
         {create}
+        {helpMessage && (
+          <div className="hoverPart">
+            <Tooltip title={helpMessage}>
+              <IconButton>
+                <HelpIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1455,7 +1468,6 @@ const ResSelectComponent: FC<{
             </IconButton>
           </Tooltip>
         )}
-        {create}
       </div>
     </div>
   )
