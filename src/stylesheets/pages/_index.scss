@@ -370,9 +370,13 @@ section,
 
 .langString,
 .resSelect { position: relative; overflow: visible; }
-.hoverPart.left { position: absolute; right:100%; width:auto; padding-right:5px; margin-bottom:10px;}
+.hoverPart.left { position: absolute; right:100%; width:auto; padding-right:5px; padding-bottom:10px; padding-top:10px;
+  .help { width:16px; color:rgba(0,0,0,0.45);}
+}
+
+
 .selector .help,
-.withDescription .help { visibility:hidden;}
+.withDescription .help { visibility:hidden; width:16px; color:rgba(0,0,0,0.45); }
 .selector:hover .help,
 .withDescription:hover .help { visibility:visible;}
 

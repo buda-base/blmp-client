@@ -1164,7 +1164,7 @@ const LiteralComponent: FC<{
       {helpMessage && (
         <div className="hoverPart left">
           <Tooltip title={helpMessage}>
-            <HelpIcon />
+            <HelpIcon className="help" />
           </Tooltip>
         </div>
       )}
@@ -1467,7 +1467,7 @@ const ResSelectComponent: FC<{
       {helpMessage && (
         <div className="hoverPart left">
           <Tooltip title={helpMessage}>
-            <HelpIcon />
+            <HelpIcon className="help" />
           </Tooltip>
         </div>
       )}
