@@ -368,8 +368,8 @@ section,
 .langString .hoverPart > button:first-child { margin-top:2px!important; }
 .resSelect .hoverPart > button:first-child { margin-right:0 !important; }
 
-
-.resSelect { position: relative; overflow:visible;}
+.langString,
+.resSelect { position: relative; overflow: visible; }
 .hoverPart.left { position: absolute; right:100%; width:auto; padding-right:5px; margin-bottom:10px;}
 .selector .help,
 .withDescription .help { visibility:hidden;}
