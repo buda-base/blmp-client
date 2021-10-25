@@ -375,6 +375,11 @@ section,
 }
 
 
+[role=tooltip] { 
+  & > div { font-size:13px; padding:12px; }
+}
+
+
 label .help.literal,
 .selector .help,
 .withDescription .help { visibility:hidden; width:16px; color:rgba(0,0,0,0.45); }
