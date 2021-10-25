@@ -1446,13 +1446,12 @@ const ResSelectComponent: FC<{
       >
         {possibleValues.map((r) => (
           <MenuItem key={r.uri} value={r.uri} className="withDescription">
-            {lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}{" "}
             {r.description ? (
               <Tooltip title={lang.ValueByLangToStrPrefLang(r.description, uiLang)}>
-                <HelpIcon className="help" />
+                <span>{lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}</span>
               </Tooltip>
             ) : 
-              ""
+              lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)
             }
           </MenuItem>
         ))}
