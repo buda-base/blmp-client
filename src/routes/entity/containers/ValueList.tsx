@@ -1447,13 +1447,11 @@ const ResSelectComponent: FC<{
         {...(!editable ? { disabled: true } : {})}
       >
         {possibleValues.map((r) => (
-          <MenuItem key={r.uri} value={r.uri}>
+          <MenuItem key={r.uri} value={r.uri} className="withDescription">
             {lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}{" "}
             {r.description ? (
               <Tooltip title={lang.ValueByLangToStrPrefLang(r.description, uiLang)}>
-                <IconButton>
-                  <HelpIcon />
-                </IconButton>
+                <HelpIcon className="help" />
               </Tooltip>
             ) : 
               ""
@@ -1469,15 +1467,13 @@ const ResSelectComponent: FC<{
         )}
         {create}
       </div>
-      <div className="hoverPart">
-        {helpMessage && (
+      {helpMessage && (
+        <div className="hoverPart left">
           <Tooltip title={helpMessage}>
-            <IconButton>
-              <HelpIcon />
-            </IconButton>
+            <HelpIcon />
           </Tooltip>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
