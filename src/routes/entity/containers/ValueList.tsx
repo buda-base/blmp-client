@@ -1107,7 +1107,14 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={propLabel}
+        label={[
+          propLabel,
+          helpMessage ? (
+            <Tooltip title={helpMessage}>
+              <HelpIcon className="help literal" />
+            </Tooltip>
+          ) : null,
+        ]}
         {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
@@ -1121,7 +1128,14 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={propLabel}
+        label={[
+          propLabel,
+          helpMessage ? (
+            <Tooltip title={helpMessage}>
+              <HelpIcon className="help literal" />
+            </Tooltip>
+          ) : null,
+        ]}
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
       />
@@ -1132,7 +1146,14 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={propLabel}
+        label={[
+          propLabel,
+          helpMessage ? (
+            <Tooltip title={helpMessage}>
+              <HelpIcon className="help literal" />
+            </Tooltip>
+          ) : null,
+        ]}
         editable={editable && !property.readOnly}
       />
     )
@@ -1142,7 +1163,14 @@ const LiteralComponent: FC<{
         property={property}
         lit={lit}
         onChange={onChange}
-        label={propLabel}
+        label={[
+          propLabel,
+          helpMessage ? (
+            <Tooltip title={helpMessage}>
+              <HelpIcon className="help literal" />
+            </Tooltip>
+          ) : null,
+        ]}
         editable={editable && !property.readOnly}
       />
     )
@@ -1161,13 +1189,13 @@ const LiteralComponent: FC<{
         </button>
         {create}
       </div>
-      {helpMessage && (
+      {/*helpMessage && (
         <div className="hoverPart left">
           <Tooltip title={helpMessage}>
             <HelpIcon className="help" />
           </Tooltip>
         </div>
-      )}
+      )*/}
     </div>
   )
 }
@@ -1441,7 +1469,14 @@ const ResSelectComponent: FC<{
         value={res.uri}
         style={{ padding: "1px", minWidth: "200px" }}
         onChange={onChange}
-        label={propLabel}
+        label={[
+          propLabel,
+          helpMessage ? (
+            <Tooltip title={helpMessage}>
+              <HelpIcon className="help" />
+            </Tooltip>
+          ) : null,
+        ]}
         {...(!editable ? { disabled: true } : {})}
       >
         {possibleValues.map((r) => (
@@ -1464,13 +1499,6 @@ const ResSelectComponent: FC<{
         )}
         {create}
       </div>
-      {helpMessage && (
-        <div className="hoverPart left">
-          <Tooltip title={helpMessage}>
-            <HelpIcon className="help" />
-          </Tooltip>
-        </div>
-      )}
     </div>
   )
 }
