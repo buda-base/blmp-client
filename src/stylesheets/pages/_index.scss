@@ -370,13 +370,16 @@ section,
 
 
 .resSelect { position: relative; overflow:visible;}
-.hoverPart.left { position: absolute; right:100%; width:auto; }
+.hoverPart.left { position: absolute; right:100%; width:auto; padding-right:5px; margin-bottom:10px;}
 .selector .help,
 .withDescription .help { visibility:hidden;}
 .selector:hover .help,
 .withDescription:hover .help { visibility:visible;}
 
-.MuiTooltip-popper { z-index:15000; }
+.withDescription .help { margin-left:5px; }
+.selector .help { margin-top:-3px; margin-left:5px; position:absolute;}
+
+.MuiTooltip-popper { z-index:15000 !important; }
 
 .propLabel { display:block; //color:rgb(245, 0, 87); font-size:12px; font-weight:500; 
   margin-bottom:4px; 

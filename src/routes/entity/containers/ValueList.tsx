@@ -1160,16 +1160,14 @@ const LiteralComponent: FC<{
           <RemoveIcon className="my-1 close-facet-btn" />
         </button>
         {create}
-        {helpMessage && (
-          <div className="hoverPart">
-            <Tooltip title={helpMessage}>
-              <IconButton>
-                <HelpIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
-        )}
       </div>
+      {helpMessage && (
+        <div className="hoverPart left">
+          <Tooltip title={helpMessage}>
+            <HelpIcon />
+          </Tooltip>
+        </div>
+      )}
     </div>
   )
 }
