@@ -789,13 +789,15 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 }
 
-// WIP: too broad (#12)
+/*
+// too broad (#12)
 .card.show-displayPriority-false .empty .propLabel[data-priority="1"],
 .card.show-displayPriority-false .empty .propLabel[data-priority="2"],
-/*
+*/
 .card.show-displayPriority-false .facet.force-false .empty .propLabel[data-priority="1"],
 .card.show-displayPriority-false .facet.force-false .empty .propLabel[data-priority="2"],
-*/
+.card.show-displayPriority-false > div > div > .album > .container > .empty > .propLabel[data-priority="1"],
+.card.show-displayPriority-false > div > div > .album > .container > .empty > .propLabel[data-priority="2"],
 
 .card.show-displayPriority-false [data-priority="1"] + .blockAdd,
 .card.show-displayPriority-false [data-priority="2"] + .blockAdd,
