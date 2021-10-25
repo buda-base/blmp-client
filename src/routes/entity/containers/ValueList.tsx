@@ -1472,7 +1472,7 @@ const ResSelectComponent: FC<{
         select
         className={/*classes.root +*/ "selector mr-2"}
         value={res.uri}
-        style={{ padding: "1px", minWidth: "200px" }}
+        style={{ padding: "1px", minWidth: "250px" }}
         onChange={onChange}
         label={[
           propLabel,
