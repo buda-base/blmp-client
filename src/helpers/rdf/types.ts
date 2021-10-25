@@ -478,19 +478,30 @@ export class RDFResourceWithLabel extends RDFResource {
 // this class allows to create a resource from just a URI and labels, we need it for external entities
 export class ExtRDFResourceWithLabel extends RDFResourceWithLabel {
   private _prefLabels: Record<string, string>
+  private _description: Record<string, string> | null
   private _otherData: Record<string, any>
 
   public get prefLabels(): Record<string, string> {
     return this._prefLabels
   }
 
+  public get description(): Record<string, string> | null {
+    return this._description
+  }
+
   public get otherData(): Record<string, any> {
     return this._otherData
   }
 
-  constructor(uri: string, prefLabels: Record<string, string>, data: Record<string, any> = {}) {
+  constructor(
+    uri: string,
+    prefLabels: Record<string, string>,
+    data: Record<string, any> = {},
+    description: Record<string, any> | null = null
+  ) {
     super(new rdf.NamedNode(uri), new EntityGraph(new rdf.Store(), uri))
     this._prefLabels = prefLabels
+    this._description = description
     //debug("data", data)
     this._otherData = data
   }
@@ -577,4 +588,4 @@ export class Ontology {
   }
 }
 
-export const noneSelected = new ExtRDFResourceWithLabel("tmp:none", { en: "none" })
+export const noneSelected = new ExtRDFResourceWithLabel("tmp:none", { en: "–" }, {}, { en: "none provided" })
