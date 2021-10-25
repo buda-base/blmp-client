@@ -1256,11 +1256,6 @@ const FacetComponent: FC<{
         }}
       >
         <div className={"card pt-2 pb-3 pr-3 mt-4 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
-          {hasExtra && (
-            <span className="toggle-btn" onClick={toggleExtra}>
-              {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
-            </span>
-          )}
           {withoutDisplayPriority.map((p, index) => (
             <PropertyContainer
               key={index + p.uri}
@@ -1285,7 +1280,17 @@ const FacetComponent: FC<{
               topEntity={topEntity}
             />
           ))}
+          {hasExtra && (
+            <span className="toggle-btn" onClick={toggleExtra}>
+              {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
+            </span>
+          )}
           <div className="close-btn">
+            {targetShape.description && (
+              <Tooltip title={lang.ValueByLangToStrPrefLang(targetShape.description, uiLang)}>
+                <HelpIcon className="help" />
+              </Tooltip>
+            )}
             <button
               className="btn btn-link ml-2 px-0 close-facet-btn py-0"
               onClick={deleteItem}
