@@ -1412,45 +1412,51 @@ const ResSelectComponent: FC<{
 
   const classes = useStyles()
 
+  if (possibleValues.length == 1 && list.length == 0) {
+    setList([possibleValues[0]])
+  }
+
   return (
-    <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
-      <TextField
-        select
-        className={/*classes.root +*/ "selector mr-2"}
-        value={res.uri}
-        style={{ padding: "1px", minWidth: "250px" }}
-        onChange={onChange}
-        label={[
-          propLabel,
-          helpMessage ? (
-            <Tooltip title={helpMessage}>
-              <HelpIcon className="help" />
-            </Tooltip>
-          ) : null,
-        ]}
-        {...(!editable ? { disabled: true } : {})}
-      >
-        {possibleValues.map((r) => (
-          <MenuItem key={r.uri} value={r.uri} className="withDescription">
-            {r.description ? (
-              <Tooltip title={lang.ValueByLangToStrPrefLang(r.description, uiLang)}>
-                <span>{lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}</span>
+    possibleValues.length > 1 && (
+      <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
+        <TextField
+          select
+          className={"selector mr-2"}
+          value={res.uri}
+          style={{ padding: "1px", minWidth: "250px" }}
+          onChange={onChange}
+          label={[
+            propLabel,
+            helpMessage ? (
+              <Tooltip title={helpMessage}>
+                <HelpIcon className="help" />
               </Tooltip>
-            ) : 
-              lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)
-            }
-          </MenuItem>
-        ))}
-      </TextField>
-      <div className="hoverPart">
-        {canDel && (
-          <button className="btn btn-link ml-0 mr-3 px-0" onClick={deleteItem}>
-            <RemoveIcon />
-          </button>
-        )}
-        {create}
+            ) : null,
+          ]}
+          {...(!editable ? { disabled: true } : {})}
+        >
+          {possibleValues.map((r) => (
+            <MenuItem key={r.uri} value={r.uri} className="withDescription">
+              {r.description ? (
+                <Tooltip title={lang.ValueByLangToStrPrefLang(r.description, uiLang)}>
+                  <span>{lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}</span>
+                </Tooltip>
+              ) : 
+                lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)
+              }
+            </MenuItem>
+          ))}
+        </TextField>
+        <div className="hoverPart">
+          {canDel && (
+            <button className="btn btn-link ml-0 mr-3 px-0" onClick={deleteItem}>
+              <RemoveIcon />
+            </button>
+          )}
+          {create}
+        </div>
       </div>
-    </div>
+    )
   )
 }
 
