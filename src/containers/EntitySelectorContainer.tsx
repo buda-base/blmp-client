@@ -103,9 +103,15 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
       if (props.location?.pathname == "/new") setTab(newEntities.length)
       if (props.location?.pathname.startsWith("/edit/")) {
         const id = props.location.pathname.split("/")[2] // eslint-disable-line no-magic-numbers
+        let found = false
         newEntities.map((e, i) => {
-          if (e.subjectQname === id) setTab(i)
+          if (e.subjectQname === id) {
+            found = true
+            setTab(i)
+          }
         })
+        // case of opening an entity not in session yet
+        if (!found) setTab(newEntities.length)
       }
     })
   }, [])

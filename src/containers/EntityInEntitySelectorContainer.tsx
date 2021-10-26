@@ -96,7 +96,12 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
         if (newList[newTab].shapeRef.qname) shapeName = newList[newTab].shapeRef.qname
         else shapeName = newList[newTab].shapeRef
       }
+      // see commit 1ae2513
+      // must be delayed
+      // eslint-disable-next-line no-magic-numbers
+      setTimeout(() => history.push("/edit/" + newList[newTab].subjectQname + (shapeName ? "/" + shapeName : "")), 350)
     }
+
     // prevent click event
     ev.preventDefault()
     ev.stopPropagation()
