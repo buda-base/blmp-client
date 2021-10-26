@@ -63,7 +63,7 @@ export const defaultEntityLabelAtom = atom<Array<Value>>({
   default: [new LiteralWithId("...", "en")], // TODO: use the i18n stuff
 })
 
-const EntitySelector: FC<Record<string, unknown>> = () => {
+const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
   const classes = useStyles()
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
   const [entities, setEntities] = useRecoilState(entitiesAtom)
@@ -85,7 +85,7 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
 
     const session = getUserSession(auth0)
     session.then((obj) => {
-      debug("session:", obj)
+      debug("session:", obj, props, props.location)
       if (!obj) return
       const newEntities = []
       for (const k of Object.keys(obj)) {
@@ -100,6 +100,13 @@ const EntitySelector: FC<Record<string, unknown>> = () => {
       }
       if (newEntities.length) setEntities(newEntities)
       if (!sessionLoaded) setSessionLoaded(true)
+      if (props.location?.pathname == "/new") setTab(newEntities.length)
+      if (props.location?.pathname.startsWith("/edit/")) {
+        const id = props.location.pathname.split("/")[2] // eslint-disable-line no-magic-numbers
+        newEntities.map((e, i) => {
+          if (e.subjectQname === id) setTab(i)
+        })
+      }
     })
   }, [])
 

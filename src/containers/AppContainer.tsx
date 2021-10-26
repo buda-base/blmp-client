@@ -243,7 +243,7 @@ function App(props: AppProps) {
       <NavBarContainer />
       <main>
         <div>
-          <EntitySelector />
+          <EntitySelector {...props} />
           <Switch>
             <Route
               exact
