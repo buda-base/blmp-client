@@ -304,6 +304,8 @@ iframe { z-index:2; }
 .popup-new-BG,
 .iframe-BG { position:fixed; left:0; top:0; width:100vw; height:100vh;background:rgba(0,0,0,0); z-index:1; }
 
+// fixed positioning not working because .card ancestor has filter:drop-shadow
+
 .popup-new { position:absolute; right:0; bottom:calc(100%);  z-index:100;
   p { margin:0; }
 }
@@ -687,7 +689,9 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
               filter: drop-shadow(0px 1px 1.5px #cecccc);
               
               &:not(.popup-new) {
-                padding: 40px 0 !important; 
+
+                &:not(.iframe) { padding: 40px 0 !important; }
+
                 background-color: #f8f8f8; 
 
                 .ValueList { padding:0 40px;}

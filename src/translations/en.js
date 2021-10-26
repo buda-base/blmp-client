@@ -42,7 +42,7 @@ const enTranslations = {
     empty: "should not be empty",
     unique: "duplicate language",
     exist: "Entity {{id}} does not exist",
-    shape: "Cannot find any appropriate shape for entity {{id}}}}",
+    shape: "Cannot find any appropriate shape for entity {{id}}",
     redirect: "Create new or load another entity",
   },
   general: {

@@ -480,7 +480,7 @@ const ResourceSelector: FC<{
       </div>
       {libraryURL && (
         <div
-          className="row card px-3 py-3"
+          className="row card px-3 py-3 iframe"
           style={{
             position: "absolute",
             zIndex: 10,
