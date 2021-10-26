@@ -380,13 +380,20 @@ section,
 }
 
 
+label .help.label,
 label .help.literal,
 .selector .help,
 .withDescription .help { visibility:hidden; width:16px; color:rgba(0,0,0,0.45); }
+
+
+label .help.label { color:#d73449; vertical-align: -7px;}
+
+.ValueList.ResExt:hover > label .help.label,
 .propLabel + div > div:not(.facet):hover .help.literal,
 .selector:hover .help,
 .withDescription:hover .help { visibility:visible;}
 
+label .help.label,
 .withDescription .help { margin-left:5px; }
 
 label .help.literal,

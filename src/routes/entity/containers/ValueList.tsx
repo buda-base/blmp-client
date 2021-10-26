@@ -417,10 +417,10 @@ const ValueList: FC<{
             data-type={property.objectType}
             data-priority={property.displayPriority}
           >
-            {propLabel[0].toUpperCase() + propLabel.substring(1)}{" "}
-            {helpMessage && (
+            {propLabel[0].toUpperCase() + propLabel.substring(1)}
+            {helpMessage && property.objectType === ObjectType.ResExt && (
               <Tooltip title={helpMessage}>
-                <HelpIcon className="help literal" />
+                <HelpIcon className="help label" />
               </Tooltip>
             )}
           </label>
