@@ -371,7 +371,6 @@ const ValueList: FC<{
           subject={subject}
           property={property}
           lit={val}
-          help={helpMessage}
           canDel={canDel}
           isUnique={isUnique}
           create={
@@ -572,7 +571,6 @@ const EditLangString: FC<{
   updateEntityState: (es: EditedEntityState) => void
 }> = ({ property, lit, onChange, label, globalError, editable, updateEntityState }) => {
   const classes = useStyles()
-  //const [preview, setPreview] = useState(false) //always true
   const [editMD, setEditMD] = useState(false)
   const [keyboard, setKeyboard] = useState(false)
 
@@ -652,8 +650,7 @@ const EditLangString: FC<{
         <div style={{ width: "100%", position: "relative" }}>
           <TextField
             inputRef={inputRef}
-            className={/*"preview-" + preview +*/ lit.language === "bo" ? " lang-bo" : ""} //classes.root }
-            //label={lit.id}
+            className={lit.language === "bo" ? " lang-bo" : ""}
             label={label}
             style={{ width: "100%" }}
             value={lit.value}
@@ -768,24 +765,18 @@ const EditLangString: FC<{
       <LangSelect
         value={lit.language || ""}
         onChange={(value) => {
-          //if (preview) setPreview(false)
           onChange(lit.copyWithUpdatedLanguage(value))
         }}
         {...(error ? { error: true } : {})}
         editable={editable}
-        //preview={preview}
-        //updatePreview={setPreview}
       />
-      {
-        //preview &&
-        lit.language === "bo-x-ewts" &&
-          lit.value && ( // TODO see if fromWylie & MD can both be used ('escape' some chars?)
-            <div className="preview-ewts">
-              <TextField disabled value={fromWylie(lit.value)} />
-              {/*editMD && <MDEditor.Markdown source={fromWylie(lit.value)} /> // not really working  */}
-            </div>
-          )
-      }
+      {lit.language === "bo-x-ewts" &&
+        lit.value && ( // TODO see if fromWylie & MD can both be used ('escape' some chars?)
+          <div className="preview-ewts">
+            <TextField disabled value={fromWylie(lit.value)} />
+            {/*editMD && <MDEditor.Markdown source={fromWylie(lit.value)} /> // not really working  */}
+          </div>
+        )}
     </div>
   )
 }
@@ -796,9 +787,7 @@ export const LangSelect: FC<{
   disabled?: boolean
   error?: boolean
   editable?: boolean
-  //preview?: boolean
-  //updatePreview?: React.Dispatch<React.SetStateAction<boolean>>
-}> = ({ onChange, value, disabled, error, editable /*, preview, updatePreview*/ }) => {
+}> = ({ onChange, value, disabled, error, editable }) => {
   const onChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
     onChange(event.target.value as string)
   }
@@ -823,15 +812,6 @@ export const LangSelect: FC<{
           </MenuItem>
         ))}
       </TextField>
-      {/*updatePreview && value === "bo-x-ewts" && (  //deprecated
-        <span
-          style={{ position: "absolute", right: 0, top: 0, fontSize: "0px", cursor: "pointer" }}
-          {...(updatePreview ? { onClick: () => updatePreview(!preview) } : {})}
-        >
-          {!preview && <VisibilityIcon style={{ height: "16px", color: "#aaa" }} />}
-          {preview && <VisibilityOffIcon style={{ height: "16px", color: "#333" }} />}
-        </span>
-      ) */}
     </div>
   )
 }
@@ -902,7 +882,7 @@ const EditInt: FC<{
   onChange: (value: LiteralWithId) => void
   label: string
   editable?: boolean
-  updateEntityState: (EditedEntityState) => void
+  updateEntityState: (es: EditedEntityState) => void
 }> = ({ property, lit, onChange, label, editable, updateEntityState }) => {
   // used for integers and gYear
 
@@ -914,7 +894,7 @@ const EditInt: FC<{
   const minExclusive = property.minExclusive
   const maxExclusive = property.maxExclusive
 
-  const getIntError = (val: number) => {
+  const getIntError = (val: string) => {
     let err = ""
     if (val !== undefined && val !== "") {
       const valueInt = parseInt(val)
@@ -934,7 +914,7 @@ const EditInt: FC<{
   const [error, setError] = useState(getIntError(lit.value))
 
   useEffect(() => {
-    if (!lit.value && lit.value !== 0) return
+    if (lit.value === undefined || lit.value === null || lit.value === "") return
     const newError = getIntError(lit.value)
     if (newError != error) {
       setError(newError)
@@ -969,9 +949,7 @@ const EditInt: FC<{
 
   return (
     <TextField
-      //className={/*classes.root +*/ " mt-2"}
       label={label}
-      //label={"Number"}
       style={{ width: 240 }}
       value={value}
       {...(error
@@ -1033,20 +1011,6 @@ const LiteralComponent: FC<{
   }
 
   const deleteItem = () => {
-    /* // no need for updateEntitiesRDF
-    const rdf =
-      "<" +
-      subject.uri +
-      "> <" +
-      property?.path?.sparqlString +
-      '> "' +
-      lit.value +
-      '"' +
-      (lit.language ? "@" + lit.language : "") +
-      "."
-    debug("delI", rdf)
-    updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
-    */
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
@@ -1058,24 +1022,23 @@ const LiteralComponent: FC<{
     //debug("undo:", undo, hStatus, history, entityQname, undos)
     const n = entities.findIndex((e) => e.subjectQname === entityQname)
     if (n > -1) {
-      const ent = entities[n]
+      const ent: Entity = entities[n]
       if (status === EditedEntityState.Error && ent.state != status) {
         //debug("error:", status, n, ent, errors, property.qname, index)
         const newEntities = [...entities]
         newEntities[n] = { ...entities[n], state: status }
         setEntities(newEntities)
-        if (!errors[ent.qname]) errors[ent.qname] = {}
-        errors[ent.qname][property.qname + ":" + index] = true
+        if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
+        errors[ent.subjectQname][property.qname + ":" + index] = true
       } else if (status !== EditedEntityState.Error) {
         status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
-
         //debug("no error:", status, n, ent, errors, property.qname, index)
         if (ent.state != status) {
           //debug("status:",ent.state,status)
-          if (errors[ent.qname] && errors[ent.qname][property.qname + ":" + index]) {
-            delete errors[ent.qname][property.qname + ":" + index]
+          if (errors[ent.subjectQname] && errors[ent.subjectQname][property.qname + ":" + index]) {
+            delete errors[ent.subjectQname][property.qname + ":" + index]
           }
-          if (!errors[ent.qname] || !Object.keys(errors[ent.qname]).length) {
+          if (!errors[ent.subjectQname] || !Object.keys(errors[ent.subjectQname]).length) {
             const newEntities = [...entities]
             newEntities[n] = { ...entities[n], state: status }
             setEntities(newEntities)
@@ -1189,13 +1152,6 @@ const LiteralComponent: FC<{
         </button>
         {create}
       </div>
-      {/*helpMessage && (
-        <div className="hoverPart left">
-          <Tooltip title={helpMessage}>
-            <HelpIcon className="help" />
-          </Tooltip>
-        </div>
-      )*/}
     </div>
   )
 }
@@ -1217,12 +1173,6 @@ const FacetComponent: FC<{
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const deleteItem = () => {
-    /* // no need for updateEntitiesRDF
-    const rdf =
-      "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(subNode.qname) + "> ."
-    debug("delI", rdf)
-    updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
-    */
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
@@ -1353,21 +1303,12 @@ const ExtEntityComponent: FC<{
 
   const deleteItem = () => {
     let newList = removeItemAtIndex(list, index)
-    // DONE: remove first empty field if alone & displayPriority >= 1
+    // remove first empty field if alone & displayPriority >= 1
     if (idx === 1 && newList.length === 1) {
       const first = newList[0]
       if (first instanceof ExtRDFResourceWithLabel && first.uri === "tmp:uri") newList = []
     }
     setList(newList)
-
-    /* // no need for updateEntitiesRDF
-
-    // DONE: update entity at RDF level
-    // (actually it was not enough, entity had also to be updated from Recoil/entities in top level Container)
-
-    const rdf = "<" + subject.uri + "> <" + property?.path?.sparqlString + "> <" + ns.uriFromQname(extRes.qname) + "> ."
-    updateEntitiesRDF(subject, subject.removeWithTTL, rdf, entities, setEntities)
-    */
   }
 
   //, ...extRes.uri === "tmp:uri" ? { /*width: "100%"*/ } : {} }}>
@@ -1420,7 +1361,7 @@ const ResSelectComponent: FC<{
   canDel: boolean
   canSelectNone: boolean
   editable: boolean
-  create?: typeof Create
+  create?: Element
 }> = ({ res, subject, property, canDel, canSelectNone, editable, create }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))

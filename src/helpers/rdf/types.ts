@@ -30,7 +30,7 @@ const skosDefinition = ns.SKOS("definition") as rdf.NamedNode
 const rdfsComment = ns.RDFS("comment") as rdf.NamedNode
 
 export const history: Record<string, Array<Record<string, any>>> = {}
-export const errors: Record<string, Array<Record<string, boolean>>> = {}
+export const errors: Record<string, Record<string, boolean>> = {}
 
 const updateHistory = (
   entity: string,
