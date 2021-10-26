@@ -410,7 +410,7 @@ const ValueList: FC<{
             : {},
         }}
       >
-        {showLabel && (
+        {showLabel && (!property.in || property.in.length > 1) && (
           <label
             className={"propLabel"}
             data-prop={property.qname}
