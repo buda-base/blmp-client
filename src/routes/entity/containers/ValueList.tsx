@@ -410,14 +410,19 @@ const ValueList: FC<{
             : {},
         }}
       >
-        {(true || showLabel) && (
+        {showLabel && (
           <label
             className={"propLabel"}
             data-prop={property.qname}
             data-type={property.objectType}
             data-priority={property.displayPriority}
           >
-            {propLabel[0].toUpperCase() + propLabel.substring(1)}
+            {propLabel[0].toUpperCase() + propLabel.substring(1)}{" "}
+            {helpMessage && (
+              <Tooltip title={helpMessage}>
+                <HelpIcon className="help literal" />
+              </Tooltip>
+            )}
           </label>
         )}
         {hasEmptyExtEntityAsFirst && <div style={{ width: "100%" }}>{renderListElem(list[0], 0, list.length)}</div>}
