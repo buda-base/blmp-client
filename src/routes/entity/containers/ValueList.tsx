@@ -342,7 +342,7 @@ const ValueList: FC<{
             res={val}
             canDel={canDel && val != noneSelected}
             editable={editable}
-            create={<Create disable={!canAdd} subject={subject} property={property} embedded={embedded} />}
+            create={canAdd && <Create subject={subject} property={property} embedded={embedded} />}
           />
         )
       }
