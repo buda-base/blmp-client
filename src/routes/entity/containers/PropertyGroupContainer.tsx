@@ -58,11 +58,6 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
             >
               <p className="">{label}</p>
               <div>
-                {hasExtra && (
-                  <span className="toggle-btn" onClick={toggleExtra}>
-                    {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
-                  </span>
-                )}
                 {withoutDisplayPriority.map((property, index) => (
                   <PropertyContainer
                     key={index}
@@ -80,6 +75,11 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
                     editable={property.readOnly !== true}
                   />
                 ))}
+                {hasExtra && (
+                  <span className="toggle-btn  btn btn-rouge my-4" onClick={toggleExtra}>
+                    {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
+                  </span>
+                )}
               </div>
             </div>
           </div>

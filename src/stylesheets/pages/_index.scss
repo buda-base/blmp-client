@@ -338,7 +338,7 @@ iframe { z-index:2; }
 
   .close-btn {  position:absolute; right:0.5rem; top:0px; }
 
-  .toggle-btn { z-index:1; right:45px; top:8px; }
+  .toggle-btn { z-index:1; align-self:flex-start; margin-left:40px; } // right:45px; top:8px; }
 
   //.card.hasDisplayPriority { padding-top:20px !important; }
 
@@ -449,7 +449,8 @@ label ~ .selector {
 }
 
 
-.toggle-btn { position: absolute; right:55px; top:45px; font-size:12px; cursor:pointer;
+.toggle-btn { font-size:12px; cursor:pointer; 
+  // position: absolute; right:55px; top:45px; 
   &:hover { text-decoration: underline; }
 }
 
@@ -468,7 +469,11 @@ label ~ .selector {
 .ValueList .facet.edit .ValueList .facet:not(.edit) .ValueList { overflow:hidden; } 
 
 .facet:not(.edit):not(:hover) {
-  .close-btn, .toggle-btn { display:none; }
+  .close-btn { display:none; }
+}
+
+.facet:not(.edit) {
+  .toggle-btn { display:none;  }
 }
 
 .group {

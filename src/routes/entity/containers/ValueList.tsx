@@ -1264,7 +1264,7 @@ const FacetComponent: FC<{
             />
           ))}
           {hasExtra && (
-            <span className="toggle-btn" onClick={toggleExtra}>
+            <span className="toggle-btn btn btn-rouge mt-4" onClick={toggleExtra}>
               {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
             </span>
           )}
