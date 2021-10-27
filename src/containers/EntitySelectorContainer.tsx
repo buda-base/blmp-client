@@ -120,7 +120,7 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
     <div className="tabs-select" onClick={() => setEdit("")}>
       <h3>Edition</h3>
       <h4>Open entities</h4>
-      <Tabs value={tab} onChange={handleChange} aria-label="simple tabs example">
+      <Tabs value={tab === -1 ? false : tab} onChange={handleChange} aria-label="entities">
         {entities.map((entity: Entity, index) => {
           return <EntityInEntitySelectorContainer entity={entity} index={index} key={index} />
         })}

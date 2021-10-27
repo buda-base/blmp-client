@@ -1078,7 +1078,7 @@ const LiteralComponent: FC<{
         label={[
           propLabel,
           helpMessage ? (
-            <Tooltip title={helpMessage}>
+            <Tooltip key={lit.id} title={helpMessage}>
               <HelpIcon className="help literal" />
             </Tooltip>
           ) : null,
@@ -1099,7 +1099,7 @@ const LiteralComponent: FC<{
         label={[
           propLabel,
           helpMessage ? (
-            <Tooltip title={helpMessage}>
+            <Tooltip key={lit.id} title={helpMessage}>
               <HelpIcon className="help literal" />
             </Tooltip>
           ) : null,
@@ -1117,7 +1117,7 @@ const LiteralComponent: FC<{
         label={[
           propLabel,
           helpMessage ? (
-            <Tooltip title={helpMessage}>
+            <Tooltip key={lit.id} title={helpMessage}>
               <HelpIcon className="help literal" />
             </Tooltip>
           ) : null,
@@ -1134,7 +1134,7 @@ const LiteralComponent: FC<{
         label={[
           propLabel,
           helpMessage ? (
-            <Tooltip title={helpMessage}>
+            <Tooltip key={lit.id} title={helpMessage}>
               <HelpIcon className="help literal" />
             </Tooltip>
           ) : null,
@@ -1428,7 +1428,7 @@ const ResSelectComponent: FC<{
           label={[
             propLabel,
             helpMessage ? (
-              <Tooltip title={helpMessage}>
+              <Tooltip key={res.uri} title={helpMessage}>
                 <HelpIcon className="help" />
               </Tooltip>
             ) : null,

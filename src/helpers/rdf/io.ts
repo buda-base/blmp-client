@@ -234,14 +234,19 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       if (shapeRef && localEntities[entityQname] !== undefined) {
         useLocal = window.confirm("found previous local edits for this resource, load them?")
         const store: rdf.Store = rdf.graph()
-        if (useLocal)
-          rdf.parse(
-            localEntities[entityQname][shapeRef.qname ? shapeRef.qname : shapeRef],
-            store,
-            rdf.Store.defaultGraphURI,
-            "text/turtle"
-          )
-        else rdf.parse("", store, rdf.Store.defaultGraphURI, "text/turtle")
+        if (useLocal) {
+          try {
+            rdf.parse(localEntities[entityQname][shapeRef.qname], store, rdf.Store.defaultGraphURI, "text/turtle")
+          } catch (e) {
+            debug(e)
+            debug(localEntities[entityQname][shapeRef.qname])
+            window.alert("could not load local data, fetching remote version")
+            useLocal = false
+            delete localEntities[entityQname][shapeRef.qname]
+          }
+        } else {
+          rdf.parse("", store, rdf.Store.defaultGraphURI, "text/turtle")
+        }
         localRes = store
       }
 
