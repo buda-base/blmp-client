@@ -18,11 +18,6 @@ const debug = require("debug")("bdrc:entity:newentity")
 
 function NewEntityContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
-  const [tab, setTab] = useRecoilState(uiTabState)
-  const handleNewtab = (event: ChangeEvent<unknown>): void => {
-    setTab(0)
-  }
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [RID, setRID] = useState("")
 
   /* // no need
@@ -50,7 +45,7 @@ function NewEntityContainer(props: AppProps) {
           {/* <MenuItem disabled key={"init"} value={"init"} >Choose a shape</MenuItem> */}
           {shapes.possibleShapeRefs.map((shape: RDFResourceWithLabel, index: number) => (
             <MenuItem key={shape.qname} value={shape.qname} style={{ padding: 0 }}>
-              <Link to={"/new/" + shape.qname} onClick={handleNewtab} className="popLink">
+              <Link to={"/new/" + shape.qname} className="popLink">
                 {lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)}
               </Link>
             </MenuItem>

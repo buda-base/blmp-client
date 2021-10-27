@@ -10,6 +10,7 @@ import * as shapes from "./shapes"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import { useAuth0 } from "@auth0/auth0-react"
 import { nanoid, customAlphabet } from "nanoid"
+import { uiTabState } from "../../atoms/common"
 
 const debug = require("debug")("bdrc:rdf:construct")
 
@@ -54,6 +55,7 @@ export function EntityCreator(shapeQname: string) {
   const { getAccessTokenSilently } = useAuth0()
   const [shape, setShape] = useState<NodeShape>()
   const auth0 = useAuth0()
+  const [tab, setTab] = useRecoilState(uiTabState)
 
   const reset = () => {
     setEntity(undefined)
@@ -122,6 +124,8 @@ export function EntityCreator(shapeQname: string) {
 
       // save to localStorage
       setUserLocalEntities(auth0, newSubject.qname, shape.qname, "")
+
+      if (tab !== 0) setTab(0)
     }
     createResource(shapeQname)
   }, [shapeQname])
