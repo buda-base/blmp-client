@@ -306,7 +306,7 @@ input[type="checkbox"].dmcheck {
       height: 25px; width:25px; position: absolute;
     }
 
-    &.Mui-selected { background-color: #fff; }
+    &.Mui-selected:not(:last-of-type) { background-color: #fff; }
   }
   
   & + div { width:1225px; margin:auto; padding-left:125px; text-align:left; padding-top:65px !important;
