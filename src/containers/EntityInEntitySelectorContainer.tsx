@@ -55,6 +55,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const [labelValues] = useRecoilState(!entity.preloadedLabel ? entity.subjectLabelState : defaultEntityLabelAtom)
   const [tab, setTab] = useRecoilState(uiTabState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+
   const history = useHistory()
   const auth0 = useAuth0()
 
@@ -69,7 +70,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
 
   const icon = getIcon(entity)
 
-  const closeEntity = (ev) => {
+  const closeEntity = (ev: MouseEvent) => {
     if (entity.state === EditedEntityState.NeedsSaving) {
       const go = window.confirm("unsaved data will be lost")
       if (!go) return
@@ -84,9 +85,23 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       if (undoHistory[uri]) delete undoHistory[uri]
     }
 
+    // prevent click event
+    ev.preventDefault()
+    ev.stopPropagation()
+
+    // if closing self, go back to home page
+    if (index === tab) {
+      setTab(-1)
+      history.push("/")
+    }
+
     const newList = [...entities.filter((e, i) => i !== index)]
     setEntities(newList)
-    const newTab = index === tab ? index : index && newList.length ? index - 1 : 0
+
+    // if no tab was selected, just return
+    if (tab === -1) return false
+
+    const newTab = index && newList.length ? index - 1 : 0
     setTab(newTab)
 
     if (!newList.length || newTab >= newList.length) history.push("/")
@@ -102,9 +117,6 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       setTimeout(() => history.push("/edit/" + newList[newTab].subjectQname + (shapeName ? "/" + shapeName : "")), 350)
     }
 
-    // prevent click event
-    ev.preventDefault()
-    ev.stopPropagation()
     return false
   }
 

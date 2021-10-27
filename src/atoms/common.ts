@@ -16,7 +16,7 @@ export const uiReadyState = atom<boolean>({
 
 export const uiTabState = atom<number>({
   key: "uiTabState",
-  default: 0,
+  default: -1,
 })
 
 export const uiRIDState = atom<string[]>({
