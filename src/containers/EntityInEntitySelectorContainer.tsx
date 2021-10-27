@@ -89,32 +89,17 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     ev.preventDefault()
     ev.stopPropagation()
 
+    const newList = [...entities.filter((e, i) => i !== index)]
+    setEntities(newList)
+
     // if closing self, go back to home page
     if (index === tab) {
       setTab(-1)
       history.push("/")
-    }
-
-    const newList = [...entities.filter((e, i) => i !== index)]
-    setEntities(newList)
-
-    // if no tab was selected, just return
-    if (tab === -1) return false
-
-    const newTab = index && newList.length ? index - 1 : 0
-    setTab(newTab)
-
-    if (!newList.length || newTab >= newList.length) history.push("/")
-    else {
-      let shapeName = newList[newTab].shapeQname
-      if (!shapeName && newList[newTab].shapeRef) {
-        if (newList[newTab].shapeRef.qname) shapeName = newList[newTab].shapeRef.qname
-        else shapeName = newList[newTab].shapeRef
-      }
-      // see commit 1ae2513
-      // must be delayed
-      // eslint-disable-next-line no-magic-numbers
-      setTimeout(() => history.push("/edit/" + newList[newTab].subjectQname + (shapeName ? "/" + shapeName : "")), 350)
+    } else {
+      // keep current tab open
+      const newTab = index && newList.length ? index - 1 : 0
+      setTab(newTab)
     }
 
     return false
