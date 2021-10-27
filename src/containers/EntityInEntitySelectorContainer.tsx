@@ -98,8 +98,8 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       history.push("/")
     } else {
       // keep current tab open
-      const newTab = index && newList.length ? index - 1 : 0
-      setTab(newTab)
+      const newIndex = newList.findIndex((e) => e.entityQname === entities[index].entityQname)
+      setTab(newIndex)
     }
 
     return false
