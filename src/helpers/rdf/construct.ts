@@ -123,7 +123,7 @@ export function EntityCreator(shapeQname: string) {
       setEntityLoadingState({ status: "created", error: undefined })
 
       // save to localStorage
-      setUserLocalEntities(auth0, newSubject.qname, shape.qname, "")
+      setUserLocalEntities(auth0, newSubject.qname, shapeQname, "")
 
       if (tab !== 0) setTab(0)
     }

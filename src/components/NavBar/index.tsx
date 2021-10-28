@@ -17,6 +17,8 @@ import * as rdf from "rdflib"
 import * as ns from "../../helpers/rdf/ns"
 import { debugStore, setUserLocalEntities } from "../../helpers/rdf/io"
 
+const debug = require("debug")("bdrc:NavBar")
+
 function NavBar(props: AppProps) {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
 

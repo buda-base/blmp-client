@@ -7,7 +7,7 @@ import { NodeShape, prefLabel } from "./shapes"
 import { uriFromQname, BDSH_uri } from "./ns"
 import { uiReadyState, sessionLoadedState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
-import { useAuth0 } from "@auth0/auth0-react"
+import { useAuth0, Auth0ContextInterface } from "@auth0/auth0-react"
 
 let shapesbase = BDSH_uri
 if (config.TEMPLATES_BASE) {
@@ -144,7 +144,7 @@ export const setUserLocalEntities = async (auth: Auth0) => {
 }
 */
 
-export const getUserSession = async (auth: Auth0) => {
+export const getUserSession = async (auth: Auth0ContextInterface) => {
   //debug("auth:", auth)
   let data = localStorage.getItem("session")
   if (!data) data = '{"unregistered":{}}'
@@ -154,7 +154,13 @@ export const getUserSession = async (auth: Auth0) => {
   else return {}
 }
 
-export const setUserSession = async (auth: Auth0, rid: string, shape: string, label: string, del? = false) => {
+export const setUserSession = async (
+  auth: Auth0ContextInterface,
+  rid: string,
+  shape: string,
+  label: string,
+  del = false
+) => {
   //debug("auth:", auth)
   let data = localStorage.getItem("session"),
     userData
@@ -179,7 +185,7 @@ export const setUserSession = async (auth: Auth0, rid: string, shape: string, la
   }
 }
 
-export const getUserLocalEntities = async (auth: Auth0) => {
+export const getUserLocalEntities = async (auth: Auth0ContextInterface) => {
   //debug("auth:", auth)
   let data = localStorage.getItem("localEntities")
   if (!data) data = '{"unregistered":{}}'
@@ -189,7 +195,13 @@ export const getUserLocalEntities = async (auth: Auth0) => {
   else return {}
 }
 
-export const setUserLocalEntities = async (auth: Auth0, rid: string, shape: string, ttl: string, del?: boolean) => {
+export const setUserLocalEntities = async (
+  auth: Auth0ContextInterface,
+  rid: string,
+  shapeQname: string,
+  ttl: string,
+  del?: boolean
+) => {
   //debug("auth:", auth)
   let data = localStorage.getItem("localEntities"),
     userData
@@ -199,7 +211,7 @@ export const setUserLocalEntities = async (auth: Auth0, rid: string, shape: stri
     if (!data[auth.user.email]) data[auth.user.email] = {}
     userData = data[auth.user.email]
   } else userData = data["unregistered"]
-  if (!del) userData[rid] = { [shape]: ttl }
+  if (!del) userData[rid] = { shapeQname: shapeQname, ttl: ttl }
   else if (userData[rid]) delete userData[rid]
   localStorage.setItem("localEntities", JSON.stringify(data))
 }
@@ -232,17 +244,18 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       const localEntities = await getUserLocalEntities(auth0)
       // 1 - check if entity has local edits (once shape is defined)
       if (shapeRef && localEntities[entityQname] !== undefined) {
+        debug(localEntities[entityQname])
         useLocal = window.confirm("found previous local edits for this resource, load them?")
         const store: rdf.Store = rdf.graph()
         if (useLocal) {
           try {
-            rdf.parse(localEntities[entityQname][shapeRef.qname], store, rdf.Store.defaultGraphURI, "text/turtle")
+            rdf.parse(localEntities[entityQname].ttl, store, rdf.Store.defaultGraphURI, "text/turtle")
           } catch (e) {
             debug(e)
-            debug(localEntities[entityQname][shapeRef.qname])
+            debug(localEntities[entityQname])
             window.alert("could not load local data, fetching remote version")
             useLocal = false
-            delete localEntities[entityQname][shapeRef.qname]
+            delete localEntities[entityQname]
           }
         } else {
           rdf.parse("", store, rdf.Store.defaultGraphURI, "text/turtle")
