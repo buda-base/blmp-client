@@ -64,6 +64,16 @@ export function EntityCreator(shapeQname: string) {
   }
 
   useEffect(() => {
+    debug("updating EntityCreator")
+  })
+
+  useEffect(() => {
+    return () => {
+      debug("cleaning EntityCreator")
+    }
+  }, [])
+
+  useEffect(() => {
     // we need to load the shape at the same time, which means we need to also
     // load the ontology
     async function createResource(shapeQname: string) {
@@ -119,13 +129,18 @@ export function EntityCreator(shapeQname: string) {
         subjectLabelState: newSubject.getAtomForProperty(shapes.prefLabel.uri),
       }
       setEntities([newEntity, ...entities])
-      setEntity(newSubject)
       setEntityLoadingState({ status: "created", error: undefined })
 
       // save to localStorage
       setUserLocalEntities(auth0, newSubject.qname, shape.qname, "")
 
+      // update highlighted tab
       if (tab !== 0) setTab(0)
+
+      // go! redirect
+      setEntity(newSubject)
+
+      //debug("end createResource")
     }
     createResource(shapeQname)
   }, [shapeQname])

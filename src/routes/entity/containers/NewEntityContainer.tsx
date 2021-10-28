@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { EntityCreator } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { RDFResourceWithLabel } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
