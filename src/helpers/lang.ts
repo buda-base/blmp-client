@@ -87,7 +87,6 @@ export const langs: Array<Lang> = [
 const cache: Record<string, Lang[]> = {}
 
 export const langsWithDefault = (defaultLanguage: string): Array<Lang> => {
-  debug("langsWithDefault: '" + defaultLanguage + "'")
   if (defaultLanguage in cache) return cache[defaultLanguage]
   let res = langs.filter((l) => l.value === defaultLanguage)
   if (res === []) {
@@ -96,6 +95,5 @@ export const langsWithDefault = (defaultLanguage: string): Array<Lang> => {
   }
   res = res.concat(langs.filter((l) => l.value !== defaultLanguage))
   cache[defaultLanguage] = res
-  debug(res)
   return res
 }

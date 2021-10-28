@@ -93,13 +93,13 @@ export class EntityGraphValues {
   }
 
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
+    if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
+    this.newSubjectProps[subjectUri][pathString] = values
     // disable history for current modification (autocreation of new empty simple value)
     if (this.noHisto === true) {
       this.noHisto = false
       return
     }
-    if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
-    this.newSubjectProps[subjectUri][pathString] = values
     updateHistory(this.subjectUri, subjectUri, pathString, values, this.noHisto)
     // there are some modifications that are chained and we need only first not to be stored
     // (case of creation of new property with subproperties)
@@ -122,7 +122,7 @@ export class EntityGraphValues {
           if (val instanceof LiteralWithId) {
             throw "can't add literals in inverse path, something's wrong with the data!"
           } else {
-            if (val.node.value == "tmp:uri") continue
+            if (val.node.value == "tmp:uri" || val.node.value == "tmp:none") continue
             store.add(val.node, property, subject, defaultGraphNode)
             if (val instanceof Subject) {
               this.addNewValuestoStore(store, val.uri)
@@ -134,9 +134,10 @@ export class EntityGraphValues {
         const values: Array<Value> = this.newSubjectProps[subjectUri][pathString]
         for (const val of values) {
           if (val instanceof LiteralWithId) {
-            store.add(subject, property, val, defaultGraphNode)
+            // do not add empty strings
+            if (val.value !== "") store.add(subject, property, val, defaultGraphNode)
           } else {
-            if (val.node.value == "tmp:uri") continue
+            if (val.node.value == "tmp:uri" || val.node.value == "tmp:none") continue
             store.add(subject, property, val.node, defaultGraphNode)
             if (val instanceof Subject) {
               this.addNewValuestoStore(store, val.uri)
