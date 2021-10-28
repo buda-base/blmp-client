@@ -96,7 +96,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     if (index === tab) {
       setTab(-1)
       history.push("/")
-    } else if (tab < newList.length && tab !== -1) {
+    } else if (tab <= newList.length && tab !== -1) {
       // keep current tab open
       const newIndex = newList.findIndex((e) => e.entityQname === entities[index].entityQname)
       setTab(newIndex)
