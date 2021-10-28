@@ -73,6 +73,8 @@ export const bdsReadOnly = ns.BDS("readOnly") as rdf.NamedNode
 export const bdsIdentifierPrefix = ns.BDS("identifierPrefix") as rdf.NamedNode
 export const bdsAllowMarkDown = ns.BDS("allowMarkDown") as rdf.NamedNode
 export const shNamespace = ns.SH("namespace") as rdf.NamedNode
+export const bdsDefaultLanguage = ns.BDS("defaultLanguage") as rdf.NamedNode
+export const shLanguageIn = ns.SH("languageIn") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
 typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"], shapeRefsMap["bds:PersonShapeTest"]]
@@ -232,6 +234,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get readOnly(): boolean {
     return this.getPropBooleanValue(bdsReadOnly)
+  }
+
+  @Memoize()
+  public get defaultLanguage(): string | null {
+    return this.getPropStringValue(bdsDefaultLanguage)
   }
 
   @Memoize()

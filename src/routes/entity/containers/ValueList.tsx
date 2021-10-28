@@ -34,7 +34,7 @@ import {
 import i18n from "i18next"
 import { getHistoryStatus } from "../../../containers/AppContainer"
 import PropertyContainer from "./PropertyContainer"
-import * as lang from "../../../helpers/lang"
+import { langs, ValueByLangToStrPrefLang, langsWithDefault } from "../../../helpers/lang"
 import { uiLangState, uiEditState, uiUndosState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
@@ -142,7 +142,8 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
     case ObjectType.Literal:
     default:
       if (property?.datatype?.value === ns.RDF("langString").value) {
-        return new LiteralWithId("", "bo-x-ewts")
+        // TODO: this should be a user preference, not urgent
+        return new LiteralWithId("", property?.defaultLanguage ? property.defaultLanguage : "bo-x-ewts")
       } else {
         return new LiteralWithId("", null, property.datatype ? property.datatype : undefined)
       }
@@ -166,8 +167,8 @@ const ValueList: FC<{
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
-  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
-  const helpMessage = lang.ValueByLangToStrPrefLang(property.helpMessage, uiLang)
+  const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
+  const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
   const alreadyHasEmptyValue: () => boolean = (): boolean => {
     for (const val of list) {
@@ -498,7 +499,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     */
   )
     return <MinimalAddButton disable={disable} add={addItem} className=" " />
-  else return <BlockAddButton add={addItem} label={lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)} />
+  else return <BlockAddButton add={addItem} label={ValueByLangToStrPrefLang(property.prefLabels, uiLang)} />
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -508,60 +509,6 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }))
-
-export const langs = [
-  { value: "bo-x-ewts" },
-  { value: "bo" },
-  { value: "en" },
-  { value: "zh-hans" },
-  { value: "zh-hant" },
-  {
-    value: "zh-Latn-pinyin",
-    keyboard: [
-      "Ā",
-      "Á",
-      "Ǎ",
-      "À",
-      "ā",
-      "á",
-      "ǎ",
-      "à",
-      "Ē",
-      "É",
-      "Ě",
-      "È",
-      "ē",
-      "é",
-      "ě",
-      "è",
-      "Ī",
-      "Í",
-      "Ǐ",
-      "Ì",
-      "ī",
-      "í",
-      "ǐ",
-      "ì",
-      "Ō",
-      "Ó",
-      "Ǒ",
-      "Ò",
-      "ō",
-      "ó",
-      "ǒ",
-      "ò",
-      "Ū",
-      "Ú",
-      "Ǔ",
-      "Ù",
-      "ū",
-      "ú",
-      "ǔ",
-      "ù",
-    ],
-  },
-  { value: "sa-x-iast", keyboard: "ā Ā ī Ī ū Ū ṛ Ṛ ṝ Ṝ ḷ Ḷ ḹ Ḹ ṃ Ṃ ḥ Ḥ ṭ Ṭ ḍ Ḍ ṅ Ṅ ṅ Ṅ ṇ Ṇ ś Ś ṣ Ṣ".split(/ +/) },
-]
 
 /**
  * Edit component
@@ -768,10 +715,11 @@ const EditLangString: FC<{
         </div>
       )}
       <LangSelect
-        value={lit.language || ""}
         onChange={(value) => {
           onChange(lit.copyWithUpdatedLanguage(value))
         }}
+        value={lit.language || ""}
+        property={property}
         {...(error ? { error: true } : {})}
         editable={editable}
       />
@@ -789,21 +737,23 @@ const EditLangString: FC<{
 export const LangSelect: FC<{
   onChange: (value: string) => void
   value: string
+  property?: PropertyShape
   disabled?: boolean
   error?: boolean
   editable?: boolean
-}> = ({ onChange, value, disabled, error, editable }) => {
+}> = ({ onChange, value, property, disabled, error, editable }) => {
   const onChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
     onChange(event.target.value as string)
   }
+
+  const languages = property?.defaultLanguage ? langsWithDefault(property.defaultLanguage) : langs
+
   return (
     <div style={{ position: "relative" }}>
       <TextField
         select
         InputLabelProps={{ shrink: true }}
         className={"ml-2"}
-        //label={lit.id}
-        //label={"Language"}
         value={value}
         style={{ minWidth: 100, flexShrink: 0, marginTop: "5px" }}
         onChange={onChangeHandler}
@@ -811,7 +761,7 @@ export const LangSelect: FC<{
         {...(error ? { error: true, helperText: <br /> } : {})}
         {...(!editable ? { disabled: true } : {})}
       >
-        {langs.map((option) => (
+        {languages.map((option) => (
           <MenuItem key={option.value} value={option.value}>
             {option.value}
           </MenuItem>
@@ -1007,8 +957,8 @@ const LiteralComponent: FC<{
   const [undos, setUndos] = useRecoilState(uiUndosState)
   const [uiLang] = useRecoilState(uiLangState)
 
-  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
-  const helpMessage = lang.ValueByLangToStrPrefLang(property.helpMessage, uiLang)
+  const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
+  const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
     const newList = replaceItemAtIndex(list, index, value)
@@ -1270,7 +1220,7 @@ const FacetComponent: FC<{
           )}
           <div className="close-btn">
             {targetShape.description && (
-              <Tooltip title={lang.ValueByLangToStrPrefLang(targetShape.description, uiLang)}>
+              <Tooltip title={ValueByLangToStrPrefLang(targetShape.description, uiLang)}>
                 <HelpIcon className="help" />
               </Tooltip>
             )}
@@ -1372,8 +1322,8 @@ const ResSelectComponent: FC<{
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
 
-  const propLabel = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
-  const helpMessage = lang.ValueByLangToStrPrefLang(property.helpMessage, uiLang)
+  const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
+  const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
   let possibleValues = property.in
   if (!possibleValues) throw "can't find possible list for " + property.uri
@@ -1438,11 +1388,11 @@ const ResSelectComponent: FC<{
           {possibleValues.map((r) => (
             <MenuItem key={r.uri} value={r.uri} className="withDescription">
               {r.description ? (
-                <Tooltip title={lang.ValueByLangToStrPrefLang(r.description, uiLang)}>
-                  <span>{lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)}</span>
+                <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLang)}>
+                  <span>{ValueByLangToStrPrefLang(r.prefLabels, uiLang)}</span>
                 </Tooltip>
               ) : 
-                lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)
+                ValueByLangToStrPrefLang(r.prefLabels, uiLang)
               }
             </MenuItem>
           ))}
