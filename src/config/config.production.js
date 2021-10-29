@@ -1,6 +1,6 @@
 const config = {
   __DEV__: false,
-  API_BASEURL: "https://api.msblabs.us/bd/",
+  API_BASEURL: "https://editserv.bdrc.io/",
   env: process.env.NODE_ENV || "production",
   SITE_URL: "https://buda-editor.msblabs.us",
   requireAuth: false,

@@ -1,6 +1,6 @@
 const config = {
   __DEV__: true,
-  API_BASEURL: "http://localhost:4061/api/",
+  API_BASEURL: "https://editserv.bdrc.io/",
   env: process.env.NODE_ENV || "development",
   SITE_URL: "http://localhost:3001",
   requireAuth: true,
