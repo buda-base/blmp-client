@@ -69,7 +69,6 @@ const acceptTtlWithToken = new Headers()
 acceptTtlWithToken.set("Accept", "text/turtle")
 
 export const loadTtl = async (url: string, allow404 = false, idToken = ""): Promise<rdf.Store> => {
-  debug("loadttl:", idToken)
   if (idToken) acceptTtlWithToken.set("Authorization", "Bearer " + idToken)
   const response = await fetch(url, { headers: idToken ? acceptTtlWithToken : acceptTtl })
   // eslint-disable-next-line no-magic-numbers
@@ -253,7 +252,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
   useEffect(() => {
     async function fetchResource(entityQname: string) {
-      debug("fetching", entityQname, entities, isAuthenticated, idToken)
+      debug("fetching", entityQname, entities) //, isAuthenticated, idToken)
 
       setEntityLoadingState({ status: "fetching", error: undefined })
       const fetchUrl = fetchUrlFromEntityQname(entityQname)
@@ -326,6 +325,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         let actualQname = entityQname,
           actualUri = entityUri
         if (entityQname === "tmp:user") {
+          // TODO: in several steps with tests to avoid crash
           actualQname = qnameFromUri(Object.keys(entityStore.subjectIndex)[0].replace(/(^<)|(>$)/g, ""))
           actualUri = uriFromQname(actualQname)
         }

@@ -20,7 +20,7 @@ import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/ent
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
-import { uiProfileState, uiTabState, uiUndosState, noUndo, noUndoRedo, undoState, sameUndo } from "../atoms/common"
+import { uiTabState, uiUndosState, noUndo, noUndoRedo, undoState, sameUndo } from "../atoms/common"
 
 import { Subject, history } from "../helpers/rdf/types"
 
@@ -114,7 +114,6 @@ function App(props: AppProps) {
   const undo = undos[entityUri]
   const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
   const appEl = useRef<HTMLDivElement>(null)
-  const [profile, setProfile] = useRecoilState(uiProfileState)
   // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
   const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
 
