@@ -10,8 +10,10 @@ import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../c
 import { useAuth0, Auth0ContextInterface } from "@auth0/auth0-react"
 
 let shapesbase = BDSH_uri
+let profileshapesbase = "http://purl.bdrc.io/shapes/profile/"
 if (config.TEMPLATES_BASE) {
   shapesbase = shapesbase.replace("http://purl.bdrc.io/", config.TEMPLATES_BASE)
+  profileshapesbase = profileshapesbase.replace("http://purl.bdrc.io/", config.TEMPLATES_BASE)
 }
 
 export const shapeQnameToUri: Record<string, string> = {
@@ -27,6 +29,7 @@ export const shapeQnameToUri: Record<string, string> = {
   "bds:RoleShape": shapesbase + "RoleUIShapes",
   "bds:CollectionShape": shapesbase + "CollectionUIShapes",
   "bds:ImagegroupShape": shapesbase + "ImagegroupUIShapes",
+  "bds:UserProfileShape": profileshapesbase + "UserProfileUIShapes",
 }
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {

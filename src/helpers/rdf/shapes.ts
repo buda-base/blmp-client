@@ -25,8 +25,9 @@ export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
   "bds:WorkShape": new ExtRDFResourceWithLabel(ns.BDS("WorkShape").value, { en: "Work" }),
   "bds:SerialWorkShape": new ExtRDFResourceWithLabel(ns.BDS("SerialWorkShape").value, { en: "Serial Work" }),
   "bds:InstanceShape": new ExtRDFResourceWithLabel(ns.BDS("InstanceShape").value, { en: "Instance" }),
-  "bds:ImageInstanceShape": new ExtRDFResourceWithLabel(ns.BDS("ImageInstanceShape").value, { en: "ImageInstance" }),
-  "bds:ImagegroupShape": new ExtRDFResourceWithLabel(ns.BDS("ImagegroupShape").value, { en: "Imagegroup" }),
+  "bds:ImageInstanceShape": new ExtRDFResourceWithLabel(ns.BDS("ImageInstanceShape").value, { en: "Image instance" }),
+  "bds:ImagegroupShape": new ExtRDFResourceWithLabel(ns.BDS("ImagegroupShape").value, { en: "Image group" }),
+  "bds:UserProfileShape": new ExtRDFResourceWithLabel(ns.BDS("UserProfileShape").value, { en: "User profile" }),
 }
 
 export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
@@ -42,6 +43,8 @@ export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
   shapeRefsMap["bds:RoleShape"],
   shapeRefsMap["bds:CollectionShape"],
   shapeRefsMap["bds:PersonShapeTest"],
+  // TODO: remove from the list
+  shapeRefsMap["bds:UserProfileShape"],
 ]
 
 export const rdfType = ns.RDF("type") as rdf.NamedNode

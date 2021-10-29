@@ -32,6 +32,12 @@ export const BDA_uri = "http://purl.bdrc.io/admindata/"
 export const BDA = rdf.Namespace(BDA_uri)
 export const TMP_uri = "http://purl.bdrc.io/ontology/tmp/"
 export const TMP = rdf.Namespace(TMP_uri)
+export const BDOU_uri = "http://purl.bdrc.io/ontology/ext/user/"
+export const BDOU = rdf.Namespace(BDOU_uri)
+export const BDU_uri = "http://purl.bdrc.io/resource-nc/user/"
+export const BDU = rdf.Namespace(BDU_uri)
+export const FOAF_uri = "http://xmlns.com/foaf/0.1/"
+export const FOAF = rdf.Namespace(FOAF_uri)
 
 const debug = require("debug")("bdrc:rdf:ns")
 
@@ -52,6 +58,9 @@ export const prefixToURI: { [key: string]: string } = {
   bda: BDA_uri,
   bdsa: BDSA_uri,
   tmp: TMP_uri,
+  bdou: BDOU_uri,
+  bdu: BDU_uri,
+  foaf: FOAF_uri,
 }
 
 export const URItoPrefix: { [key: string]: string } = {}
