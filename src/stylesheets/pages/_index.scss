@@ -846,6 +846,27 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 
 //.litComp + .litComp { margin-top:12px; }
 
+#login-container {
+  background:white;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  height:215px;
+  position: fixed;
+  z-index: 100000;
+  padding: 8px calc((100% - 1225px)/2);
+  width: 100%;  
+  
+
+  p {     
+    margin:0;
+    display: flex;
+    align-items: center;  
+    pointer-events: none;
+
+    span { line-height: 35px ;}
+  }
+}
 
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}
