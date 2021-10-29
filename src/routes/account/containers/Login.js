@@ -9,7 +9,7 @@ import config from "../../../config"
 function LoginContainer(props) {
   const [redirect, setRedirect] = useState("/")
   const { loginWithRedirect } = useAuth0()
-  /*
+
   useEffect(() => {
     const params = queryString.parse(props.location.search)
 
@@ -24,7 +24,7 @@ function LoginContainer(props) {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-*/
+
   return (
     <div id="login-container">
       <p>
