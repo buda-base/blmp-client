@@ -23,7 +23,8 @@ export function AuthContextWrapper({ children }) {
   }, [getIdTokenClaims, isAuthenticated])
 
   useEffect(() => {
-    if (isAuthenticated && idToken) fetchProfile()
+    // no need
+    //if (isAuthenticated && idToken) fetchProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idToken, isAuthenticated])
 

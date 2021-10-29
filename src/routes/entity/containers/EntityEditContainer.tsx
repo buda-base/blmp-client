@@ -19,6 +19,7 @@ import * as ns from "../../../helpers/rdf/ns"
 import { Redirect } from "react-router-dom"
 import { replaceItemAtIndex } from "../../../helpers/atoms"
 import { HashLink as Link } from "react-router-hash-link"
+import { useAuth0 } from "@auth0/auth0-react"
 
 const debug = require("debug")("bdrc:entity:edit")
 
@@ -70,10 +71,13 @@ function EntityEditContainerDoUpdate(props: AppPropsDoUpdate) {
 function EntityEditContainer(props: AppProps) {
   //const [shapeQname, setShapeQname] = useState(props.match.params.shapeQname)
   //const [entityQname, setEntityQname] = useState(props.match.params.entityQname)
-  const shapeQname = props.match.params.shapeQname
-  const entityQname = props.match.params.entityQname
+  const shapeQname = props.shapeQname ?? props.match.params.shapeQname
+  const entityQname = props.entityQname ?? props.match.params.entityQname
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [tab, setTab] = useRecoilState(uiTabState)
+  const { isAuthenticated } = useAuth0()
+
+  //debug("props:",props,entityQname,isAuthenticated)
 
   const [uiLang] = useRecoilState(uiLangState)
   const [edit, setEdit] = useRecoilState(uiEditState)
@@ -82,9 +86,11 @@ function EntityEditContainer(props: AppProps) {
 
   const [nav, setNav] = useRecoilState(uiNavState)
 
+  if (entityQname === "tmp:user" && !isAuthenticated) return <span>unauthorized</span>
+
   // useEffect(() => {
   //   debug("params", props.match.params.entityQname)
-  //   if (props.match.params.entityQname) setEntityQname(props.match.params.entityQname)
+  //   if (props.match.params.entityQname) setEntityQname(props.match.params.entsityQname)
   //   if (props.match.params.shapeQname) setShapeQname(props.match.params.shapeQname)
   // }, [props.match.params])
 
@@ -118,7 +124,7 @@ function EntityEditContainer(props: AppProps) {
 
   if (!shape || !entity) return null
 
-  //debug("entity:", entity)
+  debug("entity:", entity)
 
   // not clear why it has to be delayed like this to work...
   let n = -1

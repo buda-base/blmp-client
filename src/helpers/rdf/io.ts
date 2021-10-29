@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from "react"
 import { useRecoilState } from "recoil"
 import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject, Ontology, history } from "./types"
 import { NodeShape, prefLabel } from "./shapes"
-import { uriFromQname, BDSH_uri } from "./ns"
+import { uriFromQname, qnameFromUri, BDSH_uri } from "./ns"
 import { uiReadyState, sessionLoadedState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 import { useAuth0, Auth0ContextInterface } from "@auth0/auth0-react"
@@ -38,6 +38,7 @@ export const fetchUrlFromshapeQname = (shapeQname: string): string => {
 
 export const fetchUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == "bdr:PTEST") return "/examples/ptest.ttl"
+  else if (entityQname == "tmp:user") return "https://editserv.bdrc.io/resource-nc/user/me"
   return "//editserv-dev.bdrc.io/focusGraph/" + entityQname
 }
 
@@ -64,8 +65,13 @@ export const debugStore = (s: rdf.Store, debugNs?: string) => {
 const acceptTtl = new Headers()
 acceptTtl.set("Accept", "text/turtle")
 
-export const loadTtl = async (url: string, allow404 = false): Promise<rdf.Store> => {
-  const response = await fetch(url, { headers: acceptTtl })
+const acceptTtlWithToken = new Headers()
+acceptTtlWithToken.set("Accept", "text/turtle")
+
+export const loadTtl = async (url: string, allow404 = false, idToken = ""): Promise<rdf.Store> => {
+  debug("loadttl:", idToken)
+  if (idToken) acceptTtlWithToken.set("Authorization", "Bearer " + idToken)
+  const response = await fetch(url, { headers: idToken ? acceptTtlWithToken : acceptTtl })
   // eslint-disable-next-line no-magic-numbers
   if (allow404 && response.status == 404) return rdf.graph()
   // eslint-disable-next-line no-magic-numbers
@@ -229,6 +235,16 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
   const auth0 = useAuth0()
+  const { isAuthenticated, getIdTokenClaims } = useAuth0()
+  const [idToken, setIdToken] = useState("")
+
+  useEffect(() => {
+    async function checkSession() {
+      const idToken = await getIdTokenClaims()
+      setIdToken(idToken.__raw)
+    }
+    if (entityQname === "tmp:user" && isAuthenticated) checkSession()
+  }, [getIdTokenClaims, isAuthenticated])
 
   const reset = () => {
     setEntity(Subject.createEmpty())
@@ -237,7 +253,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
   useEffect(() => {
     async function fetchResource(entityQname: string) {
-      //debug("fetching", entityQname, entities)
+      debug("fetching", entityQname, entities, isAuthenticated, idToken)
 
       setEntityLoadingState({ status: "fetching", error: undefined })
       const fetchUrl = fetchUrlFromEntityQname(entityQname)
@@ -271,7 +287,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       // 2 - try to load data from server if not or if user wants to
       try {
-        if (!useLocal) loadRes = await loadTtl(fetchUrl)
+        if (!useLocal) loadRes = await loadTtl(fetchUrl, false, idToken)
         else loadRes = localRes
         loadLabels = await loadTtl(labelQueryUrl, true)
       } catch (e) {
@@ -306,20 +322,28 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
         const entityStore = await loadRes
         const labelsStore = await loadLabels
+
+        let actualQname = entityQname,
+          actualUri = entityUri
+        if (entityQname === "tmp:user") {
+          actualQname = qnameFromUri(Object.keys(entityStore.subjectIndex)[0].replace(/(^<)|(>$)/g, ""))
+          actualUri = uriFromQname(actualQname)
+        }
+
         const subject: Subject = new Subject(
-          new rdf.NamedNode(entityUri),
-          new EntityGraph(entityStore, entityUri, labelsStore)
+          new rdf.NamedNode(actualUri),
+          new EntityGraph(entityStore, actualUri, labelsStore)
         )
         setEntityLoadingState({ status: "fetched", error: undefined })
         setEntity(subject)
         setUiReady(true)
 
         // update state with loaded entity
-        let index = _entities.findIndex((e) => e.subjectQname === entityQname)
+        let index = _entities.findIndex((e) => e.subjectQname === actualQname)
         const newEntities = [..._entities]
         if (index === -1) {
           newEntities.push({
-            subjectQname: entityQname,
+            subjectQname: actualQname,
             state: EditedEntityState.Loading,
             shapeRef: shapeRef,
             subject: null,
@@ -353,14 +377,14 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
     }
     const index = entities.findIndex((e) => e.subjectQname === entityQname)
     if (index === -1 || entities[index] && !entities[index].subject) {
-      fetchResource(entityQname)
+      if (entityQname != "tmp:user" || idToken) fetchResource(entityQname)
     } else {
       setEntityLoadingState({ status: "fetched", error: undefined })
       const subj: Subject | null = entities[index].subject
       if (subj) setEntity(subj)
       setUiReady(true)
     }
-  }, [entityQname, shapeRef])
+  }, [entityQname, shapeRef, idToken])
 
   return { entityLoadingState, entity, reset }
 }
