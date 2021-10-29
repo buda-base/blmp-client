@@ -15,27 +15,33 @@ const debug = require("debug")("bdrc:rdf:shapes")
 
 // TODO: this should be fetched somewhere... unclear where yet
 export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
-  "bds:PersonShapeTest": new ExtRDFResourceWithLabel(ns.BDS("PersonShapeTest").value, { en: "Test (Person" }),
+  "bds:PersonShapeTest": new ExtRDFResourceWithLabel(ns.BDS("PersonShapeTest").value, { en: "Test (Person)" }),
   "bds:PersonShape": new ExtRDFResourceWithLabel(ns.BDS("PersonShape").value, { en: "Person" }),
   "bds:CorporationShape": new ExtRDFResourceWithLabel(ns.BDS("CorporationShape").value, { en: "Corporation" }),
+  "bds:CollectionShape": new ExtRDFResourceWithLabel(ns.BDS("CollectionShape").value, { en: "Collection" }),
+  "bds:RoleShape": new ExtRDFResourceWithLabel(ns.BDS("RoleShape").value, { en: "Role" }),
   "bds:TopicShape": new ExtRDFResourceWithLabel(ns.BDS("TopicShape").value, { en: "Topic" }),
   "bds:PlaceShape": new ExtRDFResourceWithLabel(ns.BDS("PlaceShape").value, { en: "Place" }),
   "bds:WorkShape": new ExtRDFResourceWithLabel(ns.BDS("WorkShape").value, { en: "Work" }),
   "bds:SerialWorkShape": new ExtRDFResourceWithLabel(ns.BDS("SerialWorkShape").value, { en: "Serial Work" }),
   "bds:InstanceShape": new ExtRDFResourceWithLabel(ns.BDS("InstanceShape").value, { en: "Instance" }),
+  "bds:ImageInstanceShape": new ExtRDFResourceWithLabel(ns.BDS("ImageInstanceShape").value, { en: "ImageInstance" }),
   "bds:ImagegroupShape": new ExtRDFResourceWithLabel(ns.BDS("ImagegroupShape").value, { en: "Imagegroup" }),
 }
 
 export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
-  shapeRefsMap["bds:PersonShapeTest"],
-  shapeRefsMap["bds:PersonShape"],
-  shapeRefsMap["bds:CorporationShape"],
-  shapeRefsMap["bds:TopicShape"],
-  shapeRefsMap["bds:PlaceShape"],
-  shapeRefsMap["bds:WorkShape"],
-  shapeRefsMap["bds:SerialWorkShape"],
   shapeRefsMap["bds:InstanceShape"],
+  shapeRefsMap["bds:ImageInstanceShape"],
   shapeRefsMap["bds:ImagegroupShape"],
+  shapeRefsMap["bds:WorkShape"],
+  shapeRefsMap["bds:PersonShape"],
+  shapeRefsMap["bds:PlaceShape"],
+  shapeRefsMap["bds:TopicShape"],
+  shapeRefsMap["bds:SerialWorkShape"],
+  shapeRefsMap["bds:CorporationShape"],
+  shapeRefsMap["bds:RoleShape"],
+  shapeRefsMap["bds:CollectionShape"],
+  shapeRefsMap["bds:PersonShapeTest"],
 ]
 
 export const rdfType = ns.RDF("type") as rdf.NamedNode
@@ -77,8 +83,14 @@ export const bdsDefaultLanguage = ns.BDS("defaultLanguage") as rdf.NamedNode
 export const shLanguageIn = ns.SH("languageIn") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
-typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"], shapeRefsMap["bds:PersonShapeTest"]]
+typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
 typeUriToShape[ns.BDO_uri + "Topic"] = [shapeRefsMap["bds:TopicShape"]]
+typeUriToShape[ns.BDO_uri + "Place"] = [shapeRefsMap["bds:PlaceShape"]]
+typeUriToShape[ns.BDO_uri + "Instance"] = [shapeRefsMap["bds:InstanceShape"]]
+typeUriToShape[ns.BDO_uri + "ImageInstance"] = [shapeRefsMap["bds:ImageInstanceShape"]]
+typeUriToShape[ns.BDO_uri + "Role"] = [shapeRefsMap["bds:RoleShape"]]
+typeUriToShape[ns.BDO_uri + "Collection"] = [shapeRefsMap["bds:CollectionShape"]]
+typeUriToShape[ns.BDO_uri + "ImageGroup"] = [shapeRefsMap["bds:ImageGroupShape"]]
 typeUriToShape[ns.BDO_uri + "Corporation"] = [shapeRefsMap["bds:CorporationShape"]]
 typeUriToShape[ns.BDO_uri + "Work"] = [shapeRefsMap["bds:WorkShape"]]
 typeUriToShape[ns.BDO_uri + "SerialWork"] = [shapeRefsMap["bds:SerialWorkShape"]]
