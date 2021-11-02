@@ -243,7 +243,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       setIdToken(idToken.__raw)
     }
     if (entityQname === "tmp:user" && isAuthenticated) checkSession()
-  }, [getIdTokenClaims, isAuthenticated])
+  }, [getIdTokenClaims, isAuthenticated, entityQname])
 
   const reset = () => {
     setEntity(Subject.createEmpty())

@@ -124,7 +124,7 @@ function EntityEditContainer(props: AppProps) {
 
   if (!shape || !entity) return null
 
-  debug("entity:", entity)
+  // debug("entity:", entity)
 
   // not clear why it has to be delayed like this to work...
   let n = -1
@@ -172,7 +172,6 @@ function EntityEditContainer(props: AppProps) {
 
   const entityObj = entities.filter((e) => e.subjectQname === entityQname)
   const icon = getIcon(entityObj.length ? entityObj[0] : null)
-  debug("icon:", icon, entityObj)
 
   return (
     <React.Fragment>

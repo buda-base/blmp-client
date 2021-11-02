@@ -1366,8 +1366,6 @@ const ResSelectComponent: FC<{
     setList([possibleValues[0]])
   }
 
-  debug("select:", possibleValues)
-
   return (
     possibleValues.length > 1 && (
       <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
