@@ -633,7 +633,7 @@ const EditLangString: FC<{
               {editMD && <MDIcon style={{ height: "16px" }} />}
             </span>
           )}
-          {hasKB.length && hasKB[0].keyboard && (
+          {hasKB.length > 0 && hasKB[0].keyboard && (
             <span
               onClick={() => {
                 setKeyboard(!keyboard)
@@ -652,7 +652,7 @@ const EditLangString: FC<{
               <KeyboardIcon />
             </span>
           )}
-          {hasKB.length && hasKB[0].keyboard && keyboard && (
+          {hasKB.length > 0 && hasKB[0].keyboard && keyboard && (
             <div className="card px-2 py-2 hasKB" style={{ display: "block", width: "405px" }} onClick={keepFocus}>
               {hasKB[0].keyboard.map((k, i) => (
                 <span
@@ -815,7 +815,7 @@ const EditBool: FC<{
   return (
     <TextField
       select
-      style={{ padding: "1px", minWidth: "150px" }}
+      style={{ padding: "1px", minWidth: "250px" }}
       label={label}
       value={!lit.value ? false : true}
       InputLabelProps={{ shrink: true }}
