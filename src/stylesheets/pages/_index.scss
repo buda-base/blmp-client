@@ -319,6 +319,10 @@ input[type="checkbox"].dmcheck {
         &.corporation > .shape-icon:before { background-image:url(/icons/corporation.svg);  }
         &.topic > .shape-icon:before { background-image:url(/icons/topic.svg);  }
         &.place > .shape-icon:before { background-image:url(/icons/place.svg);  }
+        &.user, &[data-shape="bds:UserProfileShape"] { 
+          & > .shape-icon:before { background-image:url(/icons/user.png); background-size:auto;  }
+        }
+
 
         h1 { font-size:25px; line-height:37px; font-weight:700; text-align: left; color:#343434; padding-left:20px; padding-top:20px;}
         h1+span { color: rgba(0,0,0,.5); font-size: 12px; font-weight: 600; text-align:left; width:100%; display:block; padding-left:21px; }

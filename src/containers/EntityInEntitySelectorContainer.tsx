@@ -38,6 +38,7 @@ export const getIcon = (entity: Entity) => {
     for (const s of entity.subject.graph.store.statements) {
       if (s.predicate.value === rdfType.value && s.subject.value === entity.subject.node.value) {
         icon = s.object.value.replace(/.*?[/]([^/]+)$/, "$1").toLowerCase()
+        if (icon === "user") break
       }
     }
   }
@@ -62,13 +63,13 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const prefLabels = labelValues ? RDFResource.valuesByLang(labelValues) : ""
   const label = !entity.preloadedLabel ? lang.ValueByLangToStrPrefLang(prefLabels, uiLang) : entity.preloadedLabel
   const shapeQname = entity.shapeRef ? (entity.shapeRef.qname ? entity.shapeRef.qname : entity.shapeRef) : ""
-  const link = "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
+  const icon = getIcon(entity)
+  const link =
+    icon && icon.startsWith("user") ? "/profile" : "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
 
   const handleClick = (event: ChangeEvent<unknown>, newTab: number): void => {
     setTab(newTab)
   }
-
-  const icon = getIcon(entity)
 
   const closeEntity = (ev: MouseEvent) => {
     if (entity.state === EditedEntityState.NeedsSaving) {
@@ -119,7 +120,14 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       label={
         <>
           <Link to={link}>
-            {icon && <img className="entity-type" src={"/icons/" + icon + (index === tab ? "_" : "") + ".svg"} />}
+            {icon && (
+              <img
+                className="entity-type"
+                src={
+                  "/icons/" + icon + (index === tab ? "_" : "") + (icon && icon.startsWith("user") ? ".png" : ".svg")
+                }
+              />
+            )}
             <span style={{ marginLeft: 30, marginRight: "auto", textAlign: "left" }}>
               <span>{label}</span>
               <br />

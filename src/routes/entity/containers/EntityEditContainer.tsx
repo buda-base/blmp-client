@@ -172,11 +172,12 @@ function EntityEditContainer(props: AppProps) {
 
   const entityObj = entities.filter((e) => e.subjectQname === entityQname)
   const icon = getIcon(entityObj.length ? entityObj[0] : null)
+  debug("icon:", icon, entityObj)
 
   return (
     <React.Fragment>
       <div role="main" className="pt-4" style={{ textAlign: "center" }}>
-        <div className={"header " + icon}>
+        <div className={"header " + icon} {...(!icon ? { "data-shape": shape.qname } : {})}>
           <div className="shape-icon"></div>
           <div>
             <h1>{shapeLabel}</h1>
