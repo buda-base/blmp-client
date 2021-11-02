@@ -1366,6 +1366,8 @@ const ResSelectComponent: FC<{
     setList([possibleValues[0]])
   }
 
+  debug("select:", possibleValues)
+
   return (
     possibleValues.length > 1 && (
       <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
@@ -1385,17 +1387,22 @@ const ResSelectComponent: FC<{
           ]}
           {...(!editable ? { disabled: true } : {})}
         >
-          {possibleValues.map((r) => (
-            <MenuItem key={r.uri} value={r.uri} className="withDescription">
-              {r.description ? (
-                <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLang)}>
-                  <span>{ValueByLangToStrPrefLang(r.prefLabels, uiLang)}</span>
-                </Tooltip>
-              ) : 
-                ValueByLangToStrPrefLang(r.prefLabels, uiLang)
-              }
-            </MenuItem>
-          ))}
+          {possibleValues.map((r) => {
+            const label = ValueByLangToStrPrefLang(r.prefLabels, uiLang)
+            return (
+              <MenuItem key={r.uri} value={r.uri} className="withDescription">
+                {r.description ? (
+                  <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLang)}>
+                    <span>{label}</span>
+                  </Tooltip>
+                ) : label ? 
+                  label
+                 : 
+                  r.qname
+                }
+              </MenuItem>
+            )
+          })}
         </TextField>
         <div className="hoverPart">
           {canDel && (
