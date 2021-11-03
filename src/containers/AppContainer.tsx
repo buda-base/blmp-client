@@ -20,7 +20,7 @@ import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/ent
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
-import { uiTabState, uiUndosState, noUndo, noUndoRedo, undoState, sameUndo } from "../atoms/common"
+import { profileIdState, uiTabState, uiUndosState, noUndo, noUndoRedo, undoState, sameUndo } from "../atoms/common"
 
 import { Subject, history } from "../helpers/rdf/types"
 
@@ -111,6 +111,7 @@ function App(props: AppProps) {
   const [uiTab] = useRecoilState(uiTabState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
+  const [profileId, setProfileId] = useRecoilState(profileIdState)
   const undo = undos[entityUri]
   const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
   const appEl = useRef<HTMLDivElement>(null)
@@ -169,7 +170,7 @@ function App(props: AppProps) {
     clearInterval(undoTimer)
     const delay = 350
     undoTimer = setInterval(() => {
-      //debug("timer",undoTimer, entityUri)
+      debug("timer", undoTimer, entity, entityUri, profileId, history[entityUri], history)
       if (!history[entityUri]) return
       const { top, first, current } = getHistoryStatus(entityUri)
       if (first === -1) return
@@ -228,7 +229,7 @@ function App(props: AppProps) {
     return () => {
       clearInterval(undoTimer)
     }
-  }, [entities, undos])
+  }, [entities, undos, profileId])
 
   if (isLoading) return <div></div>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />

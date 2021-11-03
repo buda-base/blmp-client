@@ -377,7 +377,9 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       }
       if (!sessionLoaded) setSessionLoaded(true)
     }
-    const index = entities.findIndex((e) => e.subjectQname === entityQname)
+    const index = entities.findIndex(
+      (e) => e.subjectQname === entityQname || entityQname == "tmp:user" && e.subjectQname === profileId
+    )
     if (index === -1 || entities[index] && !entities[index].subject) {
       if (entityQname != "tmp:user" || idToken) fetchResource(entityQname)
     } else {
@@ -386,7 +388,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       if (subj) setEntity(subj)
       setUiReady(true)
     }
-  }, [entityQname, shapeRef, idToken])
+  }, [entityQname, shapeRef, idToken, profileId])
 
   return { entityLoadingState, entity, reset }
 }

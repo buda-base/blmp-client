@@ -107,6 +107,33 @@ function EntityEditContainer(props: AppProps) {
     })
   }, [entities, profileId])
 
+  let init = 0
+  useEffect(() => {
+    if (entityQname === "tmp:user" && !profileId) return
+
+    const delay = 350
+    let n = -1 // is this used at all??
+    const entityUri = ns.uriFromQname(entityQname === "tmp:user" ? profileId : entityQname)
+
+    // wait for all data to be loaded then add flag in history
+    if (init) clearInterval(init)
+    init = setInterval(() => {
+      if (history[entityUri]) {
+        if (history[entityUri].some((h) => h["tmp:allValuesLoaded"])) {
+          clearInterval(init)
+          debug("(no init)", entityUri, n, history[entityUri])
+        } else if (n === history[entityUri].length) {
+          clearInterval(init)
+          history[entityUri].push({ "tmp:allValuesLoaded": true })
+          debug("init:", entityUri, n, history[entityUri])
+          setUndos({ ...undos, [entityUri]: noUndoRedo })
+        } else {
+          n = history[entityUri].length
+        }
+      }
+    }, delay)
+  }, [entities, tab, profileId, entityQname])
+
   if (entityQname === "tmp:user" && !isAuthenticated) return <span>unauthorized</span>
 
   // useEffect(() => {
@@ -146,27 +173,6 @@ function EntityEditContainer(props: AppProps) {
   if (!shape || !entity) return null
 
   // debug("entity:", entity)
-
-  // not clear why it has to be delayed like this to work...
-  let n = -1
-  const delay = 350,
-    entityUri = ns.uriFromQname(entityQname),
-    // wait for all data to be loaded then add flag in history
-    init = setInterval(() => {
-      if (history[entityUri]) {
-        if (history[entityUri].some((h) => h["tmp:allValuesLoaded"])) {
-          clearInterval(init)
-          //debug("(no init)",entityUri,n,history[entityUri])
-        } else if (n === history[entityUri].length) {
-          clearInterval(init)
-          history[entityUri].push({ "tmp:allValuesLoaded": true })
-          //debug("init:",entityUri,n,history[entityUri])
-          setUndos({ ...undos, [entityUri]: noUndoRedo })
-        } else {
-          n = history[entityUri].length
-        }
-      }
-    }, delay)
 
   /* // no need for updateEntitiesRDF
 
