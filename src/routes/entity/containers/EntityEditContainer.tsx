@@ -9,7 +9,15 @@ import i18n from "i18next"
 import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/EntitySelectorContainer"
 import { getIcon } from "../../../containers/EntityInEntitySelectorContainer"
 import PropertyGroupContainer from "./PropertyGroupContainer"
-import { uiLangState, uiEditState, uiUndosState, noUndoRedo, uiTabState, uiNavState } from "../../../atoms/common"
+import {
+  profileIdState,
+  uiLangState,
+  uiEditState,
+  uiUndosState,
+  noUndoRedo,
+  uiTabState,
+  uiNavState,
+} from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
@@ -74,7 +82,6 @@ function EntityEditContainer(props: AppProps) {
   const shapeQname = props.shapeQname ?? props.match.params.shapeQname
   const entityQname = props.entityQname ?? props.match.params.entityQname
   const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const [tab, setTab] = useRecoilState(uiTabState)
   const { isAuthenticated } = useAuth0()
 
   //debug("props:",props,entityQname,isAuthenticated)
@@ -85,6 +92,20 @@ function EntityEditContainer(props: AppProps) {
   const [undos, setUndos] = useRecoilState(uiUndosState)
 
   const [nav, setNav] = useRecoilState(uiNavState)
+
+  const [profileId, setProfileId] = useRecoilState(profileIdState)
+  const [tab, setTab] = useRecoilState(uiTabState)
+
+  useEffect(() => {
+    entities.map((e, i) => {
+      if (e.subjectQname === entityQname || e.subjectQname === profileId && entityQname === "tmp:user") {
+        if (tab != i) {
+          setTab(i)
+          return
+        }
+      }
+    })
+  }, [entities, profileId])
 
   if (entityQname === "tmp:user" && !isAuthenticated) return <span>unauthorized</span>
 

@@ -76,3 +76,8 @@ export const sessionLoadedState = atom<boolean>({
   key: "sessionLoadedState",
   default: false,
 })
+
+export const profileIdState = atom<string>({
+  key: "profileIdState",
+  default: "",
+})

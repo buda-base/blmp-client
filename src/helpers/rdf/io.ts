@@ -5,7 +5,7 @@ import { useRecoilState } from "recoil"
 import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject, Ontology, history } from "./types"
 import { NodeShape, prefLabel } from "./shapes"
 import { uriFromQname, qnameFromUri, BDSH_uri } from "./ns"
-import { uiReadyState, sessionLoadedState } from "../../atoms/common"
+import { profileIdState, uiReadyState, sessionLoadedState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 import { useAuth0, Auth0ContextInterface } from "@auth0/auth0-react"
 
@@ -236,6 +236,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const auth0 = useAuth0()
   const { isAuthenticated, getIdTokenClaims } = useAuth0()
   const [idToken, setIdToken] = useState("")
+  const [profileId, setProfileId] = useRecoilState(profileIdState)
 
   useEffect(() => {
     async function checkSession() {
@@ -328,6 +329,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
           // TODO: in several steps with tests to avoid crash
           actualQname = qnameFromUri(Object.keys(entityStore.subjectIndex)[0].replace(/(^<)|(>$)/g, ""))
           actualUri = uriFromQname(actualQname)
+          if (!profileId) setProfileId(actualQname)
         }
 
         const subject: Subject = new Subject(
