@@ -64,9 +64,12 @@ const GotoButton: FC<{
   propFromParentPath?: string
 }> = ({ label, subject, undo, setUndo, propFromParentPath }) => {
   const [uiReady] = useRecoilState(uiReadyState)
+  const [current, setCurrent] = useState(subject.qname)
 
   //const [current, setCurrent] = useRecoilState(uiCurrentState)
   const entityUri = subject.uri
+
+  debug("goto?", current, subject, subject.qname)
 
   // DONE: pass subject to UndoButton subcomponent
   const which = label === "UNDO" ? "prev" : "next"
@@ -232,7 +235,11 @@ export const HistoryHandler: FC<{ entityUri: string }> = ({ entityUri }) => {
   const undo = undos[entityUri]
   const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
 
-  if (!entities[uiTab]) return null
+  if (!entities[uiTab])
+    // || entityUri != entities[uiTab].subjectQname)
+    return null
+
+  debug("histo:", entityUri, entities[uiTab].subject)
 
   const subject = entities[uiTab].subject
 

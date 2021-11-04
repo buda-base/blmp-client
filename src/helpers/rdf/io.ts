@@ -114,6 +114,13 @@ export async function loadOntology(): Promise<EntityGraph> {
 export function ShapeFetcher(shapeQname: string) {
   const [loadingState, setLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [shape, setShape] = useState<NodeShape>()
+  const [current, setCurrent] = useState(shapeQname)
+
+  debug("fetcher: shape ", shapeQname, current, shape)
+
+  useEffect(() => {
+    if (current != shapeQname) setCurrent(shapeQname)
+  })
 
   const reset = () => {
     setShape(undefined)
@@ -143,9 +150,16 @@ export function ShapeFetcher(shapeQname: string) {
       }
     }
     fetchResource(shapeQname)
-  }, [shapeQname])
+  }, [current])
 
-  return { loadingState, shape, reset }
+  const retVal =
+    shapeQname === current && shape && shapeQname == shape.qname
+      ? { loadingState, shape, reset }
+      : { loadingState: { status: "loading", error: undefined }, shape: undefined, reset }
+
+  debug("fetch shape return:", retVal, shapeQname, current)
+
+  return retVal //{ loadingState, shape, reset }
 }
 
 /*
@@ -237,6 +251,13 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const { isAuthenticated, getIdTokenClaims } = useAuth0()
   const [idToken, setIdToken] = useState("")
   const [profileId, setProfileId] = useRecoilState(profileIdState)
+  const [current, setCurrent] = useState(entityQname)
+
+  debug("fetcher:", entityQname, current, entity)
+
+  useEffect(() => {
+    if (current != entityQname) setCurrent(entityQname)
+  })
 
   useEffect(() => {
     async function checkSession() {
@@ -384,6 +405,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
     const index = entities.findIndex(
       (e) => e.subjectQname === entityQname || entityQname == "tmp:user" && e.subjectQname === profileId
     )
+    debug("index:", index)
     if (index === -1 || entities[index] && !entities[index].subject) {
       if (entityQname != "tmp:user" || idToken) fetchResource(entityQname)
     } else {
@@ -392,7 +414,14 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       if (subj) setEntity(subj)
       setUiReady(true)
     }
-  }, [entityQname, shapeRef, idToken, profileId])
+  }, [current, shapeRef, idToken, profileId])
 
-  return { entityLoadingState, entity, reset }
+  const retVal =
+    entityQname === current
+      ? { entityLoadingState, entity, reset }
+      : { entityLoadingState: { status: "loading", error: undefined }, entity: Subject.createEmpty(), reset }
+
+  debug("fetch return:", retVal, entityQname, current)
+
+  return retVal
 }

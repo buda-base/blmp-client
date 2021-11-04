@@ -84,8 +84,6 @@ function EntityEditContainer(props: AppProps) {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const { isAuthenticated } = useAuth0()
 
-  //debug("props:",props,entityQname,isAuthenticated)
-
   const [uiLang] = useRecoilState(uiLangState)
   const [edit, setEdit] = useRecoilState(uiEditState)
 
@@ -95,6 +93,8 @@ function EntityEditContainer(props: AppProps) {
 
   const [profileId, setProfileId] = useRecoilState(profileIdState)
   const [tab, setTab] = useRecoilState(uiTabState)
+
+  debug("EntityEditContainer:", JSON.stringify(props), entityQname, isAuthenticated, profileId)
 
   useEffect(() => {
     entities.map((e, i) => {
@@ -172,7 +172,7 @@ function EntityEditContainer(props: AppProps) {
 
   if (!shape || !entity) return null
 
-  // debug("entity:", entity)
+  debug("entity:", entity, shape)
 
   /* // no need for updateEntitiesRDF
 
@@ -197,7 +197,9 @@ function EntityEditContainer(props: AppProps) {
   // creating new entity
   //const subject: Subject = generateNew("P", shape)
 
-  const entityObj = entities.filter((e) => e.subjectQname === entityQname)
+  const entityObj = entities.filter(
+    (e) => e.subjectQname === entityQname || e.subjectQname === profileId && entityQname === "tmp:user"
+  )
   const icon = getIcon(entityObj.length ? entityObj[0] : null)
 
   return (

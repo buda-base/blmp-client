@@ -165,7 +165,7 @@ export class EntityGraphValues {
     return subjectUri + pathString
   })
   getAtomForSubjectProperty(pathString: string, subjectUri: string) {
-    //debug(this)
+    debug("propsUpdateEffect:", subjectUri, pathString, this)
     return atom<Array<Value>>({
       key: this.idHash + subjectUri + pathString,
       default: [],
@@ -551,6 +551,7 @@ export class Subject extends RDFResource {
   }
 
   getAtomForProperty(pathString: string) {
+    debug("getAtomForProperty:", pathString, this)
     return this.graph.getAtomForSubjectProperty(pathString, this.uri)
   }
 

@@ -10,7 +10,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
-import { uiLangState, uiTabState } from "../../atoms/common"
+import { profileIdState, uiLangState, uiTabState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
@@ -98,10 +98,15 @@ export const NavBarContainer = withRouter(NavBar)
 function BottomBar(props: AppProps) {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [uiTab] = useRecoilState(uiTabState)
+  const [profileId, setProfileId] = useRecoilState(profileIdState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entitySubj = entities[entity]?.subject
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
   const auth0 = useAuth0()
+
+  //if(!entityQname) return <></>
+
+  debug("bottombar:", props, entitySubj?.qname) //,entityQname)
 
   const save = (): void => {
     const store = new rdf.Store()
