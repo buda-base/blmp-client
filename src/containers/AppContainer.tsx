@@ -170,7 +170,7 @@ function App(props: AppProps) {
     clearInterval(undoTimer)
     const delay = 350
     undoTimer = setInterval(() => {
-      debug("timer", undoTimer, entity, entityUri, profileId, history[entityUri], history)
+      //debug("timer", undoTimer, entity, entityUri, profileId, history[entityUri], history)
       if (!history[entityUri]) return
       const { top, first, current } = getHistoryStatus(entityUri)
       if (first === -1) return

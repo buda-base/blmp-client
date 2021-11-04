@@ -253,12 +253,12 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
   useEffect(() => {
     async function fetchResource(entityQname: string) {
-      debug("fetching", entityQname, entities) //, isAuthenticated, idToken)
-
       setEntityLoadingState({ status: "fetching", error: undefined })
       const fetchUrl = fetchUrlFromEntityQname(entityQname)
       const labelQueryUrl = labelQueryUrlFromEntityQname(entityQname)
       const entityUri = uriFromQname(entityQname)
+
+      debug("fetching", entity, entityQname, fetchUrl, labelQueryUrl, entityUri, entities) //, isAuthenticated, idToken)
 
       // TODO: UI "save draft" / "publish"
 
@@ -327,7 +327,9 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
           actualUri = entityUri
         if (entityQname === "tmp:user") {
           // TODO: in several steps with tests to avoid crash
-          actualQname = qnameFromUri(Object.keys(entityStore.subjectIndex)[0].replace(/(^<)|(>$)/g, ""))
+          const keys = Object.keys(entityStore.subjectIndex)
+          debug("keys:", keys)
+          actualQname = qnameFromUri(keys[0].replace(/(^<)|(>$)/g, ""))
           actualUri = uriFromQname(actualQname)
           if (!profileId) setProfileId(actualQname)
         }
@@ -336,12 +338,11 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
           new rdf.NamedNode(actualUri),
           new EntityGraph(entityStore, actualUri, labelsStore)
         )
-        setEntityLoadingState({ status: "fetched", error: undefined })
-        setEntity(subject)
-        setUiReady(true)
+        debug("subject:", subject, actualQname, actualUri)
 
         // update state with loaded entity
         let index = _entities.findIndex((e) => e.subjectQname === actualQname)
+        debug("index:", index)
         const newEntities = [..._entities]
         if (index === -1) {
           newEntities.push({
@@ -367,6 +368,9 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
           //debug("fetched")
         }
+        setEntityLoadingState({ status: "fetched", error: undefined })
+        setEntity(subject)
+        setUiReady(true)
       } catch (e) {
         debug("e:", e.message, e)
         setEntityLoadingState({

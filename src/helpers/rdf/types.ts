@@ -57,7 +57,7 @@ const updateHistory = (
     else history[entity].push(newVal)
   } else history[entity].push(newVal)
 
-  //debug("history:", entity, qname, prop, val, history, noHisto)
+  debug("history:", entity, qname, prop, val, history, noHisto)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
@@ -93,6 +93,7 @@ export class EntityGraphValues {
   }
 
   onUpdateValues = (subjectUri: string, pathString: string, values: Array<Value>) => {
+    debug("onUpdateValues:", subjectUri, pathString)
     if (!(subjectUri in this.newSubjectProps)) this.newSubjectProps[subjectUri] = {}
     this.newSubjectProps[subjectUri][pathString] = values
     // disable history for current modification (autocreation of new empty simple value)
@@ -153,6 +154,7 @@ export class EntityGraphValues {
     pathString: string
   ) => ({ setSelf, onSet }: setSelfOnSelf) => {
     onSet((newValues: Array<Value> | DefaultValue): void => {
+      debug("onSet:", this, subjectUri, pathString, newValues)
       if (!(newValues instanceof DefaultValue)) {
         this.onUpdateValues(subjectUri, pathString, newValues)
       }
