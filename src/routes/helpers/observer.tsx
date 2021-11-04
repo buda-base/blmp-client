@@ -68,6 +68,8 @@ const GotoButton: FC<{
   //const [current, setCurrent] = useRecoilState(uiCurrentState)
   const entityUri = subject.uri
 
+  debug("goto?")
+
   // DONE: pass subject to UndoButton subcomponent
   const which = label === "UNDO" ? "prev" : "next"
   const [list, setList] = useRecoilState(
