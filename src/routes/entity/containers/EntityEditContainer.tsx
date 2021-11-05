@@ -84,6 +84,8 @@ function EntityEditContainer(props: AppProps) {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const { isAuthenticated } = useAuth0()
 
+  debug("EntityEditContainer:", props, entityQname, isAuthenticated)
+
   const [uiLang] = useRecoilState(uiLangState)
   const [edit, setEdit] = useRecoilState(uiEditState)
 
