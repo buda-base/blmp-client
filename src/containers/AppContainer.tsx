@@ -20,7 +20,16 @@ import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/ent
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
-import { profileIdState, uiTabState, uiUndosState, noUndo, noUndoRedo, undoState, sameUndo } from "../atoms/common"
+import {
+  uiDisabledTabsState,
+  profileIdState,
+  uiTabState,
+  uiUndosState,
+  noUndo,
+  noUndoRedo,
+  undoState,
+  sameUndo,
+} from "../atoms/common"
 
 import { Subject, history } from "../helpers/rdf/types"
 
@@ -114,6 +123,7 @@ function App(props: AppProps) {
   const [profileId, setProfileId] = useRecoilState(profileIdState)
   const undo = undos[entityUri]
   const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
+  const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
   const appEl = useRef<HTMLDivElement>(null)
   // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
   const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
@@ -174,6 +184,7 @@ function App(props: AppProps) {
       if (!history[entityUri]) return
       const { top, first, current } = getHistoryStatus(entityUri)
       if (first === -1) return
+      if (disabled) setDisabled(false)
       // check if flag is on top => nothing modified
       if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) {
         if (!sameUndo(undo, noUndoRedo)) {
@@ -229,7 +240,7 @@ function App(props: AppProps) {
     return () => {
       clearInterval(undoTimer)
     }
-  }, [entities, undos, profileId])
+  }, [entities, undos, profileId, uiTab])
 
   if (isLoading) return <div></div>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />

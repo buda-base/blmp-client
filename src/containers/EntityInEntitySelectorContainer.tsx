@@ -11,7 +11,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link, useHistory } from "react-router-dom"
-import { uiLangState, uiTabState } from "../atoms/common"
+import { uiDisabledTabsState, uiLangState, uiTabState } from "../atoms/common"
 import { makeStyles } from "@material-ui/core/styles"
 import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
@@ -56,6 +56,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const [labelValues] = useRecoilState(!entity.preloadedLabel ? entity.subjectLabelState : defaultEntityLabelAtom)
   const [tab, setTab] = useRecoilState(uiTabState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
 
   const history = useHistory()
   const auth0 = useAuth0()
@@ -67,7 +68,10 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const link =
     icon && icon.startsWith("user") ? "/profile" : "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
 
+  const allLoaded = entities.reduce((acc, e) => acc && e.state !== EditedEntityState.Loading, true)
+
   const handleClick = (event: ChangeEvent<unknown>, newTab: number): void => {
+    setDisabled(true)
     setTab(newTab)
   }
 
@@ -117,6 +121,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       {...a11yProps(index)}
       className={index === tab ? "Mui-selected" : ""}
       onClick={(e) => handleClick(e, index)}
+      {...(disabled ? { disabled: true } : {})}
       label={
         <>
           <Link to={link}>

@@ -121,11 +121,11 @@ function EntityEditContainer(props: AppProps) {
       if (history[entityUri]) {
         if (history[entityUri].some((h) => h["tmp:allValuesLoaded"])) {
           clearInterval(init)
-          debug("(no init)", entityUri, n, history[entityUri])
+          //debug("(no init)", entityUri, n, history[entityUri])
         } else if (n === history[entityUri].length) {
           clearInterval(init)
           history[entityUri].push({ "tmp:allValuesLoaded": true })
-          debug("init:", entityUri, n, history[entityUri])
+          //debug("init:", entityUri, n, history[entityUri])
           setUndos({ ...undos, [entityUri]: noUndoRedo })
         } else {
           n = history[entityUri].length

@@ -18,7 +18,7 @@ import * as rdf from "rdflib"
 import { BrowserRouter as Router, Switch, Route, Link, Redirect } from "react-router-dom"
 import { TextField, MenuItem } from "@material-ui/core"
 
-const debug = require("debug")("bdrc:entity:edit")
+const debug = require("debug")("bdrc:entity:shape")
 
 function EntityShapeChooserContainer(props: AppProps) {
   const [entityQname, setEntityQname] = useState(props.match.params.entityQname)
@@ -26,7 +26,7 @@ function EntityShapeChooserContainer(props: AppProps) {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   useEffect(() => {
-    debug("params", props.match.params.entityQname)
+    //debug("params", props.match.params.entityQname)
     if (props.match.params.entityQname) setEntityQname(props.match.params.entityQname)
   }, [props.match.params])
 
