@@ -186,7 +186,8 @@ export const setUserSession = async (
   let data = localStorage.getItem("session"),
     userData
   if (!data) data = '{"unregistered":{}}'
-  //debug("get:",data)
+
+  debug("session get:", data, rid, shape, label)
 
   const dataSav = data
 
@@ -201,7 +202,7 @@ export const setUserSession = async (
 
   const dataNew = JSON.stringify(data)
   if (dataNew != dataSav) {
-    //debug("set:", data, dataNew)
+    debug("set:", data, dataNew)
     localStorage.setItem("session", dataNew)
   }
 }

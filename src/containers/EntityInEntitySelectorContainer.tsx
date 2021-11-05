@@ -63,8 +63,18 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
 
   const prefLabels = labelValues ? RDFResource.valuesByLang(labelValues) : ""
   const label = !entity.preloadedLabel ? lang.ValueByLangToStrPrefLang(prefLabels, uiLang) : entity.preloadedLabel
-  const shapeQname = entity.shapeRef ? (entity.shapeRef.qname ? entity.shapeRef.qname : entity.shapeRef) : ""
   const icon = getIcon(entity)
+  const shapeQname = entity.shapeRef
+    ? entity.shapeRef.qname
+      ? entity.shapeRef.qname
+      : entity.shapeRef
+    : entities[tab] && entities[tab].shapeRef
+    ? entities[tab].shapeRef.qname
+      ? entities[tab].shapeRef.qname
+      : entities[tab].shapeRef
+    : icon
+    ? "bds:" + icon[0].toUpperCase() + icon.substring(1) + "Shape"
+    : ""
   const link =
     icon && icon.startsWith("user") ? "/profile" : "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
 
@@ -111,6 +121,8 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     }
     return false
   }
+
+  debug("entity?", entity, tab, entities[tab], entities)
 
   // update user session
   setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel)

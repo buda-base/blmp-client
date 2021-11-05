@@ -4,7 +4,7 @@ import * as shapes from "../../../helpers/rdf/shapes"
 import { RDFResourceWithLabel } from "../../../helpers/rdf/types"
 import { generateNew } from "../../../helpers/rdf/construct"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../../containers/EntitySelectorContainer"
-import { uiLangState, uiTabState } from "../../../atoms/common"
+import { uiDisabledTabsState, uiLangState, uiTabState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
@@ -19,6 +19,11 @@ const debug = require("debug")("bdrc:entity:newentity")
 function NewEntityContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
   const [RID, setRID] = useState("")
+  const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
+
+  useEffect(() => {
+    if (disabled) setDisabled(false)
+  })
 
   /* // no need
   const urlParams = qs.parse(props.history.location.search)
