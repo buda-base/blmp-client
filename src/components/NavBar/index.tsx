@@ -104,9 +104,7 @@ function BottomBar(props: AppProps) {
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
   const auth0 = useAuth0()
 
-  //if(!entityQname) return <></>
-
-  debug("bottombar:", props, entitySubj?.qname) //,entityQname)
+  //debug("bottombar:", props, entitySubj?.qname) //,entityQname)
 
   const save = (): void => {
     const store = new rdf.Store()

@@ -84,8 +84,6 @@ function EntityEditContainer(props: AppProps) {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const { isAuthenticated } = useAuth0()
 
-  debug("EntityEditContainer:", props, entityQname, isAuthenticated)
-
   const [uiLang] = useRecoilState(uiLangState)
   const [edit, setEdit] = useRecoilState(uiEditState)
 
@@ -96,7 +94,7 @@ function EntityEditContainer(props: AppProps) {
   const [profileId, setProfileId] = useRecoilState(profileIdState)
   const [tab, setTab] = useRecoilState(uiTabState)
 
-  debug("EntityEditContainer:", JSON.stringify(props), entityQname, isAuthenticated, profileId)
+  //debug("EntityEditContainer:", JSON.stringify(props), entityQname, isAuthenticated, profileId)
 
   useEffect(() => {
     entities.map((e, i) => {
@@ -174,7 +172,7 @@ function EntityEditContainer(props: AppProps) {
 
   if (!shape || !entity) return null
 
-  debug("entity:", entity, shape)
+  //debug("entity:", entity, shape)
 
   /* // no need for updateEntitiesRDF
 

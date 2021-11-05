@@ -164,7 +164,6 @@ const ValueList: FC<{
   owner?: Subject
   topEntity?: Subject
 }> = ({ subject, property, embedded, force, editable, owner, topEntity }) => {
-  debug("ValueList?")
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
