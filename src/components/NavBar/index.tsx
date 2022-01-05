@@ -1,5 +1,5 @@
 /* eslint-disable no-extra-parens */
-import React from "react"
+import React, { useState } from "react"
 import { withRouter } from "react-router"
 import { Link } from "react-router-dom"
 import { FiPower as LogoutIcon } from "react-icons/fi"
@@ -7,7 +7,7 @@ import { InputLabel, Select, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
 import { useRecoilState, useRecoilValue, selectorFamily } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
-import { FormHelperText, FormControl } from "@material-ui/core"
+import { FormHelperText, FormControl, TextField } from "@material-ui/core"
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
 import { profileIdState, uiLangState, uiTabState } from "../../atoms/common"
@@ -15,6 +15,7 @@ import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelector
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 import * as ns from "../../helpers/rdf/ns"
+import { langs } from "../../helpers/lang"
 import { debugStore, setUserLocalEntities } from "../../helpers/rdf/io"
 
 const debug = require("debug")("bdrc:NavBar")
@@ -103,6 +104,10 @@ function BottomBar(props: AppProps) {
   const entitySubj = entities[entity]?.subject
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
   const auth0 = useAuth0()
+  const [message, setMessage] = useState("")
+  const [uiLang, setUiLang] = useRecoilState(uiLangState)
+  const [lang, setLang] = useState(uiLang)
+  const [saving, setSaving] = useState(false)
 
   //debug("bottombar:", props, entitySubj?.qname) //,entityQname)
 
@@ -111,6 +116,11 @@ function BottomBar(props: AppProps) {
 
     if (entities[entity].state === EditedEntityState.Error) {
       if (!window.confirm("errors are detected in this entity, save anyway?")) return
+    }
+
+    if (!saving) {
+      setSaving(true)
+      return
     }
 
     const store = new rdf.Store()
@@ -126,15 +136,71 @@ function BottomBar(props: AppProps) {
     rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
       setUserLocalEntities(auth0, entities[entity].subjectQname, entities[entity].shapeRef.qname, str)
     })
+
+    setSaving(false)
+    setMessage("")
+  }
+
+  const onLangChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setLang(event.target.value as string)
+  }
+
+  const onMessageChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setMessage(event.target.value as string)
   }
 
   return (
     <nav className="bottom navbar navbar-dark navbar-expand-md">
       <HistoryHandler entityUri={entityUri} />
       <span />
-      <Button variant="outlined" onClick={save} className="btn-rouge">
-        Save
+      {saving && (
+        <div style={{ marginTop: "-9px", marginLeft: "auto" }}>
+          <TextField
+            label={"commit message"}
+            value={message}
+            onChange={onMessageChangeHandler}
+            InputLabelProps={{ shrink: true }}
+          />
+
+          <TextField
+            select
+            value={lang}
+            onChange={onLangChangeHandler}
+            InputLabelProps={{ shrink: true }}
+            style={{ minWidth: 100, marginTop: "16px", marginLeft: "15px", marginRight: "15px" }}
+          >
+            {langs.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.value}
+              </MenuItem>
+            ))}
+          </TextField>
+        </div>
+      )}
+      <Button
+        variant="outlined"
+        onClick={save}
+        className="btn-rouge"
+        {...((entities[entity] &&
+          [EditedEntityState.Saved, EditedEntityState.NotLoaded, EditedEntityState.Loading].includes(
+            entities[entity].state
+          )) ||
+        (message === "" && saving)
+          ? { disabled: true }
+          : {})}
+      >
+        {saving ? "Ok" : "Save"}
       </Button>
+      {saving && (
+        <Button
+          variant="outlined"
+          onClick={() => setSaving(false)}
+          className="btn-blanc ml-2"
+          style={{ position: "absolute", left: "calc(100% - (100% - 1225px)/2)" }}
+        >
+          Cancel
+        </Button>
+      )}
     </nav>
   )
 }

@@ -85,7 +85,7 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
 
     const session = getUserSession(auth0)
     session.then((obj) => {
-      debug("session:", obj, props, props.location)
+      //debug("session:", obj, props, props.location)
       if (!obj) return
       const newEntities = []
       for (const k of Object.keys(obj)) {
