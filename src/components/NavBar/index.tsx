@@ -107,6 +107,12 @@ function BottomBar(props: AppProps) {
   //debug("bottombar:", props, entitySubj?.qname) //,entityQname)
 
   const save = (): void => {
+    //debug("save:",entities[entity])
+
+    if (entities[entity].state === EditedEntityState.Error) {
+      if (!window.confirm("errors are detected in this entity, save anyway?")) return
+    }
+
     const store = new rdf.Store()
     ns.setDefaultPrefixes(store)
     entitySubj?.graph.addNewValuestoStore(store)
