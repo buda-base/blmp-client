@@ -117,7 +117,7 @@ function App(props: AppProps) {
   const { isAuthenticated, isLoading } = useAuth0()
   const [undos, setUndos] = useRecoilState(uiUndosState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const [uiTab] = useRecoilState(uiTabState)
+  const [uiTab, setTab] = useRecoilState(uiTabState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
   const [profileId, setProfileId] = useRecoilState(profileIdState)
@@ -261,6 +261,7 @@ function App(props: AppProps) {
               exact
               path="/"
               /* component={NewEntityContainer} */ render={(props) => {
+                setTab(-1)
                 return (
                   <div className="centered-ctn">
                     <div>

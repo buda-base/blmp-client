@@ -122,7 +122,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     return false
   }
 
-  debug("entity?", entity, tab, entities[tab], entities)
+  //debug("entity?", entity, tab, entities[tab], entities)
 
   // update user session
   setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel)

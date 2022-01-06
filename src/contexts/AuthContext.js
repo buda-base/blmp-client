@@ -9,7 +9,7 @@ const debug = require("debug")("bdrc:auth")
 export const AuthContext = React.createContext()
 
 export function AuthContextWrapper({ children }) {
-  const { isAuthenticated, getIdTokenClaims } = useAuth0()
+  const { isAuthenticated, getIdTokenClaims, user, logout } = useAuth0()
   const [idToken, setIdToken] = useState("")
   const [profile, setProfile] = useState(null)
   const [loadingState, setLoadingState] = useState({ status: "idle", error: null })
@@ -26,7 +26,18 @@ export function AuthContextWrapper({ children }) {
     // no need
     //if (isAuthenticated && idToken) fetchProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idToken, isAuthenticated])
+
+    //debug("uP:",user)
+    let groups
+    if (
+      user &&
+      user["https://auth.bdrc.io/groups"] &&
+      (groups = user["https://auth.bdrc.io/groups"]) &&
+      !groups.includes("admin")
+    ) {
+      logout()
+    }
+  }, [idToken, isAuthenticated, user])
 
   async function fetchProfile() {
     if (loadingState.status === "idle") {

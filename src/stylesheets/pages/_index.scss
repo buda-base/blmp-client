@@ -233,7 +233,12 @@ input[type="checkbox"].dmcheck {
 }
 
 .navbar { position:fixed; width:100%; background:white; z-index:10000; 
-  &.bottom { height:70px; bottom:0; justify-content: space-between;}
+  &.bottom { height:70px; bottom:0; justify-content: space-between;
+  
+    button:focus { outline:none; }
+
+    button:disabled { opacity:0.65;}
+  }
 }
 
 
