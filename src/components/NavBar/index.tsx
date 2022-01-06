@@ -1,5 +1,5 @@
 /* eslint-disable no-extra-parens */
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { withRouter } from "react-router"
 import { Link } from "react-router-dom"
 import { FiPower as LogoutIcon } from "react-icons/fi"
@@ -46,7 +46,7 @@ function NavBar(props: AppProps) {
         <Select labelId="uilanglabel" id="select" value={uiLang} onChange={uiLangOnChange}>
           <MenuItem value="en">English</MenuItem>
           <MenuItem value="bo">བོད་ཡིག</MenuItem>
-          <MenuItem value="zh-Hans">中文</MenuItem>
+          <MenuItem value="zh-hans">中文</MenuItem>
         </Select>
         <FormHelperText>{i18n.t("home.uilang")}</FormHelperText>
       </FormControl>
@@ -109,7 +109,11 @@ function BottomBar(props: AppProps) {
   const [lang, setLang] = useState(uiLang)
   const [saving, setSaving] = useState(false)
 
-  //debug("bottombar:", props, entitySubj?.qname) //,entityQname)
+  useEffect(() => {
+    setLang(uiLang)
+  }, [uiLang])
+
+  //debug("bottombar:", props, entitySubj?.qname, message, lang, uiLang) //,entityQname)
 
   const save = (): void => {
     //debug("save:",entities[entity])
@@ -160,6 +164,7 @@ function BottomBar(props: AppProps) {
             value={message}
             onChange={onMessageChangeHandler}
             InputLabelProps={{ shrink: true }}
+            style={{ minWidth: 300 }}
           />
 
           <TextField
@@ -194,7 +199,10 @@ function BottomBar(props: AppProps) {
       {saving && (
         <Button
           variant="outlined"
-          onClick={() => setSaving(false)}
+          onClick={() => {
+            setSaving(false)
+            setMessage("")
+          }}
           className="btn-blanc ml-2"
           style={{ position: "absolute", left: "calc(100% - (100% - 1225px)/2)" }}
         >
