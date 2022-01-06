@@ -17,6 +17,7 @@ import * as rdf from "rdflib"
 import * as ns from "../../helpers/rdf/ns"
 import { langs } from "../../helpers/lang"
 import { debugStore, setUserLocalEntities } from "../../helpers/rdf/io"
+import { history } from "../../helpers/rdf/types"
 
 const debug = require("debug")("bdrc:NavBar")
 
@@ -140,6 +141,9 @@ function BottomBar(props: AppProps) {
     rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
       setUserLocalEntities(auth0, entities[entity].subjectQname, entities[entity].shapeRef.qname, str)
     })
+
+    history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])
+    history[entityUri].push({ "tmp:allValuesLoaded": true })
 
     setSaving(false)
     setMessage("")
