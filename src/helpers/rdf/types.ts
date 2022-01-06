@@ -320,10 +320,10 @@ export class EntityGraph {
 }
 
 export class RDFResource {
-  node: rdf.NamedNode
+  node: rdf.NamedNode | rdf.BlankNode
   graph: EntityGraph
 
-  constructor(node: rdf.NamedNode, graph: EntityGraph) {
+  constructor(node: rdf.NamedNode | rdf.BlankNode, graph: EntityGraph) {
     this.node = node
     this.graph = graph
   }
@@ -391,6 +391,14 @@ export class RDFResource {
     const colls = this.graph.store.each(this.node, p, null) as Array<rdf.Collection>
     for (const coll of colls) {
       return coll.elements as Array<rdf.NamedNode>
+    }
+    return null
+  }
+
+  public getPropLitValuesFromList(p: rdf.NamedNode): Array<rdf.Literal> | null {
+    const colls = this.graph.store.each(this.node, p, null) as Array<rdf.Collection>
+    for (const coll of colls) {
+      return coll.elements as Array<rdf.Literal>
     }
     return null
   }

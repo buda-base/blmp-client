@@ -7,6 +7,7 @@ import {
   Subject,
   rdfLitAsNumber,
   ObjectType,
+  Value,
 } from "./types"
 import * as ns from "./ns"
 import { Memoize } from "typescript-memoize"
@@ -273,7 +274,10 @@ export class PropertyShape extends RDFResourceWithLabel {
     return this.getPropResValue(shDatatype)
   }
 
-  public static resourcizeWithInit(nodes: Array<rdf.NamedNode>, graph: EntityGraph): Array<RDFResourceWithLabel> {
+  public static resourcizeWithInit(
+    nodes: Array<rdf.NamedNode | rdf.BlankNode>,
+    graph: EntityGraph
+  ): Array<RDFResourceWithLabel> {
     const res: Array<RDFResourceWithLabel> = []
     for (const node of nodes) {
       const r = new RDFResourceWithLabel(node, graph)
@@ -286,10 +290,32 @@ export class PropertyShape extends RDFResourceWithLabel {
   }
 
   @Memoize()
-  public get in(): Array<RDFResourceWithLabel> | null {
-    const nodes = this.getPropResValuesFromList(shIn)
-    if (!nodes) return null
-    return PropertyShape.resourcizeWithInit(nodes, this.ontologyGraph)
+  public get in(): Array<Value> | null {
+    // two options: either a direct value, or behind a sh:property
+    if (this.datatype) {
+      const nodes = this.getPropLitValuesFromList(shIn)
+      if (nodes) return EntityGraph.addIdToLitList(nodes)
+    } else {
+      // if no datatype, then it's res
+      const nodes = this.getPropResValuesFromList(shIn)
+      if (nodes) return PropertyShape.resourcizeWithInit(nodes, this.ontologyGraph)
+    }
+    // if no direct in, let's look at the sh:property objects (quite counter intuitive, but it follows the shacl examples)
+    const propNodes: Array<rdf.NamedNode | rdf.BlankNode> = this.graph.store.each(this.node, shProperty, null) as Array<
+      rdf.NamedNode | rdf.BlankNode
+    >
+    if (!propNodes) return null
+    const props: Array<RDFResource> = PropertyShape.resourcizeWithInit(propNodes, this.graph)
+    for (const p of props) {
+      if (p.getPropResValue(shDatatype)) {
+        const nodes = p.getPropLitValuesFromList(shIn)
+        if (nodes) return EntityGraph.addIdToLitList(nodes)
+      } else {
+        const nodes = p.getPropResValuesFromList(shIn)
+        if (nodes) return PropertyShape.resourcizeWithInit(nodes, this.ontologyGraph)
+      }
+    }
+    return null
   }
 
   @Memoize()

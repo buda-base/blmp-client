@@ -135,7 +135,7 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
       // if a select property is not required, we don't select anything by default
       if (!property.minCount) return noneSelected
       // else we select the first one automatically
-      const propIn: Array<RDFResourceWithLabel> | null = property.in
+      const propIn: Array<Value> | null = property.in
       if (!propIn) throw "can't find a list for " + property.uri
       return propIn[0]
       break
@@ -335,7 +335,7 @@ const ValueList: FC<{
         // eslint-disable-next-line no-extra-parens
         const canSelectNone = (i == 0 && !property.minCount) || (i > 0 && i == nbvalues - 1)
         return (
-          <ResSelectComponent
+          <SelectComponent
             key={val.id}
             canSelectNone={canSelectNone}
             subject={subject}
@@ -1309,7 +1309,7 @@ const ExtEntityComponent: FC<{
 
 //TODO: component to display an external entity that has already been selected, with a delete button to remove it
 // There should probably be a ExtEntityCreate or something like that to allow an entity to be selected
-const ResSelectComponent: FC<{
+const SelectComponent: FC<{
   res: RDFResourceWithLabel
   subject: Subject
   property: PropertyShape
@@ -1326,7 +1326,7 @@ const ResSelectComponent: FC<{
   const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
   let possibleValues = property.in
-  if (!possibleValues) throw "can't find possible list for " + property.uri
+  if (possibleValues == null) throw "can't find possible list for " + property.uri
 
   if (canSelectNone) possibleValues = [noneSelected, ...possibleValues]
 
@@ -1337,19 +1337,19 @@ const ResSelectComponent: FC<{
     setList(newList)
   }
 
-  const getResourceFromUri = (uri: string) => {
-    for (const r of possibleValues) {
-      if (r.uri === uri) {
-        return r
+  const getElementFromValue = (value: string) => {
+    for (const v of possibleValues as Value[]) {
+      if (v.id === value) {
+        return v
       }
     }
     return null
   }
 
   const onChange: (event: ChangeEvent<{ name?: string | undefined; value: unknown }>) => void = (event) => {
-    const resForNewValue = getResourceFromUri(event.target.value as string)
+    const resForNewValue = getElementFromValue(event.target.value as string)
     if (resForNewValue == null) {
-      throw "getting value from ResSelectComponent that's not in the list of possible values " + event.target.value
+      throw "getting value from SelectComponent that's not in the list of possible values " + event.target.value
     }
     let newList
     if (resForNewValue == noneSelected && canDel) {
@@ -1385,21 +1385,31 @@ const ResSelectComponent: FC<{
           ]}
           {...(!editable ? { disabled: true } : {})}
         >
-          {possibleValues.map((r) => {
-            const label = ValueByLangToStrPrefLang(r.prefLabels, uiLang)
-            return (
-              <MenuItem key={r.uri} value={r.uri} className="withDescription">
-                {r.description ? (
-                  <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLang)}>
-                    <span>{label}</span>
-                  </Tooltip>
-                ) : label ? 
-                  label
-                 : 
-                  r.qname
-                }
-              </MenuItem>
-            )
+          {possibleValues.map((v) => {
+            if ("uri" in v) {
+              const r = v as RDFResourceWithLabel
+              const label = ValueByLangToStrPrefLang(r.prefLabels, uiLang)
+              return (
+                <MenuItem key={r.id} value={r.id} className="withDescription">
+                  {r.description ? (
+                    <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLang)}>
+                      <span>{label}</span>
+                    </Tooltip>
+                  ) : label ? 
+                    label
+                   : 
+                    r.qname
+                  }
+                </MenuItem>
+              )
+            } else {
+              const l = v as LiteralWithId
+              return (
+                <MenuItem key={l.id} value={l.id} className="withDescription">
+                  {l.value}
+                </MenuItem>
+              )
+            }
           })}
         </TextField>
         <div className="hoverPart">
