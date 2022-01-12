@@ -22,6 +22,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
     withoutDisplayPriority: PropertyShape[] = []
   //let isSimplePriority = false
   group.properties.map((property) => {
+    //debug("map:",property.qname)
     if (
       property.displayPriority &&
       property.displayPriority >= 1
@@ -42,6 +43,8 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
   const toggleExtra = () => {
     setForce(!force)
   }
+
+  //debug("prio:",group.qname,group,withDisplayPriority,withoutDisplayPriority);
 
   const [edit, setEdit] = useRecoilState(uiEditState)
 

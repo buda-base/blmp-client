@@ -314,7 +314,8 @@ const ValueList: FC<{
     list[0].uri === "tmp:uri"
 
   const renderListElem = (val: Value, i: number, nbvalues: number) => {
-    if (val instanceof RDFResourceWithLabel) {
+    //debug("render:",property.qname,property,val,i)
+    if (val instanceof RDFResourceWithLabel || property.in?.length) {
       if (property.objectType == ObjectType.ResExt)
         return (
           <ExtEntityComponent
@@ -1332,6 +1333,8 @@ const SelectComponent: FC<{
 
   const index = list.findIndex((listItem) => listItem === res)
 
+  //debug("selec:",property.qname,property,possibleValues)
+
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
     setList(newList)
@@ -1372,7 +1375,7 @@ const SelectComponent: FC<{
         <TextField
           select
           className={"selector mr-2"}
-          value={res.uri}
+          value={res.uri ? res.uri : res.id}
           style={{ padding: "1px", minWidth: "250px" }}
           onChange={onChange}
           label={[

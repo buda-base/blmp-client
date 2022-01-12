@@ -76,6 +76,7 @@ export const loadTtl = async (url: string, allow404 = false, idToken = ""): Prom
   // eslint-disable-next-line no-magic-numbers
   if (response.status != 200) throw "cannot fetch " + url
   const body = await response.text()
+  //debug("ttl:",body)
   const store: rdf.Store = rdf.graph()
   rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
   return store
@@ -142,6 +143,7 @@ export function ShapeFetcher(shapeQname: string) {
         const shapeUri = uriFromQname(shapeQname)
         const shape: NodeShape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri), ontology)
         setLoadingState({ status: "fetched", error: undefined })
+        //debug("shape:",shape,store)
         setShape(shape)
       } catch (e) {
         setLoadingState({ status: "error", error: "error fetching shape or ontology" })
