@@ -35,7 +35,7 @@ import i18n from "i18next"
 import { getHistoryStatus } from "../../../containers/AppContainer"
 import PropertyContainer from "./PropertyContainer"
 import { langs, ValueByLangToStrPrefLang, langsWithDefault } from "../../../helpers/lang"
-import { uiLangState, uiEditState, uiUndosState } from "../../../atoms/common"
+import { uiLangState, uiLitLangState, uiEditState, uiUndosState } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
 
@@ -1321,10 +1321,11 @@ const SelectComponent: FC<{
 }> = ({ res, subject, property, canDel, canSelectNone, editable, create }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
-  const [uiLang] = useRecoilState(uiLangState)
+  const [uiLang, setUiLang] = useRecoilState(uiLangState)
+  const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
 
   const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
-  const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
+  const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLitLang)
 
   let possibleValues = property.in
   if (possibleValues == null) throw "can't find possible list for " + property.uri
@@ -1333,7 +1334,7 @@ const SelectComponent: FC<{
 
   const index = list.findIndex((listItem) => listItem === res)
 
-  //debug("selec:",property.qname,property,possibleValues)
+  //debug("selec:",uiLang,uiLitLang,property.qname,property,possibleValues)
 
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
@@ -1361,6 +1362,11 @@ const SelectComponent: FC<{
       newList = replaceItemAtIndex(list, index, resForNewValue)
     }
     setList(newList)
+
+    if (!resForNewValue.uri) {
+      if (property.qname === "bds:BdouPreferredUiLang") setUiLang(resForNewValue?.value.toLowerCase())
+      else if (property.qname === "bds:BdouPreferredUiLiteralLangs") setUiLitLang(resForNewValue?.value.toLowerCase())
+    }
   }
 
   const classes = useStyles()
@@ -1369,13 +1375,24 @@ const SelectComponent: FC<{
     setList([possibleValues[0]])
   }
 
+  let resVal = res.uri
+  if (!resVal) resVal = res.id
+  if (property.qname.includes("PreferredUiL") && res.uri) {
+    if (property.qname === "bds:BdouPreferredUiLang")
+      resVal = possibleValues.filter((p) => p?.value?.toLowerCase() === uiLang.toLowerCase())
+    else if (property.qname === "bds:BdouPreferredUiLiteralLangs")
+      resVal = possibleValues.filter((p) => p?.value?.toLowerCase() === uiLitLang.toLowerCase())
+    if (resVal.length) resVal = resVal[0].id
+    else resVal = res.uri
+  }
+
   return (
     possibleValues.length > 1 && (
       <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
         <TextField
           select
           className={"selector mr-2"}
-          value={res.uri ? res.uri : res.id}
+          value={resVal}
           style={{ padding: "1px", minWidth: "250px" }}
           onChange={onChange}
           label={[
@@ -1391,11 +1408,11 @@ const SelectComponent: FC<{
           {possibleValues.map((v) => {
             if ("uri" in v) {
               const r = v as RDFResourceWithLabel
-              const label = ValueByLangToStrPrefLang(r.prefLabels, uiLang)
+              const label = ValueByLangToStrPrefLang(r.prefLabels, uiLitLang)
               return (
                 <MenuItem key={r.id} value={r.id} className="withDescription">
                   {r.description ? (
-                    <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLang)}>
+                    <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLitLang)}>
                       <span>{label}</span>
                     </Tooltip>
                   ) : label ? 

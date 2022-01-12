@@ -10,7 +10,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl, TextField } from "@material-ui/core"
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
-import { profileIdState, uiLangState, uiTabState } from "../../atoms/common"
+import { profileIdState, uiLangState, uiLitLangState, uiTabState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
@@ -25,9 +25,11 @@ function NavBar(props: AppProps) {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
 
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
+  const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
   // https://github.com/mui-org/material-ui/issues/15400
   const uiLangOnChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setUiLang(event.target.value as string)
+    setUiLitLang(event.target.value as string)
   }
 
   const [entities] = useRecoilState(entitiesAtom)

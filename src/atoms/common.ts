@@ -9,6 +9,11 @@ export const uiLangState = atom<string>({
   default: "en",
 })
 
+export const uiLitLangState = atom<string>({
+  key: "uiLitLangState",
+  default: "en",
+})
+
 export const uiReadyState = atom<boolean>({
   key: "uiReadyState",
   default: false,

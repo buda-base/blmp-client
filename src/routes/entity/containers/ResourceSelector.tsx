@@ -7,7 +7,7 @@ import { useHistory, Link } from "react-router-dom"
 import { nodeForType } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
 import * as lang from "../../../helpers/lang"
-import { uiLangState, uiTabState } from "../../../atoms/common"
+import { uiLangState, uiLitLangState, uiTabState } from "../../../atoms/common"
 import { RDFResource, ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import {
@@ -72,6 +72,7 @@ const ResourceSelector: FC<{
   const [type, setType] = useState(property.expectedObjectTypes ? property.expectedObjectTypes[0].qname : "")
   const [libraryURL, setLibraryURL] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
+  const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
   const [error, setError] = useState("")
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const history = useHistory()
@@ -263,7 +264,7 @@ const ResourceSelector: FC<{
     setPopupNew(!popupNew)
   }
 
-  const label = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLang)
+  const label = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLitLang)
 
   const textOnChange: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
     const newValue = e.currentTarget.value
@@ -283,7 +284,7 @@ const ResourceSelector: FC<{
 
   let name = (
     <div style={{ fontSize: "16px" /*, borderBottom:"1px solid #ccc"*/ }}>
-      {lang.ValueByLangToStrPrefLang(value.prefLabels, uiLang) + " " + dates}
+      {lang.ValueByLangToStrPrefLang(value.prefLabels, uiLitLang) + " " + dates}
     </div>
   )
 
@@ -543,9 +544,10 @@ const LabelWithRID: FC<{ entity: Entity; choose?: (e: Entity, labels: Record<str
   choose,
 }) => {
   const [uiLang] = useRecoilState(uiLangState)
+  const [uiLitLang] = useRecoilState(uiLitLangState)
   const [labelValues] = useRecoilState(entity.subjectLabelState)
   const prefLabels = RDFResource.valuesByLang(labelValues)
-  const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLang)
+  const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLitLang)
 
   if (!choose) return <span style={{ fontSize: "16px" }}>{label}</span>
   else
