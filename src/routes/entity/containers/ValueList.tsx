@@ -810,6 +810,8 @@ const EditBool: FC<{
 
   const dt = property.datatype
 
+  //debug("bool:",lit)
+
   const changeCallback = (val: string) => {
     onChange(lit.copyWithUpdatedValue(val))
   }
@@ -818,7 +820,7 @@ const EditBool: FC<{
       select
       style={{ padding: "1px", minWidth: "250px" }}
       label={label}
-      value={!lit.value ? false : true}
+      value={!lit.value || lit.value == "false" ? false : true}
       InputLabelProps={{ shrink: true }}
       onChange={(e) => changeCallback(e.target.value)}
       {...(!editable ? { disabled: true } : {})}
