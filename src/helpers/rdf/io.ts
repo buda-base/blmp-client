@@ -228,7 +228,7 @@ export const setUserLocalEntities = async (
   ttl: string,
   del?: boolean
 ) => {
-  //debug("auth:", auth)
+  debug("auth:", auth, shapeQname)
   let data = localStorage.getItem("localEntities"),
     userData
   if (!data) data = '{"unregistered":{}}'
@@ -237,7 +237,9 @@ export const setUserLocalEntities = async (
     if (!data[auth.user.email]) data[auth.user.email] = {}
     userData = data[auth.user.email]
   } else userData = data["unregistered"]
-  if (!del) userData[rid] = { shapeQname: shapeQname, ttl: ttl }
+  // TODO: also check if rid is current user's
+  if (shapeQname?.includes("UserProfile")) rid = "tmp:user"
+  if (!del) userData[rid] = { shapeQname, ttl }
   else if (userData[rid]) delete userData[rid]
   localStorage.setItem("localEntities", JSON.stringify(data))
 }
@@ -285,8 +287,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       let loadRes, loadLabels, localRes, useLocal, notFound
       const localEntities = await getUserLocalEntities(auth0)
       // 1 - check if entity has local edits (once shape is defined)
+      debug("local?", entityQname, localEntities[entityQname])
       if (shapeRef && localEntities[entityQname] !== undefined) {
-        debug(localEntities[entityQname])
         useLocal = window.confirm("found previous local edits for this resource, load them?")
         const store: rdf.Store = rdf.graph()
         if (useLocal) {

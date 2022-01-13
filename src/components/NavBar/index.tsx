@@ -141,7 +141,9 @@ function BottomBar(props: AppProps) {
     // save ttl to localStorage
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
     rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
-      setUserLocalEntities(auth0, entities[entity].subjectQname, entities[entity].shapeRef.qname, str)
+      let shape = entities[entity].shapeRef
+      if (shape.qname) shape = shape.qname
+      setUserLocalEntities(auth0, entities[entity].subjectQname, shape, str)
     })
 
     history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])

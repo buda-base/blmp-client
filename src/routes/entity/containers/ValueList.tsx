@@ -1379,13 +1379,15 @@ const SelectComponent: FC<{
 
   let resVal = res.uri
   if (!resVal) resVal = res.id
-  if (property.qname.includes("PreferredUiL") && res.uri) {
+  if (property.qname.includes("PreferredUiL") /*&& res.uri*/) {
     if (property.qname === "bds:BdouPreferredUiLang")
       resVal = possibleValues.filter((p) => p?.value?.toLowerCase() === uiLang.toLowerCase())
     else if (property.qname === "bds:BdouPreferredUiLiteralLangs")
       resVal = possibleValues.filter((p) => p?.value?.toLowerCase() === uiLitLang.toLowerCase())
+    //debug("resV:",resVal)
     if (resVal.length) resVal = resVal[0].id
-    else resVal = res.uri
+    else if (res.uri) resVal = res.uri
+    else throw new Error("no value for " + property.qname + " selector")
   }
 
   return (
