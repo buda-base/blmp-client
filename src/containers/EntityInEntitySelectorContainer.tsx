@@ -68,13 +68,16 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     ? entity.shapeRef.qname
       ? entity.shapeRef.qname
       : entity.shapeRef
-    : entities[tab] && entities[tab].shapeRef
-    ? entities[tab].shapeRef.qname
-      ? entities[tab].shapeRef.qname
-      : entities[tab].shapeRef
+    : entities[index] && entities[index].shapeRef
+    ? entities[index].shapeRef.qname
+      ? entities[index].shapeRef.qname
+      : entities[index].shapeRef
     : icon
     ? "bds:" + icon[0].toUpperCase() + icon.substring(1) + "Shape"
     : ""
+
+  //debug("sQn:",index,tab,shapeQname,entity.shapeRef?.qname,entity.shapeRef,entity.subjectQname)
+
   const link =
     icon && icon.startsWith("user") ? "/profile" : "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
 

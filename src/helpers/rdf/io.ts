@@ -117,6 +117,8 @@ export function ShapeFetcher(shapeQname: string) {
   const [shape, setShape] = useState<NodeShape>()
   const [current, setCurrent] = useState(shapeQname)
 
+  //debug("fetcher: shape ", shapeQname, current, shape)
+
   useEffect(() => {
     if (current != shapeQname) setCurrent(shapeQname)
   })
@@ -204,7 +206,7 @@ export const setUserSession = async (
 
   const dataNew = JSON.stringify(data)
   if (dataNew != dataSav) {
-    //debug("set:", data, dataNew)
+    //debug("session set:", data, dataNew)
     localStorage.setItem("session", dataNew)
   }
 }
