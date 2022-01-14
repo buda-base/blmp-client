@@ -767,6 +767,11 @@ export const LangSelect: FC<{
             {option.value}
           </MenuItem>
         ))}
+        {!languages.includes(value) && (
+          <MenuItem key={value} value={value}>
+            {value}
+          </MenuItem>
+        )}
       </TextField>
     </div>
   )
