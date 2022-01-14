@@ -226,7 +226,8 @@ export const setUserLocalEntities = async (
   rid: string,
   shapeQname: string,
   ttl: string,
-  del?: boolean
+  del?: boolean,
+  userId: string
 ) => {
   debug("auth:", auth, shapeQname)
   let data = localStorage.getItem("localEntities"),
@@ -238,7 +239,7 @@ export const setUserLocalEntities = async (
     userData = data[auth.user.email]
   } else userData = data["unregistered"]
   // TODO: also check if rid is current user's
-  if (shapeQname?.includes("UserProfile")) rid = "tmp:user"
+  if (userId === rid && shapeQname?.includes("UserProfile")) rid = "tmp:user"
   if (!del) userData[rid] = { shapeQname, ttl }
   else if (userData[rid]) delete userData[rid]
   localStorage.setItem("localEntities", JSON.stringify(data))

@@ -91,3 +91,8 @@ export const uiDisabledTabsState = atom<boolean>({
   key: "uiDisabledTabsState",
   default: false,
 })
+
+export const userIdState = atom<string>({
+  key: "userIdState",
+  default: "",
+})

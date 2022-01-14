@@ -11,7 +11,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link, useHistory } from "react-router-dom"
-import { uiDisabledTabsState, uiLangState, uiTabState } from "../atoms/common"
+import { uiDisabledTabsState, uiLangState, uiTabState, userIdState } from "../atoms/common"
 import { makeStyles } from "@material-ui/core/styles"
 import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
@@ -57,6 +57,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const [tab, setTab] = useRecoilState(uiTabState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
+  const [userId, setUserId] = useRecoilState(userIdState)
 
   const history = useHistory()
   const auth0 = useAuth0()
@@ -76,7 +77,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     ? "bds:" + icon[0].toUpperCase() + icon.substring(1) + "Shape"
     : ""
 
-  //debug("sQn:",index,tab,shapeQname,entity.shapeRef?.qname,entity.shapeRef,entity.subjectQname)
+  debug("sQn:", index, tab, shapeQname, entity.shapeRef?.qname, entity.shapeRef, entity.subjectQname)
 
   const link =
     icon && icon.startsWith("user") ? "/profile" : "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
@@ -96,7 +97,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     // update user session
     setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
     // remove data in local storage
-    setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true)
+    setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true, userId)
     // remove history for entity
     if (undoHistory) {
       const uri = ns.uriFromQname(entity.subjectQname)

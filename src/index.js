@@ -50,14 +50,14 @@ if (module.hot) {
 render(
   <BrowserRouter>
     <Auth0ProviderWithHistory>
-      <AuthContextWrapper>
-        <Route exact path="/login" component={LoginContainer} />
-        <RecoilRoot>
+      <RecoilRoot>
+        <AuthContextWrapper>
+          <Route exact path="/login" component={LoginContainer} />
           <Switch>
             <Route component={App} />
           </Switch>
-        </RecoilRoot>
-      </AuthContextWrapper>
+        </AuthContextWrapper>
+      </RecoilRoot>
     </Auth0ProviderWithHistory>
   </BrowserRouter>,
   target

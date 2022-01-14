@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react"
 import { useAuth0 } from "@auth0/auth0-react"
+import { useRecoilState } from "recoil"
 import axios from "axios"
 
 import config from "../config"
+import { uiLangState, uiLitLangState, userIdState } from "../atoms/common"
+import * as ns from "../helpers/rdf/ns"
 
 const debug = require("debug")("bdrc:auth")
 
@@ -13,6 +16,9 @@ export function AuthContextWrapper({ children }) {
   const [idToken, setIdToken] = useState("")
   const [profile, setProfile] = useState(null)
   const [loadingState, setLoadingState] = useState({ status: "idle", error: null })
+  const [uiLang, setUiLang] = useRecoilState(uiLangState)
+  const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
+  const [userId, setUserId] = useRecoilState(userIdState)
 
   useEffect(() => {
     async function checkSession() {
@@ -24,7 +30,7 @@ export function AuthContextWrapper({ children }) {
 
   useEffect(() => {
     // no need
-    //if (isAuthenticated && idToken) fetchProfile()
+    if (isAuthenticated && idToken) fetchProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
 
     //debug("uP:",user)
@@ -50,9 +56,26 @@ export function AuthContextWrapper({ children }) {
           url: "resource-nc/user/me",
           headers: {
             Authorization: `Bearer ${idToken}`,
-            Accept: "text/turtle",
+            Accept: "application/json", //"text/turtle",
           },
         })
+        .then(function (response) {
+          let id = Object.keys(response.data),
+            uiL,
+            uiLitL
+          if (id.length) {
+            uiL = response.data[id[0]][ns.BDOU("preferredUiLang").value]
+            if (uiL?.length) uiL = uiL[0].value
+            if (uiL) setUiLang(uiL)
+            uiLitL = response.data[id[0]][ns.BDOU("preferredUiLiteralLangs").value]
+            if (uiLitL?.length) uiLitL = uiLitL[0].value
+            if (uiLitL) setUiLitLang(uiLitL)
+            id = ns.qnameFromUri(id[0])
+            if (id) setUserId(id)
+          }
+          debug("Profile loaded", response.data, id, uiL)
+        })
+      /*
         .then(function (response) {
           debug("Profile loaded", response.data)
           setProfile(response.data)
@@ -67,7 +90,7 @@ export function AuthContextWrapper({ children }) {
           } else {
             setLoadingState({ status: "error", error: "Unable to process" })
           }
-        })
+        */
     }
   }
 

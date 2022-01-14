@@ -10,7 +10,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl, TextField } from "@material-ui/core"
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
-import { profileIdState, uiLangState, uiLitLangState, uiTabState } from "../../atoms/common"
+import { profileIdState, uiLangState, uiLitLangState, uiTabState, userIdState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
@@ -111,6 +111,7 @@ function BottomBar(props: AppProps) {
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [lang, setLang] = useState(uiLang)
   const [saving, setSaving] = useState(false)
+  const [userId, setUserId] = useRecoilState(userIdState)
 
   useEffect(() => {
     setLang(uiLang)
@@ -143,7 +144,7 @@ function BottomBar(props: AppProps) {
     rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
       let shape = entities[entity].shapeRef
       if (shape.qname) shape = shape.qname
-      setUserLocalEntities(auth0, entities[entity].subjectQname, shape, str)
+      setUserLocalEntities(auth0, entities[entity].subjectQname, shape, str, false, userId)
     })
 
     history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])
