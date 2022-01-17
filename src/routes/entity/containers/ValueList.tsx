@@ -342,6 +342,7 @@ const ValueList: FC<{
             subject={subject}
             property={property}
             res={val}
+            selectIdx={i}
             canDel={canDel && val != noneSelected}
             editable={editable}
             create={canAdd && <Create subject={subject} property={property} embedded={embedded} />}
@@ -1323,9 +1324,10 @@ const SelectComponent: FC<{
   property: PropertyShape
   canDel: boolean
   canSelectNone: boolean
+  selectIdx: number
   editable: boolean
   create?: Element
-}> = ({ res, subject, property, canDel, canSelectNone, editable, create }) => {
+}> = ({ res, subject, property, canDel, canSelectNone, selectIdx, editable, create }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
@@ -1371,8 +1373,8 @@ const SelectComponent: FC<{
     setList(newList)
 
     if (!resForNewValue.uri) {
-      if (property.qname === "bds:BdouPreferredUiLang") setUiLang(resForNewValue?.value.toLowerCase())
-      else if (property.qname === "bds:BdouPreferredUiLiteralLangs") setUiLitLang(resForNewValue?.value.toLowerCase())
+      // TODO: move to updating the UI langs when the user saves their profile
+      //if (property.qname === "bds:BdouPreferredUiLang") setUiLang(resForNewValue?.value.toLowerCase())
     }
   }
 
@@ -1382,32 +1384,20 @@ const SelectComponent: FC<{
     setList([possibleValues[0]])
   }
 
-  let resVal = res.uri
-  if (!resVal) resVal = res.id
-  if (property.qname.includes("PreferredUiL")) {
-    resVal = possibleValues.filter((p) => p.value === resVal)
-    if (!resVal.length) {
-      if (property.qname === "bds:BdouPreferredUiLang")
-        resVal = possibleValues.filter((p) => p?.value?.toLowerCase() === uiLang.toLowerCase())
-      else if (property.qname === "bds:BdouPreferredUiLiteralLangs")
-        resVal = possibleValues.filter((p) => p?.value?.toLowerCase() === uiLitLang.toLowerCase())
-    }
-    resVal = resVal[0].id
-  }
-
   return (
     possibleValues.length > 1 && (
       <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
         <TextField
           select
           className={"selector mr-2"}
-          value={resVal}
+          value={res.id}
+          key={selectIdx + res.id}
           style={{ padding: "1px", minWidth: "250px" }}
           onChange={onChange}
           label={[
             propLabel,
             helpMessage ? (
-              <Tooltip key={res.uri} title={helpMessage}>
+              <Tooltip key={selectIdx + res.uri} title={helpMessage}>
                 <HelpIcon className="help" />
               </Tooltip>
             ) : null,
@@ -1419,7 +1409,7 @@ const SelectComponent: FC<{
               const r = v as RDFResourceWithLabel
               const label = ValueByLangToStrPrefLang(r.prefLabels, uiLitLang)
               return (
-                <MenuItem key={r.id} value={r.id} className="withDescription">
+                <MenuItem key={selectIdx + r.id} value={r.id} className="withDescription">
                   {r.description ? (
                     <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLitLang)}>
                       <span>{label}</span>
@@ -1434,7 +1424,7 @@ const SelectComponent: FC<{
             } else {
               const l = v as LiteralWithId
               return (
-                <MenuItem key={l.id} value={l.id} className="withDescription">
+                <MenuItem key={selectIdx + l.id} value={l.id} className="withDescription">
                   {l.value}
                 </MenuItem>
               )
