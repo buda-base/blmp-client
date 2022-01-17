@@ -51,7 +51,7 @@ export function AuthContextWrapper({ children }) {
       await axios
         .request({
           method: "get",
-          timeout: 1000,
+          timeout: 4000,
           baseURL: config.API_BASEURL,
           url: "resource-nc/user/me",
           headers: {
