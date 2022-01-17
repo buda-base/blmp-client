@@ -130,19 +130,28 @@ export class EntityGraphValues {
           }
         }
       } else {
-        const property = new rdf.NamedNode(pathString)
+        const listMode = pathString.endsWith("[]")
+        const property = new rdf.NamedNode(listMode ? pathString.substring(0, pathString.length - 2) : pathString)
         const values: Array<Value> = this.newSubjectProps[subjectUri][pathString]
+        const collection = new rdf.Collection()
         for (const val of values) {
           if (val instanceof LiteralWithId) {
             // do not add empty strings
-            if (val.value !== "") store.add(subject, property, val, defaultGraphNode)
+            if (val.value == "") continue
+            if (listMode) collection.append(val)
+            else store.add(subject, property, val, defaultGraphNode)
           } else {
             if (val.node.value == "tmp:uri" || val.node.value == "tmp:none") continue
-            store.add(subject, property, val.node, defaultGraphNode)
+            if (listMode) collection.append(val.node)
+            else store.add(subject, property, val.node, defaultGraphNode)
             if (val instanceof Subject) {
               this.addNewValuestoStore(store, val.uri)
             }
           }
+        }
+        if (listMode && collection.elements.length) {
+          collection.close()
+          store.add(subject, property, collection, defaultGraphNode)
         }
       }
     }
@@ -597,3 +606,4 @@ export class Ontology {
 }
 
 export const noneSelected = new ExtRDFResourceWithLabel("tmp:none", { en: "–" }, {}, { en: "none provided" })
+export const emptyLiteral = new LiteralWithId("")

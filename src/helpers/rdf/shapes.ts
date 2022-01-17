@@ -10,6 +10,7 @@ import {
   Value,
 } from "./types"
 import * as ns from "./ns"
+import { debugStore } from "./io"
 import { Memoize } from "typescript-memoize"
 
 const debug = require("debug")("bdrc:rdf:shapes")
@@ -57,6 +58,8 @@ export const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode
 export const shName = ns.SH("name") as rdf.NamedNode
 export const shPath = ns.SH("path") as rdf.NamedNode
 export const dashEditor = ns.DASH("editor") as rdf.NamedNode
+export const shNode = ns.SH("node") as rdf.NamedNode
+export const dashListShape = ns.DASH("ListShape") as rdf.NamedNode
 export const dashEnumSelectEditor = ns.DASH("EnumSelectEditor") as rdf.NamedNode
 export const shMessage = ns.SH("message") as rdf.NamedNode
 export const bdsDisplayPriority = ns.BDS("displayPriority") as rdf.NamedNode
@@ -137,11 +140,7 @@ export class Path {
   directPathNode: rdf.NamedNode | null = null
   inversePathNode: rdf.NamedNode | null = null
 
-  static fromSparqlString() {
-    // TODO
-  }
-
-  constructor(node: rdf.Node, graph: EntityGraph) {
+  constructor(node: rdf.Node, graph: EntityGraph, listMode: boolean) {
     if (node instanceof rdf.BlankNode) {
       // inverse path
       const invpaths = graph.store.each(node, shInversePath, null) as Array<rdf.NamedNode>
@@ -152,8 +151,13 @@ export class Path {
       this.sparqlString = "^" + invpath.value
       this.inversePathNode = invpath
     } else {
+      // if this is a list we add "[]" at the end
+      if (listMode) {
+        this.sparqlString = node.value + "[]"
+      } else {
+        this.sparqlString = node.value
+      }
       this.directPathNode = node as rdf.NamedNode
-      this.sparqlString = node.value
     }
   }
 }
@@ -290,7 +294,33 @@ export class PropertyShape extends RDFResourceWithLabel {
   }
 
   @Memoize()
+  public get hasListAsObject(): boolean {
+    const res = this.graph.store.each(this.node, shNode, dashListShape)
+    if (res == null || res.length == 0) return false
+    return true
+  }
+
+  @Memoize()
   public get in(): Array<Value> | null {
+    if (this.hasListAsObject) {
+      // if no direct in, let's look at the sh:property objects (quite counter intuitive, but it follows the shacl examples)
+      const propNodes: Array<rdf.NamedNode | rdf.BlankNode> = this.graph.store.each(
+        this.node,
+        shProperty,
+        null
+      ) as Array<rdf.NamedNode | rdf.BlankNode>
+      if (!propNodes) return null
+      const props: Array<RDFResource> = PropertyShape.resourcizeWithInit(propNodes, this.graph)
+      for (const p of props) {
+        if (p.getPropResValue(shDatatype)) {
+          const nodes = p.getPropLitValuesFromList(shIn)
+          if (nodes) return EntityGraph.addIdToLitList(nodes)
+        } else {
+          const nodes = p.getPropResValuesFromList(shIn)
+          if (nodes) return PropertyShape.resourcizeWithInit(nodes, this.ontologyGraph)
+        }
+      }
+    }
     // two options: either a direct value, or behind a sh:property
     if (this.datatype) {
       const nodes = this.getPropLitValuesFromList(shIn)
@@ -299,21 +329,6 @@ export class PropertyShape extends RDFResourceWithLabel {
       // if no datatype, then it's res
       const nodes = this.getPropResValuesFromList(shIn)
       if (nodes) return PropertyShape.resourcizeWithInit(nodes, this.ontologyGraph)
-    }
-    // if no direct in, let's look at the sh:property objects (quite counter intuitive, but it follows the shacl examples)
-    const propNodes: Array<rdf.NamedNode | rdf.BlankNode> = this.graph.store.each(this.node, shProperty, null) as Array<
-      rdf.NamedNode | rdf.BlankNode
-    >
-    if (!propNodes) return null
-    const props: Array<RDFResource> = PropertyShape.resourcizeWithInit(propNodes, this.graph)
-    for (const p of props) {
-      if (p.getPropResValue(shDatatype)) {
-        const nodes = p.getPropLitValuesFromList(shIn)
-        if (nodes) return EntityGraph.addIdToLitList(nodes)
-      } else {
-        const nodes = p.getPropResValuesFromList(shIn)
-        if (nodes) return PropertyShape.resourcizeWithInit(nodes, this.ontologyGraph)
-      }
     }
     return null
   }
@@ -333,7 +348,7 @@ export class PropertyShape extends RDFResourceWithLabel {
   public get path(): Path | null {
     const pathNode = this.getPropResValue(shPath)
     if (!pathNode) return null
-    return new Path(pathNode, this.graph)
+    return new Path(pathNode, this.graph, this.hasListAsObject)
   }
 
   @Memoize()
