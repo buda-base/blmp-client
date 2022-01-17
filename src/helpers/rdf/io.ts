@@ -69,7 +69,11 @@ const acceptTtlWithToken = new Headers()
 acceptTtlWithToken.set("Accept", "text/turtle")
 
 export const loadTtl = async (url: string, allow404 = false, idToken = ""): Promise<rdf.Store> => {
-  if (idToken) acceptTtlWithToken.set("Authorization", "Bearer " + idToken)
+  if (idToken) {
+    acceptTtlWithToken.set("Authorization", "Bearer " + idToken)
+  } else {
+    acceptTtlWithToken.delete("Authorization")
+  }
   const response = await fetch(url, { headers: idToken ? acceptTtlWithToken : acceptTtl })
   // eslint-disable-next-line no-magic-numbers
   if (allow404 && response.status == 404) return rdf.graph()
@@ -80,6 +84,17 @@ export const loadTtl = async (url: string, allow404 = false, idToken = ""): Prom
   const store: rdf.Store = rdf.graph()
   rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
   return store
+}
+
+export const putTtl = async (url: string, s: rdf.Store, idToken: string): Promise<null> => {
+  const headers = new Headers()
+  headers.set("Content-Type", "text/turtle")
+  headers.set("Authorization", "Bearer " + idToken)
+  const response = await fetch(url, { headers: headers, method: "PUT" })
+  // eslint-disable-next-line no-magic-numbers
+  if (response.status == 403) throw "not authorized to modify " + url
+  // eslint-disable-next-line no-magic-numbers
+  if (response.status > 400) throw "error when saving " + url
 }
 
 export interface IFetchState {
@@ -226,7 +241,7 @@ export const setUserLocalEntities = async (
   rid: string,
   shapeQname: string,
   ttl: string,
-  del?: boolean,
+  del: boolean,
   userId: string
 ) => {
   debug("auth:", auth, shapeQname)

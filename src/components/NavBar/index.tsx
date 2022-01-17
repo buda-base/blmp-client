@@ -16,7 +16,7 @@ import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 import * as ns from "../../helpers/rdf/ns"
 import { langs } from "../../helpers/lang"
-import { debugStore, setUserLocalEntities } from "../../helpers/rdf/io"
+import { debugStore, setUserLocalEntities, putTtl } from "../../helpers/rdf/io"
 import { history } from "../../helpers/rdf/types"
 
 const debug = require("debug")("bdrc:NavBar")
@@ -119,7 +119,7 @@ function BottomBar(props: AppProps) {
 
   //debug("bottombar:", props, entitySubj?.qname, message, lang, uiLang) //,entityQname)
 
-  const save = (): void => {
+  const save = async (): Promise<undefined> => {
     //debug("save:",entities[entity])
 
     if (entities[entity].state === EditedEntityState.Error) {
@@ -135,6 +135,18 @@ function BottomBar(props: AppProps) {
     ns.setDefaultPrefixes(store)
     entitySubj?.graph.addNewValuestoStore(store)
     debugStore(store)
+    if (entitySubj && entitySubj.qname == "tmp:user" && false) {
+      const url = entitySubj.qname == "tmp:user" ? "https://editserv.bdrc.io/resource-nc/user/me" : entityUri
+      try {
+        const idTokenF = await auth0.getIdTokenClaims()
+        const loadRes = await putTtl(url, store, idTokenF.__raw)
+      } catch (e) {
+        // TODO: better error handling
+        setSaving(false)
+        setMessage("")
+        return
+      }
+    }
     const newEntities = [...entities]
     newEntities[entity] = { ...newEntities[entity], state: EditedEntityState.Saved }
     setEntities(newEntities)
