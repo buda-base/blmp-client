@@ -135,10 +135,13 @@ export function ShapeFetcher(shapeQname: string) {
   //debug("fetcher: shape ", shapeQname, current, shape)
 
   useEffect(() => {
-    if (current != shapeQname) setCurrent(shapeQname)
+    if (current != shapeQname) {
+      reset()
+    }
   })
 
   const reset = () => {
+    setCurrent(shapeQname)
     setShape(undefined)
     setLoadingState({ status: "idle", error: undefined })
   }
@@ -166,7 +169,7 @@ export function ShapeFetcher(shapeQname: string) {
         setLoadingState({ status: "error", error: "error fetching shape or ontology" })
       }
     }
-    fetchResource(shapeQname)
+    if (current === shapeQname) fetchResource(shapeQname)
   }, [current])
 
   const retVal =
@@ -273,7 +276,9 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [current, setCurrent] = useState(entityQname)
 
   useEffect(() => {
-    if (current != entityQname) setCurrent(entityQname)
+    if (current != entityQname) {
+      reset()
+    }
   })
 
   useEffect(() => {
@@ -285,6 +290,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   }, [getIdTokenClaims, isAuthenticated, entityQname])
 
   const reset = () => {
+    setCurrent(entityQname)
     setEntity(Subject.createEmpty())
     setEntityLoadingState({ status: "idle", error: undefined })
   }
@@ -418,11 +424,11 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
     const index = entities.findIndex(
       (e) => e.subjectQname === entityQname || entityQname == "tmp:user" && e.subjectQname === profileId
     )
-    if (index === -1 || entities[index] && !entities[index].subject) {
+    if (current === entityQname && (index === -1 || entities[index] && !entities[index].subject)) {
       if (entityQname != "tmp:user" || idToken) fetchResource(entityQname)
     } else {
       setEntityLoadingState({ status: "fetched", error: undefined })
-      const subj: Subject | null = entities[index].subject
+      const subj: Subject | null = entities[index] ? entities[index].subject : null
       if (subj) setEntity(subj)
       setUiReady(true)
     }
