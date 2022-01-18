@@ -96,3 +96,8 @@ export const userIdState = atom<string>({
   key: "userIdState",
   default: "",
 })
+
+export const reloadProfileState = atom<boolean>({
+  key: "reloadProfileState",
+  default: true,
+})

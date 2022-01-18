@@ -4,7 +4,7 @@ import { useRecoilState } from "recoil"
 import axios from "axios"
 
 import config from "../config"
-import { uiLangState, uiLitLangState, userIdState } from "../atoms/common"
+import { reloadProfileState, uiLangState, uiLitLangState, userIdState } from "../atoms/common"
 import * as ns from "../helpers/rdf/ns"
 
 const debug = require("debug")("bdrc:auth")
@@ -19,6 +19,7 @@ export function AuthContextWrapper({ children }) {
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
   const [userId, setUserId] = useRecoilState(userIdState)
+  const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
 
   useEffect(() => {
     async function checkSession() {
@@ -29,9 +30,10 @@ export function AuthContextWrapper({ children }) {
   }, [getIdTokenClaims, isAuthenticated])
 
   useEffect(() => {
-    // no need
+    //debug("reload?",reloadProfile,loadingState.status)
+    if (!reloadProfile) return
+
     if (isAuthenticated && idToken) fetchProfile()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
 
     //debug("uP:",user)
     let groups
@@ -43,10 +45,10 @@ export function AuthContextWrapper({ children }) {
     ) {
       logout()
     }
-  }, [idToken, isAuthenticated, user])
+  }, [idToken, isAuthenticated, user, reloadProfile])
 
   async function fetchProfile() {
-    if (loadingState.status === "idle") {
+    if (loadingState.status === "idle" || reloadProfile && loadingState.status === "fetched") {
       setLoadingState({ status: "fetching", error: null })
       await axios
         .request({
@@ -74,12 +76,13 @@ export function AuthContextWrapper({ children }) {
             if (id) setUserId(id)
           }
           debug("Profile loaded", response.data, id, uiL)
+          setReloadProfile(false)
+          setLoadingState({ status: "fetched", error: null })
         })
       /*
         .then(function (response) {
           debug("Profile loaded", response.data)
           setProfile(response.data)
-          setLoadingState({ status: "fetched", error: null })
         })
         .catch(function (error) {
           // debug("%O", error)

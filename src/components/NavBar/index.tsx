@@ -10,7 +10,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl, TextField } from "@material-ui/core"
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
-import { uiLangState, uiLitLangState, uiTabState, userIdState } from "../../atoms/common"
+import { reloadProfileState, uiLangState, uiLitLangState, uiTabState, userIdState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
@@ -111,6 +111,8 @@ function BottomBar(props: AppProps) {
   const [lang, setLang] = useState(uiLang)
   const [saving, setSaving] = useState(false)
   const [userId, setUserId] = useRecoilState(userIdState)
+  const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
+
   const isUserProfile = userId === entities[entity]?.subjectQname
 
   useEffect(() => {
@@ -164,6 +166,7 @@ function BottomBar(props: AppProps) {
 
     setSaving(false)
     setMessage("")
+    if (isUserProfile) setReloadProfile(true)
   }
 
   const onLangChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
