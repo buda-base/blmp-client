@@ -309,7 +309,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       let loadRes, loadLabels, localRes, useLocal, notFound
       const localEntities = await getUserLocalEntities(auth0)
       // 1 - check if entity has local edits (once shape is defined)
-      debug("local?", entityQname, localEntities[entityQname])
+      //debug("local?", entityQname, localEntities[entityQname])
       if (shapeRef && localEntities[entityQname] !== undefined) {
         useLocal = window.confirm("found previous local edits for this resource, load them?")
         const store: rdf.Store = rdf.graph()

@@ -85,8 +85,10 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const allLoaded = entities.reduce((acc, e) => acc && e.state !== EditedEntityState.Loading, true)
 
   const handleClick = (event: ChangeEvent<unknown>, newTab: number): void => {
-    setDisabled(true)
-    setTab(newTab)
+    if (newTab !== tab) {
+      setDisabled(true)
+      setTab(newTab)
+    }
   }
 
   const closeEntity = (ev: MouseEvent) => {
