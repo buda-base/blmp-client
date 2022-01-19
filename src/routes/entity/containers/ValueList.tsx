@@ -166,9 +166,13 @@ const ValueList: FC<{
 }> = ({ subject, property, embedded, force, editable, owner, topEntity }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
+  const collec = list.length === 1 && list[0].node?.termType === "Collection" ? list[0].node.elements : undefined
+  const listOrCollec = collec ? collec : list
   const [uiLang] = useRecoilState(uiLangState)
   const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
   const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
+
+  debug("vL:", list, collec)
 
   const alreadyHasEmptyValue: () => boolean = (): boolean => {
     for (const val of list) {
@@ -314,7 +318,7 @@ const ValueList: FC<{
     list[0].uri === "tmp:uri"
 
   const renderListElem = (val: Value, i: number, nbvalues: number) => {
-    //debug("render:",property.qname,property,val,i)
+    debug("render:", property.qname, property, val, i)
     if (val instanceof RDFResourceWithLabel || property.in?.length) {
       if (property.objectType == ObjectType.ResExt)
         return (
@@ -438,8 +442,8 @@ const ValueList: FC<{
             ...property?.group?.value !== edit ? { paddingRight: "0.5rem" } : {},
           }}
         >
-          {list.map((val, i) => {
-            if (!hasEmptyExtEntityAsFirst || i > 0) return renderListElem(val, i, list.length)
+          {listOrCollec.map((val, i) => {
+            if (!hasEmptyExtEntityAsFirst || i > 0) return renderListElem(val, i, listOrCollec.length)
           })}
         </div>
       </div>
@@ -1330,6 +1334,8 @@ const SelectComponent: FC<{
 }> = ({ res, subject, property, canDel, canSelectNone, selectIdx, editable, create }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
+  const collec = list.length === 1 && list[0].node?.termType === "Collection" ? list[0].node.elements : undefined
+  const listOrCollec = collec ? collec : list
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
 
@@ -1341,23 +1347,25 @@ const SelectComponent: FC<{
 
   if (canSelectNone) possibleValues = [noneSelected, ...possibleValues]
 
-  const index = list.findIndex((listItem) => listItem === res)
-
-  //debug("selec:",uiLang,uiLitLang,property.qname,property,possibleValues)
+  const index = listOrCollec.findIndex((listItem) => listItem === res)
 
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
 
-  const getElementFromValue = (value: string) => {
+  const getElementFromValue = (value: string, checkActualValue: false) => {
     for (const v of possibleValues as Value[]) {
-      if (v.id === value) {
+      if (v.id === value || checkActualValue && v.value === value) {
         return v
       }
     }
     return null
   }
+
+  const val = res?.id ? res : getElementFromValue(listOrCollec[index].value, true)
+
+  debug("selec:", val, val?.id, res, res?.id, uiLang, uiLitLang, property.qname, property, possibleValues)
 
   const onChange: (event: ChangeEvent<{ name?: string | undefined; value: unknown }>) => void = (event) => {
     const resForNewValue = getElementFromValue(event.target.value as string)
@@ -1380,6 +1388,7 @@ const SelectComponent: FC<{
 
   const classes = useStyles()
 
+  // does this work? to me using a "setXyz" in a condition must fail (should work encapsulated in a useEffect though)
   if (possibleValues.length == 1 && list.length == 0) {
     setList([possibleValues[0]])
   }
@@ -1390,14 +1399,14 @@ const SelectComponent: FC<{
         <TextField
           select
           className={"selector mr-2"}
-          value={res.id}
-          key={selectIdx + res.id}
+          value={val?.id}
+          key={selectIdx + val?.id}
           style={{ padding: "1px", minWidth: "250px" }}
           onChange={onChange}
           label={[
             propLabel,
             helpMessage ? (
-              <Tooltip key={selectIdx + res.uri} title={helpMessage}>
+              <Tooltip key={selectIdx + val?.id} title={helpMessage}>
                 <HelpIcon className="help" />
               </Tooltip>
             ) : null,

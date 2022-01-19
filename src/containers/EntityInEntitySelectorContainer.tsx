@@ -77,7 +77,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     ? "bds:" + icon[0].toUpperCase() + icon.substring(1) + "Shape"
     : ""
 
-  //debug("sQn:", index, tab, shapeQname, entity.shapeRef?.qname, entity.shapeRef, entity.subjectQname)
+  debug("sQn:", icon, index, tab, shapeQname, entity.shapeRef?.qname, entity.shapeRef, entity.subjectQname)
 
   const link =
     icon && icon.startsWith("user") ? "/profile" : "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")

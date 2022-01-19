@@ -71,7 +71,7 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
   const [uiLang] = useRecoilState(uiLangState)
   const [tab, setTab] = useRecoilState(uiTabState)
   const handleChange = (event: ChangeEvent<unknown>, newTab: number): void => {
-    debug("newTab:", newTab)
+    //debug("newTab:", newTab)
     setTab(newTab)
   }
   const [edit, setEdit] = useRecoilState(uiEditState)
