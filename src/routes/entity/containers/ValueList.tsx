@@ -341,7 +341,7 @@ const ValueList: FC<{
         const canSelectNone = (i == 0 && !property.minCount) || (i > 0 && i == nbvalues - 1)
         return (
           <SelectComponent
-            key={val.id}
+            key={"select_" + val.id + "_" + i}
             canSelectNone={canSelectNone}
             subject={subject}
             property={property}
@@ -1365,7 +1365,7 @@ const SelectComponent: FC<{
 
   const val = res?.id ? res : getElementFromValue(listOrCollec[index].value, true)
 
-  //debug("selec:", val, val?.id, res, res?.id, uiLang, uiLitLang, property.qname, property, possibleValues)
+  debug("selec:", property.qname, index, list, collec, listOrCollec, val, val?.id, res, res?.id, property)
 
   const onChange: (event: ChangeEvent<{ name?: string | undefined; value: unknown }>) => void = (event) => {
     const resForNewValue = getElementFromValue(event.target.value as string)
@@ -1400,25 +1400,25 @@ const SelectComponent: FC<{
           select
           className={"selector mr-2"}
           value={val?.id}
-          key={selectIdx + val?.id}
+          key={"textfield_" + selectIdx + val?.id + "_" + index}
           style={{ padding: "1px", minWidth: "250px" }}
           onChange={onChange}
           label={[
             propLabel,
             helpMessage ? (
-              <Tooltip key={selectIdx + val?.id} title={helpMessage}>
+              <Tooltip key={"tooltip_" + selectIdx + val?.id + "_" + index} title={helpMessage}>
                 <HelpIcon className="help" />
               </Tooltip>
             ) : null,
           ]}
           {...(!editable ? { disabled: true } : {})}
         >
-          {possibleValues.map((v) => {
+          {possibleValues.map((v, k) => {
             if ("uri" in v) {
               const r = v as RDFResourceWithLabel
               const label = ValueByLangToStrPrefLang(r.prefLabels, uiLitLang)
               return (
-                <MenuItem key={selectIdx + r.id} value={r.id} className="withDescription">
+                <MenuItem key={"menu-uri_" + selectIdx + r.id} value={r.id} className="withDescription">
                   {r.description ? (
                     <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLitLang)}>
                       <span>{label}</span>
@@ -1433,7 +1433,11 @@ const SelectComponent: FC<{
             } else {
               const l = v as LiteralWithId
               return (
-                <MenuItem key={selectIdx + l.id} value={l.id} className="withDescription">
+                <MenuItem
+                  key={"menu-lit_" + selectIdx + l.id + "_" + index + "_" + k}
+                  value={l.id}
+                  className="withDescription"
+                >
                   {l.value}
                 </MenuItem>
               )
