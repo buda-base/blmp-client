@@ -463,6 +463,8 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
 }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
+  const collec = list.length === 1 && list[0].node?.termType === "Collection" ? list[0].node.elements : undefined
+  const listOrCollec = collec ? collec : list
   const [uiLang] = useRecoilState(uiLangState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [edit, setEdit] = useRecoilState(uiEditState)
@@ -477,7 +479,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
       subject.noHisto(false, 1) // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
     }
     const item = generateDefault(property, subject)
-    setList((oldList) => [...oldList, item])
+    setList([...listOrCollec, item]) //(oldList) => [...oldList, item])
     if (property.objectType === ObjectType.Facet && item instanceof Subject) {
       //setEdit(property.qname+item.qname)  // won't work...
       setImmediate(() => {
@@ -1350,7 +1352,7 @@ const SelectComponent: FC<{
   const index = selectIdx //listOrCollec.findIndex((listItem) => listItem === res)
 
   const deleteItem = () => {
-    const newList = removeItemAtIndex(list, index)
+    const newList = removeItemAtIndex(listOrCollec, index)
     setList(newList)
   }
 
@@ -1365,7 +1367,7 @@ const SelectComponent: FC<{
 
   const val = res?.id ? res : getElementFromValue(listOrCollec[index].value, true)
 
-  debug("selec:", property.qname, index, list, collec, listOrCollec, val, val?.id, res, res?.id, property)
+  //debug("selec:", property.qname, index, list, collec, listOrCollec, val, val?.id, res, res?.id, property)
 
   const onChange: (event: ChangeEvent<{ name?: string | undefined; value: unknown }>) => void = (event) => {
     const resForNewValue = getElementFromValue(event.target.value as string)
@@ -1374,9 +1376,9 @@ const SelectComponent: FC<{
     }
     let newList
     if (resForNewValue == noneSelected && canDel) {
-      newList = removeItemAtIndex(list, index)
+      newList = removeItemAtIndex(listOrCollec, index)
     } else {
-      newList = replaceItemAtIndex(list, index, resForNewValue)
+      newList = replaceItemAtIndex(listOrCollec, index, resForNewValue)
     }
     setList(newList)
 

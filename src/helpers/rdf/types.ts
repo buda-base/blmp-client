@@ -122,7 +122,7 @@ export class EntityGraphValues {
           if (val instanceof LiteralWithId) {
             throw "can't add literals in inverse path, something's wrong with the data!"
           } else {
-            if (val.node.value == "tmp:uri" || val.node.value == "tmp:none") continue
+            if (val.node?.value == "tmp:uri" || val.node?.value == "tmp:none") continue
             store.add(val.node, property, subject, defaultGraphNode)
             if (val instanceof Subject) {
               this.addNewValuestoStore(store, val.uri)
@@ -135,15 +135,19 @@ export class EntityGraphValues {
         const values: Array<Value> = this.newSubjectProps[subjectUri][pathString]
         const collection = new rdf.Collection()
         for (const val of values) {
+          debug("val:", val, listMode)
           if (val instanceof LiteralWithId) {
             // do not add empty strings
             if (val.value == "") continue
             if (listMode) collection.append(val)
             else store.add(subject, property, val, defaultGraphNode)
           } else {
-            if (val.node.value == "tmp:uri" || val.node.value == "tmp:none") continue
-            if (listMode) collection.append(val.node)
-            else store.add(subject, property, val.node, defaultGraphNode)
+            if (val.node?.value == "tmp:uri" || val.node?.value == "tmp:none") continue
+            if (listMode) {
+              // val.node happens to be undefined when list has been updated in UI
+              if (val.node) collection.append(val.node)
+              else collection.append(val)
+            } else store.add(subject, property, val.node, defaultGraphNode)
             if (val instanceof Subject) {
               this.addNewValuestoStore(store, val.uri)
             }
@@ -151,6 +155,7 @@ export class EntityGraphValues {
         }
         if (listMode && collection.elements.length) {
           collection.close()
+          debug("collec:", collection)
           store.add(subject, property, collection, defaultGraphNode)
         }
       }
