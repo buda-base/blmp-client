@@ -1347,7 +1347,7 @@ const SelectComponent: FC<{
 
   if (canSelectNone) possibleValues = [noneSelected, ...possibleValues]
 
-  const index = listOrCollec.findIndex((listItem) => listItem === res)
+  const index = selectIdx //listOrCollec.findIndex((listItem) => listItem === res)
 
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
