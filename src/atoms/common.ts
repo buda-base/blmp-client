@@ -4,14 +4,14 @@ import { Value, Subject } from "../helpers/rdf/types"
 
 const debug = require("debug")("bdrc:common")
 
-export const uiLangState = atom<string>({
+export const uiLangState = atom<array<string>>({
   key: "uiLangState",
-  default: "en",
+  default: ["en"],
 })
 
-export const uiLitLangState = atom<string>({
+export const uiLitLangState = atom<array<string>>({
   key: "uiLitLangState",
-  default: "en",
+  default: ["en"],
 })
 
 export const uiReadyState = atom<boolean>({

@@ -4,18 +4,18 @@ import { fromWylie } from "jsewts"
 
 const debug = require("debug")("bdrc:rdf:lang")
 
-export const ValueByLangToStrPrefLang = (vbl: Record<string, string> | null, prefLang: string) => {
+export const ValueByLangToStrPrefLang = (vbl: Record<string, string> | null, prefLang: string | Array<string>) => {
   if (vbl == null) return ""
-  if (prefLang in vbl) return vbl[prefLang]
-  if (prefLang === "bo" && "bo-x-ewts" in vbl) {
-    return fromWylie(vbl["bo-x-ewts"])
+  if (!Array.isArray(prefLang)) prefLang = [prefLang]
+  // DONE: language preference list
+  for (const pL of prefLang) {
+    if (pL in vbl) return vbl[pL]
+    if (pL === "bo" && "bo-x-ewts" in vbl) {
+      return fromWylie(vbl["bo-x-ewts"])
+    }
+    if (pL === "en") for (const k of Object.keys(vbl)) if (k.endsWith("-x-ewts") || k.endsWith("-x-iast")) return vbl[k]
   }
   if ("en" in vbl) return vbl["en"]
-
-  // TODO language preference list?
-
-  if (prefLang === "en")
-    for (const k of Object.keys(vbl)) if (k.endsWith("-x-ewts") || k.endsWith("-x-iast")) return vbl[k]
 
   const vals = Object.values(vbl)
   if (vals[0]) return vals[0]

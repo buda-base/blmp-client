@@ -67,11 +67,13 @@ export function AuthContextWrapper({ children }) {
             uiLitL
           if (id.length) {
             uiL = response.data[id[0]][ns.BDOU("preferredUiLang").value]
-            if (uiL?.length) uiL = uiL[0].value
-            if (uiL) setUiLang(uiL)
+            //if (uiL?.length) uiL = uiL[0].value
+            if (uiL?.length) setUiLang(uiL.map((u) => u.value))
+
             uiLitL = response.data[id[0]][ns.BDOU("preferredUiLiteralLangs").value]
-            if (uiLitL?.length) uiLitL = uiLitL[0].value
-            if (uiLitL) setUiLitLang(uiLitL)
+            //if (uiLitL?.length) uiLitL = uiLitL[0].value
+            if (uiLitL?.length) setUiLitLang(uiLitL.map((u) => u.value))
+
             id = ns.qnameFromUri(id[0])
             if (id) setUserId(id)
           }

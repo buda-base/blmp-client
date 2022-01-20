@@ -28,9 +28,11 @@ function NavBar(props: AppProps) {
   const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
   // https://github.com/mui-org/material-ui/issues/15400
   const uiLangOnChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setUiLang(event.target.value as string)
-    setUiLitLang(event.target.value as string)
+    setUiLang([event.target.value as string, uiLang.slice(1)])
+    setUiLitLang([event.target.value as string, uiLitLang.slice(1)])
   }
+
+  //debug("uiL:",uiLang,uiLitLang)
 
   const [entities] = useRecoilState(entitiesAtom)
   const [uiTab] = useRecoilState(uiTabState)
@@ -46,7 +48,7 @@ function NavBar(props: AppProps) {
         <img className="" src="/images/BUDA-small.svg" height="50px" alt="buda editor" />
       </Link>
       <FormControl className="ml-auto">
-        <Select labelId="uilanglabel" id="select" value={uiLang} onChange={uiLangOnChange}>
+        <Select labelId="uilanglabel" id="select" value={uiLang[0]} onChange={uiLangOnChange}>
           <MenuItem value="en">English</MenuItem>
           <MenuItem value="bo">བོད་ཡིག</MenuItem>
           <MenuItem value="zh-hans">中文</MenuItem>

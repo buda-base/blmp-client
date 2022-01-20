@@ -172,7 +172,7 @@ const ValueList: FC<{
   const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
   const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
-  debug("vL:", list, collec)
+  //debug("vL:", list, collec)
 
   const alreadyHasEmptyValue: () => boolean = (): boolean => {
     for (const val of list) {
@@ -318,7 +318,7 @@ const ValueList: FC<{
     list[0].uri === "tmp:uri"
 
   const renderListElem = (val: Value, i: number, nbvalues: number) => {
-    debug("render:", property.qname, property, val, i)
+    //debug("render:", property.qname, property, val, i)
     if (val instanceof RDFResourceWithLabel || property.in?.length) {
       if (property.objectType == ObjectType.ResExt)
         return (
@@ -1365,7 +1365,7 @@ const SelectComponent: FC<{
 
   const val = res?.id ? res : getElementFromValue(listOrCollec[index].value, true)
 
-  debug("selec:", val, val?.id, res, res?.id, uiLang, uiLitLang, property.qname, property, possibleValues)
+  //debug("selec:", val, val?.id, res, res?.id, uiLang, uiLitLang, property.qname, property, possibleValues)
 
   const onChange: (event: ChangeEvent<{ name?: string | undefined; value: unknown }>) => void = (event) => {
     const resForNewValue = getElementFromValue(event.target.value as string)
