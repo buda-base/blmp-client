@@ -135,7 +135,7 @@ export class EntityGraphValues {
         const values: Array<Value> = this.newSubjectProps[subjectUri][pathString]
         const collection = new rdf.Collection()
         for (const val of values) {
-          debug("val:", val, listMode)
+          //debug("val:", val, listMode)
           if (val instanceof LiteralWithId) {
             // do not add empty strings
             if (val.value == "") continue
@@ -145,8 +145,17 @@ export class EntityGraphValues {
             if (val.node?.value == "tmp:uri" || val.node?.value == "tmp:none") continue
             if (listMode) {
               // val.node happens to be undefined when list has been updated in UI
-              if (val.node) collection.append(val.node)
-              else collection.append(val)
+              if (val.node) {
+                // flatten inner Collection (TODO? there could be a flag somewhere to allow multimensionality)
+                if (val.node.termType === "Collection" && val.node.elements) {
+                  for (const v of val.node.elements) {
+                    if (v.node) collection.append(v.node)
+                    else collection.append(v)
+                  }
+                } else {
+                  collection.append(val.node)
+                }
+              } else collection.append(val)
             } else store.add(subject, property, val.node, defaultGraphNode)
             if (val instanceof Subject) {
               this.addNewValuestoStore(store, val.uri)
@@ -155,7 +164,6 @@ export class EntityGraphValues {
         }
         if (listMode && collection.elements.length) {
           collection.close()
-          debug("collec:", collection)
           store.add(subject, property, collection, defaultGraphNode)
         }
       }

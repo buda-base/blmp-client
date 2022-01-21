@@ -82,6 +82,10 @@ export function AuthContextWrapper({ children }) {
           setReloadProfile(false)
           setLoadingState({ status: "fetched", error: null })
         })
+        .catch(function (error) {
+          debug("%O / retrying", error)
+          fetchProfile()
+        })
       /*
         .then(function (response) {
           debug("Profile loaded", response.data)
