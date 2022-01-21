@@ -121,7 +121,7 @@ function BottomBar(props: AppProps) {
     setLang(uiLang)
   }, [uiLang])
 
-  //debug("bottombar:", props, entitySubj?.qname, message, lang, uiLang) //,entityQname)
+  //debug("bottombar:", isUserProfile, userId, entitySubj)
 
   const save = async (): Promise<undefined> => {
     //debug("save:",entities[entity])

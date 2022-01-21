@@ -12,7 +12,7 @@ const debug = require("debug")("bdrc:auth")
 export const AuthContext = React.createContext()
 
 export function AuthContextWrapper({ children }) {
-  const { isAuthenticated, getAccessTokenSilently, user, logout } = useAuth0()
+  const { isAuthenticated, getIdTokenClaims, getAccessTokenSilently, user, logout, loading } = useAuth0()
   const [idToken, setIdToken] = useState("")
   const [profile, setProfile] = useState(null)
   const [loadingState, setLoadingState] = useState({ status: "idle", error: null })
@@ -23,14 +23,15 @@ export function AuthContextWrapper({ children }) {
 
   useEffect(() => {
     async function checkSession() {
-      const idToken = await getAccessTokenSilently()
+      const idToken = await getIdTokenClaims()
       setIdToken(idToken.__raw)
     }
     if (isAuthenticated) checkSession()
+    else getAccessTokenSilently()
   }, [getAccessTokenSilently, isAuthenticated])
 
   useEffect(() => {
-    //debug("reload?",reloadProfile,loadingState.status)
+    //debug("reload?",isAuthenticated,reloadProfile,loadingState.status)
     if (!reloadProfile) return
 
     if (isAuthenticated && idToken) fetchProfile()
