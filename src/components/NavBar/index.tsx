@@ -126,7 +126,7 @@ function BottomBar(props: AppProps) {
   const save = async (): Promise<undefined> => {
     //debug("save:",entities[entity])
 
-    if (entities[entity].state === EditedEntityState.Error) {
+    if (entities[entity].state === EditedEntityState.Error && (!saving || isUserProfile)) {
       if (!window.confirm("errors are detected in this entity, save anyway?")) return
     }
 

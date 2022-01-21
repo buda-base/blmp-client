@@ -541,10 +541,11 @@ const EditLangString: FC<{
     return err
   }
 
-  const [error, setError] = useState(getLangStringError(lit.value))
+  const [error, setError] = useState("") //getLangStringError(lit.value))
 
   useEffect(() => {
     const newError = getLangStringError(lit.value)
+    //debug("newE:",newError,error)
     if (newError != error) {
       setError(newError)
       updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
@@ -881,7 +882,7 @@ const EditInt: FC<{
     return err
   }
 
-  const [error, setError] = useState(getIntError(lit.value))
+  const [error, setError] = useState("") //getIntError(lit.value))
 
   useEffect(() => {
     if (lit.value === undefined || lit.value === null || lit.value === "") return
@@ -897,7 +898,7 @@ const EditInt: FC<{
     if (newError != error) setError(newError)
     else updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
 
-    debug("change:", newError)
+    //debug("change:", newError)
 
     if (dt && dt.value == xsdgYear) {
       //pad to four digits in the case of xsdgYear
@@ -993,11 +994,13 @@ const LiteralComponent: FC<{
     const n = entities.findIndex((e) => e.subjectQname === entityQname)
     if (n > -1) {
       const ent: Entity = entities[n]
-      if (status === EditedEntityState.Error && ent.state != status) {
-        //debug("error:", status, n, ent, errors, property.qname, index)
-        const newEntities = [...entities]
-        newEntities[n] = { ...entities[n], state: status }
-        setEntities(newEntities)
+      if (status === EditedEntityState.Error) {
+        //debug("error:", errors, status, n, ent, property.qname, index)
+        if (ent.state != status) {
+          const newEntities = [...entities]
+          newEntities[n] = { ...entities[n], state: status }
+          setEntities(newEntities)
+        }
         if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
         errors[ent.subjectQname][property.qname + ":" + index] = true
       } else if (status !== EditedEntityState.Error) {
