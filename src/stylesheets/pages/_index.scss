@@ -327,6 +327,7 @@ input[type="checkbox"].dmcheck {
         &.userprofile, &.user, &[data-shape="bds:UserProfileShape"] { 
           & > .shape-icon:before { background-image:url(/icons/user.png); background-size:auto;  }
         }
+        &.imageinstance > .shape-icon:before { background-image:url(/icons/imageinstance.svg); background-size:55px auto;  }
 
 
         h1 { font-size:25px; line-height:37px; font-weight:700; text-align: left; color:#343434; padding-left:20px; padding-top:20px;}
@@ -559,14 +560,14 @@ label ~ .selector {
       .propLabel ~ div { border-color:transparent; transition:500ms; }
     }
     //.extEntity.new { max-height:0; transition:500ms;  }
-    &:not(.empty) { max-height:95px; margin-bottom:15px;
+    &:not(.empty) { max-height:102px; margin-bottom:15px;
 
       & > label + div + div { overflow:hidden !important; }
 
       &::after { display:block; content:'...'; position:absolute;top:75px; left:0; color:#bbb;}
       & > div { line-height:0; 
         & > :not(.new) { line-height:1.5;
-          & > div { margin-top:0 !important; margin-bottom:15px; }
+          & > div { margin-top:0 !important; margin-bottom:20px; }
         }
         & > .new { display:none;}
       }
@@ -827,6 +828,10 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 .card.show-displayPriority-false .empty .propLabel[data-priority="1"],
 .card.show-displayPriority-false .empty .propLabel[data-priority="2"],
 */
+
+
+.row.show-displayPriority-false .empty[data-priority="1"] > div > .resSelect { display:none !important; }
+
 .card.show-displayPriority-false .facet.force-false .empty .propLabel[data-priority="1"],
 .card.show-displayPriority-false .facet.force-false .empty .propLabel[data-priority="2"],
 .card.show-displayPriority-false > div > div > .album > .container > .empty > .propLabel[data-priority="1"],

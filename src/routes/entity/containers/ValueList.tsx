@@ -284,15 +284,8 @@ const ValueList: FC<{
 
   //debug("prop:", property.qname, subject.qname, list) //property, force)
 
-  /* eslint-disable no-magic-numbers */
-  const showLabel =
-    !property.displayPriority ||
-    property.displayPriority === 0 ||
-    property.displayPriority === 1 && (force || list.length > 1) ||
-    property.displayPriority === 2 && list.length >= 1
-
   const isEmptyValue = (val: Value): boolean => {
-    if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri"
+    if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri" || val.uri === "tmp:none"
     else if (val instanceof LiteralWithId) return !val.value && !val.language
     return false
   }
@@ -301,6 +294,15 @@ const ValueList: FC<{
     if (val instanceof LiteralWithId && property?.datatype?.value === ns.RDF("langString").value) return !val.value
     return false
   }
+
+  const hasNonEmptyValue = list.some((v) => !isEmptyValue(v) || isErrorValue(v))
+
+  /* eslint-disable no-magic-numbers */
+  const showLabel =
+    !property.displayPriority ||
+    property.displayPriority === 0 ||
+    property.displayPriority === 1 && (force || list.length > 1 || hasNonEmptyValue) ||
+    property.displayPriority === 2 && (list.length >= 1 || hasNonEmptyValue)
 
   // scroll back to top when loosing focus
   const scrollElem = useRef<null | HTMLDivElement>(null)
@@ -401,7 +403,7 @@ const ValueList: FC<{
         className={
           "ValueList " +
           (property.maxCount && property.maxCount < list.length ? "maxCount" : "") +
-          (list.filter((v) => !isEmptyValue(v) || isErrorValue(v)).length ? "" : "empty") +
+          (hasNonEmptyValue ? "" : "empty") +
           (property.objectType === ObjectType.ResExt ? " ResExt" : "") +
           (embedded ? "" : " main")
         }

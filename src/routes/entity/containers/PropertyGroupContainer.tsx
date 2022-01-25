@@ -62,7 +62,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
               onClick={() => setEdit(group.qname)}
             >
               <p className="">{label}</p>
-              <div className={group.properties.length <= 1 ? "hidePropLabel" : ""}>
+              <div className={group.properties.length <= 1 ? "hidePropLabel" : ""} style={{ fontSize: 0 }}>
                 {withoutDisplayPriority.map((property, index) => (
                   <PropertyContainer
                     key={index}
