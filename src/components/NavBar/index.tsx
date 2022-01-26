@@ -8,16 +8,19 @@ import i18n from "i18next"
 import { useRecoilState, useRecoilValue, selectorFamily } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl, TextField } from "@material-ui/core"
+import Button from "@material-ui/core/Button"
+import * as rdf from "rdflib"
+import axios from "axios"
+
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
 import { reloadProfileState, uiLangState, uiLitLangState, uiTabState, userIdState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
-import Button from "@material-ui/core/Button"
-import * as rdf from "rdflib"
 import * as ns from "../../helpers/rdf/ns"
 import { langs } from "../../helpers/lang"
 import { debugStore, setUserLocalEntities, putTtl } from "../../helpers/rdf/io"
 import { history } from "../../helpers/rdf/types"
+import config from "../../config"
 
 const debug = require("debug")("bdrc:NavBar")
 
@@ -122,6 +125,17 @@ function BottomBar(props: AppProps) {
 
   const isIInstance = shapeQname === "bds:ImageInstanceShape"
 
+  const { isAuthenticated, getIdTokenClaims } = useAuth0()
+  const [idToken, setIdToken] = useState("")
+
+  useEffect(() => {
+    async function checkSession() {
+      const idToken = await getIdTokenClaims()
+      setIdToken(idToken.__raw)
+    }
+    if (isAuthenticated) checkSession()
+  }, [isAuthenticated])
+
   useEffect(() => {
     setLang(uiLang)
   }, [uiLang])
@@ -134,7 +148,25 @@ function BottomBar(props: AppProps) {
     if (disabled) {
       if (!gen) setGen(true)
       else {
-        setGen(false)
+        await axios
+          .request({
+            method: "get",
+            timeout: 4000,
+            baseURL: config.API_BASEURL,
+            url: "scanrequest/" + entitySubj.qname + "?addVolumes=" + nbVolumes,
+            headers: {
+              Authorization: `Bearer ${idToken}`,
+              Accept: "application/json", //"text/turtle",
+            },
+          })
+          .then(function (response) {
+            debug("loaded:", response.data)
+            setGen(false)
+            setNbVolumes("")
+          })
+          .catch(function (error) {
+            debug("error %O", error)
+          })
       }
     } else {
       save()
@@ -222,7 +254,7 @@ function BottomBar(props: AppProps) {
                 onChange={onNbVolumesChangeHandler}
                 InputProps={{ inputProps: { min: 0, max: 999 } }}
                 InputLabelProps={{ shrink: true }}
-                style={{ minWidth: 400 }}
+                style={{ minWidth: 300 }}
               />
             </>
           )}
