@@ -109,19 +109,37 @@ function BottomBar(props: AppProps) {
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
   const auth0 = useAuth0()
   const [message, setMessage] = useState("")
+  const [nbVolumes, setNbVolumes] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [lang, setLang] = useState(uiLang)
   const [saving, setSaving] = useState(false)
+  const [gen, setGen] = useState(false)
   const [userId, setUserId] = useRecoilState(userIdState)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
+  const shapeQname = entities[entity]?.shapeRef?.qname ? entities[entity]?.shapeRef?.qname : entities[entity]?.shapeRef
 
   const isUserProfile = userId === entities[entity]?.subjectQname
+
+  const isIInstance = shapeQname === "bds:ImageInstanceShape"
 
   useEffect(() => {
     setLang(uiLang)
   }, [uiLang])
 
-  //debug("bottombar:", isUserProfile, userId, entitySubj)
+  debug("bottombar:", isUserProfile, userId, entitySubj, shapeQname)
+
+  const generate = async (): Promise<undefined> => {
+    debug("gen:", entities[entity])
+
+    if (disabled) {
+      if (!gen) setGen(true)
+      else {
+        setGen(false)
+      }
+    } else {
+      save()
+    }
+  }
 
   const save = async (): Promise<undefined> => {
     //debug("save:",entities[entity])
@@ -158,9 +176,7 @@ function BottomBar(props: AppProps) {
     // save ttl to localStorage
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
     rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
-      let shape = entities[entity].shapeRef
-      if (shape.qname) shape = shape.qname
-      setUserLocalEntities(auth0, entities[entity].subjectQname, shape, str, false, userId)
+      setUserLocalEntities(auth0, entities[entity].subjectQname, shapeQname, str, false, userId)
     })
 
     history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])
@@ -169,6 +185,7 @@ function BottomBar(props: AppProps) {
     setSaving(false)
     setMessage("")
     if (isUserProfile) setReloadProfile(true)
+    else if (isIInstance) setGen(true)
   }
 
   const onLangChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -179,62 +196,96 @@ function BottomBar(props: AppProps) {
     setMessage(event.target.value as string)
   }
 
+  const onNbVolumesChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setNbVolumes(event.target.value as string)
+  }
+
+  const disabled =
+    (entities[entity] &&
+      [EditedEntityState.Saved, EditedEntityState.NotLoaded, EditedEntityState.Loading].includes(
+        entities[entity].state
+      )) ||
+    (message === "" && saving && !isUserProfile)
+
   return (
     <nav className="bottom navbar navbar-dark navbar-expand-md">
       <HistoryHandler entityUri={entityUri} />
       <span />
-      {saving && !isUserProfile && (
-        <div style={{ marginTop: "-9px", marginLeft: "auto" }}>
-          <TextField
-            label={"commit message"}
-            value={message}
-            onChange={onMessageChangeHandler}
-            InputLabelProps={{ shrink: true }}
-            style={{ minWidth: 300 }}
-          />
+      <div className={"popup " + ((saving && !isUserProfile) || (gen && isIInstance) ? "on" : "")}>
+        <div>
+          {gen && isIInstance && (
+            <>
+              <TextField
+                label={"Number of volumes to add"}
+                type="number"
+                value={nbVolumes}
+                onChange={onNbVolumesChangeHandler}
+                InputProps={{ inputProps: { min: 0, max: 999 } }}
+                InputLabelProps={{ shrink: true }}
+                style={{ minWidth: 400 }}
+              />
+            </>
+          )}
+          {saving && !isUserProfile && (
+            <>
+              <TextField
+                label={"commit message"}
+                value={message}
+                onChange={onMessageChangeHandler}
+                InputLabelProps={{ shrink: true }}
+                style={{ minWidth: 300 }}
+              />
 
-          <TextField
-            select
-            value={lang}
-            onChange={onLangChangeHandler}
-            InputLabelProps={{ shrink: true }}
-            style={{ minWidth: 100, marginTop: "16px", marginLeft: "15px", marginRight: "15px" }}
-          >
-            {langs.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.value}
-              </MenuItem>
-            ))}
-          </TextField>
+              <TextField
+                select
+                value={lang}
+                onChange={onLangChangeHandler}
+                InputLabelProps={{ shrink: true }}
+                style={{ minWidth: 100, marginTop: "16px", marginLeft: "15px", marginRight: "15px" }}
+              >
+                {langs.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.value}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </>
+          )}
         </div>
-      )}
-      <Button
-        variant="outlined"
-        onClick={save}
-        className="btn-rouge"
-        {...((entities[entity] &&
-          [EditedEntityState.Saved, EditedEntityState.NotLoaded, EditedEntityState.Loading].includes(
-            entities[entity].state
-          )) ||
-        (message === "" && saving && !isUserProfile)
-          ? { disabled: true }
-          : {})}
-      >
-        {saving ? "Ok" : "Save"}
-      </Button>
-      {saving && (
+      </div>
+      <div className="buttons">
         <Button
           variant="outlined"
-          onClick={() => {
-            setSaving(false)
-            setMessage("")
-          }}
-          className="btn-blanc ml-2"
-          style={{ position: "absolute", left: "calc(100% - (100% - 1225px)/2)" }}
+          onClick={isIInstance ? generate : save}
+          className="btn-rouge"
+          {...(disabled && (!isIInstance || (gen && !nbVolumes)) ? { disabled: true } : {})}
         >
-          Cancel
+          {saving
+            ? "Ok"
+            : !isIInstance
+            ? "Save"
+            : disabled
+            ? gen
+              ? "Generate scan request"
+              : "Scan Request"
+            : "Save & Scan Request"}
         </Button>
-      )}
+        {(saving || gen) && (
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setGen(false)
+              setSaving(false)
+              setMessage("")
+              setNbVolumes("")
+            }}
+            className="btn-blanc ml-2"
+            //style={{ position: "absolute", left: "calc(100% - (100% - 1225px)/2)" }}
+          >
+            Cancel
+          </Button>
+        )}
+      </div>
     </nav>
   )
 }

@@ -812,12 +812,35 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 
   &.bottom { background: #E2E2E2;  
-    box-shadow: 0 -2px 4px hsla(0,0%,73.3%,.5) !important;
+    
+
+    &::before { position:absolute; width:100%;background: #e2e2e2; height:100%;display: block; content:'';left:0;top:0;box-shadow: 0 -2px 4px hsla(0,0%,73.3%,.5) !important;}
 
     .undo-btn:not(#a) { 
       &[disabled],
       &:disabled,
       &.disabled { opacity:1; background:#E9E9E9; color:#727272 !important;}
+    }
+
+    .popup {
+      z-index:-1;
+      right: calc((100% - 1225px)/2);
+      position: absolute;
+      background: #E9E9E9;
+      padding: 20px;
+      top: 100%;
+      box-shadow: 0 -1px 4px rgba(106,107,107,0.5);
+
+      min-width:400px;
+      min-height:80px;
+
+      transition:all 200ms ease-in-out;
+
+      &.on { top: calc(100% - 150px); }
+    }
+
+    .buttons {
+      & > button { min-width:75px; }
     }
   }
 }
