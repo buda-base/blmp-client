@@ -831,12 +831,17 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
       top: 100%;
       box-shadow: 0 -1px 4px rgba(106,107,107,0.5);
 
-      min-width:470px;
-      min-height:80px;
+      //min-width:470px;
+      min-height:85px;
 
-      transition:all 200ms ease-in-out;
+      transition:all 300ms ease-in-out;
 
-      &.on { top: calc(100% - 150px); }
+      &.on { top: calc(100% - 155px); }
+
+      &.error {
+        min-height:105px;
+        &.on { top: calc(100% - 175px); }
+      }
     }
 
     .buttons {

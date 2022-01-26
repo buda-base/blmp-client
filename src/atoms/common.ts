@@ -101,3 +101,8 @@ export const reloadProfileState = atom<boolean>({
   key: "reloadProfileState",
   default: true,
 })
+
+export const reloadEntityState = atom<string>({
+  key: "reloadEntityState",
+  default: "",
+})

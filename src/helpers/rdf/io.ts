@@ -5,7 +5,7 @@ import { useRecoilState } from "recoil"
 import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject, Ontology, history } from "./types"
 import { NodeShape, prefLabel } from "./shapes"
 import { uriFromQname, qnameFromUri, BDSH_uri } from "./ns"
-import { profileIdState, uiReadyState, sessionLoadedState } from "../../atoms/common"
+import { profileIdState, uiReadyState, sessionLoadedState, reloadEntityState } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 import { useAuth0, Auth0ContextInterface } from "@auth0/auth0-react"
 
@@ -274,6 +274,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [idToken, setIdToken] = useState("")
   const [profileId, setProfileId] = useRecoilState(profileIdState)
   const [current, setCurrent] = useState(entityQname)
+  const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
 
   useEffect(() => {
     if (current != entityQname) {
@@ -411,6 +412,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         setEntityLoadingState({ status: "fetched", error: undefined })
         setEntity(subject)
         setUiReady(true)
+
+        if (reloadEntity) setReloadEntity("")
       } catch (e) {
         debug("e:", e.message, e)
         setEntityLoadingState({
@@ -424,7 +427,10 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
     const index = entities.findIndex(
       (e) => e.subjectQname === entityQname || entityQname == "tmp:user" && e.subjectQname === profileId
     )
-    if (current === entityQname && (index === -1 || entities[index] && !entities[index].subject)) {
+    if (
+      reloadEntity === entityQname && !entities[index].subject ||
+      current === entityQname && (index === -1 || entities[index] && !entities[index].subject)
+    ) {
       if (entityQname != "tmp:user" || idToken) fetchResource(entityQname)
     } else {
       setEntityLoadingState({ status: "fetched", error: undefined })
@@ -432,7 +438,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       if (subj) setEntity(subj)
       setUiReady(true)
     }
-  }, [current, shapeRef, idToken, profileId])
+  }, [current, shapeRef, idToken, profileId, reloadEntity])
 
   const retVal =
     entityQname === current

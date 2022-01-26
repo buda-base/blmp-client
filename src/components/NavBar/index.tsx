@@ -14,13 +14,21 @@ import axios from "axios"
 
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
-import { reloadProfileState, uiLangState, uiLitLangState, uiTabState, userIdState } from "../../atoms/common"
+import {
+  reloadEntityState,
+  reloadProfileState,
+  uiLangState,
+  uiLitLangState,
+  uiTabState,
+  userIdState,
+} from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import * as ns from "../../helpers/rdf/ns"
 import { langs } from "../../helpers/lang"
 import { debugStore, setUserLocalEntities, putTtl } from "../../helpers/rdf/io"
 import { history } from "../../helpers/rdf/types"
 import config from "../../config"
+import { ErrorIcon } from "../../routes/layout/icons"
 
 const debug = require("debug")("bdrc:NavBar")
 
@@ -117,9 +125,12 @@ function BottomBar(props: AppProps) {
   const [lang, setLang] = useState(uiLang)
   const [saving, setSaving] = useState(false)
   const [gen, setGen] = useState(false)
+  const [popupOn, setPopupOn] = useState(false)
   const [userId, setUserId] = useRecoilState(userIdState)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
+  const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
   const shapeQname = entities[entity]?.shapeRef?.qname ? entities[entity]?.shapeRef?.qname : entities[entity]?.shapeRef
+  const [error, setError] = useState("")
 
   const isUserProfile = userId === entities[entity]?.subjectQname
 
@@ -140,32 +151,73 @@ function BottomBar(props: AppProps) {
     setLang(uiLang)
   }, [uiLang])
 
-  debug("bottombar:", isUserProfile, userId, entitySubj, shapeQname)
+  //debug("bottombar:", isUserProfile, userId, entitySubj, shapeQname)
+
+  const delay = 300
+  const closePopup = (delay1 = delay, delay2 = delay) => {
+    setTimeout(() => {
+      setPopupOn(false)
+      setTimeout(() => {
+        setSaving(false)
+        setMessage("")
+        setGen(false)
+        setNbVolumes("")
+        setError("")
+      }, delay2)
+    }, delay1)
+  }
 
   const generate = async (): Promise<undefined> => {
     debug("gen:", entities[entity])
 
     if (disabled) {
-      if (!gen) setGen(true)
-      else {
+      if (!gen) {
+        setPopupOn(true)
+        setGen(true)
+      } else {
+        const entityQname = entitySubj.qname
+
         await axios
           .request({
             method: "get",
+            responseType: "blob",
             timeout: 4000,
             baseURL: config.API_BASEURL,
-            url: "scanrequest/" + entitySubj.qname + "?addVolumes=" + nbVolumes,
+            url: "scanrequest/" + entityQname + "?addVolumes=" + nbVolumes,
+            //url: "resource-nc/user/me", // to test file download
             headers: {
               Authorization: `Bearer ${idToken}`,
-              Accept: "application/json", //"text/turtle",
+              //Accept: "application/zip", // not sure we need this here?
             },
           })
           .then(function (response) {
             debug("loaded:", response.data)
-            setGen(false)
-            setNbVolumes("")
+
+            // download file
+            const temp = window.URL.createObjectURL(new Blob([response.data]))
+            const link = document.createElement("a")
+            link.href = temp
+            link.setAttribute(
+              "download",
+              "ScanRequest-" + entityQname.replace(/^bdr:/, "") + "-" + nbVolumes + "vol.zip"
+            )
+            link.click()
+            window.URL.revokeObjectURL(link)
+
+            closePopup(1, delay)
+
+            // reload entity
+            if (history && history[entityUri]) delete history[entityUri]
+            const newEntities = [...entities]
+            newEntities[entity] = { ...newEntities[entity], subject: null }
+            setEntities(newEntities)
+
+            // use delay to avoid freezing popup UI in intermediate state
+            setTimeout(() => setReloadEntity(entityQname), delay) // eslint-disable-line no-magic-numbers
           })
           .catch(function (error) {
-            debug("error %O", error)
+            debug("error:", error.message)
+            setError(error.message)
           })
       }
     } else {
@@ -181,6 +233,7 @@ function BottomBar(props: AppProps) {
     }
 
     if (!saving && !isUserProfile) {
+      setPopupOn(true)
       setSaving(true)
       return
     }
@@ -196,8 +249,9 @@ function BottomBar(props: AppProps) {
         const loadRes = await putTtl(url, store, idTokenF.__raw)
       } catch (e) {
         // TODO: better error handling
-        setSaving(false)
-        setMessage("")
+
+        closePopup()
+
         return
       }
     }
@@ -214,10 +268,13 @@ function BottomBar(props: AppProps) {
     history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])
     history[entityUri].push({ "tmp:allValuesLoaded": true })
 
-    setSaving(false)
-    setMessage("")
+    if (!isIInstance) closePopup()
+    else {
+      setSaving(false)
+      setGen(true)
+    }
+
     if (isUserProfile) setReloadProfile(true)
-    else if (isIInstance) setGen(true)
   }
 
   const onLangChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -243,7 +300,7 @@ function BottomBar(props: AppProps) {
     <nav className="bottom navbar navbar-dark navbar-expand-md">
       <HistoryHandler entityUri={entityUri} />
       <span />
-      <div className={"popup " + ((saving && !isUserProfile) || (gen && isIInstance) ? "on" : "")}>
+      <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "")}>
         <div>
           {gen && isIInstance && (
             <>
@@ -254,7 +311,18 @@ function BottomBar(props: AppProps) {
                 onChange={onNbVolumesChangeHandler}
                 InputProps={{ inputProps: { min: 0, max: 999 } }}
                 InputLabelProps={{ shrink: true }}
-                style={{ minWidth: 300 }}
+                style={{ minWidth: 275 }}
+                {...(error
+                  ? {
+                      helperText: (
+                        <React.Fragment>
+                          <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                          <i>{error}</i>
+                        </React.Fragment>
+                      ),
+                      error: true,
+                    }
+                  : {})}
               />
             </>
           )}
@@ -305,12 +373,7 @@ function BottomBar(props: AppProps) {
         {(saving || gen) && (
           <Button
             variant="outlined"
-            onClick={() => {
-              setGen(false)
-              setSaving(false)
-              setMessage("")
-              setNbVolumes("")
-            }}
+            onClick={closePopup}
             className="btn-blanc ml-2"
             //style={{ position: "absolute", left: "calc(100% - (100% - 1225px)/2)" }}
           >
