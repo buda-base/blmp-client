@@ -112,7 +112,7 @@ export const getHistoryStatus = (entityUri) => {
 
 function HomeContainer() {
   // uncommenting this triggers "Can't perform a React state update on an unmounted component" error (see #11)
-  //const [tab, setTab] =c(uiTabState)
+  // const [tab, setTab] = useRecoilState(uiTabState)
 
   return (
     <div className="centered-ctn">
