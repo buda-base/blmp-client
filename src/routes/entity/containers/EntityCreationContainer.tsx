@@ -17,8 +17,6 @@ import i18n from "i18next"
 const debug = require("debug")("bdrc:entity:entitycreation")
 
 function EntityCreationContainer(props: AppProps) {
-  const [uiLang] = useRecoilState(uiLangState)
-
   const subjectQname = props.match.params.subjectQname
   const propertyQname = props.match.params.propertyQname
   const index = props.match.params.index

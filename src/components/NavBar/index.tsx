@@ -46,7 +46,7 @@ function NavBar(props: AppProps) {
   //debug("uiL:",uiLang,uiLitLang)
 
   const [entities] = useRecoilState(entitiesAtom)
-  const [uiTab] = useRecoilState(uiTabState)
+  const [uiTab, setUiTab] = useRecoilState(uiTabState)
 
   return (
     <nav className="navbar navbar-dark navbar-expand-md">
@@ -54,7 +54,7 @@ function NavBar(props: AppProps) {
         <img className="" src="/images/BDRC.svg" alt="bdrc" height="50" />
         <span>BDRC</span>
       </a>
-      <Link to={"/"} className="navbar-left">
+      <Link to={"/"} onClick={() => setUiTab(-1)} className="navbar-left">
         <span>EDITOR</span>
         <img className="" src="/images/BUDA-small.svg" height="50px" alt="buda editor" />
       </Link>
