@@ -19,11 +19,13 @@ const debug = require("debug")("bdrc:entity:newentity")
 function NewEntityContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
   const [RID, setRID] = useState("")
-  const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
 
+  /* // no need
+  const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
   useEffect(() => {
     if (disabled) setDisabled(false)
   })
+  */
 
   /* // no need
   const urlParams = qs.parse(props.history.location.search)
