@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, useLayoutEffect } from "react"
 import { ShapeFetcher, EntityFetcher } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject, ExtRDFResourceWithLabel, history } from "../../../helpers/rdf/types"
@@ -39,11 +39,15 @@ export function EntityEditContainerMayUpdate(props: AppProps) {
   const index = props.match.params.index
 
   const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const entity = entities.filter((e) => e.subjectQname === subjectQname)
-  if (entity.length && entity[0].subject && propertyQname && entityQname && index)
+  const [idx, setIdx] = useState()
+  useEffect(() => {
+    setIdx(entities.findIndex((e) => e.subjectQname === subjectQname))
+  }, [])
+
+  if (idx >= 0 && entities[idx].subject && propertyQname && entityQname && index)
     return (
       <EntityEditContainerDoUpdate
-        subject={entity[0].subject}
+        subject={entities[idx].subject}
         propertyQname={propertyQname}
         objectQname={entityQname}
         index={Number(index)}
@@ -51,7 +55,8 @@ export function EntityEditContainerMayUpdate(props: AppProps) {
       />
     )
   // TODO: add 'could not find subject' warning?
-  else return <Redirect to={"/edit/" + subjectQname + "/" + shapeQname} />
+  else if (idx !== undefined) return <Redirect to={"/edit/" + subjectQname + "/" + shapeQname} />
+  else return <div></div>
 }
 
 interface AppPropsDoUpdate extends AppProps {
@@ -68,10 +73,12 @@ function EntityEditContainerDoUpdate(props: AppPropsDoUpdate) {
 
   debug("LIST:", list, atom)
 
-  const newObject = new ExtRDFResourceWithLabel(props.objectQname, {}, {})
-  // DONE: must also give set index in url
-  const newList = replaceItemAtIndex(list, props.index, newObject)
-  setList(newList)
+  useEffect(() => {
+    const newObject = new ExtRDFResourceWithLabel(props.objectQname, {}, {})
+    // DONE: must also give set index in url
+    const newList = replaceItemAtIndex(list, props.index, newObject)
+    setList(newList)
+  }, [])
 
   return <Redirect to={"/edit/" + props.objectQname + "/" + shapeQname} />
 }

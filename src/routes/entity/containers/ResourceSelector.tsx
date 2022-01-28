@@ -78,6 +78,7 @@ const ResourceSelector: FC<{
   const history = useHistory()
   const msgId = subject.qname + property.qname + idx
   const [popupNew, setPopupNew] = useState(false)
+  const [tab, setTab] = useRecoilState(uiTabState)
 
   if (!property.expectedObjectTypes) {
     debug(property)
