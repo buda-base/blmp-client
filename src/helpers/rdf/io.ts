@@ -278,7 +278,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
   useEffect(() => {
     return () => {
-      debug("unm:ef")
+      //debug("unm:ef")
       unmounting = true
     }
   }, [])

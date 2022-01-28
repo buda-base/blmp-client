@@ -9,7 +9,7 @@ import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link, Redirect } from "react-router-dom"
-import React from "react"
+import React, { useEffect } from "react"
 import qs from "query-string"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
@@ -22,7 +22,18 @@ function EntityCreationContainer(props: AppProps) {
   const index = props.match.params.index
 
   const shapeQname = props.match.params.shapeQname
-  const { entityLoadingState, entity } = EntityCreator(shapeQname)
+
+  const unmounting = { val: false }
+  useEffect(() => {
+    return () => {
+      //debug("unm:ecc")
+      unmounting.val = true
+    }
+  }, [])
+
+  const { entityLoadingState, entity } = unmounting.val
+    ? { entityLoadingState: { status: "idle" }, entity: null }
+    : EntityCreator(shapeQname, unmounting)
   if (entity) {
     if (subjectQname && propertyQname && index)
       return (

@@ -48,7 +48,7 @@ export const reserveId = async (prefix: string, token: string): Promise<string> 
   return body
 }
 
-export function EntityCreator(shapeQname: string) {
+export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>()
   const [entities, setEntities] = useRecoilState(entitiesAtom)
@@ -57,6 +57,13 @@ export function EntityCreator(shapeQname: string) {
   const auth0 = useAuth0()
   const [tab, setTab] = useRecoilState(uiTabState)
   const [userId, setUserId] = useRecoilState(userIdState)
+
+  useEffect(() => {
+    return () => {
+      unmounting.val = true
+      //debug("unm:ecr",unmounting)
+    }
+  }, [])
 
   const reset = () => {
     setEntity(undefined)
@@ -68,7 +75,7 @@ export function EntityCreator(shapeQname: string) {
     // we need to load the shape at the same time, which means we need to also
     // load the ontology
     async function createResource(shapeQname: string) {
-      setEntityLoadingState({ status: "fetching shape", error: undefined })
+      if (!unmounting.val) setEntityLoadingState({ status: "fetching shape", error: undefined })
       const url = fetchUrlFromshapeQname(shapeQname)
       const loadShape = loadTtl(url)
       const loadOnto = loadOntology()
@@ -78,17 +85,17 @@ export function EntityCreator(shapeQname: string) {
         const ontology = await loadOnto
         const shapeUri = ns.uriFromQname(shapeQname)
         shape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri), ontology)
-        setShape(shape)
+        if (!unmounting.val) setShape(shape)
       } catch (e) {
         debug(e)
-        setEntityLoadingState({ status: "error", error: "error fetching shape" })
+        if (!unmounting.val) setEntityLoadingState({ status: "error", error: "error fetching shape" })
         return
       }
 
       const shapePrefix = shape.getPropStringValue(shapes.bdsIdentifierPrefix)
       let namespace = shape.getPropStringValue(shapes.shNamespace)
       if (namespace == null) namespace = ns.BDR_uri
-      setEntityLoadingState({ status: "creating", error: undefined })
+      if (!unmounting.val) setEntityLoadingState({ status: "creating", error: undefined })
       let userPrefix
       let lname
       try {
@@ -102,7 +109,7 @@ export function EntityCreator(shapeQname: string) {
         lname = prefix + nanoidCustom()
       } catch (e) {
         debug(e)
-        setEntityLoadingState({ status: "error", error: "error logging or reserving id" })
+        if (!unmounting.val) setEntityLoadingState({ status: "error", error: "error logging or reserving id" })
         return
       }
       const prefix = shapePrefix + userPrefix
@@ -119,14 +126,14 @@ export function EntityCreator(shapeQname: string) {
         subject: newSubject,
         subjectLabelState: newSubject.getAtomForProperty(shapes.prefLabel.uri),
       }
-      setEntities([newEntity, ...entities])
-      setEntity(newSubject)
-      setEntityLoadingState({ status: "created", error: undefined })
+      if (!unmounting.val) setEntities([newEntity, ...entities])
+      if (!unmounting.val) setEntity(newSubject)
+      if (!unmounting.val) setEntityLoadingState({ status: "created", error: undefined })
 
       // save to localStorage
-      setUserLocalEntities(auth0, newSubject.qname, shapeQname, "", false, userId)
+      if (!unmounting.val) setUserLocalEntities(auth0, newSubject.qname, shapeQname, "", false, userId)
 
-      if (tab !== 0) setTab(0)
+      if (!unmounting.val && tab !== 0) setTab(0)
     }
     createResource(shapeQname)
   }, [shapeQname])

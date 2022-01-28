@@ -29,7 +29,7 @@ function EntityShapeChooserContainer(props: AppProps) {
 
   useEffect(() => {
     return () => {
-      debug("unm:esc")
+      //debug("unm:esc")
       unmounting = true
     }
   }, [])
