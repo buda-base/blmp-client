@@ -25,9 +25,19 @@ function EntityShapeChooserContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
+  let unmounting = false
+
+  useEffect(() => {
+    return () => {
+      debug("unm:esc")
+      unmounting = true
+    }
+  }, [])
+
   useEffect(() => {
     //debug("params", props.match.params.entityQname)
-    if (props.match.params.entityQname) setEntityQname(props.match.params.entityQname)
+    if (unmounting) return
+    else if (props.match.params.entityQname) setEntityQname(props.match.params.entityQname)
   }, [props.match.params])
 
   // here we create the entity in the list if it's not there yet:
@@ -41,7 +51,7 @@ function EntityShapeChooserContainer(props: AppProps) {
       </div>
     )
   }
-  const { entityLoadingState, entity } = EntityFetcher(entityQname, null)
+  const { entityLoadingState, entity } = EntityFetcher(entityQname, null, unmounting)
 
   if (entity) {
     const possibleShapes = shapes.shapeRefsForEntity(entity)

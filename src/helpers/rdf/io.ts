@@ -263,7 +263,7 @@ export const setUserLocalEntities = async (
   localStorage.setItem("localEntities", JSON.stringify(data))
 }
 
-export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabel | null) {
+export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabel | null, unmounting = false) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>(Subject.createEmpty())
   const [uiReady, setUiReady] = useRecoilState(uiReadyState)
@@ -277,12 +277,21 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
 
   useEffect(() => {
+    return () => {
+      debug("unm:ef")
+      unmounting = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (unmounting) return
     if (current != entityQname) {
       reset()
     }
   })
 
   useEffect(() => {
+    if (unmounting) return
     async function checkSession() {
       const idToken = await getIdTokenClaims()
       setIdToken(idToken.__raw)
@@ -297,6 +306,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   }
 
   useEffect(() => {
+    if (unmounting) return
     async function fetchResource(entityQname: string) {
       setEntityLoadingState({ status: "fetching", error: undefined })
       const fetchUrl = fetchUrlFromEntityQname(entityQname)
@@ -433,10 +443,16 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
     ) {
       if (entityQname != "tmp:user" || idToken) fetchResource(entityQname)
     } else {
-      setEntityLoadingState({ status: "fetched", error: undefined })
+      if (unmounting) return
+      else setEntityLoadingState({ status: "fetched", error: undefined })
+
       const subj: Subject | null = entities[index] ? entities[index].subject : null
-      if (subj) setEntity(subj)
-      setUiReady(true)
+
+      if (unmounting) return
+      else if (subj) setEntity(subj)
+
+      if (unmounting) return
+      else setUiReady(true)
     }
   }, [current, shapeRef, idToken, profileId, reloadEntity])
 

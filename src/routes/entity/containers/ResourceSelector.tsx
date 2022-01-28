@@ -78,7 +78,6 @@ const ResourceSelector: FC<{
   const history = useHistory()
   const msgId = subject.qname + property.qname + idx
   const [popupNew, setPopupNew] = useState(false)
-  const [tab, setTab] = useRecoilState(uiTabState)
 
   if (!property.expectedObjectTypes) {
     debug(property)
@@ -241,7 +240,6 @@ const ResourceSelector: FC<{
     idx
 
   const createAndUpdate = (type: RDFResourceWithLabel) => () => {
-    setTab(0)
     history.push(
       "/new/" +
         type.qname.replace(/^bdo/, "bds") +
@@ -421,27 +419,7 @@ const ResourceSelector: FC<{
                   <LaunchIcon style={{ width: "16px" }} />
                 </a>
                 &nbsp;
-                <Link
-                  title={i18n.t("search.help.edit")}
-                  to={"/edit/" + value.qname}
-                  onClick={() => {
-                    const delay = 350
-                    setTimeout(() => {
-                      let found = false
-                      entities.map((e, i) => {
-                        if (e.subjectQname === value.qname) {
-                          debug("found:", i, e)
-                          found = true
-                          setTab(i)
-                        }
-                      })
-                      if (!found) {
-                        debug("not found:", entities.length)
-                        setTab(entities.length)
-                      }
-                    }, delay)
-                  }}
-                >
+                <Link title={i18n.t("search.help.edit")} to={"/edit/" + value.qname}>
                   <EditIcon style={{ width: "16px" }} />
                 </Link>
                 &nbsp;
@@ -515,7 +493,7 @@ const ResourceSelector: FC<{
                 e?.subjectQname != owner?.qname &&
                 property.expectedObjectTypes?.some((t) =>
                   // DONE shapeRef is updated upon shape selection
-                  (e.shapeRef?.qname ?? e.shapeRef).startsWith(t.qname.replace(/^bdo:/, "bds:"))
+                  (e.shapeRef?.qname ?? e.shapeRef)?.startsWith(t.qname.replace(/^bdo:/, "bds:"))
                 )
               ) {
                 //debug("diff ok:",property.expectedObjectTypes,e,e.subjectQname,subject.qname,owner?.qname)
