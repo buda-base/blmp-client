@@ -229,27 +229,17 @@ const ResourceSelector: FC<{
     if (dates) dates = "(" + dates + ")"
   }
 
-  const createAndLinkUrl =
-    "/new/" +
-    type.replace(/^bdo/, "bds") + // DONE: use actual selected resource type
-    "Shape" + // DONE: use "Shape" when everything's running fine
-    "?subject=" +
-    subject.qname +
-    "&propid=" +
-    property.path?.sparqlString +
-    "&index=" +
-    idx
-
   const createAndUpdate = (type: RDFResourceWithLabel) => () => {
     history.push(
       "/new/" +
         type.qname.replace(/^bdo/, "bds") +
         "Shape/" +
-        subject.qname +
+        (owner?.qname && owner.qname !== subject.qname ? owner.qname : subject.qname) +
         "/" +
         qnameFromUri(property?.path?.sparqlString) +
         "/" +
-        idx
+        idx +
+        (owner?.qname && owner.qname !== subject.qname ? "/" + subject.qname : "")
     )
   }
 

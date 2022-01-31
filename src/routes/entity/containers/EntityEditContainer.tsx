@@ -19,7 +19,7 @@ import {
   uiNavState,
 } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
-import { atom, useRecoilState } from "recoil"
+import { atom, useRecoilState, useRecoilSnapshot } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
 import * as rdf from "rdflib"
 import qs from "query-string"
@@ -28,6 +28,7 @@ import { Redirect } from "react-router-dom"
 import { replaceItemAtIndex } from "../../../helpers/atoms"
 import { HashLink as Link } from "react-router-hash-link"
 import { useAuth0 } from "@auth0/auth0-react"
+import { getParentPath } from "../../helpers/observer"
 
 const debug = require("debug")("bdrc:entity:edit")
 
@@ -37,25 +38,51 @@ export function EntityEditContainerMayUpdate(props: AppProps) {
   const subjectQname = props.match.params.subjectQname
   const propertyQname = props.match.params.propertyQname
   const index = props.match.params.index
+  const subnodeQname = props.match.params.subnodeQname
 
   const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const [idx, setIdx] = useState()
+
+  const snapshot = useRecoilSnapshot()
+  const [subject, setSubject] = useState(false)
+
   useEffect(() => {
-    setIdx(entities.findIndex((e) => e.subjectQname === subjectQname))
+    const i = entities.findIndex((e) => e.subjectQname === subjectQname)
+    let subj
+    if (subnodeQname) {
+      const pp = getParentPath(ns.uriFromQname(subjectQname), ns.uriFromQname(subnodeQname))
+      debug("gPP:", pp)
+      if (pp.length > 1 && i >= 0) {
+        const atom = entities[i].subject.getAtomForProperty(pp[1])
+        subj = snapshot.getLoadable(atom).contents
+        if (Array.isArray(subj)) {
+          subj = subj.filter((s) => s.qname === subnodeQname)
+          if (subj.length) subj = subj[0]
+          else throw new Error("subnode not found", subnode)
+        }
+        debug("atom:", subj)
+        setSubject(subj)
+      }
+    } else {
+      subj = entities[i].subject
+      setSubject(subj)
+    }
   }, [])
 
-  if (idx >= 0 && entities[idx].subject && propertyQname && entityQname && index)
+  debug("subj:", subject, propertyQname, entityQname, index)
+
+  if (subject && propertyQname && entityQname && index) {
     return (
       <EntityEditContainerDoUpdate
-        subject={entities[idx].subject}
+        subject={subject}
         propertyQname={propertyQname}
         objectQname={entityQname}
         index={Number(index)}
         {...props}
       />
     )
+  }
   // TODO: add 'could not find subject' warning?
-  else if (idx !== undefined) return <Redirect to={"/edit/" + subjectQname + "/" + shapeQname} />
+  else if (subject != false) return <Redirect to={"/edit/" + entityQname + "/" + shapeQname} />
   else return <div></div>
 }
 

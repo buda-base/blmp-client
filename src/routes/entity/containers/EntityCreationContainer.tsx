@@ -19,9 +19,9 @@ const debug = require("debug")("bdrc:entity:entitycreation")
 function EntityCreationContainer(props: AppProps) {
   const subjectQname = props.match.params.subjectQname
   const propertyQname = props.match.params.propertyQname
-  const index = props.match.params.index
-
   const shapeQname = props.match.params.shapeQname
+  const index = props.match.params.index
+  const subnodeQname = props.match.params.subnodeQname
 
   const unmounting = { val: false }
   useEffect(() => {
@@ -38,7 +38,19 @@ function EntityCreationContainer(props: AppProps) {
     if (subjectQname && propertyQname && index)
       return (
         <Redirect
-          to={"/edit/" + entity.qname + "/" + shapeQname + "/" + subjectQname + "/" + propertyQname + "/" + index}
+          to={
+            "/edit/" +
+            entity.qname +
+            "/" +
+            shapeQname +
+            "/" +
+            subjectQname +
+            "/" +
+            propertyQname +
+            "/" +
+            index +
+            (subnodeQname ? "/" + subnodeQname : "")
+          }
         />
       )
     else return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
