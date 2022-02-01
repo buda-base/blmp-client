@@ -57,7 +57,7 @@ const updateHistory = (
     else history[entity].push(newVal)
   } else history[entity].push(newVal)
 
-  //debug("history:", entity, qname, prop, val, history, noHisto)
+  debug("history:", entity, qname, prop, val, history, noHisto)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {
@@ -587,7 +587,7 @@ export class Subject extends RDFResource {
   // 
   // ex: noHisto(false, -1)    // put empty subnodes in history before tmp:allValuesLoaded
   //     noHisto(false, 1)     // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
-  //     noHisto(false, false) // history back to normal
+  //     noHisto(false, false) // history back to normal => not exactly... must also use resetNoHisto()
   //     noHisto(true)         // disable value storing when doing undo/redo
   */
   noHisto(force = false, start: boolean | number = true) {
@@ -599,6 +599,9 @@ export class Subject extends RDFResource {
     // TODO: update test to be true when adding empty val after having selected ExtEntity in a Facet (use getParentPath?)
     else if (force || history[this.uri] && history[this.uri].some((h) => h["tmp:allValuesLoaded"]))
       this.graph.getValues().noHisto = true
+  }
+  resetNoHisto() {
+    this.graph.getValues().noHisto = false
   }
 
   static createEmpty(): Subject {

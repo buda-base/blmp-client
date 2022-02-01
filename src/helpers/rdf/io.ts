@@ -147,6 +147,10 @@ export function ShapeFetcher(shapeQname: string) {
   }
 
   useEffect(() => {
+    //debug("shM:",shapesMap)
+    if (shape && shapeQname === current && loadingState.status === "fetched") {
+      return
+    }
     if (shapeQname in shapesMap) {
       setLoadingState({ status: "fetched", error: undefined })
       setShape(shapesMap[shapeQname])
@@ -165,6 +169,7 @@ export function ShapeFetcher(shapeQname: string) {
         setLoadingState({ status: "fetched", error: undefined })
         //debug("shape:",shape,store)
         setShape(shape)
+        shapesMap[shapeQname] = shape
       } catch (e) {
         setLoadingState({ status: "error", error: "error fetching shape or ontology" })
       }

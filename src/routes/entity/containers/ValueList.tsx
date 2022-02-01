@@ -218,6 +218,8 @@ const ValueList: FC<{
   let firstValueIsEmptyField = true
 
   useEffect(() => {
+    //debug("vL/effect:",subject.qname,property.qname,list)
+
     // TODO: check maxCount
     if (list.length) {
       const first = list[0]
@@ -233,9 +235,10 @@ const ValueList: FC<{
         if (topEntity) topEntity.noHisto()
         else if (owner) owner.noHisto()
         else subject.noHisto()
-        //debug("setNoH:1",subject,owner,topEntity)
+        //debug("setNoH:1a",subject,owner,topEntity)
         setList([...vals, generateDefault(property, subject)])
       } else {
+        //debug("setNoH:1b",subject,owner,topEntity)
         setList(vals)
       }
     } else if (
@@ -259,6 +262,7 @@ const ValueList: FC<{
       if (topEntity) topEntity.noHisto()
       else if (owner) owner.noHisto()
       else subject.noHisto()
+      //debug("setNoH:3",subject,owner,topEntity)
       setList((oldList) => [generateDefault(property, subject), ...oldList])
     } else if (
       property.objectType != ObjectType.ResInList &&
@@ -276,13 +280,14 @@ const ValueList: FC<{
       if (topEntity) topEntity.noHisto()
       else if (owner) owner.noHisto()
       else subject.noHisto()
+      //debug("setNoH:4",subject,owner,topEntity)
       setList([generateDefault(property, subject)])
     }
   }, [subject, list, force])
 
   let addBtn = property.objectType === ObjectType.Facet
 
-  //debug("prop:", property.qname, subject.qname, list) //property, force)
+  debug("prop:", property.qname, subject.qname, list) //property, force)
 
   const isEmptyValue = (val: Value): boolean => {
     if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri" || val.uri === "tmp:none"
@@ -1179,13 +1184,14 @@ const FacetComponent: FC<{
     const delay = 350
     setTimeout(() => {
       subject.noHisto(false, false) // history back to normal
+      subject.resetNoHisto()
       waitForNoHisto = false
-    }, delay) // *arbitrary long* delay during which add button can't be used
+    }, delay) // *arbitrary long* delay during which button can't be used
   }
 
   const [edit, setEdit] = useRecoilState(uiEditState)
 
-  //debug("facet:", edit, subject.qname + " " + property.qname + " " + subNode.qname) //, withDisplayPriority, withoutDisplayPriority)
+  //debug("facet:", edit, topEntity.qname, subject.qname + " " + property.qname + " " + subNode.qname)
 
   let editClass = ""
   if (

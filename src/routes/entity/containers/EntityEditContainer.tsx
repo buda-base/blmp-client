@@ -50,7 +50,7 @@ export function EntityEditContainerMayUpdate(props: AppProps) {
     let subj
     if (subnodeQname) {
       const pp = getParentPath(ns.uriFromQname(subjectQname), ns.uriFromQname(subnodeQname))
-      debug("gPP:", pp)
+      //debug("gPP:", pp)
       if (pp.length > 1 && i >= 0) {
         const atom = entities[i].subject.getAtomForProperty(pp[1])
         subj = snapshot.getLoadable(atom).contents
@@ -59,7 +59,7 @@ export function EntityEditContainerMayUpdate(props: AppProps) {
           if (subj.length) subj = subj[0]
           else throw new Error("subnode not found", subnode)
         }
-        debug("atom:", subj)
+        //debug("atom:", subj)
         setSubject(subj)
       }
     } else {
@@ -68,7 +68,7 @@ export function EntityEditContainerMayUpdate(props: AppProps) {
     }
   }, [])
 
-  debug("subj:", subject, propertyQname, entityQname, index)
+  //debug("subj:", subject, propertyQname, entityQname, index)
 
   if (subject && propertyQname && entityQname && index) {
     return (
@@ -206,7 +206,7 @@ function EntityEditContainer(props: AppProps) {
 
   if (!shape || !entity) return null
 
-  //debug("entity:", entity, shape)
+  debug("entity:", entity, shape)
 
   /* // no need for updateEntitiesRDF
 
