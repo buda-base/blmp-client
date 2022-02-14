@@ -50,6 +50,9 @@ const updateHistory = (
     ...entity != qname ? { "tmp:parentPath": getParentPath(entity, qname) } : {},
   }
 
+  // don't add empty value to history (fix adding undo steps when showing secondary properties in Person/Kinship)
+  if (val.length === 1 && (val[0].uri === "tmp:uri" || val[0].value === "")) return
+
   // some value modifications must not be added to history (some autocreation of empty values for example)
   if (noHisto === -1) {
     const first = history[entity].findIndex((h) => h["tmp:allValuesLoaded"])
@@ -57,7 +60,7 @@ const updateHistory = (
     else history[entity].push(newVal)
   } else history[entity].push(newVal)
 
-  debug("history:", entity, qname, prop, val, history, noHisto)
+  //debug("history:", entity, qname, prop, val, history, noHisto)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {

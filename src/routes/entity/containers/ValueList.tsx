@@ -286,6 +286,8 @@ const ValueList: FC<{
       //debug("setNoH:5",subject,owner,topEntity)
       setList([generateDefault(property, subject)])
     }
+
+    //debug("end/vL/effect")
   }, [subject, list, force])
 
   let addBtn = property.objectType === ObjectType.Facet

@@ -206,7 +206,7 @@ function EntityEditContainer(props: AppProps) {
 
   if (!shape || !entity) return null
 
-  debug("entity:", entity, shape)
+  //debug("entity:", entity, shape)
 
   /* // no need for updateEntitiesRDF
 
