@@ -863,6 +863,7 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 */
 
 
+.card.show-displayPriority-false > div > div > .album > .container > .ValueList.empty[data-priority="1"],
 .facet.edit.force-false .hasDisplayPriority .ValueList.empty[data-priority="1"],
 .row.show-displayPriority-false .empty[data-priority="1"] > div > .resSelect { display:none !important; }
 

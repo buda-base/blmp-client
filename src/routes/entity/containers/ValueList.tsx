@@ -417,8 +417,8 @@ const ValueList: FC<{
           (property.objectType === ObjectType.ResExt ? " ResExt" : "") +
           (embedded ? "" : " main")
         }
+        data-priority={property.displayPriority ? property.displayPriority : 0}
         role="main"
-        data-priority={property.displayPriority}
         style={{
           display: "flex",
           flexWrap: "wrap",
