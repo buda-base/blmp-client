@@ -753,7 +753,7 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
             .card { 
               
               //filter: drop-shadow(0px 1px 1.5px #cecccc);
-              box-shadow: 0 10px 20px rgba(0,0,0, 0.19), 0 6px 6px rgba(0,0,0,0.23);
+              //box-shadow: 0 10px 20px rgba(0,0,0, 0.19), 0 6px 6px rgba(0,0,0,0.23);
 
               
               &:not(.popup-new) {
@@ -863,7 +863,9 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 */
 
 
+.facet.edit.force-false .hasDisplayPriority .ValueList.empty[data-priority="1"],
 .row.show-displayPriority-false .empty[data-priority="1"] > div > .resSelect { display:none !important; }
+
 
 .card.show-displayPriority-false .facet.force-false .empty .propLabel[data-priority="1"],
 .card.show-displayPriority-false .facet.force-false .empty .propLabel[data-priority="2"],

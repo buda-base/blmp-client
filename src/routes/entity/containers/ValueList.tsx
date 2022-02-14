@@ -271,23 +271,26 @@ const ValueList: FC<{
       list.length === 1 &&
       !force
     ) {
-      // TODO: comment: what does it do?
+      //debug("setNoH:4",subject,owner,topEntity)
+      // DONE: comment: what does it do?
       // guess: it removes the first tmp:uri first object of hidden properties
-      if (firstValueIsEmptyField) setList([])
+      // answer: indeed it removes empty value when displayPriority is 1
+      // but let's keep value then hide it in CSS when needed (fixes #16)
+      // if (firstValueIsEmptyField) setList([])
     } else if (!list.length && property.objectType == ObjectType.ResInList) {
       // this makes sure that there's at least one value for select forms, and the value is either
       // the first one (when it's mandatory that there's a value), or tmp:none
       if (topEntity) topEntity.noHisto()
       else if (owner) owner.noHisto()
       else subject.noHisto()
-      //debug("setNoH:4",subject,owner,topEntity)
+      //debug("setNoH:5",subject,owner,topEntity)
       setList([generateDefault(property, subject)])
     }
   }, [subject, list, force])
 
   let addBtn = property.objectType === ObjectType.Facet
 
-  debug("prop:", property.qname, subject.qname, list) //property, force)
+  //debug("prop:", property.qname, subject.qname, list) //property, force)
 
   const isEmptyValue = (val: Value): boolean => {
     if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri" || val.uri === "tmp:none"
