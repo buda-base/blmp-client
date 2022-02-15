@@ -35,6 +35,9 @@ import { Subject, history } from "../helpers/rdf/types"
 
 import enTranslations from "../translations/en"
 
+import axios from "axios"
+import PreviewImage from "../libs/bvmt/src/components/PreviewImage"
+
 const debug = require("debug")("bdrc:router")
 
 const numtobodic: Record<string, string> = {
@@ -114,24 +117,49 @@ function HomeContainer() {
   // uncommenting this triggers "Can't perform a React state update on an unmounted component" error (see #11)
   // const [tab, setTab] = useRecoilState(uiTabState)
 
-  return (
-    <div className="centered-ctn">
-      <div>
-        <h1>Welcome!</h1>
-        <span>{i18n.t("home.title")}</span>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim
-          sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a,
-          semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non
-          fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a,
-          enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue.
-          Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales.
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris
-          ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.
-        </p>
+  const [iiif, setiiif] = useState(null)
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const data = await axios.get(
+          "https://iiif.bdrc.io/bdr:I4CZ75258::I4CZ752580003.jpg/info.json"
+          //`https://iiif.bdrc.io/${props.volumeId}::${image.filename}/info.json`,
+        )
+        const iiif = data.data
+        setiiif(iiif)
+      } catch (err) {
+        debug("iiifErr", err)
+      }
+    }
+    getData()
+  }, [])
+
+  debug("iiif:", iiif)
+
+  if (!iiif) {
+    return <div>loading</div>
+  } else {
+    return (
+      <div className="centered-ctn">
+        <div>
+          <h1>Welcome!</h1>
+          <span>{i18n.t("home.title")}</span>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim
+            sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius
+            a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non
+            fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a,
+            enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue.
+            Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales.
+            Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris
+            ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.
+          </p>
+          <PreviewImage i={0 as never} iiif={iiif as never} />
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 }
 
 let undoTimer = 0,

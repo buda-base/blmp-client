@@ -10,6 +10,10 @@ import { AuthContextWrapper } from "./contexts/AuthContext"
 
 import { undoRef, redoRef } from "./routes/helpers/observer"
 
+import { Provider } from "react-redux"
+
+import store from "./libs/bvmt/src/store"
+
 const debug = require("debug")("bdrc:root")
 
 const target = document.querySelector("#root")
@@ -49,16 +53,18 @@ if (module.hot) {
 
 render(
   <BrowserRouter>
-    <Auth0ProviderWithHistory>
-      <RecoilRoot>
-        <AuthContextWrapper>
-          <Route exact path="/login" component={LoginContainer} />
-          <Switch>
-            <Route component={App} />
-          </Switch>
-        </AuthContextWrapper>
-      </RecoilRoot>
-    </Auth0ProviderWithHistory>
+    <Provider store={store}>
+      <Auth0ProviderWithHistory>
+        <RecoilRoot>
+          <AuthContextWrapper>
+            <Route exact path="/login" component={LoginContainer} />
+            <Switch>
+              <Route component={App} />
+            </Switch>
+          </AuthContextWrapper>
+        </RecoilRoot>
+      </Auth0ProviderWithHistory>
+    </Provider>
   </BrowserRouter>,
   target
 )
