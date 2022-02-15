@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { BrowserRouter as Router, Route, RouteComponentProps, Switch } from "react-router-dom"
+import { BrowserRouter as Router, Route, RouteComponentProps, Switch, Link, useHistory } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import i18n from "i18next"
 import { useTranslation, initReactI18next } from "react-i18next"
@@ -35,8 +35,9 @@ import { Subject, history } from "../helpers/rdf/types"
 
 import enTranslations from "../translations/en"
 
-import axios from "axios"
-import PreviewImage from "../libs/bvmt/src/components/PreviewImage"
+//import axios from "axios"
+//import PreviewImage from "../libs/bvmt/src/components/PreviewImage"
+import { default as BVMT } from "../libs/bvmt/src/App"
 
 const debug = require("debug")("bdrc:router")
 
@@ -117,6 +118,7 @@ function HomeContainer() {
   // uncommenting this triggers "Can't perform a React state update on an unmounted component" error (see #11)
   // const [tab, setTab] = useRecoilState(uiTabState)
 
+  /* // PoC bvmt
   const [iiif, setiiif] = useState(null)
 
   useEffect(() => {
@@ -140,26 +142,34 @@ function HomeContainer() {
   if (!iiif) {
     return <div>loading</div>
   } else {
-    return (
-      <div className="centered-ctn">
-        <div>
-          <h1>Welcome!</h1>
-          <span>{i18n.t("home.title")}</span>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim
-            sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius
-            a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non
-            fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a,
-            enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue.
-            Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales.
-            Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris
-            ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.
-          </p>
-          <PreviewImage i={0 as never} iiif={iiif as never} />
-        </div>
+    */
+
+  return (
+    <div className="centered-ctn">
+      <div>
+        <h1>Welcome!</h1>
+        <span>{i18n.t("home.title")}</span>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim
+          sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a,
+          semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non
+          fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a,
+          enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue.
+          Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales.
+          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris
+          ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.
+        </p>
+        {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
+        <p>
+          <Link className="menu-link" to="/bvmt">
+            <img src="/icons/iiif.png" />
+            BUDA Volume Manifest Tool
+          </Link>
+        </p>
       </div>
-    )
-  }
+    </div>
+  )
+  //}
 }
 
 let undoTimer = 0,
@@ -179,6 +189,7 @@ function App(props: AppProps) {
   const appEl = useRef<HTMLDivElement>(null)
   // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
   const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+  const routerHistory = useHistory()
 
   useEffect(() => {
     let warn = false
@@ -297,7 +308,7 @@ function App(props: AppProps) {
   if (isLoading) return <div></div>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
 
-  //debug(props)
+  debug(props, routerHistory.location.pathname)
 
   return (
     <div
@@ -307,14 +318,14 @@ function App(props: AppProps) {
       <NavBarContainer />
       <main>
         <div>
-          <EntitySelector {...props} />
+          {!props.location.pathname.startsWith("/bvmt") && <EntitySelector {...props} />}
           <Switch>
             <Route exact path="/" component={HomeContainer} />
             <Route
               exact
               path="/profile"
-              render={(props) => (
-                <EntityEditContainer {...props} entityQname="tmp:user" shapeQname="bds:UserProfileShape" />
+              render={(rprops) => (
+                <EntityEditContainer {...rprops} entityQname="tmp:user" shapeQname="bds:UserProfileShape" />
               )}
             />
             <Route exact path="/new" component={NewEntityContainer} />
@@ -341,6 +352,12 @@ function App(props: AppProps) {
             />
             <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
             <Route exact path="/edit/:entityQname" component={EntityShapeChooserContainer} />
+            <Route
+              exact
+              path="/bvmt/:volume"
+              render={(rprops) => <BVMT {...rprops} history={routerHistory} volume={rprops.match.params.volume} />}
+            />
+            <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} history={routerHistory} />} />
           </Switch>
         </div>
       </main>
