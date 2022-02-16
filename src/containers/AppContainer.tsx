@@ -314,7 +314,8 @@ function App(props: AppProps) {
   return (
     <div
       ref={appEl}
-      /*onClick={updateUndo} onKeyUp={updateUndo}*/ className={props.location.pathname === "/" ? "home" : ""}
+      data-route={props.location.pathname}
+      /*onClick={updateUndo} onKeyUp={updateUndo}*/ className={"App " + (props.location.pathname === "/" ? "home" : "")}
     >
       <NavBarContainer />
       <main>
