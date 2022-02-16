@@ -176,7 +176,8 @@ let undoTimer = 0,
   undoEntity = "tmp:uri"
 
 function App(props: AppProps) {
-  const { isAuthenticated, isLoading } = useAuth0()
+  const auth = useAuth0()
+  const { isAuthenticated, isLoading } = auth
   const [undos, setUndos] = useRecoilState(uiUndosState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [uiTab, setTab] = useRecoilState(uiTabState)
@@ -355,9 +356,11 @@ function App(props: AppProps) {
             <Route
               exact
               path="/bvmt/:volume"
-              render={(rprops) => <BVMT {...rprops} history={routerHistory} volume={rprops.match.params.volume} />}
+              render={(rprops) => (
+                <BVMT {...rprops} auth={auth} history={routerHistory} volume={rprops.match.params.volume} />
+              )}
             />
-            <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} history={routerHistory} />} />
+            <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
           </Switch>
         </div>
       </main>
