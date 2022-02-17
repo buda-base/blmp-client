@@ -505,13 +505,17 @@ label .help.literal,
 
 
 
-.MuiInputBase-input,
-.MuiSelect-select.MuiSelect-select { padding-top:0 !important;}
+#root {
+
+  .MuiInputBase-input,
+  .MuiSelect-select.MuiSelect-select { padding-top:0 !important;}
+
+  .MuiInputBase-input { padding-bottom:4px !important; }
+}
 
 a.btn.py-3,
 button.py-3 { padding:9px 10px 10px 9px !important; }
 
-.MuiInputBase-input { padding-bottom:4px !important; }
 
 label ~ .selector { 
   label { padding-left:10px !important; }
@@ -935,7 +939,7 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 
 
 
-.openseadragon-container { min-height:200px; }
+.openseadragon-container { min-height:200px; background-color: #1c1c1c !important; }
 
 
 #root > div > main > div > header > div > header { visibility: hidden;}
@@ -958,7 +962,8 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 
   .App > div > .container:last-child {
     & > div > div {
-      &:first-child, &[draggable=true]+div  { background:#efefef !important; }
+      //&:first-child, &[draggable=true]+div 
+      &.drop-zone { background:#efefef !important; }
     }
   }
 
@@ -1012,7 +1017,29 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
     }
   }
 
+  .card-head { background-color: #f6f6f6;
+    & > div:first-child { width:100%;  }
+    & > div > h3,
+    & > div { align-items: center; }
 
+    & > div > h3 { cursor: pointer; width:100%; }
+    & > div > h3 > span { color:#343434; font-weight: 400; }
+  }  
+
+  .MuiInputBase-input { font-size: 14px; font-weight:500; color:#505050;}
+}
+#root ~ #menu-,
+#root ~ #simple-menu { 
+  .MuiPaper-rounded { border-radius: 0; box-shadow: 0 1px 3px #a0a0a0; }
+  ul { padding:0; 
+    li, li > .MuiListItemText-root > .MuiListItemText-primary { font-size:13px; font-weight:600; color:#505050; }
+    li { padding-left:8px;
+      & > .MuiButtonBase-root { padding:3px 8px 3px 0; 
+        svg { font-size:18px; }
+      }
+      & > .MuiListItemText-root { margin:0; }
+    }
+  }
 }
 
 
