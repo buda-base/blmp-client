@@ -117,6 +117,7 @@ export const updateEntitiesRDF = (
 */
 
 const generateDefault = (property: PropertyShape, parent: Subject): Value => {
+  debug("genD:", property, parent)
   switch (property.objectType) {
     case ObjectType.ResExt:
       /*
