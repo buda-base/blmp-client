@@ -130,6 +130,7 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
       return new ExtRDFResourceWithLabel("tmp:uri", {})
       break
     case ObjectType.Facet:
+      if (property.targetShape == null) throw "no target shape for " + property.uri
       return generateSubnode(property.targetShape, parent)
       break
     case ObjectType.ResInList:

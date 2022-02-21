@@ -141,12 +141,11 @@ export class Path {
   inversePathNode: rdf.NamedNode | null = null
 
   constructor(node: rdf.Node, graph: EntityGraph, listMode: boolean) {
-    if (node instanceof rdf.BlankNode) {
-      // inverse path
-      const invpaths = graph.store.each(node, shInversePath, null) as Array<rdf.NamedNode>
-      if (invpaths.length != 1) {
-        throw "too many inverse path in shacl path:" + invpaths
-      }
+    const invpaths = graph.store.each(node, shInversePath, null) as Array<rdf.NamedNode>
+    if (invpaths.length > 1) {
+      throw "too many inverse path in shacl path:" + invpaths
+    }
+    if (invpaths.length == 1) {
       const invpath = invpaths[0]
       this.sparqlString = "^" + invpath.value
       this.inversePathNode = invpath
@@ -370,7 +369,10 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get targetShape(): NodeShape | null {
     const path = this.path
-    if (!path) return null
+    if (!path) {
+      debug("can't find path for " + this.uri)
+      return null
+    }
     let val: rdf.NamedNode | null
     if (path.directPathNode) {
       val = this.graph.store.any(null, shTargetObjectsOf, path.directPathNode) as rdf.NamedNode | null
