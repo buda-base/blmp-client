@@ -121,9 +121,9 @@ export const sortByPropValue = (
     if (ordern) {
       const asnum = rdfLitAsNumber(ordern)
       if (asnum !== null) order = asnum
-      else debug("no order found for node and property: ", node.value, p.value, asnum)
+      else throw "no order found for node and property: " + node.value + " , " + p.value + " , " + asnum
       orders.push(order)
-    }
+    } else throw "missing order from node and property" + node.value + " , " + p.value
     orderedGroupObjs[order] = node
   }
   orders = orders.sort((a, b) => a - b)

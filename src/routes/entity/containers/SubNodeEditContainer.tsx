@@ -14,12 +14,11 @@ import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 
-const debug = require("debug")("bdrc:entity:edit")
+const debug = require("debug")("bdrc:entity:edit:subnode")
 
 const SubNodeEditContainer: FC<{ shape: NodeShape; subject: Subject }> = ({ shape, subject }) => {
   return (
     <React.Fragment>
-      <span>for debug: {subject.lname}</span>
       <div>
         {shape.properties.map((p, index) => (
           <PropertyContainer key={p.uri} property={p} subject={subject} editable={p.readOnly !== true} />
