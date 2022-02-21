@@ -87,15 +87,19 @@ export const loadTtl = async (url: string, allow404 = false, idToken = ""): Prom
   return store
 }
 
-export const putTtl = async (url: string, s: rdf.Store, idToken: string): Promise<null> => {
-  const headers = new Headers()
-  headers.set("Content-Type", "text/turtle")
-  headers.set("Authorization", "Bearer " + idToken)
-  const response = await fetch(url, { headers: headers, method: "PUT" })
-  // eslint-disable-next-line no-magic-numbers
-  if (response.status == 403) throw "not authorized to modify " + url
-  // eslint-disable-next-line no-magic-numbers
-  if (response.status > 400) throw "error when saving " + url
+export const putTtl = async (url: string, s: rdf.Store, idToken: string, method = "PUT"): Promise<null> => {
+  const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+  rdf.serialize(defaultRef, s, undefined, "text/turtle", async function (err, str) {
+    const headers = new Headers()
+    headers.set("Content-Type", "text/turtle")
+    headers.set("Authorization", "Bearer " + idToken)
+
+    const response = await fetch(url, { headers, method, body: str })
+    // eslint-disable-next-line no-magic-numbers
+    if (response.status == 403) throw "not authorized to modify " + url
+    // eslint-disable-next-line no-magic-numbers
+    if (response.status > 400) throw "error when saving " + url
+  })
 }
 
 export interface IFetchState {
@@ -302,7 +306,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       const idToken = await getIdTokenClaims()
       setIdToken(idToken.__raw)
     }
-    if (entityQname === "tmp:user" && isAuthenticated) checkSession()
+    if (/*entityQname === "tmp:user" &&*/ isAuthenticated) checkSession()
+    else getAccessTokenSilently()
   }, [getIdTokenClaims, isAuthenticated, entityQname])
 
   const reset = () => {
@@ -372,6 +377,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
               subjectLabelState: defaultEntityLabelAtom,
               state: EditedEntityState.NotLoaded,
               preloadedLabel: obj[k].label,
+              // TODO: load/save alreadySaved
             })
           }
         }
@@ -408,6 +414,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             shapeRef: shapeRef,
             subject: null,
             subjectLabelState: defaultEntityLabelAtom,
+            alreadySaved: true,
           })
           index = newEntities.length - 1
         }
@@ -418,6 +425,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             state: EditedEntityState.Saved,
             subjectLabelState: subject.getAtomForProperty(prefLabel.uri),
             preloadedLabel: "",
+            alreadySaved: true,
           }
 
           // DONE: issue #2 fixed, fully using getEntities

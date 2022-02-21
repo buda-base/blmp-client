@@ -51,6 +51,7 @@ export type Entity = {
   state: EditedEntityState
   subjectLabelState: RecoilState<Array<Value>> | null
   preloadedLabel?: string
+  alreadySaved: boolean
 }
 
 export const entitiesAtom = atom<Array<Entity>>({

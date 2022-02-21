@@ -37,7 +37,7 @@ export const generateSubnode = (subshape: NodeShape, parent: RDFResource): Subje
 }
 
 export const reserveId = async (prefix: string, token: string): Promise<string> => {
-  const url = config.API_BASEURL + "ID/prefix/" + prefix
+  const url = config.API_BASEURL + "ID/" + prefix
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -52,7 +52,8 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>()
   const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const { getAccessTokenSilently } = useAuth0()
+  const { getAccessTokenSilently, isAuthenticated, getIdTokenClaims } = useAuth0()
+  const [idToken, setIdToken] = useState("")
   const [shape, setShape] = useState<NodeShape>()
   const auth0 = useAuth0()
   const [tab, setTab] = useRecoilState(uiTabState)
@@ -70,6 +71,18 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
     setShape(undefined)
     setEntityLoadingState({ status: "idle", error: undefined })
   }
+
+  useEffect(() => {
+    if (unmounting?.val) return
+    async function checkSession() {
+      const idToken = await getIdTokenClaims()
+      setIdToken(idToken.__raw)
+      debug("got token")
+    }
+    debug("init token")
+    if (/*entityQname === "tmp:user" &&*/ isAuthenticated) checkSession()
+    else getAccessTokenSilently()
+  }, [getIdTokenClaims, isAuthenticated])
 
   useEffect(() => {
     // we need to load the shape at the same time, which means we need to also
@@ -99,14 +112,13 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
       let userPrefix
       let lname
       try {
-        // TODO: uncomment for prod
-        //const token = await getAccessTokenSilently()
+        if (!idToken) throw new Error("no token when reserving id")
         // TODO: get userPrefix from user profile
         userPrefix = ""
         const prefix = shapePrefix + userPrefix
         // TODO: uncomment for prod
-        //lname = await reserveId(prefix, token)
-        lname = prefix + nanoidCustom()
+        lname = await reserveId(prefix, idToken)
+        //lname = prefix + nanoidCustom()
       } catch (e) {
         debug(e)
         if (!unmounting.val) setEntityLoadingState({ status: "error", error: "error logging or reserving id" })
@@ -125,6 +137,7 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
         shapeRef: shape,
         subject: newSubject,
         subjectLabelState: newSubject.getAtomForProperty(shapes.prefLabel.uri),
+        alreadySaved: false,
       }
       if (!unmounting.val) setEntities([newEntity, ...entities])
       if (!unmounting.val) setEntity(newSubject)
@@ -135,8 +148,8 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }
-    createResource(shapeQname)
-  }, [shapeQname])
+    if (idToken) createResource(shapeQname)
+  }, [shapeQname, idToken])
 
   return { entityLoadingState, entity, reset }
 }

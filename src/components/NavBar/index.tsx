@@ -242,12 +242,24 @@ function BottomBar(props: AppProps) {
     ns.setDefaultPrefixes(store)
     entitySubj?.graph.addNewValuestoStore(store)
     debugStore(store)
-    if (entitySubj && entitySubj.qname == "tmp:user" && false) {
+    let alreadySaved = false
+    if (entitySubj) {
+      // && entitySubj.qname == "tmp:user" && false) {
+      const isUser = entitySubj.qname == "tmp:user" || entitySubj.qname === userId
       // TODO: /me fails when fetched from editserv-dev, bypassing
-      const url = entitySubj.qname == "tmp:user" ? "//editserv.bdrc.io/resource-nc/user/me" : entityUri
+      const url = isUser
+        ? "//editserv.bdrc.io/resource-nc/user/me"
+        : config.API_BASEURL + entities[entity]?.subjectQname + "/focusgraph"
       try {
         const idTokenF = await auth0.getIdTokenClaims()
-        const loadRes = await putTtl(url, store, idTokenF.__raw)
+        // TODO: not sure how to proceed with user profile?
+        const loadRes = await putTtl(
+          url,
+          store,
+          idTokenF.__raw,
+          isUser ? "PATCH" : entities[entity]?.alreadySaved ? "POST" : "PUT"
+        )
+        alreadySaved = true
       } catch (e) {
         // TODO: better error handling
 
@@ -257,7 +269,7 @@ function BottomBar(props: AppProps) {
       }
     }
     const newEntities = [...entities]
-    newEntities[entity] = { ...newEntities[entity], state: EditedEntityState.Saved }
+    newEntities[entity] = { ...newEntities[entity], state: EditedEntityState.Saved, alreadySaved }
     setEntities(newEntities)
 
     // save ttl to localStorage
