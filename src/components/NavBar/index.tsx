@@ -243,7 +243,8 @@ function BottomBar(props: AppProps) {
     entitySubj?.graph.addNewValuestoStore(store)
     debugStore(store)
     if (entitySubj && entitySubj.qname == "tmp:user" && false) {
-      const url = entitySubj.qname == "tmp:user" ? "https://editserv.bdrc.io/resource-nc/user/me" : entityUri
+      // TODO: /me fails when fetched from editserv-dev, bypassing
+      const url = entitySubj.qname == "tmp:user" ? "//editserv.bdrc.io/resource-nc/user/me" : entityUri
       try {
         const idTokenF = await auth0.getIdTokenClaims()
         const loadRes = await putTtl(url, store, idTokenF.__raw)

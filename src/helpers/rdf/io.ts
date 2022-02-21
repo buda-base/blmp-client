@@ -38,8 +38,9 @@ export const fetchUrlFromshapeQname = (shapeQname: string): string => {
 
 export const fetchUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == "bdr:PTEST") return "/examples/ptest.ttl"
-  else if (entityQname == "tmp:user") return "https://editserv.bdrc.io/resource-nc/user/me"
-  return "//editserv-dev.bdrc.io/" + entityQname + "/focusGraph"
+  // TODO: /me fails when fetched from editserv-dev, bypassing
+  else if (entityQname == "tmp:user") return "//editserv.bdrc.io/resource-nc/user/me"
+  return config.API_BASEURL + entityQname + "/focusGraph"
 }
 
 export const labelQueryUrlFromEntityQname = (entityQname: string): string => {
