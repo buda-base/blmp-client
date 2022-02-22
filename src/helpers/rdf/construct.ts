@@ -73,16 +73,6 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
   }
 
   useEffect(() => {
-    if (unmounting?.val) return
-    async function checkSession() {
-      const idToken = await getIdTokenClaims()
-      setIdToken(idToken.__raw)
-    }
-    if (/*entityQname === "tmp:user" &&*/ isAuthenticated) checkSession()
-    //else getAccessTokenSilently()
-  }, [getIdTokenClaims, isAuthenticated])
-
-  useEffect(() => {
     // we need to load the shape at the same time, which means we need to also
     // load the ontology
     async function createResource(shapeQname: string) {

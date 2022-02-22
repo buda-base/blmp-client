@@ -332,16 +332,6 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
     }
   })
 
-  useEffect(() => {
-    if (unmounting) return
-    async function checkSession() {
-      const idToken = await getIdTokenClaims()
-      setIdToken(idToken.__raw)
-    }
-    if (/*entityQname === "tmp:user" &&*/ isAuthenticated) checkSession()
-    //else getAccessTokenSilently()
-  }, [getIdTokenClaims, isAuthenticated, entityQname])
-
   const reset = () => {
     setCurrent(entityQname)
     setEntity(Subject.createEmpty())
