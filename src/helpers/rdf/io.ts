@@ -313,7 +313,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
   const auth0 = useAuth0()
   const { isAuthenticated, getIdTokenClaims } = useAuth0()
-  const [idToken, setIdToken] = useState("")
+  const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
   const [profileId, setProfileId] = useRecoilState(profileIdState)
   const [current, setCurrent] = useState(entityQname)
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
@@ -339,7 +339,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       setIdToken(idToken.__raw)
     }
     if (/*entityQname === "tmp:user" &&*/ isAuthenticated) checkSession()
-    else getAccessTokenSilently()
+    //else getAccessTokenSilently()
   }, [getIdTokenClaims, isAuthenticated, entityQname])
 
   const reset = () => {

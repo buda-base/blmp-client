@@ -53,7 +53,7 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
   const [entity, setEntity] = useState<Subject>()
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const { getAccessTokenSilently, isAuthenticated, getIdTokenClaims } = useAuth0()
-  const [idToken, setIdToken] = useState("")
+  const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
   const [shape, setShape] = useState<NodeShape>()
   const auth0 = useAuth0()
   const [tab, setTab] = useRecoilState(uiTabState)
@@ -77,11 +77,9 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
     async function checkSession() {
       const idToken = await getIdTokenClaims()
       setIdToken(idToken.__raw)
-      debug("got token")
     }
-    debug("init token")
     if (/*entityQname === "tmp:user" &&*/ isAuthenticated) checkSession()
-    else getAccessTokenSilently()
+    //else getAccessTokenSilently()
   }, [getIdTokenClaims, isAuthenticated])
 
   useEffect(() => {
@@ -149,7 +147,7 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
       if (!unmounting.val && tab !== 0) setTab(0)
     }
     if (idToken) createResource(shapeQname)
-  }, [shapeQname, idToken])
+  }, [shapeQname])
 
   return { entityLoadingState, entity, reset }
 }

@@ -25,6 +25,7 @@ export function AuthContextWrapper({ children }) {
     async function checkSession() {
       const idToken = await getIdTokenClaims()
       setIdToken(idToken.__raw)
+      localStorage.setItem("BLMPidToken", idToken.__raw)
     }
     if (isAuthenticated) checkSession()
     else getAccessTokenSilently()
