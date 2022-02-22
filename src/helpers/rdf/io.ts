@@ -95,7 +95,7 @@ export const loadTtl = async (
     if (handleEtag && !etag) reject(new Error("no etag returned from " + url))
 
     const body = await response.text()
-    //debug("ttl:",body)
+    debug("ttl:", body)
     const store: rdf.Store = rdf.graph()
     rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
     if (handleEtag) resolve({ store, etag })
@@ -379,7 +379,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       // 2 - try to load data from server if not or if user wants to
       try {
-        if (!useLocal) res = await loadTtl(fetchUrl, false, idToken, true)
+        if (!useLocal) res = await loadTtl(fetchUrl, false, idToken, entityQname === "tmp:user" ? false : true)
         loadLabels = await loadTtl(labelQueryUrl, true)
       } catch (e) {
         // 3 - case when entity is not on server and user does not want to use local edits that already exist
@@ -414,7 +414,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
         if (!res) res = await loadRes
         etag = res.etag
-        const entityStore = res.store
+        const entityStore = res.store ? res.store : res
         const labelsStore = await loadLabels
 
         let actualQname = entityQname,
