@@ -261,9 +261,8 @@ function BottomBar(props: AppProps) {
     if (entitySubj) {
       // && entitySubj.qname == "tmp:user" && false) {
       const isUser = entitySubj.qname == "tmp:user" || entitySubj.qname === userId
-      // TODO: /me fails when fetched from editserv-dev, bypassing
       const url = isUser
-        ? "//editserv.bdrc.io/resource-nc/user/me"
+        ? config.API_BASEURL + userId + "/focusgraph"
         : config.API_BASEURL + entities[entity]?.subjectQname + "/focusgraph"
       try {
         const idTokenF = await auth0.getIdTokenClaims()

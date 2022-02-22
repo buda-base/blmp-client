@@ -123,7 +123,9 @@ export const sortByPropValue = (
       if (asnum !== null) order = asnum
       else throw "no order found for node and property: " + node.value + " , " + p.value + " , " + asnum
       orders.push(order)
-    } else throw "missing order from node and property" + node.value + " , " + p.value
+    }
+    // TODO: enable this as exception
+    else debug("missing order from node and property" + node.value + " , " + p.value)
     orderedGroupObjs[order] = node
   }
   orders = orders.sort((a, b) => a - b)

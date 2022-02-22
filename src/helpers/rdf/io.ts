@@ -38,8 +38,7 @@ export const fetchUrlFromshapeQname = (shapeQname: string): string => {
 
 export const fetchUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == "bdr:PTEST") return "/examples/ptest.ttl"
-  // TODO: /me fails when fetched from editserv-dev, bypassing
-  else if (entityQname == "tmp:user") return "//editserv.bdrc.io/resource-nc/user/me"
+  else if (entityQname == "tmp:user") return config.API_BASEURL + "me/focusgraph"
   return config.API_BASEURL + entityQname + "/focusGraph"
 }
 
@@ -95,7 +94,7 @@ export const loadTtl = async (
     if (handleEtag && !etag) reject(new Error("no etag returned from " + url))
 
     const body = await response.text()
-    debug("ttl:", body)
+    //debug("ttl:", body)
     const store: rdf.Store = rdf.graph()
     rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
     if (handleEtag) resolve({ store, etag })
@@ -379,7 +378,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       // 2 - try to load data from server if not or if user wants to
       try {
-        if (!useLocal) res = await loadTtl(fetchUrl, false, idToken, entityQname === "tmp:user" ? false : true)
+        if (!useLocal) res = await loadTtl(fetchUrl, false, idToken, true)
         loadLabels = await loadTtl(labelQueryUrl, true)
       } catch (e) {
         // 3 - case when entity is not on server and user does not want to use local edits that already exist

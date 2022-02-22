@@ -56,9 +56,8 @@ export function AuthContextWrapper({ children }) {
         .request({
           method: "get",
           timeout: 4000,
-          // TODO: /me fails when fetched from editserv-dev, bypassing
-          baseURL: "//editserv.bdrc.io", //config.API_BASEURL,
-          url: "resource-nc/user/me",
+          baseURL: config.API_BASEURL,
+          url: "me/focusgraph",
           headers: {
             Authorization: `Bearer ${idToken}`,
             Accept: "application/json", //"text/turtle",
