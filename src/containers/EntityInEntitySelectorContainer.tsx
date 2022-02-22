@@ -99,7 +99,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     // update user session
     setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
     // remove data in local storage
-    setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true, userId)
+    setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true, userId, entity.alreadySaved)
     // remove history for entity
     if (undoHistory) {
       const uri = ns.uriFromQname(entity.subjectQname)
@@ -131,7 +131,14 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   //debug("entity?", entity, tab, entities[tab], entities)
 
   // update user session
-  setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel)
+  setUserSession(
+    auth0,
+    entity.subjectQname,
+    shapeQname,
+    !entity.preloadedLabel ? label : entity.preloadedLabel,
+    false,
+    entity.alreadySaved
+  )
 
   return (
     <Tab

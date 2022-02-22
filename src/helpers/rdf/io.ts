@@ -69,36 +69,66 @@ acceptTtl.set("Accept", "text/turtle")
 const acceptTtlWithToken = new Headers()
 acceptTtlWithToken.set("Accept", "text/turtle")
 
-export const loadTtl = async (url: string, allow404 = false, idToken = ""): Promise<rdf.Store> => {
-  if (idToken) {
-    acceptTtlWithToken.set("Authorization", "Bearer " + idToken)
-  } else {
-    acceptTtlWithToken.delete("Authorization")
-  }
-  const response = await fetch(url, { headers: idToken ? acceptTtlWithToken : acceptTtl })
-  // eslint-disable-next-line no-magic-numbers
-  if (allow404 && response.status == 404) return rdf.graph()
-  // eslint-disable-next-line no-magic-numbers
-  if (response.status != 200) throw "cannot fetch " + url
-  const body = await response.text()
-  //debug("ttl:",body)
-  const store: rdf.Store = rdf.graph()
-  rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
-  return store
+export const loadTtl = async (
+  url: string,
+  allow404 = false,
+  idToken = "",
+  handleEtag = false
+): Promise<rdf.Store | Map<string, any>> => {
+  return new Promise(async (resolve, reject) => {
+    if (idToken) {
+      acceptTtlWithToken.set("Authorization", "Bearer " + idToken)
+    } else {
+      acceptTtlWithToken.delete("Authorization")
+    }
+    const response = await fetch(url, { headers: idToken ? acceptTtlWithToken : acceptTtl })
+    const etag = response.headers.get("etag")
+
+    // eslint-disable-next-line no-magic-numbers
+    if (allow404 && response.status == 404) resolve(rdf.graph())
+    // eslint-disable-next-line no-magic-numbers
+    if (response.status != 200) reject(new Error("cannot fetch " + url))
+
+    if (handleEtag && !etag) reject(new Error("no etag returned from " + url))
+
+    const body = await response.text()
+    //debug("ttl:",body)
+    const store: rdf.Store = rdf.graph()
+    rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
+    if (handleEtag) resolve({ store, etag })
+    else resolve(store)
+  })
 }
 
-export const putTtl = async (url: string, s: rdf.Store, idToken: string, method = "PUT"): Promise<null> => {
-  const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
-  rdf.serialize(defaultRef, s, undefined, "text/turtle", async function (err, str) {
-    const headers = new Headers()
-    headers.set("Content-Type", "text/turtle")
-    headers.set("Authorization", "Bearer " + idToken)
+export const putTtl = async (
+  url: string,
+  s: rdf.Store,
+  idToken: string,
+  method = "PUT",
+  message = "",
+  previousEtag = false
+): Promise<string> => {
+  return new Promise(async (resolve, reject) => {
+    const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+    rdf.serialize(defaultRef, s, undefined, "text/turtle", async function (err, str) {
+      const headers = new Headers()
+      headers.set("Content-Type", "text/turtle")
+      headers.set("Authorization", "Bearer " + idToken)
+      if (message) headers.set("X-Change-Message", message)
+      if (previousEtag) headers.set("If-Match", previousEtag)
 
-    const response = await fetch(url, { headers, method, body: str })
-    // eslint-disable-next-line no-magic-numbers
-    if (response.status == 403) throw "not authorized to modify " + url
-    // eslint-disable-next-line no-magic-numbers
-    if (response.status > 400) throw "error when saving " + url
+      const response = await fetch(url, { headers, method, body: str })
+      const etag = response.headers.get("etag")
+
+      // eslint-disable-next-line no-magic-numbers
+      if (response.status == 403) reject(new Error("not authorized to modify " + url))
+      // eslint-disable-next-line no-magic-numbers
+      if (response.status > 400) reject(new Error("error when saving " + url))
+
+      if (!previousEtag && !etag) reject(new Error("no etag returned from " + url))
+
+      resolve(etag)
+    })
   })
 }
 
@@ -212,7 +242,8 @@ export const setUserSession = async (
   rid: string,
   shape: string,
   label: string,
-  del = false
+  del = false,
+  etag: string
 ) => {
   //debug("auth:", auth)
   let data = localStorage.getItem("session"),
@@ -229,7 +260,7 @@ export const setUserSession = async (
     userData = data[auth.user.email]
   } else userData = data["unregistered"]
 
-  if (!del) userData[rid] = { shape, label }
+  if (!del) userData[rid] = { shape, label, etag }
   else if (userData[rid]) delete userData[rid]
 
   const dataNew = JSON.stringify(data)
@@ -255,7 +286,8 @@ export const setUserLocalEntities = async (
   shapeQname: string,
   ttl: string,
   del: boolean,
-  userId: string
+  userId: string,
+  etag: string
 ) => {
   debug("auth:", auth, shapeQname)
   let data = localStorage.getItem("localEntities"),
@@ -268,7 +300,7 @@ export const setUserLocalEntities = async (
   } else userData = data["unregistered"]
   // TODO: also check if rid is current user's
   if (userId === rid && shapeQname?.includes("UserProfile")) rid = "tmp:user"
-  if (!del) userData[rid] = { shapeQname, ttl }
+  if (!del) userData[rid] = { shapeQname, ttl, etag }
   else if (userData[rid]) delete userData[rid]
   localStorage.setItem("localEntities", JSON.stringify(data))
 }
@@ -328,7 +360,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       // TODO: UI "save draft" / "publish"
 
-      let loadRes, loadLabels, localRes, useLocal, notFound
+      let loadRes, loadLabels, localRes, useLocal, notFound, etag
       const localEntities = await getUserLocalEntities(auth0)
       // 1 - check if entity has local edits (once shape is defined)
       //debug("local?", entityQname, localEntities[entityQname])
@@ -338,6 +370,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         if (useLocal) {
           try {
             rdf.parse(localEntities[entityQname].ttl, store, rdf.Store.defaultGraphURI, "text/turtle")
+            etag = localEntities[entityQname].etag
           } catch (e) {
             debug(e)
             debug(localEntities[entityQname])
@@ -353,12 +386,12 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       // 2 - try to load data from server if not or if user wants to
       try {
-        if (!useLocal) loadRes = await loadTtl(fetchUrl, false, idToken)
+        if (!useLocal) loadRes = await loadTtl(fetchUrl, false, idToken, true)
         else loadRes = localRes
         loadLabels = await loadTtl(labelQueryUrl, true)
       } catch (e) {
         // 3 - case when entity is not on server and user does not want to use local edits that already exist
-        if (localRes) loadRes = localRes
+        if (localRes) loadRes = { store: localRes, etag }
         else notFound = true
       }
 
@@ -377,7 +410,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
               subjectLabelState: defaultEntityLabelAtom,
               state: EditedEntityState.NotLoaded,
               preloadedLabel: obj[k].label,
-              // TODO: load/save alreadySaved
+              alreadySave: obj[k].etag,
             })
           }
         }
@@ -387,7 +420,9 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         // TODO: redirection to /new instead of "error fetching entity"? create missing entity?
         if (notFound) throw Error("not found")
 
-        const entityStore = await loadRes
+        const res = await loadRes
+        etag = res.etag
+        const entityStore = res.store
         const labelsStore = await loadLabels
 
         let actualQname = entityQname,
@@ -414,7 +449,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             shapeRef: shapeRef,
             subject: null,
             subjectLabelState: defaultEntityLabelAtom,
-            alreadySaved: true,
+            alreadySaved: etag,
           })
           index = newEntities.length - 1
         }
@@ -425,7 +460,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             state: EditedEntityState.Saved,
             subjectLabelState: subject.getAtomForProperty(prefLabel.uri),
             preloadedLabel: "",
-            alreadySaved: true,
+            alreadySaved: etag,
           }
 
           // DONE: issue #2 fixed, fully using getEntities

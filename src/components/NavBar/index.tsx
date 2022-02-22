@@ -257,9 +257,11 @@ function BottomBar(props: AppProps) {
           url,
           store,
           idTokenF.__raw,
-          isUser ? "PATCH" : entities[entity]?.alreadySaved ? "POST" : "PUT"
+          entities[entity]?.alreadySaved ? "POST" : "PUT",
+          '"' + message + '"@' + lang,
+          entities[entity]?.alreadySaved
         )
-        alreadySaved = true
+        alreadySaved = loadRes // let's store Etag here
       } catch (e) {
         // TODO: better error handling
 
@@ -275,7 +277,15 @@ function BottomBar(props: AppProps) {
     // save ttl to localStorage
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
     rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
-      setUserLocalEntities(auth0, entities[entity].subjectQname, shapeQname, str, false, userId)
+      setUserLocalEntities(
+        auth0,
+        entities[entity].subjectQname,
+        shapeQname,
+        str,
+        false,
+        userId,
+        entities[entity].alreadySaved
+      )
     })
 
     history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])
