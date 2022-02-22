@@ -85,7 +85,10 @@ export const loadTtl = async (
     const etag = response.headers.get("etag")
 
     // eslint-disable-next-line no-magic-numbers
-    if (allow404 && response.status == 404) resolve(rdf.graph())
+    if (allow404 && response.status == 404) {
+      resolve(rdf.graph())
+      return
+    }
     // eslint-disable-next-line no-magic-numbers
     if (response.status != 200) reject(new Error("cannot fetch " + url))
 
@@ -350,7 +353,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       // TODO: UI "save draft" / "publish"
 
-      let loadRes, loadLabels, localRes, useLocal, notFound, etag
+      let loadRes, loadLabels, localRes, useLocal, notFound, etag, res
       const localEntities = await getUserLocalEntities(auth0)
       // 1 - check if entity has local edits (once shape is defined)
       //debug("local?", entityQname, localEntities[entityQname])
@@ -371,17 +374,16 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         } else {
           rdf.parse("", store, rdf.Store.defaultGraphURI, "text/turtle")
         }
-        localRes = store
+        res = { store, etag }
       }
 
       // 2 - try to load data from server if not or if user wants to
       try {
-        if (!useLocal) loadRes = await loadTtl(fetchUrl, false, idToken, true)
-        else loadRes = localRes
+        if (!useLocal) res = await loadTtl(fetchUrl, false, idToken, true)
         loadLabels = await loadTtl(labelQueryUrl, true)
       } catch (e) {
         // 3 - case when entity is not on server and user does not want to use local edits that already exist
-        if (localRes) loadRes = { store: localRes, etag }
+        if (localRes) res = { store: localRes, etag }
         else notFound = true
       }
 
@@ -410,7 +412,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         // TODO: redirection to /new instead of "error fetching entity"? create missing entity?
         if (notFound) throw Error("not found")
 
-        const res = await loadRes
+        if (!res) res = await loadRes
         etag = res.etag
         const entityStore = res.store
         const labelsStore = await loadLabels

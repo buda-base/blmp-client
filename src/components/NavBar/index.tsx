@@ -242,6 +242,21 @@ function BottomBar(props: AppProps) {
     ns.setDefaultPrefixes(store)
     entitySubj?.graph.addNewValuestoStore(store)
     debugStore(store)
+
+    // save ttl to localStorage
+    const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+    rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
+      setUserLocalEntities(
+        auth0,
+        entities[entity].subjectQname,
+        shapeQname,
+        str,
+        false,
+        userId,
+        entities[entity].alreadySaved
+      )
+    })
+
     let alreadySaved = false
     if (entitySubj) {
       // && entitySubj.qname == "tmp:user" && false) {
@@ -262,6 +277,12 @@ function BottomBar(props: AppProps) {
           entities[entity]?.alreadySaved
         )
         alreadySaved = loadRes // let's store Etag here
+
+        // TODO: save etag without doing everything twice? see above
+        const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+        rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
+          setUserLocalEntities(auth0, entities[entity].subjectQname, shapeQname, str, false, userId, alreadySaved)
+        })
       } catch (e) {
         // TODO: better error handling
 
@@ -273,20 +294,6 @@ function BottomBar(props: AppProps) {
     const newEntities = [...entities]
     newEntities[entity] = { ...newEntities[entity], state: EditedEntityState.Saved, alreadySaved }
     setEntities(newEntities)
-
-    // save ttl to localStorage
-    const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
-    rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
-      setUserLocalEntities(
-        auth0,
-        entities[entity].subjectQname,
-        shapeQname,
-        str,
-        false,
-        userId,
-        entities[entity].alreadySaved
-      )
-    })
 
     history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])
     history[entityUri].push({ "tmp:allValuesLoaded": true })

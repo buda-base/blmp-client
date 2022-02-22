@@ -35,12 +35,13 @@ export const getIcon = (entity: Entity) => {
   let icon
   if (entity.subject) {
     const rdfType = ns.RDF("type") as rdf.NamedNode
-    for (const s of entity.subject.graph.store.statements) {
-      if (s.predicate.value === rdfType.value && s.subject.value === entity.subject.node.value) {
-        icon = s.object.value.replace(/.*?[/]([^/]+)$/, "$1").toLowerCase()
-        if (icon === "user") break
+    if (entity?.subject?.graph?.store?.statements)
+      for (const s of entity.subject.graph.store.statements) {
+        if (s.predicate.value === rdfType.value && s.subject.value === entity.subject.node.value) {
+          icon = s.object.value.replace(/.*?[/]([^/]+)$/, "$1").toLowerCase()
+          if (icon === "user") break
+        }
       }
-    }
   }
   let shapeQname = entity.shapeRef
   if (entity.shapeRef && entity.shapeRef.qname) shapeQname = entity.shapeRef.qname
