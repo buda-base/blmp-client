@@ -331,6 +331,11 @@ const ValueList: FC<{
     property.objectType == ObjectType.ResExt &&
     list[0].uri === "tmp:uri"
 
+  const titleCase = (s: string) => {
+    if (!s) return s
+    return s[0].toUpperCase() + s.substring(1)
+  }
+
   const renderListElem = (val: Value, i: number, nbvalues: number) => {
     //debug("render:", property.qname, property, val, i)
     if (val instanceof RDFResourceWithLabel || property.in?.length) {
@@ -438,7 +443,7 @@ const ValueList: FC<{
             data-type={property.objectType}
             data-priority={property.displayPriority}
           >
-            {propLabel[0].toUpperCase() + propLabel.substring(1)}
+            {titleCase(propLabel)}
             {helpMessage && property.objectType === ObjectType.ResExt && (
               <Tooltip title={helpMessage}>
                 <HelpIcon className="help label" />
