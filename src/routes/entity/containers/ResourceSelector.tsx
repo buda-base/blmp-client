@@ -23,6 +23,7 @@ import {
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 import { LangSelect } from "./ValueList"
 import { qnameFromUri } from "../../../helpers/rdf/ns"
+import * as ns from "../../../helpers/rdf/ns"
 
 import config from "../../../config"
 
@@ -112,7 +113,7 @@ const ResourceSelector: FC<{
     if (isTypeOk) {
       if (data["@id"] && !exists(data["@id"])) {
         const newRes = new ExtRDFResourceWithLabel(
-          data["@id"],
+          data["@id"].replace(/bdr:/, ns.BDR_uri),
           {
             ...data["skos:prefLabel"]
               ? {
@@ -404,7 +405,7 @@ const ResourceSelector: FC<{
                 <a
                   title={i18n.t("search.help.open")}
                   href={config.LIBRARY_URL + "/show/" + value.qname}
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   target="_blank"
                 >
                   <LaunchIcon style={{ width: "16px" }} />
