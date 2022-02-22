@@ -186,13 +186,6 @@ function EntityEditContainer(props: AppProps) {
 
   // TODO: check that shape can be properly applied to entuty
 
-  if (loadingState.status === "fetching" || entityLoadingState.status === "fetching" || entity.isEmpty()) {
-    return (
-      <div>
-        <div>{i18n.t("types.loading")}</div>
-      </div>
-    )
-  }
   if (loadingState.status === "error" || entityLoadingState.status === "error") {
     return (
       <p className="text-center text-muted">
@@ -201,6 +194,14 @@ function EntityEditContainer(props: AppProps) {
 
         {entityLoadingState.error}
       </p>
+    )
+  }
+
+  if (loadingState.status === "fetching" || entityLoadingState.status === "fetching" || entity.isEmpty()) {
+    return (
+      <div>
+        <div>{i18n.t("types.loading")}</div>
+      </div>
     )
   }
 

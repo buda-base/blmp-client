@@ -89,9 +89,15 @@ export const loadTtl = async (
       return
     }
     // eslint-disable-next-line no-magic-numbers
-    if (response.status != 200) reject(new Error("cannot fetch " + url))
+    if (response.status != 200) {
+      reject(new Error("cannot fetch " + url))
+      return
+    }
 
-    if (handleEtag && !etag) reject(new Error("no etag returned from " + url))
+    if (handleEtag && !etag) {
+      reject(new Error("no etag returned from " + url))
+      return
+    }
 
     const body = await response.text()
     //debug("ttl:", body)
@@ -123,11 +129,20 @@ export const putTtl = async (
       const etag = response.headers.get("etag")
 
       // eslint-disable-next-line no-magic-numbers
-      if (response.status == 403) reject(new Error("not authorized to modify " + url))
+      if (response.status == 403) {
+        reject(new Error("not authorized to modify " + url))
+        return
+      }
       // eslint-disable-next-line no-magic-numbers
-      if (response.status > 400) reject(new Error("error when saving " + url))
+      if (response.status > 400) {
+        reject(new Error("error when saving " + url))
+        return
+      }
 
-      if (!previousEtag && !etag) reject(new Error("no etag returned from " + url))
+      if (!previousEtag && !etag) {
+        reject(new Error("no etag returned from " + url))
+        return
+      }
 
       resolve(etag)
     })

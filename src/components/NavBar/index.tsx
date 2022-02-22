@@ -183,7 +183,7 @@ function BottomBar(props: AppProps) {
             responseType: "blob",
             timeout: 4000,
             baseURL: config.API_BASEURL,
-            url: "scanrequest/" + entityQname + "?addVolumes=" + nbVolumes,
+            url: entityQname + "/scanrequest?addVolumes=" + nbVolumes,
             //url: "resource-nc/user/me", // to test file download
             headers: {
               Authorization: `Bearer ${idToken}`,
@@ -383,6 +383,16 @@ function BottomBar(props: AppProps) {
         </div>
       </div>
       <div className="buttons">
+        {isIInstance && !saving && !gen && (
+          <Button
+            variant="outlined"
+            onClick={save}
+            className={"btn-rouge mr-2"}
+            {...(disabled ? { disabled: true } : {})}
+          >
+            {"Save"}
+          </Button>
+        )}
         <Button
           variant="outlined"
           onClick={isIInstance ? generate : save}
