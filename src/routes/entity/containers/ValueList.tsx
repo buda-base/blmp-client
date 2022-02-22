@@ -1018,7 +1018,8 @@ const LiteralComponent: FC<{
         if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
         errors[ent.subjectQname][property.qname + ":" + index] = true
       } else if (status !== EditedEntityState.Error) {
-        status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
+        //status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
+        status = EditedEntityState.NeedsSaving
         //debug("no error:", status, n, ent, errors, property.qname, index)
         if (ent.state != status) {
           //debug("status:",ent.state,status)
