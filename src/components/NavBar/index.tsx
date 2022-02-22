@@ -134,7 +134,7 @@ function BottomBar(props: AppProps) {
 
   const isUserProfile = userId === entities[entity]?.subjectQname
 
-  const isIInstance = shapeQname === "bds:ImageInstanceShape"
+  const isIInstance = shapeQname?.toLowerCase() === "bds:imageinstanceshape"
 
   const { isAuthenticated, getIdTokenClaims } = useAuth0()
   const [idToken, setIdToken] = useState("")

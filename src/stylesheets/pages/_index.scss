@@ -318,8 +318,8 @@ input[type="checkbox"].dmcheck {
   
   & + div { width:1225px; margin:auto; padding-left:125px; text-align:left; padding-top:65px !important;
       & > div { width:810px; max-width:100%; min-width:660px; margin:auto; padding:15px; background:white;         
-        & > div.shape-icon { background: #fce08e; width:100%; height:200px;box-sizing: border-box; display:flex; align-items:center;  justify-content: center;
-          &::before { content:''; background-color:white; width:130px; height:130px; border-radius:50%; display:block; background-repeat: no-repeat; background-position:center; background-size:auto 70px;}
+        & > div.shape-icon { background: #fce08e; width:100%; height:120px;box-sizing: border-box; display:flex; align-items:center;  justify-content: center;
+          &::before { content:''; background-color:white; width:90px; height:90px; border-radius:50%; display:block; background-repeat: no-repeat; background-position:center; background-size:auto 70px;}
         }        
         &.person > .shape-icon:before { background-image:url(/icons/person.svg);  }
         &.work > .shape-icon:before { background-image:url(/icons/work.svg);  }
@@ -402,7 +402,7 @@ iframe { z-index:2; }
 
   .close-btn {  position:absolute; right:0.5rem; top:0px; }
 
-  .toggle-btn { z-index:1; align-self:flex-start; margin-left:40px; } // right:45px; top:8px; }
+  .toggle-btn { z-index:1; align-self:flex-start; margin-left:15px; } // right:45px; top:8px; }
 
   //.card.hasDisplayPriority { padding-top:20px !important; }
 
