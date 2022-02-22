@@ -438,7 +438,7 @@ const ValueList: FC<{
             data-type={property.objectType}
             data-priority={property.displayPriority}
           >
-            {propLabel[0].toUpperCase() + propLabel.substring(1)}
+            {propLabel && <>{propLabel[0].toUpperCase() + propLabel.substring(1)}</>}
             {helpMessage && property.objectType === ObjectType.ResExt && (
               <Tooltip title={helpMessage}>
                 <HelpIcon className="help label" />
@@ -1018,8 +1018,9 @@ const LiteralComponent: FC<{
         if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
         errors[ent.subjectQname][property.qname + ":" + index] = true
       } else if (status !== EditedEntityState.Error) {
-        //status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
-        status = EditedEntityState.NeedsSaving
+        // TODO: unclear how to update status to NeedsSaving for newly created entity and not for loaded entity
+        status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
+
         //debug("no error:", status, n, ent, errors, property.qname, index)
         if (ent.state != status) {
           //debug("status:",ent.state,status)

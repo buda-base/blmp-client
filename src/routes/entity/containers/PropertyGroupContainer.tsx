@@ -57,7 +57,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
           <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
             <div
               className={
-                "row card my-4 pb-3" + (edit === group.qname ? " group-edit" : "") + " show-displayPriority-" + force
+                "row card my-2 pb-3" + (edit === group.qname ? " group-edit" : "") + " show-displayPriority-" + force
               }
               onClick={() => setEdit(group.qname)}
             >
