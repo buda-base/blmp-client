@@ -301,13 +301,17 @@ const ValueList: FC<{
   //debug("prop:", property.qname, subject.qname, list) //property, force)
 
   const isEmptyValue = (val: Value): boolean => {
-    if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri" || val.uri === "tmp:none"
-    else if (val instanceof LiteralWithId) return !val.value && !val.language
+    if (val instanceof RDFResourceWithLabel) {
+      return val.uri === "tmp:uri" || val.uri === "tmp:none"
+    } else if (val instanceof LiteralWithId) {
+      // remove language part to fix hiding secondary properties in iinstance/volumes
+      return !val.value // && !val.language
+    }
     return false
   }
   const isErrorValue = (val: Value): boolean => {
-    // TODO: to be continued
-    if (val instanceof LiteralWithId && property?.datatype?.value === ns.RDF("langString").value) return !val.value
+    // TODO: to be continue (or not? conflicts with hiding secondary properties, removing)
+    //if (val instanceof LiteralWithId && property?.datatype?.value === ns.RDF("langString").value) return !val.value
     return false
   }
 
