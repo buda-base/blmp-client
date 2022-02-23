@@ -17,6 +17,7 @@ import {
   noUndoRedo,
   uiTabState,
   uiNavState,
+  uiGroupState,
 } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState, useRecoilSnapshot } from "recoil"
@@ -120,6 +121,7 @@ function EntityEditContainer(props: AppProps) {
 
   const [uiLang] = useRecoilState(uiLangState)
   const [edit, setEdit] = useRecoilState(uiEditState)
+  const [groupEd, setGroupEd] = useRecoilState(uiGroupState)
 
   const [undos, setUndos] = useRecoilState(uiUndosState)
 
@@ -266,17 +268,20 @@ function EntityEditContainer(props: AppProps) {
         })}
       </div>
       <div>
-        {edit && (
-          <div
-            className="group-edit-BG"
-            onClick={(e) => {
-              setEdit("")
-              e.stopPropagation()
-            }}
-          ></div>
-        )}
         {shape.groups.map((group, index) => (
-          <PropertyGroupContainer key={group.uri} group={group} subject={entity} />
+          <>
+            {groupEd === group.qname && (
+              <div
+                className="group-edit-BG"
+                onClick={(e) => {
+                  setEdit("")
+                  setGroupEd("")
+                  e.stopPropagation()
+                }}
+              ></div>
+            )}
+            <PropertyGroupContainer key={group.uri} group={group} subject={entity} />
+          </>
         ))}
       </div>
     </React.Fragment>

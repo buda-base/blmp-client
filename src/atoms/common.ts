@@ -34,6 +34,11 @@ export const uiEditState = atom<string>({
   default: "",
 })
 
+export const uiGroupState = atom<string>({
+  key: "uiGroupState",
+  default: "",
+})
+
 export const uiHistoryState = atom<Record<string, never> | FC<{ string: { string: Array<Value> } }>>({
   key: "uiHistoryState",
   default: {},

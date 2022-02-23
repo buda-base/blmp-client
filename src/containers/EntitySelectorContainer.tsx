@@ -10,7 +10,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
-import { uiLangState, uiTabState, uiEditState, profileIdState } from "../atoms/common"
+import { uiLangState, uiTabState, uiEditState, profileIdState, uiGroupState } from "../atoms/common"
 import { makeStyles } from "@material-ui/core/styles"
 import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
@@ -76,6 +76,7 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
     setTab(newTab)
   }
   const [edit, setEdit] = useRecoilState(uiEditState)
+  const [groupEd, setGroupEd] = useRecoilState(uiGroupState)
 
   const auth0 = useAuth0()
 
@@ -118,7 +119,13 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
   }, [])
 
   return (
-    <div className="tabs-select" onClick={() => setEdit("")}>
+    <div
+      className="tabs-select"
+      onClick={() => {
+        setEdit("")
+        setGroupEd("")
+      }}
+    >
       <h3>Edition</h3>
       <h4>Open entities</h4>
       <Tabs value={tab === -1 ? false : tab} onChange={handleChange} aria-label="entities">

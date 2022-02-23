@@ -2,7 +2,7 @@ import React, { useState, FC, ReactElement } from "react"
 import PropertyContainer from "./PropertyContainer"
 import { RDFResource, Subject } from "../../../helpers/rdf/types"
 import { PropertyGroup, PropertyShape } from "../../../helpers/rdf/shapes"
-import { uiLangState, uiEditState, uiNavState } from "../../../atoms/common"
+import { uiLangState, uiEditState, uiNavState, uiGroupState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState } from "recoil"
 import { OtherButton } from "./ValueList"
@@ -47,6 +47,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
   //debug("prio:",group.qname,group,withDisplayPriority,withoutDisplayPriority);
 
   const [edit, setEdit] = useRecoilState(uiEditState)
+  const [groupEd, setGroupEd] = useRecoilState(uiGroupState)
 
   const [nav, setNav] = useRecoilState(uiNavState)
 
@@ -59,7 +60,10 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
               className={
                 "row card my-2 pb-3" + (edit === group.qname ? " group-edit" : "") + " show-displayPriority-" + force
               }
-              onClick={() => setEdit(group.qname)}
+              onClick={() => {
+                setEdit(group.qname)
+                setGroupEd(group.qname)
+              }}
             >
               <p className="">{label}</p>
               <div className={group.properties.length <= 1 ? "hidePropLabel" : ""} style={{ fontSize: 0 }}>

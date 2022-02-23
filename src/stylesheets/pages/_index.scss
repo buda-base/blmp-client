@@ -591,11 +591,12 @@ label ~ .selector {
   }
 }
 
-.group > .album > .container > .row { z-index:2; position:relative; 
-  &:not(.group-edit) { height:65px; overflow:hidden; display:block;
-  
-    & > p:first-child { width:100%; padding-bottom:15px; }
-  }
+.group > .album > .container > .row { z-index:2; position:relative; }
+
+.group:first-child > .album > .container > .row,
+:not(.group-edit-BG) + .group > .album > .container > .row { height:65px; overflow:hidden; display:block;
+
+  & > p:first-child { width:100%; padding-bottom:15px; }
 }
 
 
