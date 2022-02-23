@@ -10,7 +10,7 @@ import * as shapes from "./shapes"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import { useAuth0 } from "@auth0/auth0-react"
 import { nanoid, customAlphabet } from "nanoid"
-import { uiTabState, userIdState } from "../../atoms/common"
+import { uiTabState, userIdState, RIDprefixState } from "../../atoms/common"
 
 const debug = require("debug")("bdrc:rdf:construct")
 
@@ -58,6 +58,9 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
   const auth0 = useAuth0()
   const [tab, setTab] = useRecoilState(uiTabState)
   const [userId, setUserId] = useRecoilState(userIdState)
+  const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
+
+  debug("RIDp:", RIDprefix)
 
   useEffect(() => {
     return () => {
@@ -101,10 +104,9 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
       let lname
       try {
         if (!idToken) throw new Error("no token when reserving id")
-        // TODO: get userPrefix from user profile
-        userPrefix = ""
-        const prefix = shapePrefix + userPrefix
-        // TODO: uncomment for prod
+        // DONE: get userPrefix from user profile
+        const prefix = shapePrefix + RIDprefix
+        // DONE: uncomment for prod
         lname = await reserveId(prefix, idToken)
         //lname = prefix + nanoidCustom()
       } catch (e) {
