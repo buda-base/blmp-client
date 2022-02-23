@@ -134,7 +134,9 @@ function BottomBar(props: AppProps) {
 
   const isUserProfile = userId === entities[entity]?.subjectQname
 
-  const isIInstance = shapeQname === "bds:ImageInstanceShape"
+  //const isIInstance = shapeQname === "bds:ImageInstanceShape"
+  // this shouldn't be necessary, cf /edit/bdr:W12827/bds:ImageInstanceShape
+  const isIInstance = shapeQname?.toLowerCase() === "bds:imageinstanceshape"
 
   const { isAuthenticated, getIdTokenClaims } = useAuth0()
   const [idToken, setIdToken] = useState("")
@@ -151,7 +153,7 @@ function BottomBar(props: AppProps) {
     setLang(uiLang)
   }, [uiLang])
 
-  //debug("bottombar:", isUserProfile, userId, entitySubj, shapeQname)
+  debug("bottombar:", isUserProfile, userId, entitySubj, shapeQname, entities[entity])
 
   const delay = 300
   const closePopup = (delay1 = delay, delay2 = delay) => {

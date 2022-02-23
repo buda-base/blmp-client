@@ -106,3 +106,8 @@ export const reloadEntityState = atom<string>({
   key: "reloadEntityState",
   default: "",
 })
+
+export const RIDprefixState = atom<string>({
+  key: "RIDprefixState",
+  default: "",
+})

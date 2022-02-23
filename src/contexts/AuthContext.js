@@ -4,7 +4,7 @@ import { useRecoilState } from "recoil"
 import axios from "axios"
 
 import config from "../config"
-import { reloadProfileState, uiLangState, uiLitLangState, userIdState } from "../atoms/common"
+import { reloadProfileState, uiLangState, uiLitLangState, userIdState, RIDprefixState } from "../atoms/common"
 import * as ns from "../helpers/rdf/ns"
 
 const debug = require("debug")("bdrc:auth")
@@ -20,6 +20,7 @@ export function AuthContextWrapper({ children }) {
   const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
   const [userId, setUserId] = useRecoilState(userIdState)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
+  const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
   useEffect(() => {
     async function checkSession() {
@@ -66,17 +67,23 @@ export function AuthContextWrapper({ children }) {
         .then(function (response) {
           let id = Object.keys(response.data),
             uiL,
-            uiLitL
+            uiLitL,
+            prefix
+          const idx = id.findIndex((k) => k.includes("/user/U"))
           if (id.length) {
-            uiL = response.data[id[0]][ns.BDOU("preferredUiLang").value]
+            uiL = response.data[id[idx]][ns.BDOU("preferredUiLang").value]
             //if (uiL?.length) uiL = uiL[0].value
             if (uiL?.length) setUiLang(uiL.map((u) => u.value))
 
-            uiLitL = response.data[id[0]][ns.BDOU("preferredUiLiteralLangs").value]
+            uiLitL = response.data[id[idx]][ns.BDOU("preferredUiLiteralLangs").value]
             //if (uiLitL?.length) uiLitL = uiLitL[0].value
             if (uiLitL?.length) setUiLitLang(uiLitL.map((u) => u.value))
 
-            id = ns.qnameFromUri(id[0])
+            prefix = response.data[id[idx]][ns.BDOU("localNameDefaultPrefix").value]
+            //debug("RIDp:",prefix,response.data[id[idx]],ns.BDOU("localNameDefaultPrefix").value)
+            if (prefix?.length && prefix[0].value) setRIDprefix(prefix[0].value)
+
+            id = ns.qnameFromUri(id[idx])
             if (id) setUserId(id)
           }
           debug("Profile loaded", response.data, id, uiL)

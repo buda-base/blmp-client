@@ -182,7 +182,7 @@ function EntityEditContainer(props: AppProps) {
 
   // eslint-disable-next-line prefer-const
   let { entityLoadingState, entity } = EntityFetcher(entityQname, shapes.shapeRefsMap[shapeQname])
-  const { loadingState, shape } = ShapeFetcher(shapeQname)
+  const { loadingState, shape } = ShapeFetcher(shapeQname, entityQname)
 
   // TODO: check that shape can be properly applied to entuty
 
