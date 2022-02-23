@@ -179,10 +179,11 @@ export async function loadOntology(): Promise<EntityGraph> {
   return Promise.resolve(res)
 }
 
-export function ShapeFetcher(shapeQname: string) {
+export function ShapeFetcher(shapeQname: string, entityQname: string) {
   const [loadingState, setLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [shape, setShape] = useState<NodeShape>()
   const [current, setCurrent] = useState(shapeQname)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   //debug("fetcher: shape ", shapeQname, current, shape)
 
@@ -218,11 +219,25 @@ export function ShapeFetcher(shapeQname: string) {
         const ontology = await loadOnto
         const shapeUri = uriFromQname(shapeQname)
         const shape: NodeShape = new NodeShape(rdf.sym(shapeUri), new EntityGraph(store, shapeUri), ontology)
-        setLoadingState({ status: "fetched", error: undefined })
-        //debug("shape:",shape,store)
-        setShape(shape)
         shapesMap[shapeQname] = shape
+        setShape(shape)
+
+        if (entityQname && entityQname !== "tmp:uri") {
+          const index = entities.findIndex((e) => e.subjectQname === entityQname)
+          if (index !== -1) {
+            const newEntities = [...entities]
+            newEntities[index] = {
+              ...newEntities[index],
+              shapeRef: shape.qname,
+            }
+            debug("shape:", shape, entityQname, index, newEntities, newEntities[index])
+            setEntities(newEntities)
+          }
+        }
+
+        setLoadingState({ status: "fetched", error: undefined })
       } catch (e) {
+        debug("shape error:", e)
         setLoadingState({ status: "error", error: "error fetching shape or ontology" })
       }
     }
