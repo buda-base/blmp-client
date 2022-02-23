@@ -47,7 +47,7 @@ export const getIcon = (entity: Entity) => {
   if (entity.shapeRef && entity.shapeRef.qname) shapeQname = entity.shapeRef.qname
   if (!icon && shapeQname) {
     // TODO: might be something better than that...
-    icon = shapeQname.replace(/^[^:]+:([^:]+?)Shape[^/]*$/, "$1").toLowerCase()
+    icon = shapeQname.replace(/^[^:]+:([^:]+?)Shape[^/]*$/, "$1")
   }
   return icon
 }
@@ -155,7 +155,10 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
               <img
                 className="entity-type"
                 src={
-                  "/icons/" + icon + (index === tab ? "_" : "") + (icon && icon.startsWith("user") ? ".png" : ".svg")
+                  "/icons/" +
+                  icon.toLowerCase() +
+                  (index === tab ? "_" : "") +
+                  (icon && icon.startsWith("user") ? ".png" : ".svg")
                 }
               />
             )}

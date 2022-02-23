@@ -443,7 +443,7 @@ const ValueList: FC<{
             data-type={property.objectType}
             data-priority={property.displayPriority}
           >
-            {<>titleCase(propLabel)</>}
+            {titleCase(propLabel)}
             {helpMessage && property.objectType === ObjectType.ResExt && (
               <Tooltip title={helpMessage}>
                 <HelpIcon className="help label" />
