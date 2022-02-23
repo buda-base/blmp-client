@@ -143,7 +143,11 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
       break
     case ObjectType.Literal:
     default:
-      if (property?.datatype?.value === ns.RDF("langString").value) {
+      const defaultValue = property.defaultValue as rdf.Literal | null
+      if (defaultValue != null)
+        return new LiteralWithId(defaultValue.value, defaultValue.language, defaultValue.datatype)
+      const datatype = property.datatype?.value
+      if (datatype === ns.RDF("langString").value) {
         // TODO: this should be a user preference, not urgent
         return new LiteralWithId("", property?.defaultLanguage ? property.defaultLanguage : "bo-x-ewts")
       } else {

@@ -87,6 +87,7 @@ export const bdsIdentifierPrefix = ns.BDS("identifierPrefix") as rdf.NamedNode
 export const bdsAllowMarkDown = ns.BDS("allowMarkDown") as rdf.NamedNode
 export const shNamespace = ns.SH("namespace") as rdf.NamedNode
 export const bdsDefaultLanguage = ns.BDS("defaultLanguage") as rdf.NamedNode
+export const bdsDefaultValue = ns.BDS("defaultValue") as rdf.NamedNode
 export const shLanguageIn = ns.SH("languageIn") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
@@ -200,6 +201,11 @@ export class PropertyShape extends RDFResourceWithLabel {
       }
     }
     return res
+  }
+
+  @Memoize()
+  public get defaultValue(): rdf.Node | null {
+    return this.graph.store.any(this.node, bdsDefaultValue, null)
   }
 
   @Memoize()
