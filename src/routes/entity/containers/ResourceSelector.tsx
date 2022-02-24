@@ -297,7 +297,9 @@ const ResourceSelector: FC<{
   const inputRef = useRef<HTMLInputElement>()
   const [withPreview, setWithPreview] = useState(false)
   useLayoutEffect(() => {
-    setWithPreview(language === "bo-x-ewts" && keyword && document.activeElement === inputRef.current)
+    setWithPreview(
+      language === "bo-x-ewts" && keyword && !keyword.startsWith("bdr:") && document.activeElement === inputRef.current
+    )
   })
 
   return (
@@ -321,7 +323,7 @@ const ResourceSelector: FC<{
                 onKeyPress={(e) => {
                   if (e.key === "Enter") onClick(e)
                 }}
-                onFocus={() => setWithPreview(language === "bo-x-ewts" && keyword)}
+                onFocus={() => setWithPreview(language === "bo-x-ewts" && keyword && !keyword.startsWith("bdr:"))}
                 onBlur={() => setWithPreview(false)}
                 inputRef={inputRef}
                 //className={classes.root}
@@ -330,7 +332,7 @@ const ResourceSelector: FC<{
                 value={keyword}
                 onChange={textOnChange}
                 //label={value.status === "filled" ? value["@id"] : null}
-                label={"Search name or RID"}
+                placeholder={"Search name or RID"}
                 {...(error
                   ? {
                       helperText: (
