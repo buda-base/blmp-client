@@ -590,11 +590,9 @@ const EditLangString: FC<{
   }
 
   const [withPreview, setWithPreview] = useState(false)
-  /*
-  useLayoutEffect( () => {
+  useLayoutEffect(() => {
     setWithPreview(lit.language === "bo-x-ewts" && lit.value && document.activeElement === inputRef.current)
   })
-  */
 
   let padBot = "0px"
   if (withPreview) {

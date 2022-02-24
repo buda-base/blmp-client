@@ -296,11 +296,9 @@ const ResourceSelector: FC<{
 
   const inputRef = useRef<HTMLInputElement>()
   const [withPreview, setWithPreview] = useState(false)
-  /*
-  useLayoutEffect( () => {
+  useLayoutEffect(() => {
     setWithPreview(language === "bo-x-ewts" && keyword && document.activeElement === inputRef.current)
   })
-  */
 
   return (
     <React.Fragment>
@@ -320,6 +318,9 @@ const ResourceSelector: FC<{
                 </div>
               )}
               <TextField
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") onClick(e)
+                }}
                 onFocus={() => setWithPreview(language === "bo-x-ewts" && keyword)}
                 onBlur={() => setWithPreview(false)}
                 inputRef={inputRef}
