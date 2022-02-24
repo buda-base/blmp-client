@@ -78,7 +78,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     ? "bds:" + icon[0].toUpperCase() + icon.substring(1) + "Shape"
     : ""
 
-  //debug("sQn:", icon, index, tab, shapeQname, entity.shapeRef?.qname, entity.shapeRef, entity.subjectQname)
+  //debug("sQn:", icon) //, index, tab, shapeQname, entity.shapeRef?.qname, entity.shapeRef, entity.subjectQname)
 
   const link =
     icon && icon.startsWith("user") ? "/profile" : "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
@@ -158,7 +158,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
                   "/icons/" +
                   icon.toLowerCase() +
                   (index === tab ? "_" : "") +
-                  (icon && icon.startsWith("user") ? ".png" : ".svg")
+                  (icon && icon.startsWith("User") ? ".png" : ".svg")
                 }
               />
             )}

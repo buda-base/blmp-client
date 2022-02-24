@@ -90,6 +90,7 @@ export const shNamespace = ns.SH("namespace") as rdf.NamedNode
 export const bdsDefaultLanguage = ns.BDS("defaultLanguage") as rdf.NamedNode
 export const bdsDefaultValue = ns.BDS("defaultValue") as rdf.NamedNode
 export const shLanguageIn = ns.SH("languageIn") as rdf.NamedNode
+export const shPattern = ns.SH("pattern") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
 typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
@@ -204,6 +205,13 @@ export class PropertyShape extends RDFResourceWithLabel {
     return res
   }
 
+  // error message?
+  @Memoize()
+  public get errorMessage(): Record<string, string> | null {
+    const res = this.getPropValueByLang(shMessage)
+    return res
+  }
+
   @Memoize()
   public get defaultValue(): rdf.Node | null {
     return this.graph.store.any(this.node, bdsDefaultValue, null)
@@ -284,6 +292,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get datatype(): rdf.NamedNode | null {
     return this.getPropResValue(shDatatype)
+  }
+
+  @Memoize()
+  public get pattern(): string | null {
+    return this.getPropStringValue(shPattern)
   }
 
   public static resourcizeWithInit(

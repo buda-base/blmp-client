@@ -828,10 +828,33 @@ const EditString: FC<{
   onChange: (value: LiteralWithId) => void
   label: string
   editable?: boolean
-}> = ({ property, lit, onChange, label, editable }) => {
+  updateEntityState: (es: EditedEntityState) => void
+}> = ({ property, lit, onChange, label, editable, updateEntityState }) => {
   const classes = useStyles()
+  const [uiLang] = useRecoilState(uiLangState)
 
   const dt = property.datatype
+  const pattern = property.pattern ? new RegExp(property.pattern) : undefined
+
+  const getPatternError = (val: string) => {
+    let err = ""
+    if (pattern !== undefined && val !== "" && !val.match(pattern)) {
+      err = ValueByLangToStrPrefLang(property.errorMessage, uiLang)
+      debug("err:", property.errorMessage)
+    }
+    return err
+  }
+
+  const [error, setError] = useState("") //getIntError(lit.value))
+
+  useEffect(() => {
+    if (!error && (lit.value === undefined || lit.value === null || lit.value === "")) return
+    const newError = getPatternError(lit.value)
+    if (newError != error) {
+      setError(newError)
+      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
+    }
+  })
 
   const changeCallback = (val: string) => {
     onChange(lit.copyWithUpdatedValue(val))
@@ -845,6 +868,16 @@ const EditString: FC<{
       InputLabelProps={{ shrink: true }}
       onChange={(e) => changeCallback(e.target.value)}
       {...(!editable ? { disabled: true } : {})}
+      {...(error
+        ? {
+            helperText: (
+              <React.Fragment>
+                <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} /> <i>{error}</i>
+              </React.Fragment>
+            ),
+            error: true,
+          }
+        : {})}
     />
   )
 }
@@ -1147,6 +1180,7 @@ const LiteralComponent: FC<{
           ) : null,
         ]}
         editable={editable && !property.readOnly}
+        updateEntityState={updateEntityState}
       />
     )
   }

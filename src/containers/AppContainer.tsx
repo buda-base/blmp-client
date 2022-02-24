@@ -365,7 +365,7 @@ function App(props: AppProps) {
           </Switch>
         </div>
       </main>
-      <BottomBarContainer />
+      {!props.location.pathname.startsWith("/new") && <BottomBarContainer />}
     </div>
   )
 }
