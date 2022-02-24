@@ -600,7 +600,7 @@ const EditLangString: FC<{
 
   let padBot = "0px"
   if (withPreview) {
-    padBot = "36px"
+    padBot = "40px"
   } else if (property.singleLine && editMD) {
     padBot = "1px"
   }

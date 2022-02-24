@@ -427,7 +427,7 @@ section,
 .langString:hover .hoverPart { visibility: visible; }
 .langString+.langString { padding-top:10px;}
 
-.langString .withPreview + .hoverPart > * { margin-bottom:36px; }
+.langString .withPreview + .hoverPart > * { margin-bottom:40px; }
 
 .langString .hoverPart > button:first-child { margin-top:2px!important; }
 .resSelect .hoverPart > button:first-child { margin-right:0 !important; }
@@ -444,9 +444,9 @@ section,
   }
 }
 
-.resSelect .withPreview { padding-bottom:36px; }
+.resSelect .withPreview { padding-bottom:40px; }
 .preview-ewts:not(#a) { bottom:0; 
-  input:not(#a) { padding-bottom:0 !important; line-height:36px; height:36px; }
+  input:not(#a) { padding-bottom:0 !important; line-height:40px; height:40px; }
 }
 
 
@@ -623,7 +623,7 @@ label ~ .selector {
   & > div > div::before { content:none; }
 
   input.MuiInputBase-input { width:100%; font-size:20px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45);
-    font-family: 'Noto Sans Tibetan';
+    font-family: 'Noto Sans Tibetan' !important;
   }
 } 
 
