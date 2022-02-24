@@ -72,6 +72,7 @@ export const shMaxInclusive = ns.SH("maxInclusive") as rdf.NamedNode
 export const shMaxExclusive = ns.SH("maxExclusive") as rdf.NamedNode
 export const shDatatype = ns.SH("datatype") as rdf.NamedNode
 export const dashSingleLine = ns.DASH("singleLine") as rdf.NamedNode
+export const shTargetClass = ns.SH("targetClass") as rdf.NamedNode
 export const shTargetObjectsOf = ns.SH("targetObjectsOf") as rdf.NamedNode
 export const shTargetSubjectsOf = ns.SH("targetSubjectsOf") as rdf.NamedNode
 export const bdsPropertyShapeType = ns.BDS("propertyShapeType") as rdf.NamedNode
@@ -428,6 +429,14 @@ export class NodeShape extends RDFResourceWithLabel {
   constructor(node: rdf.NamedNode, graph: EntityGraph, ontologyGraph: EntityGraph) {
     super(node, graph, rdfsLabel)
     this.ontologyGraph = ontologyGraph
+  }
+
+  @Memoize()
+  public get targetClassPrefLabels(): Record<string, string> | null {
+    const targetClass: rdf.NamedNode | null = this.graph.store.any(this.node, shTargetClass, null) as rdf.NamedNode
+    if (targetClass == null) return null
+    const classInOntology = new RDFResourceWithLabel(targetClass, this.ontologyGraph)
+    return classInOntology.prefLabels
   }
 
   @Memoize()

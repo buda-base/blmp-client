@@ -530,7 +530,11 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
     */
   )
     return <MinimalAddButton disable={disable} add={addItem} className=" " />
-  else return <BlockAddButton add={addItem} label={ValueByLangToStrPrefLang(property.prefLabels, uiLang)} />
+  else {
+    const targetShapeLabels = property.targetShape?.targetClassPrefLabels
+    const labels = targetShapeLabels ? targetShapeLabels : property.prefLabels
+    return <BlockAddButton add={addItem} label={ValueByLangToStrPrefLang(labels, uiLang)} />
+  }
 }
 
 const useStyles = makeStyles((theme) => ({
