@@ -46,7 +46,7 @@ export function AuthContextWrapper({ children }) {
       (groups = user["https://auth.bdrc.io/groups"]) &&
       !groups.includes("admin")
     ) {
-      logout()
+      logout({ returnTo: window.location.origin + "?notAdmin=true" })
     }
   }, [idToken, isAuthenticated, user, reloadProfile])
 
