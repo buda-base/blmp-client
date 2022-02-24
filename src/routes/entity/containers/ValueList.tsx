@@ -632,7 +632,7 @@ const EditLangString: FC<{
 
   return (
     <div
-      className={"mb-0" + (withPreview ? "withPreview" : "")}
+      className={"mb-0" + (withPreview ? " withPreview" : "")}
       style={{
         display: "flex",
         width: "100%",
