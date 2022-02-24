@@ -1,9 +1,11 @@
-import React, { useEffect, useState, FC, ChangeEvent } from "react"
+import React, { useEffect, useState, FC, ChangeEvent, useRef, useLayoutEffect } from "react"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
 import { useHistory, Link } from "react-router-dom"
+import { fromWylie } from "jsewts"
+
 import { nodeForType } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
 import * as lang from "../../../helpers/lang"
@@ -292,6 +294,14 @@ const ResourceSelector: FC<{
     }
   }, [error])
 
+  const inputRef = useRef<HTMLInputElement>()
+  const [withPreview, setWithPreview] = useState(false)
+  /*
+  useLayoutEffect( () => {
+    setWithPreview(language === "bo-x-ewts" && keyword && document.activeElement === inputRef.current)
+  })
+  */
+
   return (
     <React.Fragment>
       <div
@@ -299,16 +309,27 @@ const ResourceSelector: FC<{
         style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}
       >
         {value.uri === "tmp:uri" && (
-          <div className="" style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
+          <div
+            className={withPreview ? "withPreview" : ""}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}
+          >
             <React.Fragment>
+              {withPreview && (
+                <div className="preview-ewts">
+                  <TextField disabled value={fromWylie(keyword)} />
+                </div>
+              )}
               <TextField
+                onFocus={() => setWithPreview(language === "bo-x-ewts" && keyword)}
+                onBlur={() => setWithPreview(false)}
+                inputRef={inputRef}
                 //className={classes.root}
                 InputLabelProps={{ shrink: true }}
                 style={{ width: "90%" }}
                 value={keyword}
                 onChange={textOnChange}
                 //label={value.status === "filled" ? value["@id"] : null}
-                //label={"Keyword"}
+                label={"Search name or RID"}
                 {...(error
                   ? {
                       helperText: (

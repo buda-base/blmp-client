@@ -427,7 +427,7 @@ section,
 .langString:hover .hoverPart { visibility: visible; }
 .langString+.langString { padding-top:10px;}
 
-.langString.lang-bo-x-ewts .hoverPart > * { margin-bottom:36px; }
+.langString .withPreview + .hoverPart > * { margin-bottom:36px; }
 
 .langString .hoverPart > button:first-child { margin-top:2px!important; }
 .resSelect .hoverPart > button:first-child { margin-right:0 !important; }
@@ -442,6 +442,11 @@ section,
   & + div { 
     .resSelect:not(:first-child:last-child) > div:first-child { min-width:150px !important; }
   }
+}
+
+.resSelect .withPreview { padding-bottom:36px; }
+.preview-ewts:not(#a) { bottom:0; 
+  input:not(#a) { padding-bottom:0 !important; line-height:34px; height:36px; }
 }
 
 

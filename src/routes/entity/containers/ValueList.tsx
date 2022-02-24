@@ -1,4 +1,4 @@
-import React, { useEffect, FC, ChangeEvent, useState, useRef } from "react"
+import React, { useEffect, FC, ChangeEvent, useState, useRef, useLayoutEffect } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
 import {
@@ -301,13 +301,17 @@ const ValueList: FC<{
   //debug("prop:", property.qname, subject.qname, list) //property, force)
 
   const isEmptyValue = (val: Value): boolean => {
-    if (val instanceof RDFResourceWithLabel) return val.uri === "tmp:uri" || val.uri === "tmp:none"
-    else if (val instanceof LiteralWithId) return !val.value && !val.language
+    if (val instanceof RDFResourceWithLabel) {
+      return val.uri === "tmp:uri" || val.uri === "tmp:none"
+    } else if (val instanceof LiteralWithId) {
+      // remove language part to fix hiding secondary properties in iinstance/volumes
+      return !val.value // && !val.language
+    }
     return false
   }
   const isErrorValue = (val: Value): boolean => {
-    // TODO: to be continued
-    if (val instanceof LiteralWithId && property?.datatype?.value === ns.RDF("langString").value) return !val.value
+    // TODO: to be continue (or not? conflicts with hiding secondary properties, removing)
+    //if (val instanceof LiteralWithId && property?.datatype?.value === ns.RDF("langString").value) return !val.value
     return false
   }
 
@@ -589,9 +593,16 @@ const EditLangString: FC<{
     error: true,
   }
 
+  const [withPreview, setWithPreview] = useState(false)
+  /*
+  useLayoutEffect( () => {
+    setWithPreview(lit.language === "bo-x-ewts" && lit.value && document.activeElement === inputRef.current)
+  })
+  */
+
   let padBot = "0px"
-  if (/*preview &&*/ lit.language === "bo-x-ewts" && lit.value) {
-    padBot = "38px"
+  if (withPreview) {
+    padBot = "36px"
   } else if (property.singleLine && editMD) {
     padBot = "1px"
   }
@@ -625,7 +636,7 @@ const EditLangString: FC<{
 
   return (
     <div
-      className="mb-0"
+      className={"mb-0" + (withPreview ? " withPreview" : "")}
       style={{
         display: "flex",
         width: "100%",
@@ -653,11 +664,13 @@ const EditLangString: FC<{
             }}
             {...(error ? errorData : {})}
             {...(!editable ? { disabled: true } : {})}
-            onBlur={() =>
+            onFocus={() => setWithPreview(lit.language === "bo-x-ewts" && lit.value)}
+            onBlur={() => {
+              setWithPreview(false)
               setTimeout(() => {
                 if (inputRef.current && document.activeElement != inputRef.current) setKeyboard(false)
               }, 350)
-            }
+            }}
           />
           {property.allowMarkDown && (
             <span
@@ -759,13 +772,12 @@ const EditLangString: FC<{
         {...(error ? { error: true } : {})}
         editable={editable}
       />
-      {lit.language === "bo-x-ewts" &&
-        lit.value && ( // TODO see if fromWylie & MD can both be used ('escape' some chars?)
-          <div className="preview-ewts">
-            <TextField disabled value={fromWylie(lit.value)} />
-            {/*editMD && <MDEditor.Markdown source={fromWylie(lit.value)} /> // not really working  */}
-          </div>
-        )}
+      {withPreview && ( // TODO see if fromWylie & MD can both be used ('escape' some chars?)
+        <div className="preview-ewts">
+          <TextField disabled value={fromWylie(lit.value)} />
+          {/*editMD && <MDEditor.Markdown source={fromWylie(lit.value)} /> // not really working  */}
+        </div>
+      )}
     </div>
   )
 }
@@ -802,7 +814,7 @@ export const LangSelect: FC<{
             {option.value}
           </MenuItem>
         ))}
-        {!languages.includes(value) && (
+        {!languages.some((l) => l.value === value) && (
           <MenuItem key={value} value={value}>
             {value}
           </MenuItem>
