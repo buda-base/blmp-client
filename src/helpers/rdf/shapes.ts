@@ -91,6 +91,7 @@ export const bdsDefaultLanguage = ns.BDS("defaultLanguage") as rdf.NamedNode
 export const bdsDefaultValue = ns.BDS("defaultValue") as rdf.NamedNode
 export const shLanguageIn = ns.SH("languageIn") as rdf.NamedNode
 export const shPattern = ns.SH("pattern") as rdf.NamedNode
+export const bdsSortOnProperty = ns.BDS("sortOnProperty") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
 typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
@@ -297,6 +298,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get pattern(): string | null {
     return this.getPropStringValue(shPattern)
+  }
+
+  @Memoize()
+  public get sortOnProperty(): rdf.NamedNode | null {
+    return this.getPropResValue(bdsSortOnProperty)
   }
 
   public static resourcizeWithInit(

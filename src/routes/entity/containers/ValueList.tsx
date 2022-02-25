@@ -15,7 +15,7 @@ import {
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import * as ns from "../../../helpers/rdf/ns"
 import { generateSubnode } from "../../../helpers/rdf/construct"
-import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
+import { useRecoilState, useSetRecoilState, useRecoilValue, atomFamily, atom, selectorFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem, Tooltip, IconButton, InputLabel, Select } from "@material-ui/core"
 import { getId, replaceItemAtIndex, removeItemAtIndex } from "../../../helpers/atoms"
@@ -35,7 +35,7 @@ import i18n from "i18next"
 import { getHistoryStatus } from "../../../containers/AppContainer"
 import PropertyContainer from "./PropertyContainer"
 import { langs, ValueByLangToStrPrefLang, langsWithDefault } from "../../../helpers/lang"
-import { uiLangState, uiLitLangState, uiEditState, uiUndosState } from "../../../atoms/common"
+import { uiLangState, uiLitLangState, uiEditState, uiUndosState, orderedByPropSelector } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
 
@@ -171,13 +171,24 @@ const ValueList: FC<{
   topEntity?: Subject
 }> = ({ subject, property, embedded, force, editable, owner, topEntity }) => {
   if (property.path == null) throw "can't find path of " + property.qname
-  const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
-  const collec = list.length === 1 && list[0].node?.termType === "Collection" ? list[0].node.elements : undefined
-  const listOrCollec = collec ? collec : list
+  const [unsortedList, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
   const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
   const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
+  const sortOnPath = property?.sortOnProperty?.value
+  const orderedList = useRecoilValue(
+    orderedByPropSelector({
+      atom: subject.getAtomForProperty(property.path.sparqlString),
+      propertyPath: sortOnPath,
+      //order: "desc" // default is "asc"
+    })
+  )
+
+  let list = unsortedList
+  if (orderedList.length) list = orderedList
+  const collec = list.length === 1 && list[0].node?.termType === "Collection" ? list[0].node.elements : undefined
+  const listOrCollec = collec ? collec : list
   //debug("vL:", list, collec)
 
   const alreadyHasEmptyValue: () => boolean = (): boolean => {

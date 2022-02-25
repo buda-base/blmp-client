@@ -1,5 +1,7 @@
-import { atom } from "recoil"
+import { atom, atomFamily, selectorFamily } from "recoil"
 import { FC } from "react"
+import _ from "lodash"
+
 import { Value, Subject } from "../helpers/rdf/types"
 
 const debug = require("debug")("bdrc:common")
@@ -115,4 +117,27 @@ export const reloadEntityState = atom<string>({
 export const RIDprefixState = atom<string>({
   key: "RIDprefixState",
   default: "",
+})
+
+export const orderedByPropSelector = selectorFamily({
+  key: "orderedByPropSelector",
+  get: ({ atom, propertyPath, order }) => ({ get }) => {
+    if (propertyPath) {
+      if (!order) order = "asc"
+      const unorderedList = get(atom)
+      const orderedList = _.orderBy(
+        unorderedList.map((s) => {
+          let k = get(s.getAtomForProperty(propertyPath))
+          if (Array.isArray(k) && k.length) k = Number(k[0].value)
+          else k = Number.MAX_SAFE_INTEGER
+          return { s, k }
+        }),
+        ["k"],
+        [order]
+      ).map((i) => i.s)
+      debug("sort:", atom, propertyPath, orderedList)
+      return orderedList
+    }
+    return []
+  },
 })
