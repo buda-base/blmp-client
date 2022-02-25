@@ -1129,8 +1129,8 @@ const LiteralComponent: FC<{
       />
     )
     // eslint-disable-next-line no-extra-parens
-  } else if (t?.value === xsdgYear || (t && t?.value in intishTypeList)) {
-    classN = "gYear"
+  } else if (t?.value === xsdgYear || (t && t?.value && intishTypeList.includes(t.value))) {
+    classN = "gYear intish"
     edit = (
       <EditInt
         property={property}
