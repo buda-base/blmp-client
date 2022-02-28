@@ -1054,6 +1054,24 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 }
 
 
+[data-prop="bds:PersonShape-personName"] + div > .facet > .card { flex-direction: row; align-items: baseline;
+
+  [data-prop="bds:PersonNameShape-type"] + div {     
+    & > div:first-child { padding-right:0 !important;
+      & > div:first-child { min-width:160px !important; }
+      .hoverPart { display:none !important;}
+    }
+  }
+
+  & > div:nth-child(1) { 
+    .ValueList { padding-right:0 !important;}
+  }
+  & > div:nth-child(2) { flex-grow:1; 
+    .ValueList { padding-left:0 !important;}
+  }
+}
+
+
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}
 

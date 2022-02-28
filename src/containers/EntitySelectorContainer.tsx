@@ -10,7 +10,14 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
-import { uiLangState, uiTabState, uiEditState, profileIdState, uiGroupState } from "../atoms/common"
+import {
+  uiLangState,
+  uiTabState,
+  uiEditState,
+  profileIdState,
+  uiGroupState,
+  uiDisabledTabsState,
+} from "../atoms/common"
 import { makeStyles } from "@material-ui/core/styles"
 import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
@@ -77,6 +84,7 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
   }
   const [edit, setEdit] = useRecoilState(uiEditState)
   const [groupEd, setGroupEd] = useRecoilState(uiGroupState)
+  const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
 
   const auth0 = useAuth0()
 
@@ -136,7 +144,7 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
           key="new"
           {...a11yProps(entities.length)}
           label={
-            <Link to="/new" className="btn-rouge">
+            <Link to="/new" className="btn-rouge" onClick={() => setDisabled(false)}>
               NEW / LOAD
             </Link>
           }

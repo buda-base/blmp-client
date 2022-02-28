@@ -129,13 +129,14 @@ export const orderedByPropSelector = selectorFamily({
         unorderedList.map((s) => {
           let k = get(s.getAtomForProperty(propertyPath))
           if (Array.isArray(k) && k.length) k = Number(k[0].value)
+          else if (order === "desc") k = Number.MIN_SAFE_INTEGER
           else k = Number.MAX_SAFE_INTEGER
           return { s, k }
         }),
         ["k"],
         [order]
       ).map((i) => i.s)
-      debug("sort:", atom, propertyPath, orderedList)
+      //debug("sort:", atom, propertyPath, orderedList)
       return orderedList
     }
     return []

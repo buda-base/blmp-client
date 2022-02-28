@@ -322,6 +322,7 @@ const ValueList: FC<{
   }
   const isErrorValue = (val: Value): boolean => {
     // TODO: to be continue (or not? conflicts with hiding secondary properties, removing)
+    //       + not sure it should be hidden (in case of empty Person Name) but Names group should not be closed as well
     //if (val instanceof LiteralWithId && property?.datatype?.value === ns.RDF("langString").value) return !val.value
     return false
   }
