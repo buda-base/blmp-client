@@ -11,7 +11,11 @@ import { Waypoint } from "react-waypoint"
 
 const debug = require("debug")("bdrc:entity:propertygroup")
 
-const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = ({ group, subject }) => {
+const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGroupOpen: () => void }> = ({
+  group,
+  subject,
+  onGroupOpen,
+}) => {
   const [uiLang] = useRecoilState(uiLangState)
   const label = lang.ValueByLangToStrPrefLang(group.prefLabels, uiLang)
   const [force, setForce] = useState(false)
@@ -60,7 +64,8 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject }> = (
               className={
                 "row card my-2 pb-3" + (edit === group.qname ? " group-edit" : "") + " show-displayPriority-" + force
               }
-              onClick={() => {
+              onClick={(e) => {
+                if (onGroupOpen && groupEd !== group.qname) onGroupOpen(e, groupEd)
                 setEdit(group.qname)
                 setGroupEd(group.qname)
               }}

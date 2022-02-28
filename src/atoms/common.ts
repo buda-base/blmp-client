@@ -2,6 +2,7 @@ import { atom, atomFamily, selectorFamily } from "recoil"
 import { FC } from "react"
 import _ from "lodash"
 
+import * as ns from "../helpers/rdf/ns"
 import { Value, Subject } from "../helpers/rdf/types"
 
 const debug = require("debug")("bdrc:common")
@@ -138,6 +139,20 @@ export const orderedByPropSelector = selectorFamily({
       ).map((i) => i.s)
       //debug("sort:", atom, propertyPath, orderedList)
       return orderedList
+    }
+    return []
+  },
+})
+
+export const personNamesLabelsSelector = selectorFamily({
+  key: "personNamesLabelsSelector",
+  get: ({ atom }) => ({ get }) => {
+    if (atom) {
+      const names = get(atom)
+      const namesLabelsAtoms = names.map((n) => n.getAtomForProperty(ns.RDFS("label").value))
+      const namesLabels = namesLabelsAtoms.reduce((acc, nl) => [...acc, ...get(nl)], [])
+      //debug("values:", atom, names, namesLabelsAtoms,  namesLabels)
+      return namesLabels
     }
     return []
   },

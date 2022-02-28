@@ -604,6 +604,8 @@ label ~ .selector {
   & > p:first-child { width:100%; padding-bottom:15px; }
 }
 
+.group-edit-BG + .group > .album > .container { z-index:3; position:relative;}
+
 
 
 
@@ -665,7 +667,7 @@ label ~ .selector {
 
 
 .hasKB { position:absolute; right:0; top:100%; z-index:1;
-
+  span.card { font-size:20px; }
 }
 
 

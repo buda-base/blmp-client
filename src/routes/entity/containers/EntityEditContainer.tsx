@@ -18,9 +18,10 @@ import {
   uiTabState,
   uiNavState,
   uiGroupState,
+  personNamesLabelsSelector,
 } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
-import { atom, useRecoilState, useRecoilSnapshot } from "recoil"
+import { atom, useRecoilState, useRecoilSnapshot, useRecoilValue } from "recoil"
 import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
 import * as rdf from "rdflib"
 import qs from "query-string"
@@ -130,6 +131,21 @@ function EntityEditContainer(props: AppProps) {
   const [profileId, setProfileId] = useRecoilState(profileIdState)
   const [tab, setTab] = useRecoilState(uiTabState)
 
+  const entityObj = entities.filter(
+    (e) => e.subjectQname === entityQname || e.subjectQname === profileId && entityQname === "tmp:user"
+  )
+  const icon = getIcon(entityObj.length ? entityObj[0] : null)
+
+  const personNamesLabels = useRecoilValue(
+    personNamesLabelsSelector({
+      atom: entityObj[0]?.subject?.getAtomForProperty(ns.BDO("personName").value),
+    })
+  )
+
+  let prefLabelAtom = entityObj[0]?.subject?.getAtomForProperty(ns.SKOS("prefLabel").value)
+  if (!prefLabelAtom) prefLabelAtom = atom({ key: "init", default: "" })
+  const [prefLabels, setPrefLabels] = useRecoilState(prefLabelAtom)
+
   //debug("EntityEditContainer:", JSON.stringify(props), entityQname, isAuthenticated, profileId)
 
   useEffect(() => {
@@ -234,10 +250,22 @@ function EntityEditContainer(props: AppProps) {
   // creating new entity
   //const subject: Subject = generateNew("P", shape)
 
-  const entityObj = entities.filter(
-    (e) => e.subjectQname === entityQname || e.subjectQname === profileId && entityQname === "tmp:user"
-  )
-  const icon = getIcon(entityObj.length ? entityObj[0] : null)
+  const checkPushNameAsPrefLabel = (e, currentGroupName) => {
+    debug("closing ", currentGroupName)
+    const isBo = (l) => ["bo", "bo-x-ewts"].includes(l)
+    if (currentGroupName === "bds:PersonNamePropertyGroup" && personNamesLabels.length) {
+      //debug("names:",personNamesLabels,prefLabels)
+      const newLabels = [...prefLabels]
+      for (const n of personNamesLabels) {
+        if (!newLabels.some((l) => l.language === n.language || isBo(l.language) && isBo(n.language)))
+          newLabels.push(n)
+      }
+      if (newLabels.length != prefLabels.length) setPrefLabels(newLabels)
+    }
+    setEdit("")
+    setGroupEd("")
+    e.stopPropagation()
+  }
 
   return (
     <React.Fragment>
@@ -271,16 +299,14 @@ function EntityEditContainer(props: AppProps) {
         {shape.groups.map((group, index) => (
           <>
             {groupEd === group.qname && (
-              <div
-                className="group-edit-BG"
-                onClick={(e) => {
-                  setEdit("")
-                  setGroupEd("")
-                  e.stopPropagation()
-                }}
-              ></div>
+              <div className="group-edit-BG" onClick={(e) => checkPushNameAsPrefLabel(e, group.qname)}></div>
             )}
-            <PropertyGroupContainer key={group.uri} group={group} subject={entity} />
+            <PropertyGroupContainer
+              key={group.uri}
+              group={group}
+              subject={entity}
+              onGroupOpen={checkPushNameAsPrefLabel}
+            />
           </>
         ))}
       </div>

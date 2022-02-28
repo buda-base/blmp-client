@@ -508,6 +508,8 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [edit, setEdit] = useRecoilState(uiEditState)
 
+  //debug("atom:",property.qname,subject.getAtomForProperty(property.path.sparqlString))
+
   let waitForNoHisto = false
 
   const addItem = () => {
