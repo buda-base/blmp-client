@@ -688,7 +688,10 @@ const EditLangString: FC<{
     >
       {canPushPrefLabel && !error && !globalError && (
         <span className="canPushPrefLabel">
-          <span onClick={pushAsPrefLabel}>use this label as global entity label for this language</span>
+          <span onClick={pushAsPrefLabel}>
+            <img src="/icons/label.svg" />
+            use as the main name or title for this language
+          </span>
         </span>
       )}
       {(property.singleLine || !editMD) && (
