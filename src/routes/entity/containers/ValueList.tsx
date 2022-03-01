@@ -689,8 +689,8 @@ const EditLangString: FC<{
       {canPushPrefLabel && !error && !globalError && (
         <span className="canPushPrefLabel">
           <span onClick={pushAsPrefLabel}>
-            <img src="/icons/label.svg" />
-            use as the main name or title for this language
+            <a>use as the main name or title for this language</a>
+            <span className="img"></span>
           </span>
         </span>
       )}
