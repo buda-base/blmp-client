@@ -170,6 +170,7 @@ export const possiblePrefLabelsSelector = selectorFamily({
         const labels = [],
           atoms = []
         Object.keys(canPushPrefLabelGroups[g].subprops).map((k) => {
+          if (!canPushPrefLabelGroups[g].subprops[k].atom) return []
           const names = get(canPushPrefLabelGroups[g].subprops[k].atom)
           for (const n of names) {
             for (const a of canPushPrefLabelGroups[g].subprops[k].allowPush) {
