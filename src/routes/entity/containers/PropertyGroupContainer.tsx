@@ -71,30 +71,34 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
               }}
             >
               <p className="">{label}</p>
-              <div className={group.properties.length <= 1 ? "hidePropLabel" : ""} style={{ fontSize: 0 }}>
-                {withoutDisplayPriority.map((property, index) => (
-                  <PropertyContainer
-                    key={index}
-                    property={property}
-                    subject={subject}
-                    editable={property.readOnly !== true}
-                  />
-                ))}
-                {withDisplayPriority.map((property, index) => (
-                  <PropertyContainer
-                    key={index}
-                    property={property}
-                    subject={subject}
-                    force={force}
-                    editable={property.readOnly !== true}
-                  />
-                ))}
-                {hasExtra && (
-                  <span className="toggle-btn  btn btn-rouge my-4" onClick={toggleExtra}>
-                    {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
-                  </span>
-                )}
-              </div>
+              {groupEd === group.qname && (
+                <>
+                  <div className={group.properties.length <= 1 ? "hidePropLabel" : ""} style={{ fontSize: 0 }}>
+                    {withoutDisplayPriority.map((property, index) => (
+                      <PropertyContainer
+                        key={index}
+                        property={property}
+                        subject={subject}
+                        editable={property.readOnly !== true}
+                      />
+                    ))}
+                    {withDisplayPriority.map((property, index) => (
+                      <PropertyContainer
+                        key={index}
+                        property={property}
+                        subject={subject}
+                        force={force}
+                        editable={property.readOnly !== true}
+                      />
+                    ))}
+                    {hasExtra && (
+                      <span className="toggle-btn  btn btn-rouge my-4" onClick={toggleExtra}>
+                        {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>
