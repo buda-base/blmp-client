@@ -158,6 +158,8 @@ export const personNamesLabelsSelector = selectorFamily({
   },
 })
 
+export const initListAtom = atom<Array<Value>>({ key: "initListAtom", default: [] })
+
 export const possiblePrefLabelsSelector = selectorFamily({
   key: "possiblePrefLabelsSelector",
   get: ({ canPushPrefLabelGroups }) => ({ get }) => {

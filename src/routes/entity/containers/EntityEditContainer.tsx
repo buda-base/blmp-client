@@ -20,6 +20,7 @@ import {
   uiGroupState,
   personNamesLabelsSelector,
   possiblePrefLabelsSelector,
+  initListAtom,
 } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState, useRecoilSnapshot, useRecoilValue } from "recoil"
@@ -168,7 +169,7 @@ function EntityEditContainer(props: AppProps) {
   )
 
   let prefLabelAtom = entityObj[0]?.subject?.getAtomForProperty(ns.SKOS("prefLabel").value)
-  if (!prefLabelAtom) prefLabelAtom = atom({ key: "init", default: "" })
+  if (!prefLabelAtom) prefLabelAtom = initListAtom
   const [prefLabels, setPrefLabels] = useRecoilState(prefLabelAtom)
 
   //debug("EntityEditContainer:", JSON.stringify(props), entityQname, isAuthenticated, profileId)
