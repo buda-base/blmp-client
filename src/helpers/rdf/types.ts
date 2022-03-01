@@ -564,6 +564,10 @@ export class LiteralWithId extends rdf.Literal {
     }
   }
 
+  public copy() {
+    return new LiteralWithId(this.value, this.language, this.datatype, this.id)
+  }
+
   public copyWithUpdatedValue(value: string) {
     return new LiteralWithId(value, this.language, this.datatype, this.id)
   }

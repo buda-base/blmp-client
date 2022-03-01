@@ -35,7 +35,14 @@ import i18n from "i18next"
 import { getHistoryStatus } from "../../../containers/AppContainer"
 import PropertyContainer from "./PropertyContainer"
 import { langs, ValueByLangToStrPrefLang, langsWithDefault } from "../../../helpers/lang"
-import { uiLangState, uiLitLangState, uiEditState, uiUndosState, orderedByPropSelector } from "../../../atoms/common"
+import {
+  uiLangState,
+  uiLitLangState,
+  uiEditState,
+  uiUndosState,
+  orderedByPropSelector,
+  initListAtom,
+} from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
 
@@ -574,10 +581,13 @@ const EditLangString: FC<{
   globalError?: string
   editable?: boolean
   updateEntityState: (es: EditedEntityState) => void
-}> = ({ property, lit, onChange, label, globalError, editable, updateEntityState }) => {
+  entity: Subject
+}> = ({ property, lit, onChange, label, globalError, editable, updateEntityState, entity }) => {
   const classes = useStyles()
   const [editMD, setEditMD] = useState(false)
   const [keyboard, setKeyboard] = useState(false)
+
+  const canPushPrefLabel = property.allowPushToTopLevelSkosPrefLabel
 
   const getLangStringError = (val: string) => {
     let err = ""
@@ -646,6 +656,25 @@ const EditLangString: FC<{
     }
   }
 
+  let prefLabelAtom = entity?.getAtomForProperty(ns.SKOS("prefLabel").value)
+  if (!prefLabelAtom) prefLabelAtom = initListAtom
+  const [prefLabels, setPrefLabels] = useRecoilState(prefLabelAtom)
+
+  const pushAsPrefLabel = () => {
+    //debug("pL:",prefLabels,lit)
+    let newPrefLabels = [],
+      found = false
+    for (const l in prefLabels) {
+      if (prefLabels[l].language === lit.language) {
+        found = true
+        newPrefLabels = replaceItemAtIndex(prefLabels, l, lit)
+        break
+      }
+    }
+    if (!found) newPrefLabels = [...prefLabels, lit.copy()]
+    if (newPrefLabels.length) setPrefLabels(newPrefLabels)
+  }
+
   return (
     <div
       className={"mb-0" + (withPreview ? " withPreview" : "")}
@@ -657,6 +686,11 @@ const EditLangString: FC<{
         position: "relative",
       }}
     >
+      {canPushPrefLabel && !error && !globalError && (
+        <span className="canPushPrefLabel">
+          <span onClick={pushAsPrefLabel}>use this label as global entity label for this language</span>
+        </span>
+      )}
       {(property.singleLine || !editMD) && (
         <div style={{ width: "100%", position: "relative" }}>
           <TextField
@@ -1140,6 +1174,7 @@ const LiteralComponent: FC<{
         {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
+        entity={topEntity ? topEntity : subject}
       />
     )
     // eslint-disable-next-line no-extra-parens

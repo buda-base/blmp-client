@@ -432,6 +432,26 @@ section,
 .langString .hoverPart > button:first-child { margin-top:2px!important; }
 .resSelect .hoverPart > button:first-child { margin-right:0 !important; }
 
+
+.canPushPrefLabel {
+  visibility: hidden;
+  font-size: 12px;
+  position: absolute;
+  left: 0;
+  top: -2px;
+  white-space: nowrap;
+  width: 100%;
+  text-align: right;
+  text-decoration: underline;
+  z-index:1;
+
+  span { cursor:pointer; opacity:0.65; }
+}
+
+.langString:hover  .canPushPrefLabel {
+  visibility: visible;
+}
+
 .langString,
 .resSelect { position: relative; overflow: visible; }
 .hoverPart.left { position: absolute; right:100%; width:auto; padding-right:5px; padding-bottom:10px; padding-top:10px;
