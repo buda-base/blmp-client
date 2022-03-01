@@ -157,3 +157,34 @@ export const personNamesLabelsSelector = selectorFamily({
     return []
   },
 })
+
+export const possiblePrefLabelsSelector = selectorFamily({
+  key: "possiblePrefLabelsSelector",
+  get: ({ canPushPrefLabelGroups }) => ({ get }) => {
+    if (canPushPrefLabelGroups) {
+      //debug("push:",canPushPrefLabelGroups)
+      const res = {}
+      for (const g of Object.keys(canPushPrefLabelGroups)) {
+        const labels = [],
+          atoms = []
+        Object.keys(canPushPrefLabelGroups[g].subprops).map((k) => {
+          const names = get(canPushPrefLabelGroups[g].subprops[k].atom)
+          for (const n of names) {
+            for (const a of canPushPrefLabelGroups[g].subprops[k].allowPush) {
+              const vals = get(n.getAtomForProperty(a))
+              vals.map((v) => labels.push(v))
+            }
+          }
+          canPushPrefLabelGroups[g].props.map((a) => {
+            const vals = get(a)
+            vals.map((v) => labels.push(v))
+          })
+          return labels
+        })
+        if (labels.length) res[g] = labels
+      }
+      return res
+    }
+    return []
+  },
+})

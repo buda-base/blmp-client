@@ -92,6 +92,7 @@ export const bdsDefaultValue = ns.BDS("defaultValue") as rdf.NamedNode
 export const shLanguageIn = ns.SH("languageIn") as rdf.NamedNode
 export const shPattern = ns.SH("pattern") as rdf.NamedNode
 export const bdsSortOnProperty = ns.BDS("sortOnProperty") as rdf.NamedNode
+export const bdsAllowPushToTopLevelSkosPrefLabel = ns.BDS("allowPushToTopLevelSkosPrefLabel") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
 typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
@@ -303,6 +304,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get sortOnProperty(): rdf.NamedNode | null {
     return this.getPropResValue(bdsSortOnProperty)
+  }
+
+  @Memoize()
+  public get allowPushToTopLevelSkosPrefLabel(): boolean {
+    return this.getPropBooleanValue(bdsAllowPushToTopLevelSkosPrefLabel)
   }
 
   public static resourcizeWithInit(

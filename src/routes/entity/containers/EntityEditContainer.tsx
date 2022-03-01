@@ -19,6 +19,7 @@ import {
   uiNavState,
   uiGroupState,
   personNamesLabelsSelector,
+  possiblePrefLabelsSelector,
 } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState, useRecoilSnapshot, useRecoilValue } from "recoil"
@@ -136,6 +137,30 @@ function EntityEditContainer(props: AppProps) {
   )
   const icon = getIcon(entityObj.length ? entityObj[0] : null)
 
+  const { loadingState, shape } = ShapeFetcher(shapeQname, entityQname)
+
+  const canPushPrefLabelGroups = shape?.groups.reduce((acc, group) => {
+    const props = group.properties
+      .filter((p) => p.allowPushToTopLevelSkosPrefLabel)
+      .map((p) => entityObj[0]?.subject?.getAtomForProperty(p.path.sparqlString))
+      .filter((a) => a)
+    const subprops = group.properties.reduce((accG, p) => {
+      const allowPush = p.targetShape?.properties
+        .filter((s) => s.allowPushToTopLevelSkosPrefLabel)
+        .map((s) => s.path.sparqlString)
+      if (allowPush?.length)
+        return {
+          ...accG,
+          [p.qname]: { atom: entityObj[0]?.subject?.getAtomForProperty(p.path.sparqlString), allowPush },
+        }
+      return accG
+    }, {})
+    if (props?.length || Object.keys(subprops).length) return { ...acc, [group.qname]: { props, subprops } }
+    return { ...acc }
+  }, {})
+
+  const possiblePrefLabels = useRecoilValue(possiblePrefLabelsSelector({ canPushPrefLabelGroups }))
+
   const personNamesLabels = useRecoilValue(
     personNamesLabelsSelector({
       atom: entityObj[0]?.subject?.getAtomForProperty(ns.BDO("personName").value),
@@ -200,7 +225,6 @@ function EntityEditContainer(props: AppProps) {
 
   // eslint-disable-next-line prefer-const
   let { entityLoadingState, entity } = EntityFetcher(entityQname, shapes.shapeRefsMap[shapeQname])
-  const { loadingState, shape } = ShapeFetcher(shapeQname, entityQname)
 
   // TODO: check that shape can be properly applied to entuty
 
@@ -251,12 +275,12 @@ function EntityEditContainer(props: AppProps) {
   //const subject: Subject = generateNew("P", shape)
 
   const checkPushNameAsPrefLabel = (e, currentGroupName) => {
-    debug("closing ", currentGroupName)
+    debug("closing: ", currentGroupName, possiblePrefLabels[currentGroupName])
     const isBo = (l) => ["bo", "bo-x-ewts"].includes(l)
-    if (currentGroupName === "bds:PersonNamePropertyGroup" && personNamesLabels.length) {
+    if (possiblePrefLabels[currentGroupName]?.length) {
       //debug("names:",personNamesLabels,prefLabels)
       const newLabels = [...prefLabels]
-      for (const n of personNamesLabels) {
+      for (const n of possiblePrefLabels[currentGroupName]) {
         if (!newLabels.some((l) => l.language === n.language || isBo(l.language) && isBo(n.language)))
           newLabels.push(n)
       }
