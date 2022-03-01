@@ -71,7 +71,8 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
               }}
             >
               <p className="">{label}</p>
-              {groupEd === group.qname && (
+              {
+                //groupEd === group.qname && ( // WIP, good idea but breaks undo initialization
                 <>
                   <div className={group.properties.length <= 1 ? "hidePropLabel" : ""} style={{ fontSize: 0 }}>
                     {withoutDisplayPriority.map((property, index) => (
@@ -98,7 +99,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
                     )}
                   </div>
                 </>
-              )}
+              }
             </div>
           </div>
         </section>
