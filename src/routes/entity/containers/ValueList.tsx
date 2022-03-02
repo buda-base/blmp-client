@@ -920,7 +920,7 @@ const EditString: FC<{
       label={label}
       style={{ width: "100%" }}
       value={lit.value}
-      //InputLabelProps={{ shrink: true }}
+      {...(property.qname !== "bds:NoteShape-contentLocationStatement" ? { InputLabelProps: { shrink: true } } : {})}
       onChange={(e) => changeCallback(e.target.value)}
       {...(!editable ? { disabled: true } : {})}
       {...(error
