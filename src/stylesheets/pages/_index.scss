@@ -350,11 +350,17 @@ input[type="checkbox"].dmcheck {
 .blockAdd button { height: 42px; border-radius: 3px; background-color: #172832;  width:auto; padding:0 30px !important; color:white;font-weight:600;font-size:14px;
   &:hover { background-color: white; color:#172832; }
 }
+
+.facet .blockAdd { margin-top:0 !important;
+  button { margin-left:15px; font-size:13px; padding:0 15px !important; height:28px; }
+}
+/*
 .facet .blockAdd button { background: none !important; color: #172832 !important;border:none; padding:0 !important; font-size:12px;
   svg { float:left; margin-right:5px; margin-top:-3px;  }
   &:hover { background: none !important; color: #172832; border:none; 
   }
 }
+*/
 
 .popup-new .front,
 iframe { z-index:2; }
@@ -948,6 +954,9 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 .card.show-displayPriority-false .empty > :not(.facet) .propLabel[data-priority="2"] {
   display:none;
 }
+
+
+.facet.force-true .card [data-priority="1"] + .blockAdd { display:block; }
 
 .new-fix { width:810px; margin:auto; padding-left:70px; padding-top: 15px; display:block;}
 
