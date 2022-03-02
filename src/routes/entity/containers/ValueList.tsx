@@ -363,6 +363,8 @@ const ValueList: FC<{
     return s[0].toUpperCase() + s.substring(1)
   }
 
+  const canPush = property.allowPushToTopLevelSkosPrefLabel
+
   const renderListElem = (val: Value, i: number, nbvalues: number) => {
     //debug("render:", property.qname, property, val, i)
     if (val instanceof RDFResourceWithLabel || property.in?.length) {
@@ -449,7 +451,8 @@ const ValueList: FC<{
           (property.maxCount && property.maxCount < list.length ? "maxCount" : "") +
           (hasNonEmptyValue ? "" : "empty") +
           (property.objectType === ObjectType.ResExt ? " ResExt" : "") +
-          (embedded ? "" : " main")
+          (embedded ? "" : " main") +
+          (canPush ? " canPush" : "")
         }
         data-priority={property.displayPriority ? property.displayPriority : 0}
         role="main"
@@ -1246,7 +1249,7 @@ const LiteralComponent: FC<{
           onClick={deleteItem}
           {...(!canDel ? { disabled: true } : {})}
         >
-          <RemoveIcon className="my-1 close-facet-btn" />
+          <RemoveIcon className="my-0 close-facet-btn" />
         </button>
         {create}
       </div>
