@@ -406,7 +406,7 @@ iframe { z-index:2; }
   
     //.card { border-left:2px solid #ddd; }
 
-  .close-btn {  position:absolute; right:0.5rem; top:0px; }
+  .close-btn {  position:absolute; right:0.5rem; top:4px; }
 
   .toggle-btn { z-index:1; align-self:flex-start; margin-left:15px; } // right:45px; top:8px; }
 
@@ -446,9 +446,9 @@ section,
   font-size: 12px;
   position: absolute;
   left: 0;
-  top: -20px;
+  top: -16px;
   white-space: nowrap;
-  width: calc(100% + 51px);
+  width: calc(100% + 32px);
   text-align: right;
   z-index:1;
   display:block;
@@ -478,8 +478,10 @@ section,
   .langString {
     &::before { content:''; display:block;position:absolute;width:100%;height:20px;bottom:100%;z-index:0;background:none;}
 
-    .hoverPart { padding-left:12px; 
-      .minimalAdd { padding-left:3px; }
+    .hoverPart { padding-left:0px; width:50px; 
+      .minimalAdd { padding-left:0px; 
+        button { margin-left:5px !important; }
+      }
     }
   }
 }
