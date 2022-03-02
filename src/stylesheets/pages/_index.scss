@@ -1006,6 +1006,18 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 
 .MuiInputLabel-shrink { white-space: nowrap;}
 
+.card .ValueList.ResExt .propLabel:not(#a) { margin-bottom:-8px;margin-top:16px; }
+
+[data-prop="bds:RootShape-note"] + div {
+
+  .MuiInputLabel-formControl:not(.MuiInputLabel-shrink) { top:-6px; opacity:0.65; z-index:1; pointer-events:none;font-size:16px;
+    svg { pointer-events:auto;}
+  }
+
+  .ValueList.empty > [data-prop="bds:NoteShape-noteSource"].propLabel:not(#a) { margin-top:20px; margin-bottom:-16px; }
+
+  [data-prop="bds:NoteShape-contentLocation"].propLabel:not(#a) { margin-top:20px; }
+}
 
 
 

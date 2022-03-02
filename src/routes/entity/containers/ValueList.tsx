@@ -381,6 +381,7 @@ const ValueList: FC<{
             exists={exists}
             editable={editable}
             {...(owner ? { owner } : {})}
+            title={titleCase(propLabel)}
           />
         )
       else {
@@ -919,7 +920,7 @@ const EditString: FC<{
       label={label}
       style={{ width: "100%" }}
       value={lit.value}
-      InputLabelProps={{ shrink: true }}
+      //InputLabelProps={{ shrink: true }}
       onChange={(e) => changeCallback(e.target.value)}
       {...(!editable ? { disabled: true } : {})}
       {...(error
@@ -1397,7 +1398,8 @@ const ExtEntityComponent: FC<{
   exists: (uri: string) => boolean
   editable: boolean
   owner?: Subject
-}> = ({ extRes, subject, property, canDel, onChange, idx, exists, editable, owner }) => {
+  title: string
+}> = ({ extRes, subject, property, canDel, onChange, idx, exists, editable, owner, title }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === extRes)
@@ -1443,6 +1445,7 @@ const ExtEntityComponent: FC<{
           subject={subject}
           editable={editable}
           {...(owner ? { owner } : {})}
+          title={title}
         />
         {extRes.uri !== "tmp:uri" && (
           <button className={"btn btn-link ml-2 px-0"} onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>

@@ -68,7 +68,8 @@ const ResourceSelector: FC<{
   subject: Subject
   editable: boolean
   owner?: Subject
-}> = ({ value, onChange, property, idx, exists, subject, editable, owner }) => {
+  title: string
+}> = ({ value, onChange, property, idx, exists, subject, editable, owner, title }) => {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
@@ -332,7 +333,7 @@ const ResourceSelector: FC<{
                 value={keyword}
                 onChange={textOnChange}
                 //label={value.status === "filled" ? value["@id"] : null}
-                placeholder={"Search name or RID"}
+                placeholder={"Search name or RID for " + title}
                 {...(error
                   ? {
                       helperText: (
