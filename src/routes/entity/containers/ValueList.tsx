@@ -263,13 +263,13 @@ const ValueList: FC<{
     const vals: Array<Value> | null = subject.getUnitializedValues(property)
     if (vals && vals.length) {
       if (property.minCount && vals.length < property.minCount) {
-        // dont store empty value autocreation
-        if (topEntity) topEntity.noHisto()
-        else if (owner) owner.noHisto()
-        else subject.noHisto()
-        //debug("setNoH:1a",subject,owner,topEntity)
         const setListAsync = async () => {
           const res = await generateDefault(property, subject, RIDprefix, idToken)
+          // dont store empty value autocreation
+          if (topEntity) topEntity.noHisto()
+          else if (owner) owner.noHisto()
+          else subject.noHisto()
+          //debug("setNoH:1a",subject,owner,topEntity)
           setList([...vals, res])
         }
         setListAsync()
@@ -286,33 +286,37 @@ const ValueList: FC<{
       (property.minCount && list.length < property.minCount || !list.length || !firstValueIsEmptyField) &&
       (!property.maxCount || property.maxCount >= list.length)
     ) {
-      // dont store empty value autocreation
-      if (topEntity) topEntity.noHisto()
-      else if (owner) owner.noHisto()
-      else subject.noHisto()
-      //debug("setNoH:2",subject,owner,topEntity)
-
       if (!firstValueIsEmptyField) {
         const setListAsync = async () => {
           const res = await generateDefault(property, subject, RIDprefix, idToken)
+          // dont store empty value autocreation
+          if (topEntity) topEntity.noHisto()
+          else if (owner) owner.noHisto()
+          else subject.noHisto()
+          //debug("setNoH:2",subject,owner,topEntity)
           setList((oldList) => [res, ...oldList])
         }
         setListAsync()
       } else {
         const setListAsync = async () => {
           const res = await generateDefault(property, subject, RIDprefix, idToken)
+          // dont store empty value autocreation
+          if (topEntity) topEntity.noHisto()
+          else if (owner) owner.noHisto()
+          else subject.noHisto()
+          //debug("setNoH:2",subject,owner,topEntity)
           setList((oldList) => [...oldList, res])
         }
         setListAsync()
       }
     } else if (property.objectType == ObjectType.Facet && property.minCount && list.length < property.minCount) {
-      // dont store empty value autocreation
-      if (topEntity) topEntity.noHisto()
-      else if (owner) owner.noHisto()
-      else subject.noHisto()
-      //debug("setNoH:3",subject,owner,topEntity)
       const setListAsync = async () => {
         const res = await generateDefault(property, subject, RIDprefix, idToken)
+        // dont store empty value autocreation
+        if (topEntity) topEntity.noHisto()
+        else if (owner) owner.noHisto()
+        else subject.noHisto()
+        //debug("setNoH:3",subject,owner,topEntity)
         setList((oldList) => [res, ...oldList])
       }
       setListAsync()
@@ -332,17 +336,16 @@ const ValueList: FC<{
     } else if (!list.length && property.objectType == ObjectType.ResInList) {
       // this makes sure that there's at least one value for select forms, and the value is either
       // the first one (when it's mandatory that there's a value), or tmp:none
-      if (topEntity) topEntity.noHisto()
-      else if (owner) owner.noHisto()
-      else subject.noHisto()
-      //debug("setNoH:5",subject,owner,topEntity)
       const setListAsync = async () => {
         const res = await generateDefault(property, subject, RIDprefix, idToken)
+        if (topEntity) topEntity.noHisto()
+        else if (owner) owner.noHisto()
+        else subject.noHisto()
+        //debug("setNoH:5",subject,owner,topEntity)
         setList([res])
       }
       setListAsync()
     }
-
     //debug("end/vL/effect")
   }, [subject, list, force])
 
