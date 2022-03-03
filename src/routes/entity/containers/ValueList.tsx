@@ -693,8 +693,9 @@ const EditLangString: FC<{
       {canPushPrefLabel && !error && !globalError && (
         <span className="canPushPrefLabel">
           <span onClick={pushAsPrefLabel}>
-            <a>use as the main name or title for this language</a>
-            <span className="img"></span>
+            <Tooltip key={lit.id} title={<>Use as the main name or title for this language</>}>
+              <span className="img"></span>
+            </Tooltip>
           </span>
         </span>
       )}
