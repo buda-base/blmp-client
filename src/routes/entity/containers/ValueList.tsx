@@ -875,6 +875,37 @@ const EditLangString: FC<{
   )
 }
 
+export const humanizeEDTF = (obj, str) => {
+  if (!obj) return ""
+
+  const conc = (values, sepa) => {
+    sepa = sepa ? " " + sepa + " " : ""
+    return values.reduce((acc, v, i, array) => {
+      if (i > 0) acc += i < array.length - 1 ? ", " : sepa
+      acc += humanizeEDTF(v)
+      return acc
+    }, "")
+  }
+
+  if (obj.type === "Set") return conc(obj.values, "or")
+  else if (obj.type === "List") return conc(obj.values, "and")
+  else if (obj.type === "Interval" && !obj.values[0]) return "not after " + conc([obj.values[1]])
+  else if (obj.type === "Interval" && !obj.values[1]) return "not before " + conc([obj.values[0]])
+  else if (obj.type === "Interval") return "between " + conc(obj.values, "and")
+  else if (obj.approximate) {
+    if (obj.type === "Century") return "circa " + (Number(obj.values[0]) + 1) + "th c."
+    return "circa " + humanizeEDTF({ ...obj, approximate: false })
+  } else if (obj.uncertain) {
+    if (obj.type === "Century") return Number(obj.values[0]) + 1 + "th c. ?"
+    return humanizeEDTF({ ...obj, uncertain: false }) + "?"
+  } else if (obj.unspecified === 12) return obj.values[0] / 100 + 1 + "th c."
+  else if (!obj.unspecified) return obj.values[0]
+  // to be continued?
+  else return str
+
+  // return JSON.stringify(obj)
+}
+
 export const LangSelect: FC<{
   onChange: (value: string) => void
   value: string
@@ -960,7 +991,7 @@ const EditString: FC<{
         const obj = parse(val)
         //debug("edtf:",obj)
         setError("")
-        setEDTF(JSON.stringify(obj))
+        setEDTF(humanizeEDTF(obj, val))
       } catch (e) {
         //debug("EDTF error:",e)
         setEDTF("")
