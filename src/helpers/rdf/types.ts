@@ -149,15 +149,7 @@ export class EntityGraphValues {
             if (listMode) {
               // val.node happens to be undefined when list has been updated in UI
               if (val.node) {
-                // flatten inner Collection (TODO? there could be a flag somewhere to allow multimensionality)
-                if (val.node.termType === "Collection" && val.node.elements) {
-                  for (const v of val.node.elements) {
-                    if (v.node) collection.append(v.node)
-                    else collection.append(v)
-                  }
-                } else {
-                  collection.append(val.node)
-                }
+                collection.append(val.node)
               } else collection.append(val)
             } else store.add(subject, property, val.node, defaultGraphNode)
             if (val instanceof Subject) {
@@ -331,11 +323,18 @@ export class EntityGraph {
         return fromRDFReswLabels
         break
       case ObjectType.Literal:
+      case ObjectType.LitInList:
       default:
         if (!p.path.directPathNode) {
           throw "can't have non-direct path for property " + p.uri
         }
-        const fromRDFLits: Array<rdf.Literal> = s.getPropLitValues(p.path.directPathNode)
+        let fromRDFLits: Array<rdf.Literal>
+        if (p.hasListAsObject) {
+          const fromRDFLitsList = s.getPropLitValuesFromList(p.path.directPathNode)
+          fromRDFLits = fromRDFLitsList === null ? [] : fromRDFLitsList
+        } else {
+          fromRDFLits = s.getPropLitValues(p.path.directPathNode)
+        }
         const fromRDFLitIDs = EntityGraph.addIdToLitList(fromRDFLits)
         this.onGetInitialValues(s.uri, p.path.sparqlString, fromRDFLitIDs)
         return fromRDFLitIDs
@@ -348,7 +347,7 @@ export class RDFResource {
   node: rdf.NamedNode | rdf.BlankNode
   graph: EntityGraph
 
-  constructor(node: rdf.NamedNode | rdf.BlankNode, graph: EntityGraph) {
+  constructor(node: rdf.NamedNode | rdf.BlankNode | rdf.Collection, graph: EntityGraph) {
     this.node = node
     this.graph = graph
   }
@@ -550,6 +549,7 @@ export enum ObjectType {
   ResInList,
   ResExt,
   ResIgnore,
+  LitInList,
 }
 
 export class LiteralWithId extends rdf.Literal {

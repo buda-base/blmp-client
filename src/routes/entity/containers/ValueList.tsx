@@ -154,6 +154,20 @@ const generateDefault = async (
       if (!propIn) throw "can't find a list for " + property.uri
       return propIn[0]
       break
+    case ObjectType.LitInList:
+      if (!property.minCount) {
+        const datatype = property.datatype?.value
+        if (datatype === ns.RDF("langString").value) {
+          // TODO: this should be a user preference, not urgent
+          return new LiteralWithId("", property?.defaultLanguage ? property.defaultLanguage : "bo-x-ewts")
+        } else {
+          return new LiteralWithId("", null, property.datatype ? property.datatype : undefined)
+        }
+      }
+      const propInLit: Array<Value> | null = property.in
+      if (!propInLit) throw "can't find a list for " + property.uri
+      return propInLit[0]
+      break
     case ObjectType.Literal:
     default:
       const defaultValue = property.defaultValue as rdf.Literal | null
@@ -202,8 +216,6 @@ const ValueList: FC<{
 
   let list = unsortedList
   if (orderedList.length) list = orderedList
-  const collec = list.length === 1 && list[0].node?.termType === "Collection" ? list[0].node.elements : undefined
-  const listOrCollec = collec ? collec : list
   //debug("vL:", list, collec)
 
   const alreadyHasEmptyValue: () => boolean = (): boolean => {
@@ -279,6 +291,7 @@ const ValueList: FC<{
       }
     } else if (
       property.objectType != ObjectType.ResInList &&
+      property.objectType != ObjectType.LitInList &&
       property.objectType != ObjectType.Facet &&
       (!property.displayPriority ||
         property.displayPriority === 0 ||
@@ -322,6 +335,7 @@ const ValueList: FC<{
       setListAsync()
     } else if (
       property.objectType != ObjectType.ResInList &&
+      property.objectType != ObjectType.LitInList &&
       property.displayPriority &&
       property.displayPriority === 1 &&
       list.length === 1 &&
@@ -333,7 +347,10 @@ const ValueList: FC<{
       // answer: indeed it removes empty value when displayPriority is 1
       // but let's keep value then hide it in CSS when needed (fixes #16)
       // if (firstValueIsEmptyField) setList([])
-    } else if (!list.length && property.objectType == ObjectType.ResInList) {
+    } else if (
+      !list.length &&
+      (property.objectType == ObjectType.ResInList || property.objectType == ObjectType.LitInList)
+    ) {
       // this makes sure that there's at least one value for select forms, and the value is either
       // the first one (when it's mandatory that there's a value), or tmp:none
       const setListAsync = async () => {
@@ -402,7 +419,11 @@ const ValueList: FC<{
 
   const renderListElem = (val: Value, i: number, nbvalues: number) => {
     //debug("render:", property.qname, property, val, i)
-    if (val instanceof RDFResourceWithLabel || property.in?.length) {
+    if (
+      val instanceof RDFResourceWithLabel ||
+      property.objectType == ObjectType.ResInList ||
+      property.objectType == ObjectType.LitInList
+    ) {
       if (property.objectType == ObjectType.ResExt)
         return (
           <ExtEntityComponent
@@ -527,8 +548,8 @@ const ValueList: FC<{
             ...property?.group?.value !== edit ? { paddingRight: "0.5rem" } : {},
           }}
         >
-          {listOrCollec.map((val, i) => {
-            if (!hasEmptyExtEntityAsFirst || i > 0) return renderListElem(val, i, listOrCollec.length)
+          {list.map((val, i) => {
+            if (!hasEmptyExtEntityAsFirst || i > 0) return renderListElem(val, i, list.length)
           })}
         </div>
       </div>
@@ -587,7 +608,10 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
 
   if (
     property.objectType !== ObjectType.Facet &&
-    (embedded || property.objectType === ObjectType.Literal || property.objectType === ObjectType.ResInList)
+    (embedded ||
+      property.objectType == ObjectType.Literal ||
+      property.objectType == ObjectType.ResInList ||
+      property.objectType == ObjectType.LitInList)
     /*
       property.path.sparqlString === ns.SKOS("prefLabel").value ||
       property.path.sparqlString === ns.SKOS("altLabel").value ||
@@ -684,7 +708,7 @@ const EditLangString: FC<{
   const insertChar = (str: string) => {
     if (inputRef.current) {
       const { selectionStart, selectionEnd, value } = inputRef.current
-      debug("input:", selectionStart, selectionEnd, value)
+      //debug("input:", selectionStart, selectionEnd, value)
       const newValue =
         value.substring(0, selectionStart ? selectionStart : 0) + str + value.substring(selectionEnd ? selectionEnd : 0)
       onChange(lit.copyWithUpdatedValue(newValue))
@@ -1498,7 +1522,7 @@ const ExtEntityComponent: FC<{
 //TODO: component to display an external entity that has already been selected, with a delete button to remove it
 // There should probably be a ExtEntityCreate or something like that to allow an entity to be selected
 const SelectComponent: FC<{
-  res: RDFResourceWithLabel
+  res: LiteralWithId | RDFResourceWithLabel
   subject: Subject
   property: PropertyShape
   canDel: boolean
@@ -1509,8 +1533,6 @@ const SelectComponent: FC<{
 }> = ({ res, subject, property, canDel, canSelectNone, selectIdx, editable, create }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
-  const collec = list.length === 1 && list[0].node?.termType === "Collection" ? list[0].node.elements : undefined
-  const listOrCollec = collec ? collec : list
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
 
@@ -1525,12 +1547,12 @@ const SelectComponent: FC<{
   const index = selectIdx //listOrCollec.findIndex((listItem) => listItem === res)
 
   const deleteItem = () => {
-    const newList = removeItemAtIndex(listOrCollec, index)
+    const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
 
-  const getElementFromValue = (value: string, checkActualValue: false) => {
-    for (const v of possibleValues as Value[]) {
+  const getElementFromValue = (value: string, checkActualValue = false) => {
+    for (const v of possibleValues) {
       if (v.id === value || checkActualValue && v.value === value) {
         return v
       }
@@ -1538,7 +1560,7 @@ const SelectComponent: FC<{
     return null
   }
 
-  const val = res?.id ? res : getElementFromValue(listOrCollec[index].value, true)
+  const val = res?.id ? res : getElementFromValue(list[index].value, true)
 
   //debug("selec:", property.qname, index, list, collec, listOrCollec, val, val?.id, res, res?.id, property)
 
@@ -1549,16 +1571,11 @@ const SelectComponent: FC<{
     }
     let newList
     if (resForNewValue == noneSelected && canDel) {
-      newList = removeItemAtIndex(listOrCollec, index)
+      newList = removeItemAtIndex(list, index)
     } else {
-      newList = replaceItemAtIndex(listOrCollec, index, resForNewValue)
+      newList = replaceItemAtIndex(list, index, resForNewValue)
     }
     setList(newList)
-
-    if (!resForNewValue.uri) {
-      // TODO: move to updating the UI langs when the user saves their profile
-      //if (property.qname === "bds:BdouPreferredUiLang") setUiLang(resForNewValue?.value.toLowerCase())
-    }
   }
 
   const classes = useStyles()
@@ -1589,7 +1606,7 @@ const SelectComponent: FC<{
           {...(!editable ? { disabled: true } : {})}
         >
           {possibleValues.map((v, k) => {
-            if ("uri" in v) {
+            if (v instanceof RDFResourceWithLabel) {
               const r = v as RDFResourceWithLabel
               const label = ValueByLangToStrPrefLang(r.prefLabels, uiLitLang)
               return (

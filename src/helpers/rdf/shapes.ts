@@ -6,6 +6,7 @@ import {
   ExtRDFResourceWithLabel,
   Subject,
   rdfLitAsNumber,
+  LiteralWithId,
   ObjectType,
   Value,
 } from "./types"
@@ -294,7 +295,20 @@ export class PropertyShape extends RDFResourceWithLabel {
 
   @Memoize()
   public get datatype(): rdf.NamedNode | null {
-    return this.getPropResValue(shDatatype)
+    const res = this.getPropResValue(shDatatype)
+    if (res === null && this.hasListAsObject) {
+      const propNodes: Array<rdf.NamedNode | rdf.BlankNode> = this.graph.store.each(
+        this.node,
+        shProperty,
+        null
+      ) as Array<rdf.NamedNode | rdf.BlankNode>
+      if (!propNodes) return null
+      const props: Array<RDFResource> = PropertyShape.resourcizeWithInit(propNodes, this.graph)
+      for (const p of props) {
+        return p.getPropResValue(shDatatype)
+      }
+    }
+    return res
   }
 
   @Memoize()
@@ -335,7 +349,7 @@ export class PropertyShape extends RDFResourceWithLabel {
   }
 
   @Memoize()
-  public get in(): Array<Value> | null {
+  public get in(): Array<RDFResourceWithLabel | LiteralWithId> | null {
     if (this.hasListAsObject) {
       // if no direct in, let's look at the sh:property objects (quite counter intuitive, but it follows the shacl examples)
       const propNodes: Array<rdf.NamedNode | rdf.BlankNode> = this.graph.store.each(
@@ -355,7 +369,6 @@ export class PropertyShape extends RDFResourceWithLabel {
         }
       }
     }
-    // two options: either a direct value, or behind a sh:property
     if (this.datatype) {
       const nodes = this.getPropLitValuesFromList(shIn)
       if (nodes) return EntityGraph.addIdToLitList(nodes)
@@ -391,7 +404,10 @@ export class PropertyShape extends RDFResourceWithLabel {
     if (!propertyShapeType) {
       const editor = this.getPropResValue(dashEditor)
       if (!editor) return ObjectType.Literal
-      if (editor.value == dashEnumSelectEditor.value) return ObjectType.ResInList
+      if (editor.value == dashEnumSelectEditor.value) {
+        if (this.datatype) return ObjectType.LitInList
+        return ObjectType.ResInList
+      }
       return ObjectType.Literal
     }
     // for some reason direct comparison doesn't work...
