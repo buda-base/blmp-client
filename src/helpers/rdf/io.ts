@@ -114,7 +114,7 @@ export const putTtl = async (
   idToken: string,
   method = "PUT",
   message = "",
-  previousEtag = false
+  previousEtag: string | null = null
 ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
@@ -135,11 +135,11 @@ export const putTtl = async (
       }
       // eslint-disable-next-line no-magic-numbers
       if (response.status > 400) {
-        reject(new Error("error when saving " + url))
+        reject(new Error("error " + response.status + " when saving " + url))
         return
       }
 
-      if (!previousEtag && !etag) {
+      if (!etag) {
         reject(new Error("no etag returned from " + url))
         return
       }

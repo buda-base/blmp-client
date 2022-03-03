@@ -17,23 +17,34 @@ const debug = require("debug")("bdrc:rdf:construct")
 const NANOID_LENGTH = 8
 const nanoidCustom = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", NANOID_LENGTH)
 
-export const generateSubnode = (subshape: NodeShape, parent: RDFResource): Subject => {
+export const generateSubnode = async (
+  subshape: NodeShape,
+  parent: RDFResource,
+  userPrefix: string,
+  idToken: string | null
+): Promise<Subject> => {
   if (subshape.node.uri == "http://purl.bdrc.io/ontology/shapes/adm/AdmEntityShape") {
     // special case for admin entities
-    return new Subject(new rdf.NamedNode(ns.BDA_uri + parent.lname), parent.graph)
+    const res = new Subject(new rdf.NamedNode(ns.BDA_uri + parent.lname), parent.graph)
+    return Promise.resolve(res)
   }
-  let parentLname = ""
   let prefix = subshape.getPropStringValue(shapes.bdsIdentifierPrefix)
   if (prefix == null) throw "cannot find entity prefix for " + subshape.qname
-  prefix += parentLname
   let namespace = subshape.getPropStringValue(shapes.shNamespace)
-  parentLname = parent.lname
   if (namespace == null) namespace = parent.namespace
-  let uri = namespace + prefix + nanoidCustom()
+  if (subshape.independentIdentifiers) {
+    prefix += userPrefix
+    if (!idToken) throw new Error("no token when reserving id")
+    const reservedId = await reserveId(prefix, idToken)
+    const res = new Subject(new rdf.NamedNode(namespace + reservedId), parent.graph)
+    return Promise.resolve(res)
+  }
+  let uri = namespace + prefix + parent.lname + nanoidCustom()
   while (parent.graph.hasSubject(uri)) {
     uri = namespace + prefix + nanoidCustom()
   }
-  return new Subject(new rdf.NamedNode(uri), parent.graph)
+  const res = new Subject(new rdf.NamedNode(uri), parent.graph)
+  return Promise.resolve(res)
 }
 
 export const reserveId = async (prefix: string, token: string): Promise<string> => {
@@ -100,26 +111,20 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
       let namespace = shape.getPropStringValue(shapes.shNamespace)
       if (namespace == null) namespace = ns.BDR_uri
       if (!unmounting.val) setEntityLoadingState({ status: "creating", error: undefined })
-      let userPrefix
       let lname
       try {
         if (!idToken) throw new Error("no token when reserving id")
-        // DONE: get userPrefix from user profile
         const prefix = shapePrefix + RIDprefix
-        // DONE: uncomment for prod
         lname = await reserveId(prefix, idToken)
-        //lname = prefix + nanoidCustom()
       } catch (e) {
         debug(e)
         if (!unmounting.val) setEntityLoadingState({ status: "error", error: "error logging or reserving id" })
         return
       }
-      const prefix = shapePrefix + userPrefix
       const uri = namespace + lname
       const graph = new EntityGraph(rdf.graph(), uri)
       const node = new rdf.NamedNode(uri)
       const newSubject = new Subject(node, graph)
-      // TODO: create adminInfo
 
       const newEntity = {
         subjectQname: newSubject.qname,

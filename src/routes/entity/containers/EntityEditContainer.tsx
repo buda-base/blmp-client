@@ -3,7 +3,6 @@ import { ShapeFetcher, EntityFetcher } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject, ExtRDFResourceWithLabel, history } from "../../../helpers/rdf/types"
 import * as shapes from "../../../helpers/rdf/shapes"
-import { generateNew } from "../../../helpers/rdf/construct"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
 import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/EntitySelectorContainer"
@@ -271,9 +270,6 @@ function EntityEditContainer(props: AppProps) {
 
   const shapeLabel = lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)
   //const entityLabel = lang.ValueByLangToStrPrefLang(entity.prefLabels, uiLang)
-
-  // creating new entity
-  //const subject: Subject = generateNew("P", shape)
 
   const checkPushNameAsPrefLabel = (e, currentGroupName) => {
     debug("closing: ", currentGroupName, possiblePrefLabels[currentGroupName])

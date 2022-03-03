@@ -93,6 +93,7 @@ export const shLanguageIn = ns.SH("languageIn") as rdf.NamedNode
 export const shPattern = ns.SH("pattern") as rdf.NamedNode
 export const bdsSortOnProperty = ns.BDS("sortOnProperty") as rdf.NamedNode
 export const bdsAllowPushToTopLevelSkosPrefLabel = ns.BDS("allowPushToTopLevelSkosPrefLabel") as rdf.NamedNode
+export const bdsIndependentIdentifiers = ns.BDS("independentIdentifiers") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
 typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
@@ -474,6 +475,11 @@ export class NodeShape extends RDFResourceWithLabel {
       res.push(new PropertyShape(prop, this.graph, this.ontologyGraph))
     }
     return res
+  }
+
+  @Memoize()
+  public get independentIdentifiers(): boolean {
+    return this.getPropBooleanValue(bdsIndependentIdentifiers, false)
   }
 
   @Memoize()

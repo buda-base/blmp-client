@@ -4,7 +4,6 @@ import { ShapeFetcher, debugStore, EntityFetcher } from "../../../helpers/rdf/io
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject, RDFResourceWithLabel } from "../../../helpers/rdf/types"
 import * as shapes from "../../../helpers/rdf/shapes"
-import { generateNew } from "../../../helpers/rdf/construct"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
 import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/EntitySelectorContainer"

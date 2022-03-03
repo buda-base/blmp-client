@@ -42,6 +42,7 @@ import {
   uiUndosState,
   orderedByPropSelector,
   initListAtom,
+  RIDprefixState,
 } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
@@ -123,7 +124,12 @@ export const updateEntitiesRDF = (
 }
 */
 
-const generateDefault = (property: PropertyShape, parent: Subject): Value => {
+const generateDefault = async (
+  property: PropertyShape,
+  parent: Subject,
+  RIDprefix: string,
+  idToken: string | null
+): Value => {
   //debug("genD:", property, parent)
   switch (property.objectType) {
     case ObjectType.ResExt:
@@ -138,7 +144,7 @@ const generateDefault = (property: PropertyShape, parent: Subject): Value => {
       break
     case ObjectType.Facet:
       if (property.targetShape == null) throw "no target shape for " + property.uri
-      return generateSubnode(property.targetShape, parent)
+      return generateSubnode(property.targetShape, parent, RIDprefix, idToken)
       break
     case ObjectType.ResInList:
       // if a select property is not required, we don't select anything by default
@@ -180,6 +186,8 @@ const ValueList: FC<{
   if (property.path == null) throw "can't find path of " + property.qname
   const [unsortedList, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
+  const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
+  const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
   const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
   const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
 
@@ -260,7 +268,11 @@ const ValueList: FC<{
         else if (owner) owner.noHisto()
         else subject.noHisto()
         //debug("setNoH:1a",subject,owner,topEntity)
-        setList([...vals, generateDefault(property, subject)])
+        const setListAsync = async () => {
+          const res = await generateDefault(property, subject, RIDprefix, idToken)
+          setList([...vals, res])
+        }
+        setListAsync()
       } else {
         //debug("setNoH:1b",subject,owner,topEntity)
         setList(vals)
@@ -279,15 +291,31 @@ const ValueList: FC<{
       else if (owner) owner.noHisto()
       else subject.noHisto()
       //debug("setNoH:2",subject,owner,topEntity)
-      if (!firstValueIsEmptyField) setList((oldList) => [generateDefault(property, subject), ...oldList])
-      else setList((oldList) => [...oldList, generateDefault(property, subject)])
+
+      if (!firstValueIsEmptyField) {
+        const setListAsync = async () => {
+          const res = await generateDefault(property, subject, RIDprefix, idToken)
+          setList((oldList) => [res, ...oldList])
+        }
+        setListAsync()
+      } else {
+        const setListAsync = async () => {
+          const res = await generateDefault(property, subject, RIDprefix, idToken)
+          setList((oldList) => [...oldList, res])
+        }
+        setListAsync()
+      }
     } else if (property.objectType == ObjectType.Facet && property.minCount && list.length < property.minCount) {
       // dont store empty value autocreation
       if (topEntity) topEntity.noHisto()
       else if (owner) owner.noHisto()
       else subject.noHisto()
       //debug("setNoH:3",subject,owner,topEntity)
-      setList((oldList) => [generateDefault(property, subject), ...oldList])
+      const setListAsync = async () => {
+        const res = await generateDefault(property, subject, RIDprefix, idToken)
+        setList((oldList) => [res, ...oldList])
+      }
+      setListAsync()
     } else if (
       property.objectType != ObjectType.ResInList &&
       property.displayPriority &&
@@ -308,7 +336,11 @@ const ValueList: FC<{
       else if (owner) owner.noHisto()
       else subject.noHisto()
       //debug("setNoH:5",subject,owner,topEntity)
-      setList([generateDefault(property, subject)])
+      const setListAsync = async () => {
+        const res = await generateDefault(property, subject, RIDprefix, idToken)
+        setList([res])
+      }
+      setListAsync()
     }
 
     //debug("end/vL/effect")
@@ -518,19 +550,21 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
   const [uiLang] = useRecoilState(uiLangState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [edit, setEdit] = useRecoilState(uiEditState)
+  const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
+  const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
   //debug("atom:",property.qname,subject.getAtomForProperty(property.path.sparqlString))
 
   let waitForNoHisto = false
 
-  const addItem = () => {
+  const addItem = async () => {
     if (waitForNoHisto) return
 
     if (property.objectType === ObjectType.Facet) {
       waitForNoHisto = true
       subject.noHisto(false, 1) // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
     }
-    const item = generateDefault(property, subject)
+    const item = await generateDefault(property, subject, RIDprefix, idToken)
     setList([...listOrCollec, item]) //(oldList) => [...oldList, item])
     if (property.objectType === ObjectType.Facet && item instanceof Subject) {
       //setEdit(property.qname+item.qname)  // won't work...
