@@ -911,6 +911,9 @@ export const humanizeEDTF = (obj, str) => {
     }, "")
   }
 
+  // output EDTF object (debug)
+  // return JSON.stringify(obj)
+
   if (obj.type === "Set") return conc(obj.values, "or")
   else if (obj.type === "List") return conc(obj.values, "and")
   else if (obj.type === "Interval" && !obj.values[0]) return "not after " + conc([obj.values[1]])
@@ -923,11 +926,11 @@ export const humanizeEDTF = (obj, str) => {
     if (obj.type === "Century") return Number(obj.values[0]) + 1 + "th c. ?"
     return humanizeEDTF({ ...obj, uncertain: false }) + "?"
   } else if (obj.unspecified === 12) return obj.values[0] / 100 + 1 + "th c."
+  else if (obj.type === "Century") return Number(obj.values[0]) + 1 + "th c."
+  else if (obj.unspecified === 8) return obj.values[0] + "s"
   else if (!obj.unspecified) return obj.values[0]
   // to be continued?
   else return str
-
-  // return JSON.stringify(obj)
 }
 
 export const LangSelect: FC<{
