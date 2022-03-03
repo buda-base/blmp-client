@@ -50,6 +50,8 @@ import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/Ent
 import { fromWylie } from "jsewts"
 import MDEditor, { commands } from "@uiw/react-md-editor"
 
+import { parse } from "edtf/dist/../index.js" // finally got it to work!!
+
 const debug = require("debug")("bdrc:entity:container:ValueList")
 
 export const MinimalAddButton: FC<{
@@ -928,6 +930,7 @@ const EditString: FC<{
 
   const dt = property.datatype
   const pattern = property.pattern ? new RegExp(property.pattern) : undefined
+  const useEdtf = property.specialPattern?.value === ns.BDS("PatternEDTF").value
 
   const getPatternError = (val: string) => {
     let err = ""
@@ -940,9 +943,11 @@ const EditString: FC<{
 
   const [error, setError] = useState("") //getIntError(lit.value))
 
+  const [EDTF, setEDTF] = useState("")
+
   useEffect(() => {
     if (!error && (lit.value === undefined || lit.value === null || lit.value === "")) return
-    const newError = getPatternError(lit.value)
+    const newError = error || getPatternError(lit.value)
     if (newError != error) {
       setError(newError)
       updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
@@ -950,28 +955,55 @@ const EditString: FC<{
   })
 
   const changeCallback = (val: string) => {
+    if (useEdtf) {
+      try {
+        const obj = parse(val)
+        //debug("edtf:",obj)
+        setError("")
+        setEDTF(JSON.stringify(obj))
+      } catch (e) {
+        //debug("EDTF error:",e)
+        setEDTF("")
+        setError(
+          <>
+            This field must be in EDTF format, see&nbsp;
+            <a href="https://www.loc.gov/standards/datetime/" rel="noopener noreferrer" target="_blank">
+              https://www.loc.gov/standards/datetime/
+            </a>
+            .
+          </>
+        )
+      }
+    }
     onChange(lit.copyWithUpdatedValue(val))
   }
   return (
-    <TextField
-      //className={/*classes.root +*/ " mt-2"}
-      label={label}
-      style={{ width: "100%" }}
-      value={lit.value}
-      {...(property.qname !== "bds:NoteShape-contentLocationStatement" ? { InputLabelProps: { shrink: true } } : {})}
-      onChange={(e) => changeCallback(e.target.value)}
-      {...(!editable ? { disabled: true } : {})}
-      {...(error
-        ? {
-            helperText: (
-              <React.Fragment>
-                <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} /> <i>{error}</i>
-              </React.Fragment>
-            ),
-            error: true,
-          }
-        : {})}
-    />
+    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+      <TextField
+        //className={/*classes.root +*/ " mt-2"}
+        label={label}
+        style={{ width: "100%" }}
+        value={lit.value}
+        {...(property.qname !== "bds:NoteShape-contentLocationStatement" ? { InputLabelProps: { shrink: true } } : {})}
+        onChange={(e) => changeCallback(e.target.value)}
+        {...(!editable ? { disabled: true } : {})}
+        {...(error
+          ? {
+              helperText: (
+                <React.Fragment>
+                  <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} /> <i>{error}</i>
+                </React.Fragment>
+              ),
+              error: true,
+            }
+          : {})}
+      />
+      {EDTF && (
+        <div className="preview-EDTF" style={{ width: "100%" }}>
+          <TextField disabled value={EDTF} />
+        </div>
+      )}
+    </div>
   )
 }
 
