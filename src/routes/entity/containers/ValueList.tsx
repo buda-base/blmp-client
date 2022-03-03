@@ -1002,7 +1002,7 @@ const EditString: FC<{
 
   useEffect(() => {
     if (!error && (lit.value === undefined || lit.value === null || lit.value === "")) return
-    const newError = error || getPatternError(lit.value)
+    const newError = useEdtf && error || getPatternError(lit.value)
     if (newError != error) {
       setError(newError)
       updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
@@ -1701,7 +1701,7 @@ const SelectComponent: FC<{
         </TextField>
         <div className="hoverPart">
           {canDel && (
-            <button className="btn btn-link ml-0 mr-3 px-0" onClick={deleteItem}>
+            <button className="btn btn-link mx-0 px-0 py-0" onClick={deleteItem}>
               <RemoveIcon />
             </button>
           )}

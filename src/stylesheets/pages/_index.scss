@@ -965,6 +965,7 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 
 .new-fix { width:810px; margin:auto; padding-left:70px; padding-top: 15px; display:block;}
 
+.propLabel[data-prop^="bds:BdouPreferred"],
 .propLabel[data-type="0"], // literal
 .propLabel[data-type="2"], // select
 .propLabel[data-prop$="hasMember"],
