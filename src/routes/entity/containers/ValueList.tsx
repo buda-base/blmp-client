@@ -50,6 +50,8 @@ import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/Ent
 import { fromWylie } from "jsewts"
 import MDEditor, { commands } from "@uiw/react-md-editor"
 
+import { parse } from "edtf/dist/../index.js" // finally got it to work!!
+
 const debug = require("debug")("bdrc:entity:container:ValueList")
 
 export const MinimalAddButton: FC<{
@@ -897,6 +899,37 @@ const EditLangString: FC<{
   )
 }
 
+export const humanizeEDTF = (obj, str) => {
+  if (!obj) return ""
+
+  const conc = (values, sepa) => {
+    sepa = sepa ? " " + sepa + " " : ""
+    return values.reduce((acc, v, i, array) => {
+      if (i > 0) acc += i < array.length - 1 ? ", " : sepa
+      acc += humanizeEDTF(v)
+      return acc
+    }, "")
+  }
+
+  if (obj.type === "Set") return conc(obj.values, "or")
+  else if (obj.type === "List") return conc(obj.values, "and")
+  else if (obj.type === "Interval" && !obj.values[0]) return "not after " + conc([obj.values[1]])
+  else if (obj.type === "Interval" && !obj.values[1]) return "not before " + conc([obj.values[0]])
+  else if (obj.type === "Interval") return "between " + conc(obj.values, "and")
+  else if (obj.approximate) {
+    if (obj.type === "Century") return "circa " + (Number(obj.values[0]) + 1) + "th c."
+    return "circa " + humanizeEDTF({ ...obj, approximate: false })
+  } else if (obj.uncertain) {
+    if (obj.type === "Century") return Number(obj.values[0]) + 1 + "th c. ?"
+    return humanizeEDTF({ ...obj, uncertain: false }) + "?"
+  } else if (obj.unspecified === 12) return obj.values[0] / 100 + 1 + "th c."
+  else if (!obj.unspecified) return obj.values[0]
+  // to be continued?
+  else return str
+
+  // return JSON.stringify(obj)
+}
+
 export const LangSelect: FC<{
   onChange: (value: string) => void
   value: string
@@ -952,6 +985,7 @@ const EditString: FC<{
 
   const dt = property.datatype
   const pattern = property.pattern ? new RegExp(property.pattern) : undefined
+  const useEdtf = property.specialPattern?.value === ns.BDS("PatternEDTF").value
 
   const getPatternError = (val: string) => {
     let err = ""
@@ -964,9 +998,11 @@ const EditString: FC<{
 
   const [error, setError] = useState("") //getIntError(lit.value))
 
+  const [EDTF, setEDTF] = useState("")
+
   useEffect(() => {
     if (!error && (lit.value === undefined || lit.value === null || lit.value === "")) return
-    const newError = getPatternError(lit.value)
+    const newError = error || getPatternError(lit.value)
     if (newError != error) {
       setError(newError)
       updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
@@ -974,28 +1010,55 @@ const EditString: FC<{
   })
 
   const changeCallback = (val: string) => {
+    if (useEdtf) {
+      try {
+        const obj = parse(val)
+        //debug("edtf:",obj)
+        setError("")
+        setEDTF(humanizeEDTF(obj, val))
+      } catch (e) {
+        //debug("EDTF error:",e)
+        setEDTF("")
+        setError(
+          <>
+            This field must be in EDTF format, see&nbsp;
+            <a href="https://www.loc.gov/standards/datetime/" rel="noopener noreferrer" target="_blank">
+              https://www.loc.gov/standards/datetime/
+            </a>
+            .
+          </>
+        )
+      }
+    }
     onChange(lit.copyWithUpdatedValue(val))
   }
   return (
-    <TextField
-      //className={/*classes.root +*/ " mt-2"}
-      label={label}
-      style={{ width: "100%" }}
-      value={lit.value}
-      {...(property.qname !== "bds:NoteShape-contentLocationStatement" ? { InputLabelProps: { shrink: true } } : {})}
-      onChange={(e) => changeCallback(e.target.value)}
-      {...(!editable ? { disabled: true } : {})}
-      {...(error
-        ? {
-            helperText: (
-              <React.Fragment>
-                <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} /> <i>{error}</i>
-              </React.Fragment>
-            ),
-            error: true,
-          }
-        : {})}
-    />
+    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+      <TextField
+        //className={/*classes.root +*/ " mt-2"}
+        label={label}
+        style={{ width: "100%" }}
+        value={lit.value}
+        {...(property.qname !== "bds:NoteShape-contentLocationStatement" ? { InputLabelProps: { shrink: true } } : {})}
+        onChange={(e) => changeCallback(e.target.value)}
+        {...(!editable ? { disabled: true } : {})}
+        {...(error
+          ? {
+              helperText: (
+                <React.Fragment>
+                  <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} /> <i>{error}</i>
+                </React.Fragment>
+              ),
+              error: true,
+            }
+          : {})}
+      />
+      {EDTF && (
+        <div className="preview-EDTF" style={{ width: "100%" }}>
+          <TextField disabled value={EDTF} />
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -95,6 +95,7 @@ export const shPattern = ns.SH("pattern") as rdf.NamedNode
 export const bdsSortOnProperty = ns.BDS("sortOnProperty") as rdf.NamedNode
 export const bdsAllowPushToTopLevelSkosPrefLabel = ns.BDS("allowPushToTopLevelSkosPrefLabel") as rdf.NamedNode
 export const bdsIndependentIdentifiers = ns.BDS("independentIdentifiers") as rdf.NamedNode
+export const bdsSpecialPattern = ns.BDS("specialPattern") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
 typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
@@ -324,6 +325,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get allowPushToTopLevelSkosPrefLabel(): boolean {
     return this.getPropBooleanValue(bdsAllowPushToTopLevelSkosPrefLabel)
+  }
+
+  @Memoize()
+  public get specialPattern(): string | null {
+    return this.getPropResValue(bdsSpecialPattern)
   }
 
   public static resourcizeWithInit(
