@@ -553,6 +553,10 @@ label .help.literal,
   &::before { display:block; /*border-top:2px solid rgba(245, 0, 87, 0.25);*/ margin-bottom:8px; content:''; }
 }
 
+.internalId {
+  font-size: 12px; font-weight: 700; color: rgba(0, 0, 0, 0.54); padding: 0 15px;
+}
+
 /*
 .row.card, .facet {
   & > div > [role="main"] + [role="main"] .container > [role="main"]:not(:empty) { margin-top:16px; }  

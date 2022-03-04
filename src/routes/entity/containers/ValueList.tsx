@@ -1486,6 +1486,7 @@ const FacetComponent: FC<{
         }}
       >
         <div className={"card pt-2 pb-3 pr-3 mt-4 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
+          {targetShape.independentIdentifiers && <div className="internalId">{subNode.lname}</div>}
           {withoutDisplayPriority.map((p, index) => (
             <PropertyContainer
               key={index + p.uri}
@@ -1631,7 +1632,7 @@ const SelectComponent: FC<{
 
   if (canSelectNone) possibleValues = [noneSelected, ...possibleValues]
 
-  const index = selectIdx //listOrCollec.findIndex((listItem) => listItem === res)
+  const index = selectIdx
 
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
@@ -1644,10 +1645,11 @@ const SelectComponent: FC<{
         return v
       }
     }
+    debug("error cannot get element from value " + value)
     return null
   }
 
-  const val = res?.id ? res : getElementFromValue(list[index].value, true)
+  const val = res instanceof RDFResourceWithLabel ? res : getElementFromValue(list[index].value, true)
 
   //debug("selec:", property.qname, index, list, collec, listOrCollec, val, val?.id, res, res?.id, property)
 
@@ -1679,13 +1681,13 @@ const SelectComponent: FC<{
           select
           className={"selector mr-2"}
           value={val?.id}
-          key={"textfield_" + selectIdx + val?.id + "_" + index}
+          key={"textfield_" + selectIdx + "_" + index}
           style={{ padding: "1px", minWidth: "250px" }}
           onChange={onChange}
           label={[
             propLabel,
             helpMessage ? (
-              <Tooltip key={"tooltip_" + selectIdx + val?.id + "_" + index} title={helpMessage}>
+              <Tooltip key={"tooltip_" + selectIdx + "_" + index} title={helpMessage}>
                 <HelpIcon className="help" />
               </Tooltip>
             ) : null,
@@ -1705,7 +1707,7 @@ const SelectComponent: FC<{
                   ) : label ? 
                     label
                    : 
-                    r.qname
+                    r.lname
                   }
                 </MenuItem>
               )
