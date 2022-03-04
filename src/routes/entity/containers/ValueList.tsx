@@ -1012,26 +1012,31 @@ const EditString: FC<{
     }
   })
 
+  let timerEdtf = 0
   const changeCallback = (val: string) => {
     if (useEdtf) {
-      try {
-        const obj = parse(val)
-        //debug("edtf:",obj)
-        setError("")
-        setEDTF(humanizeEDTF(obj, val))
-      } catch (e) {
-        //debug("EDTF error:",e)
-        setEDTF("")
-        setError(
-          <>
-            This field must be in EDTF format, see&nbsp;
-            <a href="https://www.loc.gov/standards/datetime/" rel="noopener noreferrer" target="_blank">
-              https://www.loc.gov/standards/datetime/
-            </a>
-            .
-          </>
-        )
-      }
+      if (timerEdtf) clearTimeout(timerEdtf)
+      const delay = 350
+      timerEdtf = setTimeout(() => {
+        try {
+          const obj = parse(val)
+          //debug("edtf:",obj)
+          setError("")
+          setEDTF(humanizeEDTF(obj, val))
+        } catch (e) {
+          //debug("EDTF error:",e)
+          setEDTF("")
+          setError(
+            <>
+              This field must be in EDTF format, see&nbsp;
+              <a href="https://www.loc.gov/standards/datetime/" rel="noopener noreferrer" target="_blank">
+                https://www.loc.gov/standards/datetime/
+              </a>
+              .
+            </>
+          )
+        }
+      }, delay)
     }
     onChange(lit.copyWithUpdatedValue(val))
   }
