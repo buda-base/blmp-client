@@ -1470,6 +1470,7 @@ const FacetComponent: FC<{
         }}
       >
         <div className={"card pt-2 pb-3 pr-3 mt-4 pl-2 " + (hasExtra ? "hasDisplayPriority" : "")}>
+          {targetShape.independentIdentifiers && <div className="internalId">{subNode.lname}</div>}
           {withoutDisplayPriority.map((p, index) => (
             <PropertyContainer
               key={index + p.uri}
