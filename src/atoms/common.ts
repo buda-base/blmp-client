@@ -2,8 +2,11 @@ import { atom, atomFamily, selectorFamily } from "recoil"
 import { FC } from "react"
 import _ from "lodash"
 
+import edtf from "edtf/dist/../index.js"
+
 import * as ns from "../helpers/rdf/ns"
-import { Value, Subject } from "../helpers/rdf/types"
+import { Value, Subject, LiteralWithId } from "../helpers/rdf/types"
+import { humanizeEDTF } from "../routes/entity/containers/ValueList"
 
 const debug = require("debug")("bdrc:common")
 
@@ -189,5 +192,38 @@ export const possiblePrefLabelsSelector = selectorFamily({
       return res
     }
     return []
+  },
+})
+
+export const EDTFtoOtherFieldsSelector = selectorFamily({
+  key: "EDTFtoOtherFieldsSelector",
+  get: ({ error, atoms, index }) => ({ get }) => {
+    if (error) return
+    debug("EDTF2ofs:get", error, atoms, index)
+    return
+  },
+  set: ({ error, atoms, index }) => ({ set }, { lit, val, obj }) => {
+    if (error) return
+    debug("EDTF2ofs:set", error, atoms, index, lit, val, obj)
+    debug(humanizeEDTF(obj, val, true))
+
+    if (obj.type === "Date" && !obj.unspecified) {
+      set(atoms["bdo:onYear"], [new LiteralWithId(String(obj.values[0]), "", ns.XSD("gYear"))])
+      set(atoms["bdo:notBefore"], [])
+      set(atoms["bdo:notAfter"], [])
+    } else {
+      try {
+        set(atoms["bdo:onYear"], [])
+        const edtfMin = edtf(edtf(val).min)
+        if (edtfMin.values[0])
+          set(atoms["bdo:notBefore"], [new LiteralWithId(String(edtfMin.values[0]), "", ns.XSD("gYear"))])
+        const edtfMax = edtf(edtf(val).max)
+        if (edtfMax.values[0])
+          set(atoms["bdo:notAfter"], [new LiteralWithId(String(edtfMax.values[0]), "", ns.XSD("gYear"))])
+      } catch (e) {
+        debug("EDTF error:", e)
+      }
+    }
+    return
   },
 })

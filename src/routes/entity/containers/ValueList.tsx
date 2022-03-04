@@ -43,6 +43,7 @@ import {
   orderedByPropSelector,
   initListAtom,
   RIDprefixState,
+  EDTFtoOtherFieldsSelector,
 } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
@@ -899,7 +900,7 @@ const EditLangString: FC<{
   )
 }
 
-export const humanizeEDTF = (obj, str) => {
+export const humanizeEDTF = (obj, str, debug = false) => {
   if (!obj) return ""
 
   const conc = (values, sepa) => {
@@ -911,8 +912,8 @@ export const humanizeEDTF = (obj, str) => {
     }, "")
   }
 
-  // output EDTF object (debug)
-  // return JSON.stringify(obj)
+  // just output EDTF object
+  if (debug) return JSON.stringify(obj, null, 3)
 
   if (obj.type === "Set") return conc(obj.values, "or")
   else if (obj.type === "List") return conc(obj.values, "and")
@@ -982,13 +983,28 @@ const EditString: FC<{
   label: string
   editable?: boolean
   updateEntityState: (es: EditedEntityState) => void
-}> = ({ property, lit, onChange, label, editable, updateEntityState }) => {
+  entity: Subject
+}> = ({ property, lit, onChange, label, editable, updateEntityState, entity, index }) => {
   const classes = useStyles()
   const [uiLang] = useRecoilState(uiLangState)
 
   const dt = property.datatype
   const pattern = property.pattern ? new RegExp(property.pattern) : undefined
   const useEdtf = property.specialPattern?.value === ns.BDS("PatternEDTF").value
+
+  const [error, setError] = useState("") //getIntError(lit.value))
+
+  const [readableEDTF, setReadableEDTF] = useState("")
+  const [EDTFtoOtherFields, setEDTFtoOtherFields] = useRecoilState(
+    EDTFtoOtherFieldsSelector({
+      error: !useEdtf,
+      atoms: {
+        "bdo:onYear": entity.getAtomForProperty(ns.BDO("onYear").value),
+        "bdo:notBefore": entity.getAtomForProperty(ns.BDO("notBefore").value),
+        "bdo:notAfter": entity.getAtomForProperty(ns.BDO("notAfter").value),
+      },
+    })
+  )
 
   const getPatternError = (val: string) => {
     let err = ""
@@ -998,10 +1014,6 @@ const EditString: FC<{
     }
     return err
   }
-
-  const [error, setError] = useState("") //getIntError(lit.value))
-
-  const [EDTF, setEDTF] = useState("")
 
   useEffect(() => {
     if (!error && (lit.value === undefined || lit.value === null || lit.value === "")) return
@@ -1022,10 +1034,11 @@ const EditString: FC<{
           const obj = parse(val)
           //debug("edtf:",obj)
           setError("")
-          setEDTF(humanizeEDTF(obj, val))
+          setReadableEDTF(humanizeEDTF(obj, val))
+          setEDTFtoOtherFields({ lit, val, obj })
         } catch (e) {
           //debug("EDTF error:",e)
-          setEDTF("")
+          setReadableEDTF("")
           setError(
             <>
               This field must be in EDTF format, see&nbsp;
@@ -1061,9 +1074,10 @@ const EditString: FC<{
             }
           : {})}
       />
-      {EDTF && (
+      {readableEDTF && (
         <div className="preview-EDTF" style={{ width: "100%" }}>
-          <TextField disabled value={EDTF} />
+          {/* <TextField disabled value={readableEDTF} /> */}
+          <pre>{readableEDTF}</pre>
         </div>
       )}
     </div>
@@ -1173,6 +1187,7 @@ const EditInt: FC<{
   let value = lit.value
   if (dt && dt.value == xsdgYear) {
     // don't display the leading 0
+    debug("val?", value, lit)
     value = value.replace(/^(-?)0+/, "$1")
   }
 
@@ -1370,6 +1385,7 @@ const LiteralComponent: FC<{
         ]}
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
+        entity={subject}
       />
     )
   }

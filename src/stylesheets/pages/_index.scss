@@ -687,7 +687,7 @@ label ~ .selector {
 .preview-EDTF:not(#a) { 
   & > div { width:100%; }
   & > div > div::before { content:none; }
-  input.MuiInputBase-input { width:100%; font-size:14px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45); }
+  pre,input.MuiInputBase-input { width:100%; font-size:14px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45); }
 }
 
 .lang-bo input {font-family: 'Noto Sans Tibetan'; }
