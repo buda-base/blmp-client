@@ -1126,7 +1126,8 @@ const EditInt: FC<{
   label: string
   editable?: boolean
   updateEntityState: (es: EditedEntityState) => void
-}> = ({ property, lit, onChange, label, editable, updateEntityState }) => {
+  hasNoOtherValue: boolean
+}> = ({ property, lit, onChange, label, editable, updateEntityState, hasNoOtherValue }) => {
   // used for integers and gYear
 
   const classes = useStyles()
@@ -1139,7 +1140,9 @@ const EditInt: FC<{
 
   const getIntError = (val: string) => {
     let err = ""
-    if (val !== undefined && val !== "") {
+    if (hasNoOtherValue && val === "") {
+      err = i18n.t("error.empty")
+    } else if (val !== undefined && val !== "") {
       const valueInt = parseInt(val)
       if (minInclusive && minInclusive > valueInt) {
         err = i18n.t("error.superiorTo", { val: minInclusive })
@@ -1157,7 +1160,7 @@ const EditInt: FC<{
   const [error, setError] = useState("") //getIntError(lit.value))
 
   useEffect(() => {
-    if (lit.value === undefined || lit.value === null || lit.value === "") return
+    if (!hasNoOtherValue && (lit.value === undefined || lit.value === null || lit.value === "")) return
     const newError = getIntError(lit.value)
     if (newError != error) {
       setError(newError)
@@ -1200,9 +1203,8 @@ const EditInt: FC<{
         ? {
             helperText: (
               <React.Fragment>
-                {/*eventType*/ "Number"} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                <br />
-                <i>{error}</i>
+                {/*eventType // "Number"*/} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                <i> {error}</i>
               </React.Fragment>
             ),
             error: true,
@@ -1350,6 +1352,7 @@ const LiteralComponent: FC<{
         ]}
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
+        hasNoOtherValue={property.minCount === 1 && list.length === 1}
       />
     )
   } else if (t?.value === xsdboolean) {
