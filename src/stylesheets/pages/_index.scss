@@ -496,11 +496,13 @@ section,
   .help { width:16px; color:rgba(0,0,0,0.45);}
 }
 
+
 [data-prop^="bds:BdouPreferredUiL"] { 
   & + div { 
-    .resSelect:not(:first-child:last-child) > div:first-child { min-width:150px !important; }
+    .resSelect:not(:first-child:last-child) > div:first-child { min-width:180px !important; }
   }
 }
+
 
 .resSelect .withPreview { padding-bottom:40px; }
 .preview-ewts:not(#a) { bottom:0; 
@@ -691,7 +693,7 @@ label ~ .selector {
 .preview-EDTF:not(#a) { 
   & > div { width:100%; }
   & > div > div::before { content:none; }
-  input.MuiInputBase-input { width:100%; font-size:14px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45); }
+  pre,input.MuiInputBase-input { width:100%; font-size:14px; padding-top:6px !important;  border:none; color:rgba(0, 0, 0, 0.45); }
 }
 
 .lang-bo input {font-family: 'Noto Sans Tibetan'; }

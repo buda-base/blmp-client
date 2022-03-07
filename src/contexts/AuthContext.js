@@ -71,13 +71,32 @@ export function AuthContextWrapper({ children }) {
             prefix
           const idx = id.findIndex((k) => k.includes("/user/U"))
           if (id.length) {
+            //debug("Profile loaded", response.data)
             uiL = response.data[id[idx]][ns.BDOU("preferredUiLang").value]
             //if (uiL?.length) uiL = uiL[0].value
             if (uiL?.length) setUiLang(uiL.map((u) => u.value))
 
             uiLitL = response.data[id[idx]][ns.BDOU("preferredUiLiteralLangs").value]
             //if (uiLitL?.length) uiLitL = uiLitL[0].value
-            if (uiLitL?.length) setUiLitLang(uiLitL.map((u) => u.value))
+            if (uiLitL?.length) {
+              let head = uiLitL[0].value
+              const list = [],
+                first = ns.RDF("first").value,
+                rest = ns.RDF("first").value,
+                nil = ns.RDF("nil").value
+              do {
+                if (head && response.data[head]) {
+                  if (response.data[head][first]?.length) {
+                    list.push(response.data[head][first][0].value)
+                  }
+                  if (response.data[head][rest]?.length && response.data[head][rest][0].value !== nil) {
+                    head = response.data[head][rest][0].value
+                  }
+                } else head = null
+              } while (head)
+              //debug("list:",list)
+              if (list.length) setUiLitLang(list)
+            }
 
             prefix = response.data[id[idx]][ns.BDOU("localNameDefaultPrefix").value]
             //debug("RIDp:",prefix,response.data[id[idx]],ns.BDOU("localNameDefaultPrefix").value)
