@@ -496,11 +496,13 @@ section,
   .help { width:16px; color:rgba(0,0,0,0.45);}
 }
 
+
 [data-prop^="bds:BdouPreferredUiL"] { 
   & + div { 
-    .resSelect:not(:first-child:last-child) > div:first-child { min-width:150px !important; }
+    .resSelect:not(:first-child:last-child) > div:first-child { min-width:180px !important; }
   }
 }
+
 
 .resSelect .withPreview { padding-bottom:40px; }
 .preview-ewts:not(#a) { bottom:0; 

@@ -11,7 +11,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link, useHistory } from "react-router-dom"
-import { uiDisabledTabsState, uiLangState, uiTabState, userIdState } from "../atoms/common"
+import { uiDisabledTabsState, uiLangState, uiLitLangState, uiTabState, userIdState } from "../atoms/common"
 import { makeStyles } from "@material-ui/core/styles"
 import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
@@ -54,6 +54,7 @@ export const getIcon = (entity: Entity) => {
 
 export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number }> = ({ entity, index }) => {
   const [uiLang] = useRecoilState(uiLangState)
+  const [uiLitLang] = useRecoilState(uiLitLangState)
   const [labelValues] = useRecoilState(!entity.preloadedLabel ? entity.subjectLabelState : defaultEntityLabelAtom)
   const [tab, setTab] = useRecoilState(uiTabState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
@@ -64,7 +65,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const auth0 = useAuth0()
 
   const prefLabels = labelValues ? RDFResource.valuesByLang(labelValues) : ""
-  const label = !entity.preloadedLabel ? lang.ValueByLangToStrPrefLang(prefLabels, uiLang) : entity.preloadedLabel
+  const label = !entity.preloadedLabel ? lang.ValueByLangToStrPrefLang(prefLabels, uiLitLang) : entity.preloadedLabel
   const icon = getIcon(entity)
   const shapeQname = entity.shapeRef
     ? entity.shapeRef.qname
