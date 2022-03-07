@@ -197,15 +197,15 @@ export const possiblePrefLabelsSelector = selectorFamily({
 
 export const EDTFtoOtherFieldsSelector = selectorFamily({
   key: "EDTFtoOtherFieldsSelector",
-  get: ({ error, atoms, index }) => ({ get }) => {
+  get: ({ error, atoms }) => ({ get }) => {
     if (error) return
-    debug("EDTF2ofs:get", error, atoms, index)
+    //debug("EDTF2ofs:get", error, atoms)
     return
   },
-  set: ({ error, atoms, index }) => ({ set }, { lit, val, obj }) => {
+  set: ({ error, atoms }) => ({ set }, { lit, val, obj }) => {
     if (error) return
-    debug("EDTF2ofs:set", error, atoms, index, lit, val, obj)
-    debug(humanizeEDTF(obj, val, true))
+    //debug("EDTF2ofs:set", error, atoms, lit, val, obj)
+    //debug(humanizeEDTF(obj, val, true))
 
     if (obj.type === "Date" && !obj.unspecified) {
       set(atoms["bdo:onYear"], [new LiteralWithId(String(obj.values[0]), "", ns.XSD("gYear"))])

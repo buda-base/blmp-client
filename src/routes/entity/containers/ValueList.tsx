@@ -913,7 +913,7 @@ export const humanizeEDTF = (obj, str, debug = false) => {
   }
 
   // just output EDTF object
-  if (debug) return JSON.stringify(obj, null, 3)
+  if (debug /*|| true*/) return JSON.stringify(obj, null, 3)
 
   if (obj.type === "Set") return conc(obj.values, "or")
   else if (obj.type === "List") return conc(obj.values, "and")
@@ -928,7 +928,7 @@ export const humanizeEDTF = (obj, str, debug = false) => {
     return humanizeEDTF({ ...obj, uncertain: false }) + "?"
   } else if (obj.unspecified === 12) return obj.values[0] / 100 + 1 + "th c."
   else if (obj.type === "Century") return Number(obj.values[0]) + 1 + "th c."
-  else if (obj.unspecified === 8) return obj.values[0] + "s"
+  else if (obj.unspecified === 8 || obj.type === "Decade") return obj.values[0] + "0s"
   else if (!obj.unspecified) return obj.values[0]
   // to be continued?
   else return str
