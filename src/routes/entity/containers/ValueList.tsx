@@ -1061,6 +1061,8 @@ const EditString: FC<{
         style={{ width: "100%" }}
         value={lit.value}
         {...(property.qname !== "bds:NoteShape-contentLocationStatement" ? { InputLabelProps: { shrink: true } } : {})}
+        onBlur={(e) => setReadableEDTF("")}
+        onFocus={(e) => changeCallback(e.target.value)}
         onChange={(e) => changeCallback(e.target.value)}
         {...(!editable ? { disabled: true } : {})}
         {...(error
