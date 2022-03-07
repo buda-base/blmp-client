@@ -51,7 +51,7 @@ import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/Ent
 import { fromWylie } from "jsewts"
 import MDEditor, { commands } from "@uiw/react-md-editor"
 
-import { parse } from "edtf/dist/../index.js" // finally got it to work!!
+import edtf, { parse } from "edtf/dist/../index.js" // finally got it to work!!
 
 const debug = require("debug")("bdrc:entity:container:ValueList")
 
@@ -928,7 +928,8 @@ export const humanizeEDTF = (obj, str, debug = false) => {
     return humanizeEDTF({ ...obj, uncertain: false }) + "?"
   } else if (obj.unspecified === 12) return obj.values[0] / 100 + 1 + "th c."
   else if (obj.type === "Century") return Number(obj.values[0]) + 1 + "th c."
-  else if (obj.unspecified === 8 || obj.type === "Decade") return obj.values[0] + "0s"
+  else if (obj.unspecified === 8) return obj.values[0] + "s"
+  else if (obj.type === "Decade") return obj.values[0] + "0s"
   else if (!obj.unspecified) return obj.values[0]
   // to be continued?
   else return str
@@ -994,6 +995,13 @@ const EditString: FC<{
 
   const [error, setError] = useState("") //getIntError(lit.value))
 
+  // eslint-disable-next-line prefer-const
+  let atoms = {
+    "bdo:onYear": entity.getAtomForProperty(ns.BDO("onYear").value),
+    "bdo:notBefore": entity.getAtomForProperty(ns.BDO("notBefore").value),
+    "bdo:notAfter": entity.getAtomForProperty(ns.BDO("notAfter").value),
+  }
+
   const [readableEDTF, setReadableEDTF] = useState("")
   const [EDTFtoOtherFields, setEDTFtoOtherFields] = useRecoilState(
     EDTFtoOtherFieldsSelector({
@@ -1032,12 +1040,13 @@ const EditString: FC<{
       timerEdtf = setTimeout(() => {
         try {
           const obj = parse(val)
+          const etdtObj = edtf(val)
           //debug("edtf:",obj)
           setError("")
           setReadableEDTF(humanizeEDTF(obj, val))
           setEDTFtoOtherFields({ lit, val, obj })
         } catch (e) {
-          //debug("EDTF error:",e)
+          //debug("EDTF error:",e.message)
           setReadableEDTF("")
           setError(
             <>
@@ -1046,6 +1055,11 @@ const EditString: FC<{
                 https://www.loc.gov/standards/datetime/
               </a>
               .
+              {!["No possible parsing", "Syntax error"].some((err) => e.message?.includes(err)) && (
+                <>
+                  <br />[{e.message}]
+                </>
+              )}
             </>
           )
         }
