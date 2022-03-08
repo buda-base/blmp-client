@@ -1,6 +1,6 @@
 import React, { useState, FC, ReactElement } from "react"
 import PropertyContainer from "./PropertyContainer"
-import { RDFResource, Subject } from "../../../helpers/rdf/types"
+import { RDFResource, Subject, errors } from "../../../helpers/rdf/types"
 import { PropertyGroup, PropertyShape } from "../../../helpers/rdf/shapes"
 import { uiLangState, uiEditState, uiNavState, uiGroupState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
@@ -25,8 +25,9 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
   const withDisplayPriority: PropertyShape[] = [],
     withoutDisplayPriority: PropertyShape[] = []
   //let isSimplePriority = false
+  const errorKeys = Object.keys(errors[subject.qname] ? errors[subject.qname] : {})
   group.properties.map((property) => {
-    //debug("map:",property.qname)
+    //debug("map:",property.qname,property,errorKeys)
     if (
       property.displayPriority &&
       property.displayPriority >= 1

@@ -26,7 +26,7 @@ import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelector
 import * as ns from "../../helpers/rdf/ns"
 import { langs } from "../../helpers/lang"
 import { debugStore, setUserLocalEntities, putTtl } from "../../helpers/rdf/io"
-import { history } from "../../helpers/rdf/types"
+import { history, errors } from "../../helpers/rdf/types"
 import config from "../../config"
 import { ErrorIcon } from "../../routes/layout/icons"
 
@@ -153,7 +153,7 @@ function BottomBar(props: AppProps) {
     setLang(uiLang)
   }, [uiLang])
 
-  debug("bottombar:", isUserProfile, userId, entitySubj, shapeQname, entities[entity])
+  debug("bottombar:", errors, isUserProfile, userId, entitySubj, shapeQname, entities[entity])
 
   const delay = 300
   const closePopup = (delay1 = delay, delay2 = delay) => {

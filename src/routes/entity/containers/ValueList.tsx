@@ -207,6 +207,8 @@ const ValueList: FC<{
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
   const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
   const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
+  const [undos, setUndos] = useRecoilState(uiUndosState)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const sortOnPath = property?.sortOnProperty?.value
   const orderedList = useRecoilValue(
@@ -216,10 +218,62 @@ const ValueList: FC<{
       //order: "desc" // default is "asc"
     })
   )
-
   let list = unsortedList
   if (orderedList.length) list = orderedList
   //debug("vL:", list, collec)
+
+  const updateEntityState = (status: EditedEntityState, id: string, removingFacet = false) => {
+    if (id === undefined) throw new Error("id undefined")
+    const entityQname = topEntity ? topEntity.qname : subject.qname
+    const undo = undos[ns.uriFromQname(entityQname)]
+    const hStatus = getHistoryStatus(ns.uriFromQname(entityQname))
+    //debug("undo:", undo, hStatus, history, entityQname, undos)
+    const n = entities.findIndex((e) => e.subjectQname === entityQname)
+    if (n > -1) {
+      const ent: Entity = entities[n]
+      if (status === EditedEntityState.Error) {
+        debug("error:", errors, status, n, ent, property.qname, id)
+        if (ent.state != status) {
+          const newEntities = [...entities]
+          newEntities[n] = { ...entities[n], state: status }
+          setEntities(newEntities)
+        }
+        if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
+        errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id] = true
+      } else if (status !== EditedEntityState.Error) {
+        // DONE: update status to NeedsSaving for newly created entity and not for loaded entity
+        status =
+          ent.alreadySaved && (!undo || undo.prev && !undo.prev.enabled)
+            ? EditedEntityState.Saved
+            : EditedEntityState.NeedsSaving
+
+        debug("no error:", status, n, ent, errors, property.qname, id)
+        if (ent.state != status) {
+          debug("status:", ent.state, status)
+          if (removingFacet) {
+            debug("rf:", id)
+            if (errors[ent.subjectQname]) {
+              const keys = Object.keys(errors[ent.subjectQname])
+              for (const k of keys) {
+                if (k.startsWith(id)) delete errors[ent.subjectQname][k]
+              }
+            }
+          } else if (
+            errors[ent.subjectQname] &&
+            errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
+          ) {
+            delete errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
+          }
+          if (!errors[ent.subjectQname] || !Object.keys(errors[ent.subjectQname]).length) {
+            const newEntities = [...entities]
+            newEntities[n] = { ...entities[n], state: status }
+            setEntities(newEntities)
+            //debug("newEnt:",newEntities[n].state)
+          }
+        }
+      }
+    }
+  }
 
   const alreadyHasEmptyValue: () => boolean = (): boolean => {
     for (const val of list) {
@@ -474,6 +528,7 @@ const ValueList: FC<{
           {...(force ? { force } : {})}
           editable={editable}
           {...(topEntity ? { topEntity } : { topEntity: subject })}
+          updateEntityState={updateEntityState}
         />
       )
     } else if (val instanceof LiteralWithId) {
@@ -499,6 +554,7 @@ const ValueList: FC<{
           }
           editable={editable}
           topEntity={topEntity}
+          updateEntityState={updateEntityState}
         />
       )
     }
@@ -651,7 +707,8 @@ const EditLangString: FC<{
   editable?: boolean
   updateEntityState: (es: EditedEntityState) => void
   entity: Subject
-}> = ({ property, lit, onChange, label, globalError, editable, updateEntityState, entity }) => {
+  index: number
+}> = ({ property, lit, onChange, label, globalError, editable, updateEntityState, entity, index }) => {
   const classes = useStyles()
   const [editMD, setEditMD] = useState(false)
   const [keyboard, setKeyboard] = useState(false)
@@ -669,10 +726,10 @@ const EditLangString: FC<{
 
   useEffect(() => {
     const newError = getLangStringError(lit.value)
-    //debug("newE:",newError,error)
+    //debug("newE:",newError,error,lit,lit.id)
     if (newError != error) {
       setError(newError)
-      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
+      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
     }
   })
 
@@ -778,7 +835,7 @@ const EditLangString: FC<{
             onChange={(e) => {
               const newError = getLangStringError(lit.value)
               if (newError && error != newError) setError(newError)
-              else updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
+              else updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
               onChange(lit.copyWithUpdatedValue(e.target.value))
             }}
             {...(error ? errorData : {})}
@@ -986,6 +1043,7 @@ const EditString: FC<{
   editable?: boolean
   updateEntityState: (es: EditedEntityState) => void
   entity: Subject
+  index: number
 }> = ({ property, lit, onChange, label, editable, updateEntityState, entity, index }) => {
   const classes = useStyles()
   const [uiLang] = useRecoilState(uiLangState)
@@ -1024,18 +1082,13 @@ const EditString: FC<{
     return err
   }
 
-  useEffect(() => {
-    if (!error && (lit.value === undefined || lit.value === null || lit.value === "")) return
-    const newError = useEdtf && error || getPatternError(lit.value)
-    if (newError != error) {
-      setError(newError)
-      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
-    }
-  })
-
   let timerEdtf = 0
   const changeCallback = (val: string) => {
-    if (useEdtf) {
+    if (val === "") {
+      setError("")
+      setReadableEDTF("")
+      updateEntityState(EditedEntityState.Saved, lit.id)
+    } else if (useEdtf) {
       if (timerEdtf) clearTimeout(timerEdtf)
       const delay = 350
       timerEdtf = setTimeout(() => {
@@ -1046,6 +1099,7 @@ const EditString: FC<{
           setError("")
           setReadableEDTF(humanizeEDTF(obj, val))
           setEDTFtoOtherFields({ lit, val, obj })
+          updateEntityState(EditedEntityState.Saved, lit.id)
         } catch (e) {
           //debug("EDTF error:",e.message)
           setReadableEDTF("")
@@ -1063,8 +1117,13 @@ const EditString: FC<{
               )}
             </>
           )
+          updateEntityState(EditedEntityState.Error, lit.id)
         }
       }, delay)
+    } else {
+      const newError = getPatternError(val)
+      setError(newError)
+      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
     }
     onChange(lit.copyWithUpdatedValue(val))
   }
@@ -1144,7 +1203,8 @@ const EditInt: FC<{
   editable?: boolean
   updateEntityState: (es: EditedEntityState) => void
   hasNoOtherValue: boolean
-}> = ({ property, lit, onChange, label, editable, updateEntityState, hasNoOtherValue }) => {
+  index: number
+}> = ({ property, lit, onChange, label, editable, updateEntityState, hasNoOtherValue, index }) => {
   // used for integers and gYear
 
   const classes = useStyles()
@@ -1181,14 +1241,14 @@ const EditInt: FC<{
     const newError = getIntError(lit.value)
     if (newError != error) {
       setError(newError)
-      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
+      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
     }
   })
 
   const changeCallback = (val: string) => {
     const newError = getIntError(val)
     if (newError != error) setError(newError)
-    else updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved)
+    else updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
 
     //debug("change:", newError)
 
@@ -1257,7 +1317,8 @@ const LiteralComponent: FC<{
   create?: Create
   editable: boolean
   topEntity?: Subject
-}> = ({ lit, subject, property, canDel, isUnique, create, editable, topEntity }) => {
+  updateEntityState: (es: EditedEntityState) => void
+}> = ({ lit, subject, property, canDel, isUnique, create, editable, topEntity, updateEntityState }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
@@ -1278,47 +1339,6 @@ const LiteralComponent: FC<{
     setList(newList)
   }
 
-  const updateEntityState = (status: EditedEntityState) => {
-    const entityQname = topEntity ? topEntity.qname : subject.qname
-    const undo = undos[ns.uriFromQname(entityQname)]
-    const hStatus = getHistoryStatus(ns.uriFromQname(entityQname))
-    //debug("undo:", undo, hStatus, history, entityQname, undos)
-    const n = entities.findIndex((e) => e.subjectQname === entityQname)
-    if (n > -1) {
-      const ent: Entity = entities[n]
-      if (status === EditedEntityState.Error) {
-        //debug("error:", errors, status, n, ent, property.qname, index)
-        if (ent.state != status) {
-          const newEntities = [...entities]
-          newEntities[n] = { ...entities[n], state: status }
-          setEntities(newEntities)
-        }
-        if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
-        errors[ent.subjectQname][property.qname + ":" + index] = true
-      } else if (status !== EditedEntityState.Error) {
-        // DONE: update status to NeedsSaving for newly created entity and not for loaded entity
-        status =
-          ent.alreadySaved && (!undo || undo.prev && !undo.prev.enabled)
-            ? EditedEntityState.Saved
-            : EditedEntityState.NeedsSaving
-
-        //debug("no error:", status, n, ent, errors, property.qname, index)
-        if (ent.state != status) {
-          //debug("status:",ent.state,status)
-          if (errors[ent.subjectQname] && errors[ent.subjectQname][property.qname + ":" + index]) {
-            delete errors[ent.subjectQname][property.qname + ":" + index]
-          }
-          if (!errors[ent.subjectQname] || !Object.keys(errors[ent.subjectQname]).length) {
-            const newEntities = [...entities]
-            newEntities[n] = { ...entities[n], state: status }
-            setEntities(newEntities)
-            //debug("newEnt:",newEntities[n].state)
-          }
-        }
-      }
-    }
-  }
-
   useEffect(() => {
     let error = false
     const entityQname = topEntity ? topEntity.qname : subject.qname
@@ -1327,7 +1347,7 @@ const LiteralComponent: FC<{
       const ent = entities[n]
       if (ent.state === EditedEntityState.Error) error = true
     }
-    if (!error) updateEntityState(EditedEntityState.Saved)
+    if (!error) updateEntityState(EditedEntityState.Saved, lit.id)
   }, [undos])
 
   const t = property.datatype
@@ -1352,6 +1372,7 @@ const LiteralComponent: FC<{
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
         entity={topEntity ? topEntity : subject}
+        index={index}
       />
     )
     // eslint-disable-next-line no-extra-parens
@@ -1373,6 +1394,7 @@ const LiteralComponent: FC<{
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
         hasNoOtherValue={property.minCount === 1 && list.length === 1}
+        index={index}
       />
     )
   } else if (t?.value === xsdboolean) {
@@ -1409,6 +1431,7 @@ const LiteralComponent: FC<{
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
         entity={subject}
+        index={index}
       />
     )
   }
@@ -1439,7 +1462,8 @@ const FacetComponent: FC<{
   //force?: boolean
   editable: boolean
   topEntity: Subject
-}> = ({ subNode, subject, property, canDel, /*force,*/ editable, topEntity }) => {
+  updateEntityState: (es: EditedEntityState) => void
+}> = ({ subNode, subject, property, canDel, /*force,*/ editable, topEntity, updateEntityState }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -1447,6 +1471,7 @@ const FacetComponent: FC<{
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const deleteItem = () => {
+    updateEntityState(EditedEntityState.Saved, subNode.qname, true)
     const newList = removeItemAtIndex(list, index)
     setList(newList)
   }
