@@ -284,10 +284,10 @@ function BottomBar(props: AppProps) {
         rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
           setUserLocalEntities(auth0, entities[entity].subjectQname, shapeQname, str, false, userId, alreadySaved)
         })
-      } catch (e) {
+      } catch (error) {
         // TODO: better error handling
-
-        closePopup()
+        debug("error:", error)
+        setError(error.message ? error.message : error)
 
         return
       }
@@ -365,6 +365,17 @@ function BottomBar(props: AppProps) {
                 onChange={onMessageChangeHandler}
                 InputLabelProps={{ shrink: true }}
                 style={{ minWidth: 300 }}
+                {...(error
+                  ? {
+                      helperText: (
+                        <React.Fragment>
+                          <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                          <i>{error}</i>
+                        </React.Fragment>
+                      ),
+                      error: true,
+                    }
+                  : {})}
               />
 
               <TextField

@@ -139,6 +139,14 @@ export const putTtl = async (
         return
       }
 
+      //debug("response:",response,etag)
+
+      const text = await response.text()
+      if (text) {
+        reject(new Error(text))
+        return
+      }
+
       if (!etag) {
         reject(new Error("no etag returned from " + url))
         return
