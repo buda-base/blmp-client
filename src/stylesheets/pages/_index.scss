@@ -949,9 +949,11 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 */
 
 
+[data-priority="3"],
 .card.show-displayPriority-false > div > div > .album > .container > .ValueList.empty[data-priority="1"],
 .facet.edit.force-false .hasDisplayPriority .ValueList.empty[data-priority="1"],
 .row.show-displayPriority-false .empty[data-priority="1"] > div > .resSelect { display:none !important; }
+
 
 
 .card.show-displayPriority-false .facet.force-false .empty .propLabel[data-priority="1"],
