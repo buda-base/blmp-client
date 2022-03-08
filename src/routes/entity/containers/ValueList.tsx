@@ -378,7 +378,10 @@ const ValueList: FC<{
       return val.uri === "tmp:uri" || val.uri === "tmp:none"
     } else if (val instanceof LiteralWithId) {
       // remove language part to fix hiding secondary properties in iinstance/volumes
-      return !val.value // && !val.language
+      return (
+        !val.value || // && !val.language
+        property.qname === "bds:ImagegroupShape-volumePagesTbrcIntro" && val.value === "0"
+      )
     }
     return false
   }
