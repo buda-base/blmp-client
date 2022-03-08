@@ -1296,8 +1296,11 @@ const LiteralComponent: FC<{
         if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
         errors[ent.subjectQname][property.qname + ":" + index] = true
       } else if (status !== EditedEntityState.Error) {
-        // TODO: unclear how to update status to NeedsSaving for newly created entity and not for loaded entity
-        status = !undo || undo.prev && !undo.prev.enabled ? EditedEntityState.Saved : EditedEntityState.NeedsSaving
+        // DONE: update status to NeedsSaving for newly created entity and not for loaded entity
+        status =
+          ent.alreadySaved && (!undo || undo.prev && !undo.prev.enabled)
+            ? EditedEntityState.Saved
+            : EditedEntityState.NeedsSaving
 
         //debug("no error:", status, n, ent, errors, property.qname, index)
         if (ent.state != status) {
