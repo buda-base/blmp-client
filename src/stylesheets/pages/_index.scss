@@ -875,6 +875,9 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 }
 
+.innerNav + div > .group.hasError > section.album > * > div > p svg { width:19px; color:#d73449; margin-left:8px;}
+.innerNav + div > .group-edit-BG + .group.hasError > section.album > * > div > p svg { display:none; }
+
 
 .centered-ctn { width:1225px; margin:auto; padding-left:125px; text-align:left;
   & > div { width:810px; max-width:100%; }

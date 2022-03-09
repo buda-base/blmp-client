@@ -4,6 +4,7 @@ import { RDFResource, Subject, errors } from "../../../helpers/rdf/types"
 import { PropertyGroup, PropertyShape } from "../../../helpers/rdf/shapes"
 import { uiLangState, uiEditState, uiNavState, uiGroupState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
+import { ErrorIcon } from "../../../routes/layout/icons"
 import { atom, useRecoilState } from "recoil"
 import { OtherButton } from "./ValueList"
 import i18n from "i18next"
@@ -26,8 +27,16 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
     withoutDisplayPriority: PropertyShape[] = []
   //let isSimplePriority = false
   const errorKeys = Object.keys(errors[subject.qname] ? errors[subject.qname] : {})
+  let hasError = false
   group.properties.map((property) => {
-    //debug("map:",property.qname,property,errorKeys)
+    //debug("target:",property.qname,property.targetShape?.properties)
+    if (
+      !hasError && errorKeys.some((k) => k.includes(property.qname)) ||
+      property.targetShape?.properties.some((p) => errorKeys.some((k) => k.includes(p.qname)))
+    ) {
+      //debug("group with error:",group.qname,property.qname)
+      hasError = true
+    }
     if (
       property.displayPriority &&
       property.displayPriority >= 1
@@ -58,7 +67,12 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
 
   return (
     <Waypoint scrollableAncestor={window} onEnter={() => setNav(group.qname)} topOffset={500} bottomOffset={500}>
-      <div role="main" className="group" id={group.qname} style={{ scrollMargin: "90px" }}>
+      <div
+        role="main"
+        className={"group " + (hasError ? "hasError" : "")}
+        id={group.qname}
+        style={{ scrollMargin: "90px" }}
+      >
         <section className="album">
           <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
             <div
@@ -71,7 +85,10 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
                 setGroupEd(group.qname)
               }}
             >
-              <p className="">{label}</p>
+              <p className="">
+                {label}
+                {hasError && <ErrorIcon />}
+              </p>
               {
                 //groupEd === group.qname && ( // WIP, good idea but breaks undo initialization
                 <>
