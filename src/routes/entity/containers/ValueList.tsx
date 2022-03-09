@@ -502,6 +502,7 @@ const ValueList: FC<{
             editable={editable}
             {...(owner ? { owner } : {})}
             title={titleCase(propLabel)}
+            updateEntityState={updateEntityState}
           />
         )
       else {
@@ -1603,7 +1604,8 @@ const ExtEntityComponent: FC<{
   editable: boolean
   owner?: Subject
   title: string
-}> = ({ extRes, subject, property, canDel, onChange, idx, exists, editable, owner, title }) => {
+  updateEntityState: (es: EditedEntityState) => void
+}> = ({ extRes, subject, property, canDel, onChange, idx, exists, editable, owner, title, updateEntityState }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === extRes)
@@ -1618,6 +1620,24 @@ const ExtEntityComponent: FC<{
     }
     setList(newList)
   }
+
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    let newError
+    const nonEmptyList = list.filter((e) => e.uri !== "tmp:uri")
+    if (property.minCount && nonEmptyList.length < property.minCount) {
+      newError = i18n.t("error.minC", { count: property.minCount })
+    } else if (property.maxCount && nonEmptyList.length > property.maxCount) {
+      newError = i18n.t("error.maxC", { count: property.maxCount })
+    } else newError = ""
+
+    //debug("nE?e",property.qname,newError,error)
+    //debug("minC?",newError,nonEmptyList.length,property.minCount,property.maxCount)
+
+    setError(newError)
+    updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, property.qname)
+  }, [list])
 
   //, ...extRes.uri === "tmp:uri" ? { /*width: "100%"*/ } : {} }}>
   return (
@@ -1650,6 +1670,8 @@ const ExtEntityComponent: FC<{
           editable={editable}
           {...(owner ? { owner } : {})}
           title={title}
+          globalError={error}
+          updateEntityState={updateEntityState}
         />
         {extRes.uri !== "tmp:uri" && (
           <button className={"btn btn-link ml-2 px-0"} onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>

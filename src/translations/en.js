@@ -44,6 +44,8 @@ const enTranslations = {
     exist: "Entity {{id}} does not exist",
     shape: "Cannot find any appropriate shape for entity {{id}}",
     redirect: "Create new or load another entity",
+    minC: "at least {{count}} value must be provided",
+    maxC: "at most {{count}} value can be provided",
   },
   general: {
     add_another: "Add {{val}}",

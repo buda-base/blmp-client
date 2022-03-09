@@ -69,7 +69,9 @@ const ResourceSelector: FC<{
   editable: boolean
   owner?: Subject
   title: string
-}> = ({ value, onChange, property, idx, exists, subject, editable, owner, title }) => {
+  globalError: string
+  updateEntityState: (es: EditedEntityState) => void
+}> = ({ value, onChange, property, idx, exists, subject, editable, owner, title, globalError, updateEntityState }) => {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
@@ -77,12 +79,17 @@ const ResourceSelector: FC<{
   const [libraryURL, setLibraryURL] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
-  const [error, setError] = useState("")
+  const [error, setError] = useState()
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const history = useHistory()
   const msgId = subject.qname + property.qname + idx
   const [popupNew, setPopupNew] = useState(false)
   const [tab, setTab] = useRecoilState(uiTabState)
+
+  debug("gE:", error, globalError)
+  useEffect(() => {
+    if (globalError && !error) setError(globalError)
+  }, [globalError])
 
   if (!property.expectedObjectTypes) {
     debug(property)
@@ -306,7 +313,7 @@ const ResourceSelector: FC<{
   return (
     <React.Fragment>
       <div
-        className="resSelect"
+        className={"resSelect " + (error ? "error" : "")}
         style={{ position: "relative", ...value.uri === "tmp:uri" ? { width: "100%" } : {} }}
       >
         {value.uri === "tmp:uri" && (
@@ -338,8 +345,8 @@ const ResourceSelector: FC<{
                   ? {
                       helperText: (
                         <React.Fragment>
-                          {label} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                          <br />
+                          {/*label*/} <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                          {/* <br /> */}
                           <i>{error}</i>
                         </React.Fragment>
                       ),
@@ -358,6 +365,7 @@ const ResourceSelector: FC<{
                 }}
                 {...(keyword.startsWith("bdr:") ? { disabled: true } : { disabled: false })}
                 editable={editable}
+                error={error}
               />
               {property.expectedObjectTypes?.length > 1 && (
                 <TextField
@@ -369,6 +377,12 @@ const ResourceSelector: FC<{
                   label="Type"
                   {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
                   {...(!editable ? { disabled: true } : {})}
+                  {...(error
+                    ? {
+                        helperText: <br />,
+                        error: true,
+                      }
+                    : {})}
                   // TODO we need some prefLabels for types here (ontology? i18n?)
                 >
                   {property.expectedObjectTypes?.map((r) => (
