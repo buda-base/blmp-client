@@ -268,7 +268,7 @@ function EntityEditContainer(props: AppProps) {
   }
   */
 
-  const shapeLabel = lang.ValueByLangToStrPrefLang(shape.prefLabels, uiLang)
+  const shapeLabel = lang.ValueByLangToStrPrefLang(shape.targetClassPrefLabels, uiLang)
   //const entityLabel = lang.ValueByLangToStrPrefLang(entity.prefLabels, uiLang)
 
   const checkPushNameAsPrefLabel = (e, currentGroupName) => {
