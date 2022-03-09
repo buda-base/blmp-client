@@ -86,7 +86,9 @@ const ResourceSelector: FC<{
   const [popupNew, setPopupNew] = useState(false)
   const [tab, setTab] = useRecoilState(uiTabState)
 
-  debug("gE:", error, globalError)
+  const isRid = keyword.startsWith("bdr:") || keyword.match(/^([cpgwrti]|mw|wa|ws|ut|ie|pr)(\d|eap)[^ ]*$/i)
+
+  //debug("gE:", error, globalError)
   useEffect(() => {
     if (globalError && !error) setError(globalError)
   }, [globalError])
@@ -186,9 +188,11 @@ const ResourceSelector: FC<{
     if (ev && libraryURL) {
       setLibraryURL("")
     } else if (msgId) {
-      if (keyword.startsWith("bdr:")) {
+      if (isRid) {
         // TODO: return dates in library
-        setLibraryURL(config.LIBRARY_URL + "/simple/" + keyword + "?for=" + msgId)
+        setLibraryURL(
+          config.LIBRARY_URL + "/simple/" + (!keyword.startsWith("bdr:") ? "bdr:" : "") + keyword + "?for=" + msgId
+        )
       } else {
         let lang = language
         if (newlang) lang = newlang
@@ -305,9 +309,7 @@ const ResourceSelector: FC<{
   const inputRef = useRef<HTMLInputElement>()
   const [withPreview, setWithPreview] = useState(false)
   useLayoutEffect(() => {
-    setWithPreview(
-      language === "bo-x-ewts" && keyword && !keyword.startsWith("bdr:") && document.activeElement === inputRef.current
-    )
+    setWithPreview(language === "bo-x-ewts" && keyword && !isRid && document.activeElement === inputRef.current)
   })
 
   return (
@@ -331,7 +333,7 @@ const ResourceSelector: FC<{
                 onKeyPress={(e) => {
                   if (e.key === "Enter") onClick(e)
                 }}
-                onFocus={() => setWithPreview(language === "bo-x-ewts" && keyword && !keyword.startsWith("bdr:"))}
+                onFocus={() => setWithPreview(language === "bo-x-ewts" && keyword && !isRid)}
                 onBlur={() => setWithPreview(false)}
                 inputRef={inputRef}
                 //className={classes.root}
@@ -363,7 +365,7 @@ const ResourceSelector: FC<{
                   debug(lang)
                   if (libraryURL) updateLibrary(undefined, lang)
                 }}
-                {...(keyword.startsWith("bdr:") ? { disabled: true } : { disabled: false })}
+                {...(isRid ? { disabled: true } : { disabled: false })}
                 editable={editable}
                 error={error}
               />
@@ -375,7 +377,7 @@ const ResourceSelector: FC<{
                   className={"mx-2"}
                   onChange={textOnChangeType}
                   label="Type"
-                  {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
+                  {...(isRid ? { disabled: true } : {})}
                   {...(!editable ? { disabled: true } : {})}
                   {...(error
                     ? {
@@ -393,7 +395,7 @@ const ResourceSelector: FC<{
                 </TextField>
               )}
               <button
-                {...(!keyword || !keyword.startsWith("bdr:") && (!language || !type) ? { disabled: true } : {})}
+                {...(!keyword || !isRid && (!language || !type) ? { disabled: true } : {})}
                 className="btn btn-sm btn-outline-primary ml-2 lookup btn-rouge"
                 style={{ boxShadow: "none", alignSelf: "center", padding: "5px 4px 4px 4px" }}
                 onClick={onClick}
@@ -404,7 +406,7 @@ const ResourceSelector: FC<{
               <button
                 className="btn btn-sm btn-outline-primary py-3 ml-2 dots btn-rouge"
                 style={{ boxShadow: "none", alignSelf: "center" }}
-                {...(keyword.startsWith("bdr:") ? { disabled: true } : {})}
+                {...(isRid ? { disabled: true } : {})}
                 onClick={togglePopup}
                 {...(!editable ? { disabled: true } : {})}
               >
