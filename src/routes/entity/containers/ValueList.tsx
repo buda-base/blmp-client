@@ -232,7 +232,7 @@ const ValueList: FC<{
     if (n > -1) {
       const ent: Entity = entities[n]
       if (status === EditedEntityState.Error) {
-        debug("error:", errors, status, n, ent, property.qname, id)
+        //debug("error:", errors, status, n, ent, property.qname, id)
         if (ent.state != status) {
           const newEntities = [...entities]
           newEntities[n] = { ...entities[n], state: status }
@@ -247,11 +247,11 @@ const ValueList: FC<{
             ? EditedEntityState.Saved
             : EditedEntityState.NeedsSaving
 
-        debug("no error:", status, n, ent, errors, property.qname, id)
+        //debug("no error:", status, n, ent, errors, property.qname, id)
         if (ent.state != status) {
-          debug("status:", ent.state, status)
+          //debug("status:", ent.state, status)
           if (removingFacet) {
-            debug("rf:", id)
+            //debug("rf:", id)
             if (errors[ent.subjectQname]) {
               const keys = Object.keys(errors[ent.subjectQname])
               for (const k of keys) {
