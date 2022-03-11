@@ -202,10 +202,13 @@ function BottomBar(props: AppProps) {
             const temp = window.URL.createObjectURL(new Blob([response.data]))
             const link = document.createElement("a")
             link.href = temp
-            link.setAttribute(
-              "download",
-              "ScanRequest-" + entityQname.replace(/^bdr:/, "") + "-" + nbVolumes + "vol.zip"
-            )
+            let filename = "scan-dirs-" + entitySubj.lname + ".zip"
+            const header = response.headers["content-disposition"]
+            if (header) {
+              const parts = header!.split(";")
+              filename = parts[1].split("=")[1]
+            }
+            link.setAttribute("download", filename)
             link.click()
             window.URL.revokeObjectURL(link)
 
