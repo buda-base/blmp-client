@@ -3,7 +3,15 @@ import React, { useState, useEffect } from "react"
 import { withRouter } from "react-router"
 import { Link } from "react-router-dom"
 import { FiPower as LogoutIcon } from "react-icons/fi"
-import { InputLabel, Select, MenuItem, Checkbox, FormGroup, FormControlLabel } from "@material-ui/core"
+import {
+  InputLabel,
+  Select,
+  MenuItem,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
+  CircularProgress,
+} from "@material-ui/core"
 import i18n from "i18next"
 import { useRecoilState, useRecoilValue, selectorFamily } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
@@ -135,6 +143,7 @@ function BottomBar(props: AppProps) {
   const shapeQname = entities[entity]?.shapeRef?.qname ? entities[entity]?.shapeRef?.qname : entities[entity]?.shapeRef
   const [error, setError] = useState("")
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
+  const [spinner, setSpinner] = useState(false)
 
   const isUserProfile = userId === entities[entity]?.subjectQname
 
@@ -184,6 +193,7 @@ function BottomBar(props: AppProps) {
       } else {
         const entityQname = entitySubj.qname
 
+        setSpinner(true)
         await axios
           .request({
             method: "get",
@@ -231,6 +241,7 @@ function BottomBar(props: AppProps) {
             debug("error:", error.message)
             setError(error.message)
           })
+        setSpinner(false)
       }
     } else {
       save()
@@ -279,7 +290,8 @@ function BottomBar(props: AppProps) {
         : config.API_BASEURL + entities[entity]?.subjectQname + "/focusgraph"
       try {
         const idTokenF = await auth0.getIdTokenClaims()
-        // TODO: not sure how to proceed with user profile?
+
+        setSpinner(true)
         const loadRes = await putTtl(
           url,
           store,
@@ -289,6 +301,7 @@ function BottomBar(props: AppProps) {
           entities[entity]?.alreadySaved
         )
         alreadySaved = loadRes // let's store Etag here
+        setSpinner(false)
 
         // TODO: save etag without doing everything twice? see above
         const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
@@ -341,11 +354,8 @@ function BottomBar(props: AppProps) {
   }
 
   const disabled =
-    (entities[entity] &&
-      [EditedEntityState.Saved, EditedEntityState.NotLoaded, EditedEntityState.Loading].includes(
-        entities[entity].state
-      )) ||
-    (message === "" && saving && !isUserProfile)
+    entities[entity] &&
+    [EditedEntityState.Saved, EditedEntityState.NotLoaded, EditedEntityState.Loading].includes(entities[entity].state)
 
   return (
     <nav className="bottom navbar navbar-dark navbar-expand-md">
@@ -420,7 +430,7 @@ function BottomBar(props: AppProps) {
             variant="outlined"
             onClick={() => save(true)}
             className={"btn-rouge mr-2"}
-            {...(disabled ? { disabled: true } : {})}
+            {...(disabled || spinner ? { disabled: true } : {})}
           >
             {"Save"}
           </Button>
@@ -429,17 +439,24 @@ function BottomBar(props: AppProps) {
           variant="outlined"
           onClick={isIInstance ? (willGen || disabled ? generate : () => save(!willGen)) : save}
           className="btn-rouge"
+          {...(spinner || (message === "" && saving && !isUserProfile) ? { disabled: true } : {})}
           //{...(isIInstance && gen && !nbVolumes ? { disabled: true } : {})}
         >
-          {saving
-            ? "Ok"
-            : !isIInstance
-            ? "Save"
-            : disabled
-            ? gen
-              ? "Generate scan request"
-              : "Scan Request"
-            : "Save & Scan Request"}
+          {spinner ? (
+            <CircularProgress size="14px" color="white" />
+          ) : saving ? (
+            "Ok"
+          ) : !isIInstance ? (
+            "Save"
+          ) : disabled ? (
+            gen ? (
+              "Generate scan request"
+            ) : (
+              "Scan Request"
+            )
+          ) : (
+            "Save & Scan Request"
+          )}
         </Button>
         {(saving || gen) && (
           <Button
