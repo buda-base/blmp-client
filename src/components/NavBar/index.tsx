@@ -125,6 +125,7 @@ function BottomBar(props: AppProps) {
   const [lang, setLang] = useState(uiLang)
   const [saving, setSaving] = useState(false)
   const [gen, setGen] = useState(false)
+  const [willGen, setWillGen] = useState(true)
   const [popupOn, setPopupOn] = useState(false)
   const [userId, setUserId] = useRecoilState(userIdState)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
@@ -153,7 +154,7 @@ function BottomBar(props: AppProps) {
     setLang(uiLang)
   }, [uiLang])
 
-  debug("bottombar:", errors, isUserProfile, userId, entitySubj, shapeQname, entities[entity])
+  //debug("bottombar:", errors, isUserProfile, userId, entitySubj, shapeQname, entities[entity])
 
   const delay = 300
   const closePopup = (delay1 = delay, delay2 = delay) => {
@@ -170,12 +171,13 @@ function BottomBar(props: AppProps) {
   }
 
   const generate = async (): Promise<undefined> => {
-    debug("gen:", entities[entity])
+    //debug("gen:", entities[entity])
 
     if (disabled) {
       if (!gen) {
         setPopupOn(true)
         setGen(true)
+        setWillGen(true)
       } else {
         const entityQname = entitySubj.qname
 
@@ -230,8 +232,8 @@ function BottomBar(props: AppProps) {
     }
   }
 
-  const save = async (): Promise<undefined> => {
-    //debug("save:",entities[entity])
+  const save = async (onlySave = false): Promise<undefined> => {
+    //debug("save:",onlySave,entities[entity])
 
     if (entities[entity].state === EditedEntityState.Error && (!saving || isUserProfile)) {
       if (!window.confirm("errors are detected in this entity, save anyway?")) return
@@ -240,6 +242,7 @@ function BottomBar(props: AppProps) {
     if (!saving && !isUserProfile) {
       setPopupOn(true)
       setSaving(true)
+      setWillGen(!onlySave)
       return
     }
 
@@ -302,10 +305,15 @@ function BottomBar(props: AppProps) {
     history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])
     history[entityUri].push({ "tmp:allValuesLoaded": true })
 
-    if (!isIInstance) closePopup()
-    else {
-      setSaving(false)
-      setGen(true)
+    if (!isIInstance) {
+      closePopup()
+    } else {
+      if (!onlySave) {
+        setSaving(false)
+        setGen(true)
+      } else {
+        closePopup()
+      }
     }
 
     if (isUserProfile) setReloadProfile(true)
@@ -402,7 +410,7 @@ function BottomBar(props: AppProps) {
         {isIInstance && !saving && !gen && (
           <Button
             variant="outlined"
-            onClick={save}
+            onClick={() => save(true)}
             className={"btn-rouge mr-2"}
             {...(disabled ? { disabled: true } : {})}
           >
@@ -411,9 +419,9 @@ function BottomBar(props: AppProps) {
         )}
         <Button
           variant="outlined"
-          onClick={isIInstance ? generate : save}
+          onClick={isIInstance ? (willGen || disabled ? generate : () => save(!willGen)) : save}
           className="btn-rouge"
-          {...(disabled && (!isIInstance || (gen && !nbVolumes)) ? { disabled: true } : {})}
+          {...(isIInstance && gen && !nbVolumes ? { disabled: true } : {})}
         >
           {saving
             ? "Ok"
