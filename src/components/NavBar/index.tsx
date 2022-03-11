@@ -21,6 +21,7 @@ import {
   uiLitLangState,
   uiTabState,
   userIdState,
+  RIDprefixState,
 } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import * as ns from "../../helpers/rdf/ns"
@@ -121,7 +122,7 @@ function BottomBar(props: AppProps) {
   const auth0 = useAuth0()
   const [message, setMessage] = useState("")
   const [nbVolumes, setNbVolumes] = useState("")
-  const [onlySync, setOnlySync] = useState(false)
+  const [onlyNSync, setOnlyNSync] = useState(false)
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [lang, setLang] = useState(uiLang)
   const [saving, setSaving] = useState(false)
@@ -133,6 +134,7 @@ function BottomBar(props: AppProps) {
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
   const shapeQname = entities[entity]?.shapeRef?.qname ? entities[entity]?.shapeRef?.qname : entities[entity]?.shapeRef
   const [error, setError] = useState("")
+  const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
   const isUserProfile = userId === entities[entity]?.subjectQname
 
@@ -188,7 +190,7 @@ function BottomBar(props: AppProps) {
             responseType: "blob",
             timeout: 4000,
             baseURL: config.API_BASEURL,
-            url: entityQname + "/scanrequest?addVolumes=" + nbVolumes,
+            url: entityQname + "/scanrequest?IDPrefix=" + RIDprefix + (onlyNSync ? "&onlynonsync=true" : ""),
             //url: "resource-nc/user/me", // to test file download
             headers: {
               Authorization: `Bearer ${idToken}`,
@@ -208,6 +210,8 @@ function BottomBar(props: AppProps) {
               const parts = header!.split(";")
               filename = parts[1].split("=")[1]
             }
+            filename = filename.replace(/^"|"$/g, "")
+            //debug("filename:",filename)
             link.setAttribute("download", filename)
             link.click()
             window.URL.revokeObjectURL(link)
@@ -332,8 +336,8 @@ function BottomBar(props: AppProps) {
     setNbVolumes(event.target.value as string)
   }
 
-  const onOnlySyncChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setOnlySync(event.target.value as boolean)
+  const onOnlyNSyncChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setOnlyNSync(event.target.value as boolean)
   }
 
   const disabled =
@@ -356,8 +360,8 @@ function BottomBar(props: AppProps) {
                 control={
                   <Checkbox
                     type="checkbox"
-                    value={onlySync}
-                    onChange={onOnlySyncChangeHandler}
+                    value={onlyNSync}
+                    onChange={onOnlyNSyncChangeHandler}
                     //InputProps={{ inputProps: { min: 0, max: 999 } }}
                     //InputLabelProps={{ shrink: true }}
                     //style={{ minWidth: 275 }}
