@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react"
 import { withRouter } from "react-router"
 import { Link } from "react-router-dom"
 import { FiPower as LogoutIcon } from "react-icons/fi"
-import { InputLabel, Select, MenuItem } from "@material-ui/core"
+import { InputLabel, Select, MenuItem, Checkbox, FormGroup, FormControlLabel } from "@material-ui/core"
 import i18n from "i18next"
 import { useRecoilState, useRecoilValue, selectorFamily } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
@@ -121,6 +121,7 @@ function BottomBar(props: AppProps) {
   const auth0 = useAuth0()
   const [message, setMessage] = useState("")
   const [nbVolumes, setNbVolumes] = useState("")
+  const [onlySync, setOnlySync] = useState(false)
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [lang, setLang] = useState(uiLang)
   const [saving, setSaving] = useState(false)
@@ -328,6 +329,10 @@ function BottomBar(props: AppProps) {
     setNbVolumes(event.target.value as string)
   }
 
+  const onOnlySyncChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setOnlySync(event.target.value as boolean)
+  }
+
   const disabled =
     (entities[entity] &&
       [EditedEntityState.Saved, EditedEntityState.NotLoaded, EditedEntityState.Loading].includes(
@@ -342,28 +347,27 @@ function BottomBar(props: AppProps) {
       <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "")}>
         <div>
           {gen && isIInstance && (
-            <>
-              <TextField
-                label={"Number of volumes to add"}
-                type="number"
-                value={nbVolumes}
-                onChange={onNbVolumesChangeHandler}
-                InputProps={{ inputProps: { min: 0, max: 999 } }}
-                InputLabelProps={{ shrink: true }}
-                style={{ minWidth: 275 }}
-                {...(error
-                  ? {
-                      helperText: (
-                        <React.Fragment>
-                          <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                          <i>{error}</i>
-                        </React.Fragment>
-                      ),
-                      error: true,
-                    }
-                  : {})}
+            <FormGroup>
+              <FormControlLabel
+                label={"only non-synced volumes"}
+                control={
+                  <Checkbox
+                    type="checkbox"
+                    value={onlySync}
+                    onChange={onOnlySyncChangeHandler}
+                    //InputProps={{ inputProps: { min: 0, max: 999 } }}
+                    //InputLabelProps={{ shrink: true }}
+                    //style={{ minWidth: 275 }}
+                  />
+                }
               />
-            </>
+              {error && (
+                <FormHelperText style={{ color: "#d73449" }}>
+                  <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                  <i>{error}</i>
+                </FormHelperText>
+              )}
+            </FormGroup>
           )}
           {saving && !isUserProfile && (
             <>
@@ -418,7 +422,7 @@ function BottomBar(props: AppProps) {
           variant="outlined"
           onClick={isIInstance ? (willGen || disabled ? generate : () => save(!willGen)) : save}
           className="btn-rouge"
-          {...(isIInstance && gen && !nbVolumes ? { disabled: true } : {})}
+          //{...(isIInstance && gen && !nbVolumes ? { disabled: true } : {})}
         >
           {saving
             ? "Ok"
