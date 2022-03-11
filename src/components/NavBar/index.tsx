@@ -178,6 +178,7 @@ function BottomBar(props: AppProps) {
         setGen(false)
         setNbVolumes("")
         setError("")
+        setSpinner(false)
       }, delay2)
     }, delay1)
   }
@@ -240,6 +241,7 @@ function BottomBar(props: AppProps) {
           .catch(function (error) {
             debug("error:", error.message)
             setError(error.message)
+            setSpinner(false)
           })
         setSpinner(false)
       }
@@ -312,6 +314,7 @@ function BottomBar(props: AppProps) {
         // TODO: better error handling
         debug("error:", error)
         setError(error.message ? error.message : error)
+        setSpinner(false)
 
         return
       }
