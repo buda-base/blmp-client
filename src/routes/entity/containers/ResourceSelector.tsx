@@ -103,24 +103,28 @@ const ResourceSelector: FC<{
   const closeFrame = () => {
     if (iframeRef.current && isRid) {
       debug("if:", iframeRef.current)
+      iframeRef.current.click()
+      const wn = iframeRef.current.contentWindow
+      wn.postMessage("click", "*") //https://editor.bdrc.io/")
+      /*
       try {
-        const iWindow = iframeRef.current.contentWindow
         const iDocument = iWindow.document
         const elem = iDocument.getElementByClassName("resource simple")
         elem.click()
       } catch (e) {
         debug("does not work on localhost, you must click in iframe", e.message)
       }
+      */
     } else {
       if (libraryURL) setLibraryURL("")
     }
   }
 
-  debug("ext:", value.qname)
+  //debug("ext:", value.qname)
 
   let updateRes, msgHandler
   useEffect(() => {
-    debug("url:", libraryURL)
+    //debug("url:", libraryURL)
 
     updateRes = (data: messagePayload) => {
       let isTypeOk = false,
