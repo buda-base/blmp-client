@@ -1274,7 +1274,7 @@ const EditInt: FC<{
   let value = lit.value
   if (dt && dt.value == xsdgYear) {
     // don't display the leading 0
-    debug("val?", value, lit)
+    //debug("val?", value, lit)
     value = value.replace(/^(-?)0+/, "$1")
   }
 

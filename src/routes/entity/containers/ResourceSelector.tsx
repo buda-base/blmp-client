@@ -85,6 +85,7 @@ const ResourceSelector: FC<{
   const msgId = subject.qname + property.qname + idx
   const [popupNew, setPopupNew] = useState(false)
   const [tab, setTab] = useRecoilState(uiTabState)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
   const isRid = keyword.startsWith("bdr:") || keyword.match(/^([cpgwrti]|mw|wa|ws|ut|ie|pr)(\d|eap)[^ ]*$/i)
 
@@ -100,87 +101,124 @@ const ResourceSelector: FC<{
 
   // TODO close iframe when clicking anywhere else
   const closeFrame = () => {
-    if (libraryURL) setLibraryURL("")
-  }
-
-  const updateRes = (data: messagePayload) => {
-    let isTypeOk = false,
-      actual,
-      allow
-    if (property.expectedObjectTypes) {
-      allow = property.expectedObjectTypes.map((t) => t.qname)
-      if (!Array.isArray(allow)) allow = [allow]
-      actual = data["tmp:otherData"]["tmp:type"]
-      if (!Array.isArray(actual)) actual = [actual]
-      if (actual.filter((t) => allow.includes(t)).length) isTypeOk = true
-      //debug("typeOk",isTypeOk,actual,allow)
-      const displayTypes = (t: string[]) =>
-        t
-          .filter((a) => a)
-          .map((a) => a.replace(/^bdo:/, ""))
-          .join(", ") // TODO: translation (ontology?)
-      if (!isTypeOk) setError("Has type: " + displayTypes(actual) + "; but should have one of: " + displayTypes(allow))
-    }
-
-    if (isTypeOk) {
-      if (data["@id"] && !exists(data["@id"])) {
-        const newRes = new ExtRDFResourceWithLabel(
-          data["@id"].replace(/bdr:/, ns.BDR_uri),
-          {
-            ...data["skos:prefLabel"]
-              ? {
-                  ...data["skos:prefLabel"].reduce(
-                    (acc: Record<string, string>, l: valueLang) => ({ ...acc, [l["@language"]]: l["@value"] }),
-                    {}
-                  ),
-                }
-              : {},
-          },
-          { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
-        )
-        onChange(newRes, idx, false)
-      } else if (isTypeOk) {
-        // TODO translation with i18n
-        if (data["@id"]) setError(data["@id"] + " already selected")
-        else throw "no '@id' field in data"
+    if (iframeRef.current && isRid) {
+      debug("if:", iframeRef.current)
+      try {
+        const iWindow = iframeRef.current.contentWindow
+        const iDocument = iWindow.document
+        const elem = iDocument.getElementByClassName("resource simple")
+        elem.click()
+      } catch (e) {
+        debug("does not work on localhost, you must click in iframe", e.message)
       }
+    } else {
+      if (libraryURL) setLibraryURL("")
     }
-    setLibraryURL("")
   }
 
-  // DONE: allow listeners for multiple properties
-  const msgHandler = (ev: MessageEvent) => {
-    try {
-      if (!window.location.href.includes(ev.origin)) {
-        //debug("message: ", ev, value, JSON.stringify(value))
+  debug("ext:", value.qname)
 
-        const data = JSON.parse(ev.data) as messagePayload
-        if (data["tmp:propid"] === msgId && data["@id"]) {
-          debug("received msg: %o %o", msgId, data, ev)
-          updateRes(data)
+  let updateRes, msgHandler
+  useEffect(() => {
+    debug("url:", libraryURL)
+
+    updateRes = (data: messagePayload) => {
+      let isTypeOk = false,
+        actual,
+        allow
+      if (property.expectedObjectTypes) {
+        allow = property.expectedObjectTypes.map((t) => t.qname)
+        if (!Array.isArray(allow)) allow = [allow]
+        actual = data["tmp:otherData"]["tmp:type"]
+        if (!Array.isArray(actual)) actual = [actual]
+        if (actual.filter((t) => allow.includes(t)).length) isTypeOk = true
+        //debug("typeOk",isTypeOk,actual,allow)
+        const displayTypes = (t: string[]) =>
+          t
+            .filter((a) => a)
+            .map((a) => a.replace(/^bdo:/, ""))
+            .join(", ") // TODO: translation (ontology?)
+        if (!isTypeOk)
+          setError("Has type: " + displayTypes(actual) + "; but should have one of: " + displayTypes(allow))
+      }
+
+      if (isTypeOk) {
+        if (data["@id"] && !exists(data["@id"])) {
+          const newRes = new ExtRDFResourceWithLabel(
+            data["@id"].replace(/bdr:/, ns.BDR_uri),
+            {
+              ...data["skos:prefLabel"]
+                ? {
+                    ...data["skos:prefLabel"].reduce(
+                      (acc: Record<string, string>, l: valueLang) => ({ ...acc, [l["@language"]]: l["@value"] }),
+                      {}
+                    ),
+                  }
+                : {},
+            },
+            { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
+          )
+          onChange(newRes, idx, false)
+          //debug("url?",libraryURL)
+        } else if (isTypeOk) {
+          // TODO translation with i18n
+          if (data["@id"]) setError(data["@id"] + " already selected")
+          else throw "no '@id' field in data"
+          setLibraryURL("")
         } else {
           setLibraryURL("")
         }
       }
-    } catch (err) {
-      debug("error: %o", err)
     }
-  }
 
+    if (msgHandler) window.removeEventListener("message", msgHandler, true)
+
+    msgHandler = (ev: MessageEvent) => {
+      try {
+        if (!window.location.href.includes(ev.origin)) {
+          //debug("message: ", ev, value, JSON.stringify(value))
+
+          const data = JSON.parse(ev.data) as messagePayload
+          if (data["tmp:propid"] === msgId && data["@id"]) {
+            debug("received msg: %o %o", msgId, data, ev, property.qname, libraryURL)
+            updateRes(data)
+            //debug("URL:",libraryURL)
+          } else {
+            setLibraryURL("")
+          }
+        }
+      } catch (err) {
+        debug("error: %o", err)
+      }
+    }
+
+    window.addEventListener("message", msgHandler, true)
+
+    return () => {
+      if (msgHandler) window.removeEventListener("message", msgHandler, true)
+      //document.removeEventListener("click", closeIframe)
+    }
+  }, [libraryURL])
+
+  // DONE: allow listeners for multiple properties
   useEffect(() => {
     if (value.otherData["tmp:keyword"]) {
       setKeyword(value.otherData["tmp:keyword"]["@value"])
       setLanguage(value.otherData["tmp:keyword"]["@language"])
     }
+    /*
 
+    // moved to effect on libraryURL
     window.addEventListener("message", msgHandler)
+
     //document.addEventListener("click", closeIframe)
 
     // clean up
     return () => {
-      window.removeEventListener("message", msgHandler)
+      if(msgHandler) window.removeEventListener("message", msgHandler, true)
       //document.removeEventListener("click", closeIframe)
     }
+    */
   }, []) // empty array => run only once
 
   const updateLibrary = (ev?: Event | React.FormEvent, newlang?: string, newtype?: string) => {
@@ -436,7 +474,7 @@ const ResourceSelector: FC<{
                   onClick={() => {
                     if (libraryURL) setLibraryURL("")
                     else if (value.otherData["tmp:externalUrl"]) setLibraryURL(value.otherData["tmp:externalUrl"])
-                    else setLibraryURL(config.LIBRARY_URL + "/simple/" + value.qname)
+                    else setLibraryURL(config.LIBRARY_URL + "/simple/" + value.qname + "?view=true")
                   }}
                 >
                   {!libraryURL && <InfoOutlinedIcon style={{ width: "18px", cursor: "pointer" }} />}
@@ -511,7 +549,7 @@ const ResourceSelector: FC<{
               : {},
           }}
         >
-          <iframe style={{ border: "none" }} height="400" src={libraryURL} />
+          <iframe style={{ border: "none" }} height="400" src={libraryURL} ref={iframeRef} />
           <div className="iframe-BG" onClick={closeFrame}></div>
         </div>
       )}
