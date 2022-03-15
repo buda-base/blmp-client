@@ -308,13 +308,16 @@ const ValueList: FC<{
   }
 
   // DONE prevent adding same resource twice
-  const exists: (uri: string) => boolean = (uri: string): boolean => {
-    for (const val of list) {
-      if (val instanceof RDFResourceWithLabel && (val.qname === uri || val.uri === uri)) return true
+  let exists: (uri: string) => boolean = () => false
+  useEffect(() => {
+    exists = (uri: string): boolean => {
+      for (const val of list) {
+        if (val instanceof RDFResourceWithLabel && (val.qname === uri || val.uri === uri)) return true
+      }
+      //debug("not found "+uri+" in ",list)
+      return false
     }
-    //debug("not found "+uri+" in ",list)
-    return false
-  }
+  }, [list])
 
   let firstValueIsEmptyField = true
 
