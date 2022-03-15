@@ -220,7 +220,8 @@ const ValueList: FC<{
   )
   let list = unsortedList
   if (orderedList.length) list = orderedList
-  //debug("vL:", list, collec)
+
+  //debug("vL:", property.qname, list)
 
   const updateEntityState = (status: EditedEntityState, id: string, removingFacet = false) => {
     if (id === undefined) throw new Error("id undefined")
@@ -796,6 +797,8 @@ const EditLangString: FC<{
   if (!prefLabelAtom) prefLabelAtom = initListAtom
   const [prefLabels, setPrefLabels] = useRecoilState(prefLabelAtom)
 
+  const [uiLang] = useRecoilState(uiLangState)
+
   const pushAsPrefLabel = () => {
     //debug("pL:",prefLabels,lit)
     let newPrefLabels = [],
@@ -968,7 +971,7 @@ const EditLangString: FC<{
   )
 }
 
-export const humanizeEDTF = (obj, str, debug = false) => {
+export const humanizeEDTF = (obj, str, locale = "en-US", dbg = false) => {
   if (!obj) return ""
 
   const conc = (values, sepa) => {
@@ -981,7 +984,7 @@ export const humanizeEDTF = (obj, str, debug = false) => {
   }
 
   // just output EDTF object
-  if (debug /*|| true*/) return JSON.stringify(obj, null, 3)
+  if (dbg /*|| true*/) return JSON.stringify(obj, null, 3)
 
   if (obj.type === "Set") return conc(obj.values, "or")
   else if (obj.type === "List") return conc(obj.values, "and")
@@ -990,17 +993,29 @@ export const humanizeEDTF = (obj, str, debug = false) => {
   else if (obj.type === "Interval") return "between " + conc(obj.values, "and")
   else if (obj.approximate) {
     if (obj.type === "Century") return "circa " + (Number(obj.values[0]) + 1) + "th c."
-    return "circa " + humanizeEDTF({ ...obj, approximate: false })
+    return "circa " + humanizeEDTF({ ...obj, approximate: false }, str, locale, dbg)
   } else if (obj.uncertain) {
     if (obj.type === "Century") return Number(obj.values[0]) + 1 + "th c. ?"
-    return humanizeEDTF({ ...obj, uncertain: false }) + "?"
+    return humanizeEDTF({ ...obj, uncertain: false }, str, locale, dbg) + "?"
   } else if (obj.unspecified === 12) return obj.values[0] / 100 + 1 + "th c."
   else if (obj.type === "Century") return Number(obj.values[0]) + 1 + "th c."
   else if (obj.unspecified === 8) return obj.values[0] + "s"
   else if (obj.type === "Decade") return obj.values[0] + "0s"
-  else if (!obj.unspecified) return obj.values[0]
-  // to be continued?
-  else return str
+  else if (!obj.unspecified && obj.values.length === 1) return obj.values[0]
+  else if (!obj.unspecified && obj.values.length === 3) {
+    try {
+      const event = new Date(Date.UTC(obj.values[0], obj.values[1], obj.values[2], 0, 0, 0))
+      const options = { year: "numeric", month: "numeric", day: "numeric" }
+      const val = event.toLocaleDateString(locale, options)
+      //debug("val:",locale,val)
+      return val
+    } catch (e) {
+      debug("locale error:", e, str, obj)
+    }
+    return str
+  } else {
+    return str
+  }
 }
 
 export const LangSelect: FC<{
@@ -1092,51 +1107,59 @@ const EditString: FC<{
     return err
   }
 
-  let timerEdtf = 0
-  const changeCallback = (val: string) => {
-    if (val === "") {
-      setError("")
-      setReadableEDTF("")
-      updateEntityState(EditedEntityState.Saved, lit.id)
-    } else if (useEdtf) {
-      if (timerEdtf) clearTimeout(timerEdtf)
-      const delay = 350
-      timerEdtf = setTimeout(() => {
-        try {
-          const obj = parse(val)
-          const etdtObj = edtf(val)
-          //debug("edtf:",obj)
-          setError("")
-          setReadableEDTF(humanizeEDTF(obj, val))
-          setEDTFtoOtherFields({ lit, val, obj })
-          updateEntityState(EditedEntityState.Saved, lit.id)
-        } catch (e) {
-          //debug("EDTF error:",e.message)
-          setReadableEDTF("")
-          setError(
-            <>
-              This field must be in EDTF format, see&nbsp;
-              <a href="https://www.loc.gov/standards/datetime/" rel="noopener noreferrer" target="_blank">
-                https://www.loc.gov/standards/datetime/
-              </a>
-              .
-              {!["No possible parsing", "Syntax error"].some((err) => e.message?.includes(err)) && (
-                <>
-                  <br />[{e.message}]
-                </>
-              )}
-            </>
-          )
-          updateEntityState(EditedEntityState.Error, lit.id)
-        }
-      }, delay)
-    } else {
-      const newError = getPatternError(val)
-      setError(newError)
-      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
+  const locales = { en: "en-US", "zh-hans": "zh-Hans-CN", bo: "bo-CN" }
+
+  let timerEdtf = 0,
+    changeCallback = () => false
+  useEffect(() => {
+    //debug("cCb?",uiLang,locales[uiLang])
+    changeCallback = (val: string) => {
+      //debug("change!",val)
+      if (val === "") {
+        setError("")
+        setReadableEDTF("")
+        updateEntityState(EditedEntityState.Saved, lit.id)
+      } else if (useEdtf) {
+        if (timerEdtf) clearTimeout(timerEdtf)
+        const delay = 350
+        timerEdtf = setTimeout(() => {
+          try {
+            const obj = parse(val)
+            const etdtObj = edtf(val)
+            //debug("edtf:",obj)
+            setError("")
+            setReadableEDTF(humanizeEDTF(obj, val, locales[uiLang[0]]))
+            setEDTFtoOtherFields({ lit, val, obj })
+            updateEntityState(EditedEntityState.Saved, lit.id)
+          } catch (e) {
+            debug("EDTF error:", e.message)
+            setReadableEDTF("")
+            setError(
+              <>
+                This field must be in EDTF format, see&nbsp;
+                <a href="https://www.loc.gov/standards/datetime/" rel="noopener noreferrer" target="_blank">
+                  https://www.loc.gov/standards/datetime/
+                </a>
+                .
+                {!["No possible parsing", "Syntax error"].some((err) => e.message?.includes(err)) && (
+                  <>
+                    <br />[{e.message}]
+                  </>
+                )}
+              </>
+            )
+            updateEntityState(EditedEntityState.Error, lit.id)
+          }
+        }, delay)
+      } else {
+        const newError = getPatternError(val)
+        setError(newError)
+        updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
+      }
+      onChange(lit.copyWithUpdatedValue(val))
     }
-    onChange(lit.copyWithUpdatedValue(val))
-  }
+  })
+
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <TextField
