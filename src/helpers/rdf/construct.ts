@@ -139,7 +139,7 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
       if (!unmounting.val) setEntityLoadingState({ status: "created", error: undefined })
 
       // save to localStorage
-      if (!unmounting.val) setUserLocalEntities(auth0, newSubject.qname, shapeQname, "", false, userId)
+      setUserLocalEntities(auth0, newSubject.qname, shapeQname, "", false, userId)
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }
