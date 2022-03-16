@@ -143,7 +143,7 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }
-    if (idToken /*&& RIDprefix*/) createResource(shapeQname)
+    if (idToken && RIDprefix !== null) createResource(shapeQname)
   }, [shapeQname, RIDprefix])
 
   return { entityLoadingState, entity, reset }

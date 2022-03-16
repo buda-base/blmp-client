@@ -120,7 +120,7 @@ export const reloadEntityState = atom<string>({
 
 export const RIDprefixState = atom<string>({
   key: "RIDprefixState",
-  default: "",
+  default: null,
 })
 
 export const orderedByPropSelector = selectorFamily({
