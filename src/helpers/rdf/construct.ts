@@ -71,7 +71,7 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
   const [userId, setUserId] = useRecoilState(userIdState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
-  debug("RIDp:", RIDprefix)
+  //debug("RIDp:", RIDprefix, idToken)
 
   useEffect(() => {
     return () => {
@@ -143,7 +143,7 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }
-    if (idToken && RIDprefix) createResource(shapeQname)
+    if (idToken /*&& RIDprefix*/) createResource(shapeQname)
   }, [shapeQname, RIDprefix])
 
   return { entityLoadingState, entity, reset }
