@@ -1145,7 +1145,9 @@ const EditString: FC<{
                   <>
                     <br />[{e.message}
                     <br />
-                    {e.toString()}]
+                    {e.toString()}
+                    <br />
+                    {e.stack}]
                   </>
                 )}
               </>
