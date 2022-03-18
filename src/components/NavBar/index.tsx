@@ -68,7 +68,7 @@ function NavBar(props: AppProps) {
         <img className="" src="/images/BUDA-small.svg" height="50px" alt="buda editor" />
       </Link>
       <FormControl className="ml-auto">
-        <Select labelId="uilanglabel" id="select" value={uiLang[0]} onChange={uiLangOnChange}>
+        <Select labelId="uilanglabel" id="select" value={uiLang[0].toLowerCase()} onChange={uiLangOnChange}>
           <MenuItem value="en">English</MenuItem>
           <MenuItem value="bo">བོད་ཡིག</MenuItem>
           <MenuItem value="zh-hans">中文</MenuItem>
