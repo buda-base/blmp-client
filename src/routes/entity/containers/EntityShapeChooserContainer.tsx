@@ -42,7 +42,8 @@ function EntityShapeChooserContainer(props: AppProps) {
   // here we create the entity in the list if it's not there yet:
   const entityFromList = entities.find((e) => e.subjectQname === entityQname)
   if (entityFromList && entityFromList.shapeRef) {
-    const shapeQname = entityFromList.shapeRef.qname
+    let shapeQname = entityFromList.shapeRef
+    if (shapeQname.qname) shapeQname = shapeQname.qname
     props.history.replace("/edit/" + entityQname + "/" + shapeQname)
     return (
       <div>
