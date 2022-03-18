@@ -1143,7 +1143,9 @@ const EditString: FC<{
                 .
                 {!["No possible parsing", "Syntax error"].some((err) => e.message?.includes(err)) && (
                   <>
-                    <br />[{e.message}]
+                    <br />[{e.message}
+                    <br />
+                    {e.toString()}]
                   </>
                 )}
               </>
