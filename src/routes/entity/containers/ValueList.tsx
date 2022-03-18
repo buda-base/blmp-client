@@ -1124,9 +1124,11 @@ const EditString: FC<{
         const delay = 350
         timerEdtf = setTimeout(() => {
           try {
+            debug("edtf:val", val)
             const obj = parse(val)
-            const etdtObj = edtf(val)
-            //debug("edtf:",obj)
+            debug("edtf:parse", obj)
+            const etdfObj = edtf(val)
+            debug("edtf:obj", edtfObj)
             setError("")
             setReadableEDTF(humanizeEDTF(obj, val, locales[uiLang[0]]))
             setEDTFtoOtherFields({ lit, val, obj })
