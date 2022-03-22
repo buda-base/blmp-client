@@ -2,11 +2,12 @@ import { atom, atomFamily, selectorFamily } from "recoil"
 import { FC } from "react"
 import _ from "lodash"
 
-import edtf from "edtf/dist/../index.js"
-
 import * as ns from "../helpers/rdf/ns"
 import { Value, Subject, LiteralWithId } from "../helpers/rdf/types"
 import { humanizeEDTF } from "../routes/entity/containers/ValueList"
+
+//import edtf from "edtf/dist/../index.js"
+import edtf, { parse } from "edtf" // see https://github.com/inukshuk/edtf.js/issues/36#issuecomment-1073778277
 
 const debug = require("debug")("bdrc:common")
 
@@ -221,7 +222,7 @@ export const EDTFtoOtherFieldsSelector = selectorFamily({
         if (edtfMax.values[0])
           set(atoms["bdo:notAfter"], [new LiteralWithId(String(edtfMax.values[0]), "", ns.XSD("gYear"))])
       } catch (e) {
-        debug("EDTF error:", e)
+        debug("EDTF error:", e, edtf)
       }
     }
     return

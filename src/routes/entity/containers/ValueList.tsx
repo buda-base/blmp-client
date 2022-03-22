@@ -51,7 +51,8 @@ import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/Ent
 import { fromWylie } from "jsewts"
 import MDEditor, { commands } from "@uiw/react-md-editor"
 
-import edtf, { parse } from "edtf/dist/../index.js" // finally got it to work!!
+//import edtf, { parse } from "edtf/dist/../index.js" // finally got it to work!! not in prod...
+import edtf, { parse } from "edtf" // see https://github.com/inukshuk/edtf.js/issues/36#issuecomment-1073778277
 
 const debug = require("debug")("bdrc:entity:container:ValueList")
 
@@ -1124,17 +1125,17 @@ const EditString: FC<{
         const delay = 350
         timerEdtf = setTimeout(() => {
           try {
-            debug("edtf:val", val)
+            //debug("edtf:val", val, edtf, parse)
             const obj = parse(val)
-            debug("edtf:parse", obj)
-            //const edtfObj = edtf(val)
+            //debug("edtf:parse", obj)
+            const edtfObj = edtf(val)
             //debug("edtf:obj", edtfObj)
             setError("")
             setReadableEDTF(humanizeEDTF(obj, val, locales[uiLang[0]]))
             setEDTFtoOtherFields({ lit, val, obj })
             updateEntityState(EditedEntityState.Saved, lit.id)
           } catch (e) {
-            debug("EDTF error:", e.message)
+            //debug("EDTF error:", e.message)
             setReadableEDTF("")
             setError(
               <>
@@ -1146,10 +1147,11 @@ const EditString: FC<{
                 {!["No possible parsing", "Syntax error"].some((err) => e.message?.includes(err)) && (
                   <>
                     <br />[{e.message}
-                    <br />
+                    {/* <br />
                     {e.toString()}
                     <br />
-                    {e.stack}]
+                    {e.stack} */}
+                    ]
                   </>
                 )}
               </>
