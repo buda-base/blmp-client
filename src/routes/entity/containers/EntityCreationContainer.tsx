@@ -3,7 +3,7 @@ import { ShapeFetcher } from "../../../helpers/rdf/io"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { RDFResourceWithLabel, Subject, EntityGraph } from "../../../helpers/rdf/types"
 import { entitiesAtom, EditedEntityState } from "../../../containers/EntitySelectorContainer"
-import { uiLangState } from "../../../atoms/common"
+import { uiLangState, userIdState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
@@ -16,11 +16,13 @@ import i18n from "i18next"
 const debug = require("debug")("bdrc:entity:entitycreation")
 
 function EntityCreationContainer(props: AppProps) {
-  const subjectQname = props.match.params.subjectQname
-  const propertyQname = props.match.params.propertyQname
   const shapeQname = props.match.params.shapeQname
-  const index = props.match.params.index
-  const subnodeQname = props.match.params.subnodeQname
+  // entityQname is an ID desired by the user. In that case we must:
+  // - if an entity with the same qname is already open in the editor, just redirect to it
+  // - else call EntityCreator
+  const entityQname = props.match.params.entityQname
+  const [userId, setUserId] = useRecoilState(userIdState)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const unmounting = { val: false }
   useEffect(() => {
@@ -30,29 +32,25 @@ function EntityCreationContainer(props: AppProps) {
     }
   }, [])
 
+  if (entityQname) {
+    if (!userId) {
+      return <p className="text-center text-muted">loading...</p>
+    }
+    const entityIndex = entities.findIndex((e) => e.subjectQname === entityQname)
+    if (entityIndex != -1) {
+      return <Redirect to={"/edit/" + entityQname + "/" + shapeQname} />
+    }
+  }
+
+  // TODO: if EntityCreator throws a 422 exception (the entity already exists),
+  // we must give a choice to the user:
+  //    * open the existing entity
+  //    * create an entity with a different id, in which case we call reserveLname again
   const { entityLoadingState, entity } = unmounting.val
     ? { entityLoadingState: { status: "idle" }, entity: null }
-    : EntityCreator(shapeQname, unmounting)
+    : EntityCreator(shapeQname, entityQname, unmounting)
   if (entity) {
-    if (subjectQname && propertyQname && index)
-      return (
-        <Redirect
-          to={
-            "/edit/" +
-            entity.qname +
-            "/" +
-            shapeQname +
-            "/" +
-            subjectQname +
-            "/" +
-            propertyQname +
-            "/" +
-            index +
-            (subnodeQname ? "/" + subnodeQname : "")
-          }
-        />
-      )
-    else return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
+    return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
   }
   if (entityLoadingState.status === "error") {
     return (

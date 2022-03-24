@@ -35,8 +35,6 @@ export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
 
 export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
   shapeRefsMap["bds:InstanceShape"],
-  shapeRefsMap["bds:ImageInstanceShape"],
-  shapeRefsMap["bds:ImagegroupShape"],
   shapeRefsMap["bds:WorkShape"],
   shapeRefsMap["bds:PersonShape"],
   shapeRefsMap["bds:PlaceShape"],
@@ -45,9 +43,11 @@ export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
   shapeRefsMap["bds:CorporationShape"],
   shapeRefsMap["bds:RoleShape"],
   shapeRefsMap["bds:CollectionShape"],
-  shapeRefsMap["bds:PersonShapeTest"],
+  shapeRefsMap["bds:ImageInstanceShape"],
   // TODO: remove from the list
   shapeRefsMap["bds:UserProfileShape"],
+  shapeRefsMap["bds:ImagegroupShape"],
+  shapeRefsMap["bds:PersonShapeTest"],
 ]
 
 export const rdfType = ns.RDF("type") as rdf.NamedNode

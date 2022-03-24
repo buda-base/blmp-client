@@ -327,7 +327,7 @@ export const setUserLocalEntities = async (
   ttl: string,
   del: boolean,
   userId: string,
-  etag: string
+  etag: string | null
 ) => {
   debug("auth:", auth, shapeQname)
   let data = localStorage.getItem("localEntities"),

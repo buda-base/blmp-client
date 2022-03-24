@@ -119,3 +119,11 @@ export const uriFromQname = (qname = ""): string => {
 
   return uri_base + localid
 }
+
+export const lnameFromQname = (qname = ""): string => {
+  const j = qname.indexOf(":")
+
+  if (j < 0) throw new Error("Cannot make lname out of <" + qname + ">")
+
+  return qname.slice(j + 1)
+}

@@ -86,7 +86,7 @@ const ResourceSelector: FC<{
   const [popupNew, setPopupNew] = useState(false)
   const [tab, setTab] = useRecoilState(uiTabState)
 
-  const isRid = keyword.startsWith("bdr:") || keyword.match(/^([cpgwrti]|mw|wa|ws|ut|ie|pr)(\d|eap)[^ ]*$/i)
+  const isRid = keyword.startsWith("bdr:") || keyword.match(/^([cpgwrti]|mw|wa|was|ut|ie|pr)(\d|eap)[^ ]*$/i)
 
   //debug("gE:", error, globalError)
   useEffect(() => {

@@ -35,7 +35,7 @@ export const generateSubnode = async (
   if (subshape.independentIdentifiers) {
     prefix += userPrefix
     if (!idToken) throw new Error("no token when reserving id")
-    const reservedId = await reserveId(prefix, idToken)
+    const reservedId = await reserveLname(prefix, null, idToken)
     const res = new Subject(new rdf.NamedNode(namespace + reservedId), parent.graph)
     return Promise.resolve(res)
   }
@@ -47,19 +47,22 @@ export const generateSubnode = async (
   return Promise.resolve(res)
 }
 
-export const reserveId = async (prefix: string, token: string): Promise<string> => {
-  const url = config.API_BASEURL + "ID/" + prefix
+export const reserveLname = async (prefix: string, proposedLname: string | null, token: string): Promise<string> => {
+  let url = config.API_BASEURL + "ID/" + prefix
+  if (proposedLname) url += "/" + proposedLname
   const response = await fetch(url, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
     },
   })
+  // eslint-disable-next-line no-magic-numbers
+  if (response.status == 422) throw "422"
   const body = await response.text()
   return body
 }
 
-export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
+export function EntityCreator(shapeQname: string, entityQname: string | null, unmounting = { val: false }) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>()
   const [entities, setEntities] = useRecoilState(entitiesAtom)
@@ -89,7 +92,7 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
   useEffect(() => {
     // we need to load the shape at the same time, which means we need to also
     // load the ontology
-    async function createResource(shapeQname: string) {
+    async function createResource(shapeQname: string, entityQname: string | null) {
       if (!unmounting.val) setEntityLoadingState({ status: "fetching shape", error: undefined })
       const url = fetchUrlFromshapeQname(shapeQname)
       const loadShape = loadTtl(url)
@@ -115,10 +118,13 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
       try {
         if (!idToken) throw new Error("no token when reserving id")
         const prefix = shapePrefix + RIDprefix
-        lname = await reserveId(prefix, idToken)
+        // if entityQname is not null, we call reserveLname with the entityQname
+        const proposedLname = entityQname ? ns.lnameFromQname(entityQname) : null
+        lname = await reserveLname(prefix, proposedLname, idToken)
       } catch (e) {
         debug(e)
-        if (!unmounting.val) setEntityLoadingState({ status: "error", error: "error logging or reserving id" })
+        // TODO: handle 422?
+        if (!unmounting.val) setEntityLoadingState({ status: "error", error: e })
         return
       }
       const uri = namespace + lname
@@ -139,12 +145,12 @@ export function EntityCreator(shapeQname: string, unmounting = { val: false }) {
       if (!unmounting.val) setEntityLoadingState({ status: "created", error: undefined })
 
       // save to localStorage
-      if (!unmounting.val) setUserLocalEntities(auth0, newSubject.qname, shapeQname, "", false, userId)
+      if (!unmounting.val) setUserLocalEntities(auth0, newSubject.qname, shapeQname, "", false, userId, null)
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }
-    if (idToken) createResource(shapeQname)
-  }, [shapeQname])
+    if (idToken && userId) createResource(shapeQname, entityQname)
+  }, [shapeQname, entityQname])
 
   return { entityLoadingState, entity, reset }
 }

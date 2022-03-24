@@ -150,14 +150,8 @@ function HomeContainer() {
         <h1>Welcome!</h1>
         <span>{i18n.t("home.title")}</span>
         <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim
-          sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a,
-          semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non
-          fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a,
-          enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue.
-          Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales.
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris
-          ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.
+          To start the editor, you must first set up the RID prefix in your user profile (ex: <em>3KG</em>), and then
+          click on the <em>New / Load</em> button.
         </p>
         {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
         <p>
@@ -332,16 +326,7 @@ function App(props: AppProps) {
             />
             <Route exact path="/new" component={NewEntityContainer} />
             <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
-            <Route
-              exact
-              path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
-              component={EntityCreationContainer}
-            />
-            <Route
-              exact
-              path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
-              component={EntityCreationContainer}
-            />
+            <Route exact path="/new/:shapeQname/:entityQname" component={EntityCreationContainer} />
             <Route
               exact
               path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index"
