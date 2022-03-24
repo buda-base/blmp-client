@@ -101,6 +101,7 @@ export function AuthContextWrapper({ children }) {
             prefix = response.data[id[idx]][ns.BDOU("localNameDefaultPrefix").value]
             //debug("RIDp:",prefix,response.data[id[idx]],ns.BDOU("localNameDefaultPrefix").value)
             if (prefix?.length && prefix[0].value) setRIDprefix(prefix[0].value)
+            else setRIDprefix("")
 
             id = ns.qnameFromUri(id[idx])
             if (id) setUserId(id)

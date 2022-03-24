@@ -22,7 +22,7 @@
     "buda-volume-manifest-tool": "https://github.com/buda-base/buda-volume-manifest-tool",
     "date-fns": "^2.16.1",
     "debug": "^4.2.0",
-    "edtf": "^4.1.0",
+    "edtf": "https://github.com/buda-base/edtf.js",
     "http-proxy-middleware": "^1.0.6",
     "i18next": "^19.8.9",
     "is_js": "^0.9.0",

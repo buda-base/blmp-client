@@ -74,7 +74,7 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
   const [userId, setUserId] = useRecoilState(userIdState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
-  debug("RIDp:", RIDprefix)
+  //debug("RIDp:", RIDprefix, idToken)
 
   useEffect(() => {
     return () => {
@@ -145,12 +145,12 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
       if (!unmounting.val) setEntityLoadingState({ status: "created", error: undefined })
 
       // save to localStorage
-      if (!unmounting.val) setUserLocalEntities(auth0, newSubject.qname, shapeQname, "", false, userId, null)
+      setUserLocalEntities(auth0, newSubject.qname, shapeQname, "", false, userId, null)
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }
-    if (idToken && userId) createResource(shapeQname, entityQname)
-  }, [shapeQname, entityQname])
+    if (idToken && RIDprefix !== null) createResource(shapeQname, entityQname)
+  }, [shapeQname, entityQname, RIDprefix])
 
   return { entityLoadingState, entity, reset }
 }
