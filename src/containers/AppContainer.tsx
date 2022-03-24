@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from "react"
-import { BrowserRouter as Router, Route, RouteComponentProps, Switch, Link, useHistory } from "react-router-dom"
+import {
+  BrowserRouter as Router,
+  Route,
+  RouteComponentProps,
+  Switch,
+  Link,
+  useHistory,
+  Redirect,
+} from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import i18n from "i18next"
 import { useTranslation, initReactI18next } from "react-i18next"
@@ -29,6 +37,7 @@ import {
   noUndoRedo,
   undoState,
   sameUndo,
+  userIdState,
 } from "../atoms/common"
 
 import { Subject, history } from "../helpers/rdf/types"
@@ -185,6 +194,7 @@ function App(props: AppProps) {
   // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
   const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
   const routerHistory = useHistory()
+  const [userId, setUserId] = useRecoilState(userIdState)
 
   useEffect(() => {
     let warn = false
@@ -326,7 +336,20 @@ function App(props: AppProps) {
             />
             <Route exact path="/new" component={NewEntityContainer} />
             <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
-            <Route exact path="/new/:shapeQname/:entityQname" component={EntityCreationContainer} />
+            <Route
+              exact
+              path="/new/:shapeQname/:entityQname" //component={EntityCreationContainer} />
+              render={(props) => {
+                const entityIndex = entities.findIndex((e) => e.subjectQname === props.match.entityQname)
+                if (entityIndex != -1) {
+                  return <Redirect to={"/edit/" + props.match.entityQname + "/" + props.match.shapeQname} />
+                }
+                if (!userId) {
+                  return <p className="text-center text-muted">loading...</p>
+                }
+                return <EntityCreationContainer {...props} />
+              }}
+            />
             <Route
               exact
               path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index"
