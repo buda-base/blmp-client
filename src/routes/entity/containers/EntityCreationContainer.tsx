@@ -32,16 +32,6 @@ function EntityCreationContainer(props: AppProps) {
     }
   }, [])
 
-  if (entityQname) {
-    if (!userId) {
-      return <p className="text-center text-muted">loading...</p>
-    }
-    const entityIndex = entities.findIndex((e) => e.subjectQname === entityQname)
-    if (entityIndex != -1) {
-      return <Redirect to={"/edit/" + entityQname + "/" + shapeQname} />
-    }
-  }
-
   // TODO: if EntityCreator throws a 422 exception (the entity already exists),
   // we must give a choice to the user:
   //    * open the existing entity
