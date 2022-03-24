@@ -57,6 +57,8 @@ function NavBar(props: AppProps) {
   const [entities] = useRecoilState(entitiesAtom)
   const [uiTab, setUiTab] = useRecoilState(uiTabState)
 
+  const [userId, setUserId] = useRecoilState(userIdState)
+
   return (
     <nav className="navbar navbar-dark navbar-expand-md">
       <a href="https://bdrc.io">
@@ -89,7 +91,22 @@ function NavBar(props: AppProps) {
             {user ? user.email : null}
           </button>
           <div className="dropdown-menu" aria-labelledby="userDropDown">
-            <Link className="btn btn-sm dropdown-item py-0" to="/profile">
+            <Link
+              className="btn btn-sm dropdown-item py-0"
+              to="/profile"
+              onClick={() => {
+                entities.map((e, i) => {
+                  if (e.subjectQname === userId) {
+                    debug("found:", i, e)
+                    if (uiTab != i) {
+                      setUiTab(i)
+                      return
+                    }
+                  }
+                  debug("not found:", entities, userId)
+                })
+              }}
+            >
               Profile
             </Link>
 
