@@ -285,15 +285,21 @@ const ResourceSelector: FC<{
   }
 
   const createAndUpdate = (type: RDFResourceWithLabel) => () => {
+    debug(
+      "uri:",
+      type.uri,
+      shapes.typeUriToShape,
+      shapes.bdsIdentifierPrefix,
+      property.targetShape?.getPropStringValue(shapes.bdsIdentifierPrefix.value)
+    )
     let url = "/new/" + shapes.typeUriToShape[type.uri][0].qname
     if (property.connectIDs) {
       const lname = subject.lname
       const prefix = property.targetShape?.getPropStringValue(shapes.bdsIdentifierPrefix)
-      if (prefix == null)
-        throw "cannot find prefix for target shape of property "+property.qname
+      if (prefix == null) throw "cannot find prefix for target shape of property " + property.qname
       const targetLname = prefix + ns.removeEntityPrefix(lname)
       // the bdr: here should be more safe
-      url += "/bdr:"+targetLname
+      url += "/bdr:" + targetLname
     }
     history.push(url)
   }
