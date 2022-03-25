@@ -5,8 +5,6 @@ import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
 import { useHistory, Link } from "react-router-dom"
 import { fromWylie } from "jsewts"
-
-import { nodeForType } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
 import * as lang from "../../../helpers/lang"
 import { uiLangState, uiLitLangState, uiTabState } from "../../../atoms/common"
@@ -287,17 +285,17 @@ const ResourceSelector: FC<{
   }
 
   const createAndUpdate = (type: RDFResourceWithLabel) => () => {
-    history.push(
-      "/new/" +
-        type.qname.replace(/^bdo/, "bds") +
-        "Shape/" +
-        (owner?.qname && owner.qname !== subject.qname ? owner.qname : subject.qname) +
-        "/" +
-        qnameFromUri(property?.path?.sparqlString) +
-        "/" +
-        idx +
-        (owner?.qname && owner.qname !== subject.qname ? "/" + subject.qname : "")
-    )
+    let url = "/new/" + shapes.typeUriToShape[type.uri][0].qname
+    if (property.connectIDs) {
+      const lname = subject.lname
+      const prefix = property.targetShape?.getPropStringValue(shapes.bdsIdentifierPrefix)
+      if (prefix == null)
+        throw "cannot find prefix for target shape of property "+property.qname
+      const targetLname = prefix + ns.removeEntityPrefix(lname)
+      // the bdr: here should be more safe
+      url += "/bdr:"+targetLname
+    }
+    history.push(url)
   }
 
   const chooseEntity = (ent: Entity, prefLabels: Record<string, string>) => () => {

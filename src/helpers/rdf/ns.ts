@@ -127,3 +127,14 @@ export const lnameFromQname = (qname = ""): string => {
 
   return qname.slice(j + 1)
 }
+
+const entity_prefix_3 = ["WAS", "ITW", "PRA"]
+const entity_prefix_2 = ["WA", "MW", "PR", "IE", "UT", "IT"]
+
+export const removeEntityPrefix = (lname:string): string => {
+  if (lname.length > 3 && entity_prefix_3.includes(lname.substring(0, 3)))
+    return lname.substring(3)
+  if (lname.length > 2 && entity_prefix_2.includes(lname.substring(0, 2)))
+    return lname.substring(2)
+  return lname.substring(1)
+}
