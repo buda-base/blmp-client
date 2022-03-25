@@ -284,6 +284,18 @@ const ResourceSelector: FC<{
     if (dates) dates = "(" + dates + ")"
   }
 
+  // TODO: very dirty! this should be taken from the shape but this is another
+  // level of asynchronous indirection
+
+  const typeToQnamePrefix = (type: RDFResourceWithLabel): string => {
+    const typeLname = type.lname
+    if (typeLname == "Work") return "bdr:WA"
+    if (typeLname == "Instance") return "bdr:MW"
+    if (typeLname == "ImageInstance") return "bdr:W"
+    if (typeLname == "EtextInstance") return "bdr:IE"
+    throw "cannot find prefix for " + type.uri
+  }
+
   const createAndUpdate = (type: RDFResourceWithLabel) => () => {
     debug(
       "uri:",
@@ -295,11 +307,9 @@ const ResourceSelector: FC<{
     let url = "/new/" + shapes.typeUriToShape[type.uri][0].qname
     if (property.connectIDs) {
       const lname = subject.lname
-      const prefix = property.targetShape?.getPropStringValue(shapes.bdsIdentifierPrefix)
-      if (prefix == null) throw "cannot find prefix for target shape of property " + property.qname
-      const targetLname = prefix + ns.removeEntityPrefix(lname)
+      const unprefixedLname = ns.removeEntityPrefix(subject.lname)
       // the bdr: here should be more safe
-      url += "/bdr:" + targetLname
+      url += "/" + typeToQnamePrefix(type) + unprefixedLname
     }
     history.push(url)
   }
