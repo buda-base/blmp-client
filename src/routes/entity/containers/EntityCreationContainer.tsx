@@ -3,7 +3,7 @@ import { ShapeFetcher } from "../../../helpers/rdf/io"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { RDFResourceWithLabel, Subject, EntityGraph } from "../../../helpers/rdf/types"
 import { entitiesAtom, EditedEntityState } from "../../../containers/EntitySelectorContainer"
-import { uiLangState, userIdState } from "../../../atoms/common"
+import { uiLangState, userIdState, RIDprefixState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
@@ -23,6 +23,7 @@ function EntityCreationContainer(props: AppProps) {
   const entityQname = props.match.params.entityQname
   const [userId, setUserId] = useRecoilState(userIdState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
   const unmounting = { val: false }
   useEffect(() => {
@@ -31,6 +32,8 @@ function EntityCreationContainer(props: AppProps) {
       unmounting.val = true
     }
   }, [])
+
+  if (!RIDprefix) return <Redirect to="/new" />
 
   // TODO: if EntityCreator throws a 422 exception (the entity already exists),
   // we must give a choice to the user:

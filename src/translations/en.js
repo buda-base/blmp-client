@@ -46,6 +46,7 @@ const enTranslations = {
     redirect: "Create new or load another entity",
     minC: "at least {{count}} value must be provided",
     maxC: "at most {{count}} value can be provided",
+    prefix: "RID prefix must be set in <res>user profile</res>",
   },
   general: {
     add_another: "Add {{val}}",
