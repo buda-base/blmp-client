@@ -719,6 +719,7 @@ label ~ .selector {
 .MuiPaper-root .popLink { padding:6px 16px; width:100%; }
 .popLink:hover { text-decoration:none; }
 
+.Mui-disabled .popLink { pointer-events: none; }
 
 #root ~ [role=presentation] { z-index: 10000 !important;}
 
