@@ -35,7 +35,6 @@ export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
 
 export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
   shapeRefsMap["bds:InstanceShape"],
-  shapeRefsMap["bds:WorkShape"],
   shapeRefsMap["bds:PersonShape"],
   shapeRefsMap["bds:PlaceShape"],
   shapeRefsMap["bds:TopicShape"],
@@ -44,6 +43,7 @@ export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
   shapeRefsMap["bds:RoleShape"],
   shapeRefsMap["bds:CollectionShape"],
   // removed from the UI
+  //shapeRefsMap["bds:WorkShape"],
   //shapeRefsMap["bds:ImageInstanceShape"],
   //shapeRefsMap["bds:UserProfileShape"],
   //shapeRefsMap["bds:ImagegroupShape"],
