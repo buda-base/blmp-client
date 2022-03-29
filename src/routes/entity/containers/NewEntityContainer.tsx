@@ -63,7 +63,7 @@ function NewEntityContainer(props: AppProps) {
               </MenuItem>
             ))}
           </TextField>
-          {disabled && (
+          {disabled && RIDprefix === "" && (
             <span className="pl-2" style={{ fontStyle: "italic", fontWeight: 500, color: "#d73449", fontSize: 14 }}>
               <Trans i18nKey="error.prefix" components={{ res: <Link className="profile-link" to="/profile" /> }} />
             </span>

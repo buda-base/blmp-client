@@ -17,7 +17,8 @@ const PropertyContainer: FC<{
   editable: boolean
   owner?: Subject
   topEntity?: Subject
-}> = ({ property, subject, embedded, force, editable, owner, topEntity }) => {
+  shape: Shape
+}> = ({ property, subject, embedded, force, editable, owner, topEntity, shape }) => {
   const objectType = property.objectType
 
   //debug("propertyCtn:", property.qname, property, subject.qname, subject)
@@ -38,6 +39,7 @@ const PropertyContainer: FC<{
               editable={editable}
               {...(owner ? { owner } : {})}
               {...(topEntity ? { topEntity } : {})}
+              shape={shape}
             />
           </div>
         </section>

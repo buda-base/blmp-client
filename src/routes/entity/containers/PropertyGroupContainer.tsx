@@ -12,10 +12,11 @@ import { Waypoint } from "react-waypoint"
 
 const debug = require("debug")("bdrc:entity:propertygroup")
 
-const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGroupOpen: () => void }> = ({
+const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGroupOpen: () => void; shape: Shape }> = ({
   group,
   subject,
   onGroupOpen,
+  shape,
 }) => {
   const [uiLang] = useRecoilState(uiLangState)
   const label = lang.ValueByLangToStrPrefLang(group.prefLabels, uiLang)
@@ -99,6 +100,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
                         property={property}
                         subject={subject}
                         editable={property.readOnly !== true}
+                        shape={shape}
                       />
                     ))}
                     {withDisplayPriority.map((property, index) => (
@@ -108,6 +110,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
                         subject={subject}
                         force={force}
                         editable={property.readOnly !== true}
+                        shape={shape}
                       />
                     ))}
                     {hasExtra && (

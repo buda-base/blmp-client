@@ -131,13 +131,25 @@ export const sortByPropValue = (
       const asnum = rdfLitAsNumber(ordern)
       if (asnum !== null) order = asnum
       else throw "no order found for node and property: " + node.value + " , " + p.value + " , " + asnum
-      orders.push(order)
+      //orders.push(order) // instead let's try to avoid duplicates first
     }
     // TODO: enable this as exception
     else debug("missing order from node and property" + node.value + " , " + p.value)
+
+    // quickfix for bug when multiple order are the same
+    if (orderedGroupObjs[order]) {
+      debug("current node:", node)
+      debug("  order " + order + " already exists:", orderedGroupObjs[order])
+      let possibleOrder = Object.keys(orderedGroupObjs)
+      if (orderedGroupObjs[possibleOrder.length]) {
+        possibleOrder = possibleOrder.reduce((acc, n) => n > acc ? n : acc, -1)
+        possibleOrder++
+      }
+      order = possibleOrder
+    }
     orderedGroupObjs[order] = node
   }
-  orders = orders.sort((a, b) => a - b)
+  orders = Object.keys(orderedGroupObjs).sort((a, b) => a - b)
   const res: Array<rdf.NamedNode> = []
   for (const order of orders) {
     res.push(orderedGroupObjs[order])

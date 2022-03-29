@@ -228,3 +228,29 @@ export const EDTFtoOtherFieldsSelector = selectorFamily({
     return
   },
 })
+
+export const orderedNewValSelector = selectorFamily({
+  key: "orderedNewValSelector",
+  get: ({ atom, propertyPath, order }) => ({ get }) => {
+    if (atom) {
+      if (!order) order = "asc"
+      let newVal = ""
+      newVal = ""
+
+      const parentList = get(atom)
+      parentList.map((s) => {
+        let k = get(s.getAtomForProperty(propertyPath))
+        if (Array.isArray(k) && k.length) k = Number(k[0].value)
+        //debug("k:",k)
+        if (newVal === "" || order === "asc" && k >= newVal || order === "desc" && k <= newVal) {
+          if (order === "asc") newVal = k + 1
+          else newVal = k - 1
+        }
+      })
+
+      //debug("newVal:", atom, propertyPath, parentList, newVal)
+      return newVal
+    }
+    return []
+  },
+})

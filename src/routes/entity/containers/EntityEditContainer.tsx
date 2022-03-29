@@ -327,6 +327,7 @@ function EntityEditContainer(props: AppProps) {
               group={group}
               subject={entity}
               onGroupOpen={checkPushNameAsPrefLabel}
+              shape={shape}
             />
           </>
         ))}

@@ -44,6 +44,7 @@ import {
   initListAtom,
   RIDprefixState,
   EDTFtoOtherFieldsSelector,
+  orderedNewValSelector,
 } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
@@ -132,7 +133,8 @@ const generateDefault = async (
   property: PropertyShape,
   parent: Subject,
   RIDprefix: string,
-  idToken: string | null
+  idToken: string | null,
+  val = ""
 ): Value => {
   //debug("genD:", property, parent)
   switch (property.objectType) {
@@ -181,6 +183,8 @@ const generateDefault = async (
       if (datatype === ns.RDF("langString").value) {
         // TODO: this should be a user preference, not urgent
         return new LiteralWithId("", property?.defaultLanguage ? property.defaultLanguage : "bo-x-ewts")
+      } else if (datatype === ns.XSD("integer").value) {
+        return new LiteralWithId(val, null, property.datatype ? property.datatype : undefined)
       } else {
         return new LiteralWithId("", null, property.datatype ? property.datatype : undefined)
       }
@@ -200,7 +204,8 @@ const ValueList: FC<{
   editable: boolean
   owner?: Subject
   topEntity?: Subject
-}> = ({ subject, property, embedded, force, editable, owner, topEntity }) => {
+  shape: Shape
+}> = ({ subject, property, embedded, force, editable, owner, topEntity, shape }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [unsortedList, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -221,6 +226,21 @@ const ValueList: FC<{
   )
   let list = unsortedList
   if (orderedList.length) list = orderedList
+
+  const withOrder = shape.properties.filter((p) => p.sortOnProperty?.value === property.path.sparqlString)
+  let newVal = useRecoilValue(
+    orderedNewValSelector({
+      atom: withOrder.length
+        ? (topEntity ? topEntity : subject).getAtomForProperty(withOrder[0].path.sparqlString)
+        : false,
+      propertyPath: property.path.sparqlString,
+      //order: "desc" // default is "asc"
+    })
+  )
+  if (newVal != "") {
+    if (property.minInclusive && newVal < property.minInclusive) newVal = property.minInclusive
+    if (property.maxInclusive && newVal > property.maxInclusive) newVal = property.maxInclusive
+  }
 
   //debug("vL:", property.qname, list)
 
@@ -338,7 +358,7 @@ const ValueList: FC<{
     if (vals && vals.length) {
       if (property.minCount && vals.length < property.minCount) {
         const setListAsync = async () => {
-          const res = await generateDefault(property, subject, RIDprefix, idToken)
+          const res = await generateDefault(property, subject, RIDprefix, idToken, newVal)
           // dont store empty value autocreation
           if (topEntity) topEntity.noHisto()
           else if (owner) owner.noHisto()
@@ -363,7 +383,7 @@ const ValueList: FC<{
     ) {
       if (!firstValueIsEmptyField) {
         const setListAsync = async () => {
-          const res = await generateDefault(property, subject, RIDprefix, idToken)
+          const res = await generateDefault(property, subject, RIDprefix, idToken, newVal)
           // dont store empty value autocreation
           if (topEntity) topEntity.noHisto()
           else if (owner) owner.noHisto()
@@ -374,7 +394,7 @@ const ValueList: FC<{
         setListAsync()
       } else {
         const setListAsync = async () => {
-          const res = await generateDefault(property, subject, RIDprefix, idToken)
+          const res = await generateDefault(property, subject, RIDprefix, idToken, newVal)
           // dont store empty value autocreation
           if (topEntity) topEntity.noHisto()
           else if (owner) owner.noHisto()
@@ -386,7 +406,7 @@ const ValueList: FC<{
       }
     } else if (property.objectType == ObjectType.Facet && property.minCount && list.length < property.minCount) {
       const setListAsync = async () => {
-        const res = await generateDefault(property, subject, RIDprefix, idToken)
+        const res = await generateDefault(property, subject, RIDprefix, idToken, newVal)
         // dont store empty value autocreation
         if (topEntity) topEntity.noHisto()
         else if (owner) owner.noHisto()
@@ -416,7 +436,7 @@ const ValueList: FC<{
       // this makes sure that there's at least one value for select forms, and the value is either
       // the first one (when it's mandatory that there's a value), or tmp:none
       const setListAsync = async () => {
-        const res = await generateDefault(property, subject, RIDprefix, idToken)
+        const res = await generateDefault(property, subject, RIDprefix, idToken, newVal)
         if (topEntity) topEntity.noHisto()
         else if (owner) owner.noHisto()
         else subject.noHisto()
@@ -524,7 +544,7 @@ const ValueList: FC<{
             selectIdx={i}
             canDel={canDel && val != noneSelected}
             editable={editable}
-            create={canAdd && <Create subject={subject} property={property} embedded={embedded} />}
+            create={canAdd && <Create subject={subject} property={property} embedded={embedded} newVal={newVal} />}
           />
         )
       }
@@ -541,6 +561,7 @@ const ValueList: FC<{
           editable={editable}
           {...(topEntity ? { topEntity } : { topEntity: subject })}
           updateEntityState={updateEntityState}
+          shape={shape}
         />
       )
     } else if (val instanceof LiteralWithId) {
@@ -562,6 +583,7 @@ const ValueList: FC<{
               subject={subject}
               property={property}
               embedded={embedded}
+              newVal={newVal}
             />
           }
           editable={editable}
@@ -625,7 +647,7 @@ const ValueList: FC<{
           })}
         </div>
       </div>
-      {canAdd && addBtn && <Create subject={subject} property={property} embedded={embedded} />}
+      {canAdd && addBtn && <Create subject={subject} property={property} embedded={embedded} newVal={newVal} />}
     </React.Fragment>
   )
 }
@@ -633,12 +655,13 @@ const ValueList: FC<{
 /**
  * Create component
  */
-const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean; disable?: boolean }> = ({
-  subject,
-  property,
-  embedded,
-  disable,
-}) => {
+const Create: FC<{
+  subject: Subject
+  property: PropertyShape
+  embedded?: boolean
+  disable?: boolean
+  newVal?: integer
+}> = ({ subject, property, embedded, disable, newVal }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const collec = list.length === 1 && list[0].node?.termType === "Collection" ? list[0].node.elements : undefined
@@ -660,7 +683,7 @@ const Create: FC<{ subject: Subject; property: PropertyShape; embedded?: boolean
       waitForNoHisto = true
       subject.noHisto(false, 1) // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
     }
-    const item = await generateDefault(property, subject, RIDprefix, idToken)
+    const item = await generateDefault(property, subject, RIDprefix, idToken, newVal)
     setList([...listOrCollec, item]) //(oldList) => [...oldList, item])
     if (property.objectType === ObjectType.Facet && item instanceof Subject) {
       //setEdit(property.qname+item.qname)  // won't work...
@@ -1504,7 +1527,8 @@ const FacetComponent: FC<{
   editable: boolean
   topEntity: Subject
   updateEntityState: (es: EditedEntityState) => void
-}> = ({ subNode, subject, property, canDel, /*force,*/ editable, topEntity, updateEntityState }) => {
+  shape: Shape
+}> = ({ subNode, subject, property, canDel, /*force,*/ editable, topEntity, updateEntityState, shape }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -1586,6 +1610,7 @@ const FacetComponent: FC<{
               editable={!p.readOnly}
               owner={subject}
               topEntity={topEntity}
+              shape={shape}
             />
           ))}
           {withDisplayPriority.map((p, index) => (
@@ -1598,6 +1623,7 @@ const FacetComponent: FC<{
               editable={!p.readOnly}
               owner={subject}
               topEntity={topEntity}
+              shape={shape}
             />
           ))}
           {hasExtra && (
