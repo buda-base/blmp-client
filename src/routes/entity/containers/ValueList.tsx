@@ -14,7 +14,7 @@ import {
 } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import * as ns from "../../../helpers/rdf/ns"
-import { generateSubnode } from "../../../helpers/rdf/construct"
+import { generateSubnode, reserveLname } from "../../../helpers/rdf/construct"
 import { useRecoilState, useSetRecoilState, useRecoilValue, atomFamily, atom, selectorFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem, Tooltip, IconButton, InputLabel, Select } from "@material-ui/core"
@@ -75,17 +75,61 @@ export const MinimalAddButton: FC<{
   )
 }
 
-export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; label?: string }> = ({
+export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement>; label?: string; count: number }> = ({
   add,
   label,
+  count = 1,
 }) => {
+  const [n, setN] = useState(1)
+  const [disable, setDisable] = useState(false)
+
+  const handleAdd = async (e) => {
+    setDisable(true)
+    await add(e, n)
+    setDisable(false)
+  }
+
   return (
-    <div className="blockAdd text-center pb-1 mt-3" style={{ width: "100%" }}>
-      <button className="btn btn-sm btn-block btn-outline-primary px-0" style={{ boxShadow: "none" }} onClick={add}>
-        {i18n.t("general.add_another", { val: label })}
+    <div
+      className="blockAdd text-center pb-1 mt-3"
+      style={{ width: "100%", ...count > 1 ? { display: "flex" } : {} }}
+    >
+      <button
+        className="btn btn-sm btn-block btn-outline-primary px-0"
+        style={{ boxShadow: "none", pointerEvents: disable ? "none" : "auto" }}
+        onClick={handleAdd}
+        disabled={disable}
+      >
+        {i18n.t("general.add_another", { val: label, count })}
         &nbsp;
         <AddIcon />
       </button>
+      {count > 1 && (
+        <TextField
+          label={i18n.t("general.add_nb", { val: label })}
+          style={{ width: 200 }}
+          value={n}
+          className="ml-2"
+          type="number"
+          InputLabelProps={{ shrink: true }}
+          onChange={(e) => setN(e.target.value)}
+          InputProps={{ inputProps: { min: 1, max: 500 } }}
+          /*
+        {...(error
+          ? {
+              helperText: (
+                <React.Fragment>
+                  <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                  <i> {error}</i>
+                </React.Fragment>
+              ),
+              error: true,
+            }
+          : {})}
+        {...(!editable ? { disabled: true } : {})}
+        */
+        />
+      )}
     </div>
   )
 }
@@ -134,8 +178,9 @@ const generateDefault = async (
   parent: Subject,
   RIDprefix: string,
   idToken: string | null,
-  val = ""
-): Value => {
+  val = "",
+  n = 1
+): Value | Value[] => {
   //debug("genD:", property, parent)
   switch (property.objectType) {
     case ObjectType.ResExt:
@@ -150,7 +195,7 @@ const generateDefault = async (
       break
     case ObjectType.Facet:
       if (property.targetShape == null) throw "no target shape for " + property.uri
-      return generateSubnode(property.targetShape, parent, RIDprefix, idToken)
+      return generateSubnode(property.targetShape, parent, RIDprefix, idToken, n)
       break
     case ObjectType.ResInList:
       // if a select property is not required, we don't select anything by default
@@ -672,19 +717,27 @@ const Create: FC<{
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
-  //debug("atom:",property.qname,subject.getAtomForProperty(property.path.sparqlString))
+  //debug("create:",property.qname,property) //,subject.getAtomForProperty(property.path.sparqlString))
 
   let waitForNoHisto = false
 
-  const addItem = async () => {
+  const addItem = async (event, count = 1) => {
     if (waitForNoHisto) return
 
     if (property.objectType === ObjectType.Facet) {
       waitForNoHisto = true
       subject.noHisto(false, 1) // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
     }
-    const item = await generateDefault(property, subject, RIDprefix, idToken, newVal)
-    setList([...listOrCollec, item]) //(oldList) => [...oldList, item])
+    let items = []
+    let item, ids
+    if (count > 1 && property.targetShape?.independentIdentifiers) {
+      //debug("count:",count)
+      items = await generateDefault(property, subject, RIDprefix, idToken, newVal, count)
+    } else {
+      item = await generateDefault(property, subject, RIDprefix, idToken, newVal)
+      items.push(item)
+    }
+    setList([...listOrCollec, ...items]) //(oldList) => [...oldList, item])
     if (property.objectType === ObjectType.Facet && item instanceof Subject) {
       //setEdit(property.qname+item.qname)  // won't work...
       setImmediate(() => {
@@ -718,7 +771,8 @@ const Create: FC<{
   else {
     const targetShapeLabels = property.targetShape?.targetClassPrefLabels
     const labels = targetShapeLabels ? targetShapeLabels : property.prefLabels
-    return <BlockAddButton add={addItem} label={ValueByLangToStrPrefLang(labels, uiLang)} />
+    const count = property.allowBatchManagement ? 2 : 1
+    return <BlockAddButton add={addItem} label={ValueByLangToStrPrefLang(labels, uiLang)} count={count} />
   }
 }
 

@@ -21,8 +21,9 @@ export const generateSubnode = async (
   subshape: NodeShape,
   parent: RDFResource,
   userPrefix: string,
-  idToken: string | null
-): Promise<Subject> => {
+  idToken: string | null,
+  n = 1
+): Promise<Subject | Subject[]> => {
   if (subshape.node.uri == "http://purl.bdrc.io/ontology/shapes/adm/AdmEntityShape") {
     // special case for admin entities
     const res = new Subject(new rdf.NamedNode(ns.BDA_uri + parent.lname), parent.graph)
@@ -35,9 +36,14 @@ export const generateSubnode = async (
   if (subshape.independentIdentifiers) {
     prefix += userPrefix
     if (!idToken) throw new Error("no token when reserving id")
-    const reservedId = await reserveLname(prefix, null, idToken)
-    const res = new Subject(new rdf.NamedNode(namespace + reservedId), parent.graph)
-    return Promise.resolve(res)
+    const reservedId = await reserveLname(prefix, null, idToken, n)
+    if (n == 1) {
+      const res = new Subject(new rdf.NamedNode(namespace + reservedId), parent.graph)
+      return Promise.resolve(res)
+    } else {
+      const res = reservedId.split(/[ \n]+/).map((id) => new Subject(new rdf.NamedNode(namespace + id), parent.graph))
+      return Promise.resolve(res)
+    }
   }
   let uri = namespace + prefix + parent.lname + nanoidCustom()
   while (parent.graph.hasSubject(uri)) {
@@ -47,9 +53,15 @@ export const generateSubnode = async (
   return Promise.resolve(res)
 }
 
-export const reserveLname = async (prefix: string, proposedLname: string | null, token: string): Promise<string> => {
+export const reserveLname = async (
+  prefix: string,
+  proposedLname: string | null,
+  token: string,
+  n = 1
+): Promise<string> => {
   let url = config.API_BASEURL + "ID/" + prefix
   if (proposedLname) url += "/" + proposedLname
+  else if (n > 1) url += "?n=" + n
   const response = await fetch(url, {
     method: "PUT",
     headers: {

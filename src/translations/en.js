@@ -50,9 +50,11 @@ const enTranslations = {
   },
   general: {
     add_another: "Add {{val}}",
+    add_another_plural: "Add N {{val}}",
     toggle: "{{show}} empty secondary properties",
     show: "Show",
     hide: "Hide",
+    add_nb: "Number of {{val}} to add",
   },
 }
 
