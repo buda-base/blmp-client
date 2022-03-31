@@ -1262,6 +1262,21 @@ const EditString: FC<{
     }
   })
 
+  const getEmptyStringError = (val: string) => {
+    let err = ""
+    if (!val && property.minCount) err = i18n.t("error.empty")
+    return err
+  }
+
+  useEffect(() => {
+    const newError = getEmptyStringError(lit.value)
+    //debug("newE:",newError,error,lit,lit.id)
+    if (newError != error) {
+      setError(newError)
+      updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
+    }
+  })
+
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <TextField
