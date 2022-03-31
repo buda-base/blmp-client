@@ -60,7 +60,7 @@ const updateHistory = (
     else history[entity].push(newVal)
   } else history[entity].push(newVal)
 
-  //debug("history:", entity, qname, prop, val, history, noHisto)
+  debug("history:", entity, qname, prop, val, history, noHisto)
 }
 
 export const rdfLitAsNumber = (lit: rdf.Literal): number | null => {

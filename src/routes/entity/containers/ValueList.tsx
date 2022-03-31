@@ -722,7 +722,24 @@ const Create: FC<{
   const [nextItem, setNextItem] = useState()
   useEffect(() => {
     //debug("next?",nextItem,list)
-    if (nextItem && listOrCollec.findIndex((l) => l === nextItem) === -1) {
+    if (nextItem === false) {
+      debug("nit:false")
+      const item = listOrCollec[listOrCollec.length - 1]
+      if (item && property.objectType === ObjectType.Facet && item instanceof Subject) {
+        setImmediate(() => {
+          setEdit(subject.qname + " " + property.qname + " " + item.qname)
+        })
+        setTimeout(() => {
+          subject.noHisto(false, false) // history back to normal
+          waitForNoHisto = false
+        }, 350) // *arbitrary long* delay during which add button can't be used
+        setNextItem(null)
+      }
+    } else if (nextItem && listOrCollec.findIndex((l) => l === nextItem) === -1) {
+      if (property.objectType === ObjectType.Facet && nextItem instanceof Subject) {
+        waitForNoHisto = true
+        subject.noHisto(false, 1) // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
+      }
       setList(listOrCollec.concat(nextItem))
       setNextItem(null)
       //debug("done")
@@ -733,10 +750,6 @@ const Create: FC<{
   const addItem = async (event, count = 1) => {
     if (waitForNoHisto) return
 
-    if (property.objectType === ObjectType.Facet) {
-      waitForNoHisto = true
-      subject.noHisto(false, 1) // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
-    }
     let items = []
     let item, ids
     if (count > 1 && property.targetShape?.independentIdentifiers) {
@@ -746,25 +759,13 @@ const Create: FC<{
         //debug("it:",it)
         setNextItem(it)
         item = it
-        await new Promise((r) => setTimeout(r, 1))
+        await new Promise((r) => setTimeout(r, 150))
       }
+      setNextItem(false)
     } else {
-      item = await generateDefault(property, subject, RIDprefix, idToken, newVal)
-      items.push(item)
-      setList(listOrCollec.concat(item)) //(oldList) => [...oldList, item])
-    }
-
-    if (property.objectType === ObjectType.Facet && item instanceof Subject) {
-      //setEdit(property.qname+item.qname)  // won't work...
-      setImmediate(() => {
-        // this must be "delayed" to work
-        setEdit(subject.qname + " " + property.qname + " " + item.qname)
-      })
-
-      setTimeout(() => {
-        subject.noHisto(false, false) // history back to normal
-        waitForNoHisto = false
-      }, 350) // *arbitrary long* delay during which add button can't be used
+      setNextItem(await generateDefault(property, subject, RIDprefix, idToken, newVal))
+      await new Promise((r) => setTimeout(r, 150))
+      setNextItem(false)
     }
   }
 
