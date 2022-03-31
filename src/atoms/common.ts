@@ -237,8 +237,10 @@ export const orderedNewValSelector = selectorFamily({
       if (!order) order = "asc"
       newVal = ""
 
+      debug("nV")
       const parentList = get(atom)
-      parentList.map((s) => {
+      parentList.map((s, i) => {
+        if (i < parentList.length - 1 - 1) return // try to speed things as list is sorted
         let k = get(s.getAtomForProperty(propertyPath))
         if (Array.isArray(k) && k.length) k = Number(k[0].value)
         //debug("k:",k)
@@ -247,7 +249,6 @@ export const orderedNewValSelector = selectorFamily({
           else newVal = k - 1
         }
       })
-
       debug("newVal:", newVal) //, atom, propertyPath, parentList)
     }
     return newVal

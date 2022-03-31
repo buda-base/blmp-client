@@ -287,7 +287,7 @@ const ValueList: FC<{
     if (property.maxInclusive && newVal > property.maxInclusive) newVal = property.maxInclusive
   }
 
-  //debug("vL:", property.qname, list)
+  //debug("vL:", newVal,property.qname, list)
 
   const updateEntityState = (status: EditedEntityState, id: string, removingFacet = false) => {
     if (id === undefined) throw new Error("id undefined")
@@ -717,10 +717,19 @@ const Create: FC<{
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
-  //debug("create:",property.qname,property) //,subject.getAtomForProperty(property.path.sparqlString))
+  //debug("create:",newVal,nextItem,property.qname) //,property) //,subject.getAtomForProperty(property.path.sparqlString))
+
+  const [nextItem, setNextItem] = useState()
+  useEffect(() => {
+    //debug("next?",nextItem,list)
+    if (nextItem && listOrCollec.findIndex((l) => l === nextItem) === -1) {
+      setList(listOrCollec.concat(nextItem))
+      setNextItem(null)
+      //debug("done")
+    }
+  }, [list, nextItem])
 
   let waitForNoHisto = false
-
   const addItem = async (event, count = 1) => {
     if (waitForNoHisto) return
 
@@ -733,11 +742,18 @@ const Create: FC<{
     if (count > 1 && property.targetShape?.independentIdentifiers) {
       //debug("count:",count)
       items = await generateDefault(property, subject, RIDprefix, idToken, newVal, count)
+      for (const it of items) {
+        //debug("it:",it)
+        setNextItem(it)
+        item = it
+        await new Promise((r) => setTimeout(r, 1))
+      }
     } else {
       item = await generateDefault(property, subject, RIDprefix, idToken, newVal)
       items.push(item)
+      setList(listOrCollec.concat(item)) //(oldList) => [...oldList, item])
     }
-    setList([...listOrCollec, ...items]) //(oldList) => [...oldList, item])
+
     if (property.objectType === ObjectType.Facet && item instanceof Subject) {
       //setEdit(property.qname+item.qname)  // won't work...
       setImmediate(() => {
