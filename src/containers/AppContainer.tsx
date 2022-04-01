@@ -226,7 +226,9 @@ function App(props: AppProps) {
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {
-    const updateUndoOnMsg = (ev: MessageEvent) => appEl?.current?.click()
+    const updateUndoOnMsg = (ev: MessageEvent) => {
+      appEl?.current?.click()
+    }
     window.addEventListener("message", updateUndoOnMsg)
     return () => {
       if (undoTimer) clearInterval(undoTimer)

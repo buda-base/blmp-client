@@ -12,6 +12,8 @@ import {
   history,
   noneSelected,
 } from "../../../helpers/rdf/types"
+import { debugStore, putTtl } from "../../../helpers/rdf/io"
+import * as shapes from "../../../helpers/rdf/shapes"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import * as ns from "../../../helpers/rdf/ns"
 import { generateSubnode, reserveLname } from "../../../helpers/rdf/construct"
@@ -36,6 +38,8 @@ import { getHistoryStatus } from "../../../containers/AppContainer"
 import PropertyContainer from "./PropertyContainer"
 import { langs, ValueByLangToStrPrefLang, langsWithDefault } from "../../../helpers/lang"
 import {
+  reloadEntityState,
+  uiTabState,
   uiLangState,
   uiLitLangState,
   uiEditState,
@@ -54,6 +58,10 @@ import MDEditor, { commands } from "@uiw/react-md-editor"
 
 //import edtf, { parse } from "edtf/dist/../index.js" // finally got it to work!! not in prod...
 import edtf, { parse } from "edtf" // see https://github.com/inukshuk/edtf.js/issues/36#issuecomment-1073778277
+
+import { useAuth0 } from "@auth0/auth0-react"
+
+import config from "../../../config"
 
 const debug = require("debug")("bdrc:entity:container:ValueList")
 
@@ -83,12 +91,6 @@ export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement
   const [n, setN] = useState(1)
   const [disable, setDisable] = useState(false)
 
-  const handleAdd = async (e) => {
-    setDisable(true)
-    await add(e, n)
-    setDisable(false)
-  }
-
   return (
     <div
       className="blockAdd text-center pb-1 mt-3"
@@ -97,7 +99,7 @@ export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement
       <button
         className="btn btn-sm btn-block btn-outline-primary px-0"
         style={{ boxShadow: "none", pointerEvents: disable ? "none" : "auto" }}
-        onClick={handleAdd}
+        onClick={(e) => add(e, n)}
         disabled={disable}
       >
         {i18n.t("general.add_another", { val: label, count })}
@@ -178,8 +180,7 @@ const generateDefault = async (
   parent: Subject,
   RIDprefix: string,
   idToken: string | null,
-  val = "",
-  n = 1
+  val = ""
 ): Value | Value[] => {
   //debug("genD:", property, parent)
   switch (property.objectType) {
@@ -195,7 +196,7 @@ const generateDefault = async (
       break
     case ObjectType.Facet:
       if (property.targetShape == null) throw "no target shape for " + property.uri
-      return generateSubnode(property.targetShape, parent, RIDprefix, idToken, n)
+      return generateSubnode(property.targetShape, parent, RIDprefix, idToken) //, n)
       break
     case ObjectType.ResInList:
       // if a select property is not required, we don't select anything by default
@@ -713,59 +714,94 @@ const Create: FC<{
   const listOrCollec = collec ? collec : list
   const [uiLang] = useRecoilState(uiLangState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [uiTab] = useRecoilState(uiTabState)
+  const entity = entities.findIndex((e, i) => i === uiTab)
   const [edit, setEdit] = useRecoilState(uiEditState)
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
+  const { getIdTokenClaims } = useAuth0()
+  const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
 
   //debug("create:",newVal,nextItem,property.qname) //,property) //,subject.getAtomForProperty(property.path.sparqlString))
-
-  const [nextItem, setNextItem] = useState()
-  useEffect(() => {
-    //debug("next?",nextItem,list)
-    if (nextItem === false) {
-      debug("nit:false")
-      const item = listOrCollec[listOrCollec.length - 1]
-      if (item && property.objectType === ObjectType.Facet && item instanceof Subject) {
-        setImmediate(() => {
-          setEdit(subject.qname + " " + property.qname + " " + item.qname)
-        })
-        setTimeout(() => {
-          subject.noHisto(false, false) // history back to normal
-          waitForNoHisto = false
-        }, 350) // *arbitrary long* delay during which add button can't be used
-        setNextItem(null)
-      }
-    } else if (nextItem && listOrCollec.findIndex((l) => l === nextItem) === -1) {
-      if (property.objectType === ObjectType.Facet && nextItem instanceof Subject) {
-        waitForNoHisto = true
-        subject.noHisto(false, 1) // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
-      }
-      setList(listOrCollec.concat(nextItem))
-      setNextItem(null)
-      //debug("done")
-    }
-  }, [list, nextItem])
-
   let waitForNoHisto = false
-  const addItem = async (event, count = 1) => {
+
+  const addItem = async (event, n) => {
+    if (n > 1) {
+      let store = new rdf.Store()
+      ns.setDefaultPrefixes(store)
+      subject.graph.addNewValuestoStore(store)
+
+      const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+      rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
+        let prefix = property.targetShape.getPropStringValue(shapes.bdsIdentifierPrefix)
+        if (prefix == null) throw "cannot find entity prefix for " + property.targetShape.qname
+        else prefix += RIDprefix
+        let reservedId = await reserveLname(prefix, null, idToken, n)
+        if (reservedId) reservedId = reservedId.split(/[ \n]+/).map((id) => "bdr:" + id)
+        else throw "error reserving ids"
+        if (str.match(/bdo:instanceHasVolume/))
+          str = str.replace(/(bdo:instanceHasVolume[^;.]+)([;.])/m, "$1," + reservedId.join(",") + "$2")
+        else
+          str = str.replace(/(a bdo:ImageInstance)([;.])/m, "$1; bdo:instanceHasVolume " + reservedId.join(",") + " $2")
+        str = str.replace(
+          new RegExp("(" + subject.qname + " a )"),
+          reservedId
+            .map((id) => id + " a bdo:ImageGroup ; bdo:volumeNumber 1 ; bdo:volumePagesTbrcIntro 0 .")
+            .join("\n") + "\n$1"
+        )
+
+        debug("ttl:", str)
+
+        store = rdf.graph()
+        rdf.parse(str, store, rdf.Store.defaultGraphURI, "text/turtle")
+
+        const url = config.API_BASEURL + subject.qname + "/focusgraph"
+        try {
+          const idTokenF = await getIdTokenClaims()
+
+          let alreadySaved = false
+          const loadRes = await putTtl(
+            url,
+            store,
+            idTokenF.__raw,
+            entities[entity]?.alreadySaved ? "POST" : "PUT",
+            '"batch add volumes"@en',
+            entities[entity]?.alreadySaved
+          )
+          alreadySaved = loadRes
+
+          const newEntities = [...entities]
+          newEntities[entity] = { ...newEntities[entity], state: EditedEntityState.Saved, alreadySaved }
+          setEntities(newEntities)
+
+          //setTimeout(() => setReloadEntity(subject.qname), 300) //eslint-disable-line no-magic-numbers
+        } catch (e) {
+          debug("error add batch:", e)
+        }
+      })
+
+      return
+    }
+
     if (waitForNoHisto) return
 
-    let items = []
-    let item, ids
-    if (count > 1 && property.targetShape?.independentIdentifiers) {
-      //debug("count:",count)
-      items = await generateDefault(property, subject, RIDprefix, idToken, newVal, count)
-      for (const it of items) {
-        //debug("it:",it)
-        setNextItem(it)
-        item = it
-        await new Promise((r) => setTimeout(r, 150))
-      }
-      setNextItem(false)
-    } else {
-      setNextItem(await generateDefault(property, subject, RIDprefix, idToken, newVal))
-      await new Promise((r) => setTimeout(r, 150))
-      setNextItem(false)
+    if (property.objectType === ObjectType.Facet) {
+      waitForNoHisto = true
+      subject.noHisto(false, 1) // allow parent node in history but default empty subnodes before tmp:allValuesLoaded
+    }
+    const item = await generateDefault(property, subject, RIDprefix, idToken, newVal)
+    setList([...listOrCollec, item]) //(oldList) => [...oldList, item])
+    if (property.objectType === ObjectType.Facet && item instanceof Subject) {
+      //setEdit(property.qname+item.qname)  // won't work...
+      setImmediate(() => {
+        // this must be "delayed" to work
+        setEdit(subject.qname + " " + property.qname + " " + item.qname)
+      })
+
+      setTimeout(() => {
+        subject.noHisto(false, false) // history back to normal
+        waitForNoHisto = false
+      }, 350) // *arbitrary long* delay during which add button can't be used
     }
   }
 
