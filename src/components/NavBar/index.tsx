@@ -289,6 +289,10 @@ function BottomBar(props: AppProps) {
     // save ttl to localStorage
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
     rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
+      if (err) {
+        debug(err, store)
+        throw "error when serializing"
+      }
       setUserLocalEntities(
         auth0,
         entities[entity].subjectQname,

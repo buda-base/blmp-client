@@ -49,6 +49,7 @@ import {
   RIDprefixState,
   EDTFtoOtherFieldsSelector,
   orderedNewValSelector,
+  latestNewValSelector,
 } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
@@ -590,7 +591,11 @@ const ValueList: FC<{
             selectIdx={i}
             canDel={canDel && val != noneSelected}
             editable={editable}
-            create={canAdd && <Create subject={subject} property={property} embedded={embedded} newVal={newVal} />}
+            create={
+              canAdd && (
+                <Create subject={subject} property={property} embedded={embedded} newVal={newVal} shape={shape} />
+              )
+            }
           />
         )
       }
@@ -630,6 +635,7 @@ const ValueList: FC<{
               property={property}
               embedded={embedded}
               newVal={newVal}
+              shape={shape}
             />
           }
           editable={editable}
@@ -693,7 +699,9 @@ const ValueList: FC<{
           })}
         </div>
       </div>
-      {canAdd && addBtn && <Create subject={subject} property={property} embedded={embedded} newVal={newVal} />}
+      {canAdd && addBtn && (
+        <Create subject={subject} property={property} embedded={embedded} newVal={newVal} shape={shape} />
+      )}
     </React.Fragment>
   )
 }
@@ -707,7 +715,8 @@ const Create: FC<{
   embedded?: boolean
   disable?: boolean
   newVal?: integer
-}> = ({ subject, property, embedded, disable, newVal }) => {
+  shape?: Shape
+}> = ({ subject, property, embedded, disable, newVal, shape }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const collec = list.length === 1 && list[0].node?.termType === "Collection" ? list[0].node.elements : undefined
@@ -722,7 +731,19 @@ const Create: FC<{
   const { getIdTokenClaims } = useAuth0()
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
 
-  //debug("create:",newVal,nextItem,property.qname) //,property) //,subject.getAtomForProperty(property.path.sparqlString))
+  let nextVal = useRecoilValue(
+    orderedNewValSelector({
+      atom: property.sortOnProperty ? subject.getAtomForProperty(property.path.sparqlString) : false,
+      propertyPath: property.sortOnProperty?.value,
+      //order: "desc" // default is "asc"
+    })
+  )
+  let sortProp = property.targetShape?.properties.filter((p) => p.path.sparqlString === property.sortOnProperty?.value)
+  if (sortProp?.length) sortProp = sortProp[0]
+  if (sortProp?.minInclusive != null && nextVal < sortProp.minInclusive) nextVal = sortProp.minInclusive
+  if (sortProp?.maxInclusive != null && nextVal > sortProp.maxInclusive) nextVal = sortProp.maxInclusive
+  //debug("create:",shape,nextVal,newVal,property.qname,property) //,subject.getAtomForProperty(property.path.sparqlString))
+
   let waitForNoHisto = false
 
   const addItem = async (event, n) => {
@@ -733,6 +754,10 @@ const Create: FC<{
 
       const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
       rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
+        if (!str) {
+          debug(err)
+          throw "empty ttl serialization"
+        }
         let prefix = property.targetShape.getPropStringValue(shapes.bdsIdentifierPrefix)
         if (prefix == null) throw "cannot find entity prefix for " + property.targetShape.qname
         else prefix += RIDprefix
@@ -746,11 +771,11 @@ const Create: FC<{
         str = str.replace(
           new RegExp("(" + subject.qname + " a )"),
           reservedId
-            .map((id) => id + " a bdo:ImageGroup ; bdo:volumeNumber 1 ; bdo:volumePagesTbrcIntro 0 .")
+            .map((id) => id + " a bdo:ImageGroup ; bdo:volumeNumber " + nextVal++ + " ; bdo:volumePagesTbrcIntro 0 .")
             .join("\n") + "\n$1"
         )
 
-        debug("ttl:", str)
+        debug("ttl:", newVal, str, err)
 
         store = rdf.graph()
         rdf.parse(str, store, rdf.Store.defaultGraphURI, "text/turtle")

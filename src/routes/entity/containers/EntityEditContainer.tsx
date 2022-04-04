@@ -9,6 +9,7 @@ import { entitiesAtom, EditedEntityState, Entity } from "../../../containers/Ent
 import { getIcon } from "../../../containers/EntityInEntitySelectorContainer"
 import PropertyGroupContainer from "./PropertyGroupContainer"
 import {
+  reloadEntityState,
   profileIdState,
   uiLangState,
   uiEditState,
@@ -136,6 +137,8 @@ function EntityEditContainer(props: AppProps) {
     (e) => e.subjectQname === entityQname || e.subjectQname === profileId && entityQname === "tmp:user"
   )
   const icon = getIcon(entityObj.length ? entityObj[0] : null)
+
+  const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
 
   const { loadingState, shape } = ShapeFetcher(shapeQname, entityQname)
 
