@@ -24,7 +24,7 @@ export const generateSubnode = async (
   idToken: string | null
   //n = 1
 ): Promise<Subject | Subject[]> => {
-  if (subshape.node.uri == "http://purl.bdrc.io/ontology/shapes/adm/AdmEntityShape") {
+  if (subshape.node.uri.startsWith("http://purl.bdrc.io/ontology/shapes/adm/AdmEntityShape")) {
     // special case for admin entities
     const res = new Subject(new rdf.NamedNode(ns.BDA_uri + parent.lname), parent.graph)
     return Promise.resolve(res)
