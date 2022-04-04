@@ -207,6 +207,9 @@ const generateDefault = async (
       return propIn[0]
       break
     case ObjectType.LitInList:
+      const defaultValueLiL = property.defaultValue as rdf.Literal | null
+      if (defaultValueLiL !== null)
+        return new LiteralWithId(defaultValueLiL.value, defaultValueLiL.language, defaultValueLiL.datatype)
       if (!property.minCount) {
         const datatype = property.datatype?.value
         if (datatype === ns.RDF("langString").value) {
@@ -223,7 +226,7 @@ const generateDefault = async (
     case ObjectType.Literal:
     default:
       const defaultValue = property.defaultValue as rdf.Literal | null
-      if (defaultValue != null)
+      if (defaultValue !== null)
         return new LiteralWithId(defaultValue.value, defaultValue.language, defaultValue.datatype)
       const datatype = property.datatype?.value
       if (datatype === ns.RDF("langString").value) {
