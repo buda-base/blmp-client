@@ -765,11 +765,11 @@ const Create: FC<{
         if (reservedId) reservedId = reservedId.split(/[ \n]+/).map((id) => "bdr:" + id)
         else throw "error reserving ids"
         if (str.match(/bdo:instanceHasVolume/))
-          str = str.replace(/(bdo:instanceHasVolume[^;.]+)([;.])/m, "$1," + reservedId.join(",") + "$2")
+          str = str.replace(/(bdo:instanceHasVolume([\n\r]|[^;.])+)([;.])/m, "$1," + reservedId.join(",") + "$3")
         else
           str = str.replace(/(a bdo:ImageInstance)([;.])/m, "$1; bdo:instanceHasVolume " + reservedId.join(",") + " $2")
         str = str.replace(
-          new RegExp("(" + subject.qname + " a )"),
+          new RegExp("(" + subject.qname + "[\n\r +]*a )"),
           reservedId
             .map((id) => id + " a bdo:ImageGroup ; bdo:volumeNumber " + nextVal++ + " ; bdo:volumePagesTbrcIntro 0 .")
             .join("\n") + "\n$1"

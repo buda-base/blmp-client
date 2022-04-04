@@ -251,6 +251,6 @@ export const orderedNewValSelector = selectorFamily({
       })
       //debug("newVal:", newVal) //, atom, propertyPath, parentList)
     }
-    return newVal
+    return "" + newVal
   },
 })
