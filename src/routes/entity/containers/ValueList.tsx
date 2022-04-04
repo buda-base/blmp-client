@@ -799,10 +799,15 @@ const Create: FC<{
           alreadySaved = loadRes
 
           const newEntities = [...entities]
-          newEntities[entity] = { ...newEntities[entity], state: EditedEntityState.Saved, alreadySaved }
+          newEntities[entity] = {
+            ...newEntities[entity],
+            state: EditedEntityState.Saved,
+            alreadySaved,
+            subject: undefined,
+          }
           setEntities(newEntities)
 
-          //setTimeout(() => setReloadEntity(subject.qname), 300) //eslint-disable-line no-magic-numbers
+          setTimeout(() => setReloadEntity(subject.qname), 300) //eslint-disable-line no-magic-numbers
         } catch (e) {
           debug("error add batch:", e)
         }

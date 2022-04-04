@@ -358,6 +358,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [current, setCurrent] = useState(entityQname)
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
 
+  debug("reload?", reloadEntity)
+
   useEffect(() => {
     return () => {
       //debug("unm:ef")

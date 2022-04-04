@@ -138,8 +138,6 @@ function EntityEditContainer(props: AppProps) {
   )
   const icon = getIcon(entityObj.length ? entityObj[0] : null)
 
-  const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
-
   const { loadingState, shape } = ShapeFetcher(shapeQname, entityQname)
 
   const canPushPrefLabelGroups = shape?.groups.reduce((acc, group) => {
