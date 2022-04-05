@@ -338,6 +338,7 @@ function App(props: AppProps) {
             />
             <Route exact path="/new" component={NewEntityContainer} />
             <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
+            {/* // not that simple... we have to handle setting property value when needed
             <Route
               exact
               path="/new/:shapeQname/:entityQname" //component={EntityCreationContainer} />
@@ -351,6 +352,26 @@ function App(props: AppProps) {
                 }
                 return <EntityCreationContainer {...props} />
               }}
+            /> */}
+            <Route // we need that route to link back value to property where entity was created
+              exact
+              path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
+              component={EntityCreationContainer}
+            />
+            <Route // this one as well
+              exact
+              path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
+              component={EntityCreationContainer}
+            />
+            <Route // same with entityQname
+              exact
+              path="/new/:shapeQname/:subjectQname/:propertyQname/:index/named/:entityQname"
+              component={EntityCreationContainer}
+            />
+            <Route // same with entityQname
+              exact
+              path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
+              component={EntityCreationContainer}
             />
             <Route
               exact

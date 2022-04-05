@@ -16,7 +16,12 @@ import i18n from "i18next"
 const debug = require("debug")("bdrc:entity:entitycreation")
 
 function EntityCreationContainer(props: AppProps) {
+  const subjectQname = props.match.params.subjectQname
   const shapeQname = props.match.params.shapeQname
+  const propertyQname = props.match.params.propertyQname
+  const index = props.match.params.index
+  const subnodeQname = props.match.params.subnodeQname
+
   // entityQname is an ID desired by the user. In that case we must:
   // - if an entity with the same qname is already open in the editor, just redirect to it
   // - else call EntityCreator
@@ -43,7 +48,25 @@ function EntityCreationContainer(props: AppProps) {
     ? { entityLoadingState: { status: "idle" }, entity: null }
     : EntityCreator(shapeQname, entityQname, unmounting)
   if (entity) {
-    return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
+    if (subjectQname && propertyQname && index)
+      return (
+        <Redirect
+          to={
+            "/edit/" +
+            entity.qname +
+            "/" +
+            shapeQname +
+            "/" +
+            subjectQname +
+            "/" +
+            propertyQname +
+            "/" +
+            index +
+            (subnodeQname ? "/" + subnodeQname : "")
+          }
+        />
+      )
+    else return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
   }
   if (entityLoadingState.status === "error") {
     return (

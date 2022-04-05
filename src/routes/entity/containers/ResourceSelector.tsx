@@ -304,13 +304,25 @@ const ResourceSelector: FC<{
       shapes.bdsIdentifierPrefix,
       property.targetShape?.getPropStringValue(shapes.bdsIdentifierPrefix.value)
     )
-    let url = "/new/" + shapes.typeUriToShape[type.uri][0].qname
+    let url = ""
+    url =
+      "/new/" +
+      shapes.typeUriToShape[type.uri][0].qname +
+      "/" +
+      (owner?.qname && owner.qname !== subject.qname ? owner.qname : subject.qname) +
+      "/" +
+      qnameFromUri(property?.path?.sparqlString) +
+      "/" +
+      idx +
+      (owner?.qname && owner.qname !== subject.qname ? "/" + subject.qname : "")
+
     if (property.connectIDs) {
       const lname = subject.lname
       const unprefixedLname = ns.removeEntityPrefix(subject.lname)
       // the bdr: here should be more safe
-      url += "/" + typeToQnamePrefix(type) + unprefixedLname
+      url += "/named/" + typeToQnamePrefix(type) + unprefixedLname
     }
+
     history.push(url)
   }
 
