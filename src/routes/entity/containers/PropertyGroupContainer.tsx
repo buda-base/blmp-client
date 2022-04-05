@@ -8,7 +8,7 @@ import { ErrorIcon } from "../../../routes/layout/icons"
 import { atom, useRecoilState } from "recoil"
 import { OtherButton } from "./ValueList"
 import i18n from "i18next"
-import { Waypoint } from "react-waypoint"
+//import { Waypoint } from "react-waypoint"
 
 const debug = require("debug")("bdrc:entity:propertygroup")
 
@@ -64,68 +64,68 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
   const [edit, setEdit] = useRecoilState(uiEditState)
   const [groupEd, setGroupEd] = useRecoilState(uiGroupState)
 
-  const [nav, setNav] = useRecoilState(uiNavState)
+  //const [nav, setNav] = useRecoilState(uiNavState)
 
   return (
-    <Waypoint scrollableAncestor={window} onEnter={() => setNav(group.qname)} topOffset={500} bottomOffset={500}>
-      <div
-        role="main"
-        className={"group " + (hasError ? "hasError" : "")}
-        id={group.qname}
-        style={{ scrollMargin: "90px" }}
-      >
-        <section className="album">
-          <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
-            <div
-              className={
-                "row card my-2 pb-3" + (edit === group.qname ? " group-edit" : "") + " show-displayPriority-" + force
-              }
-              onClick={(e) => {
-                if (onGroupOpen && groupEd !== group.qname) onGroupOpen(e, groupEd)
-                setEdit(group.qname)
-                setGroupEd(group.qname)
-              }}
-            >
-              <p className="">
-                {label}
-                {hasError && <ErrorIcon />}
-              </p>
-              {
-                //groupEd === group.qname && ( // WIP, good idea but breaks undo initialization
-                <>
-                  <div className={group.properties.length <= 1 ? "hidePropLabel" : ""} style={{ fontSize: 0 }}>
-                    {withoutDisplayPriority.map((property, index) => (
-                      <PropertyContainer
-                        key={index}
-                        property={property}
-                        subject={subject}
-                        editable={property.readOnly !== true}
-                        shape={shape}
-                      />
-                    ))}
-                    {withDisplayPriority.map((property, index) => (
-                      <PropertyContainer
-                        key={index}
-                        property={property}
-                        subject={subject}
-                        force={force}
-                        editable={property.readOnly !== true}
-                        shape={shape}
-                      />
-                    ))}
-                    {hasExtra && (
-                      <span className="toggle-btn  btn btn-rouge my-4" onClick={toggleExtra}>
-                        {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
-                      </span>
-                    )}
-                  </div>
-                </>
-              }
-            </div>
+    //<Waypoint scrollableAncestor={window} onEnter={() => setNav(group.qname)} topOffset={500} bottomOffset={500}>
+    <div
+      role="main"
+      className={"group " + (hasError ? "hasError" : "")}
+      id={group.qname}
+      style={{ scrollMargin: "90px" }}
+    >
+      <section className="album">
+        <div className="container col-lg-6 col-md-6 col-sm-12" style={{ border: "dashed 1px none" }}>
+          <div
+            className={
+              "row card my-2 pb-3" + (edit === group.qname ? " group-edit" : "") + " show-displayPriority-" + force
+            }
+            onClick={(e) => {
+              if (onGroupOpen && groupEd !== group.qname) onGroupOpen(e, groupEd)
+              setEdit(group.qname)
+              setGroupEd(group.qname)
+            }}
+          >
+            <p className="">
+              {label}
+              {hasError && <ErrorIcon />}
+            </p>
+            {
+              //groupEd === group.qname && ( // WIP, good idea but breaks undo initialization
+              <>
+                <div className={group.properties.length <= 1 ? "hidePropLabel" : ""} style={{ fontSize: 0 }}>
+                  {withoutDisplayPriority.map((property, index) => (
+                    <PropertyContainer
+                      key={index}
+                      property={property}
+                      subject={subject}
+                      editable={property.readOnly !== true}
+                      shape={shape}
+                    />
+                  ))}
+                  {withDisplayPriority.map((property, index) => (
+                    <PropertyContainer
+                      key={index}
+                      property={property}
+                      subject={subject}
+                      force={force}
+                      editable={property.readOnly !== true}
+                      shape={shape}
+                    />
+                  ))}
+                  {hasExtra && (
+                    <span className="toggle-btn  btn btn-rouge my-4" onClick={toggleExtra}>
+                      {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
+                    </span>
+                  )}
+                </div>
+              </>
+            }
           </div>
-        </section>
-      </div>
-    </Waypoint>
+        </div>
+      </section>
+    </div>
+    //</Waypoint>
   )
 }
 

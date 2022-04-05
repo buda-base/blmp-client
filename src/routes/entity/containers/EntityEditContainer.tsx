@@ -128,7 +128,7 @@ function EntityEditContainer(props: AppProps) {
 
   const [undos, setUndos] = useRecoilState(uiUndosState)
 
-  const [nav, setNav] = useRecoilState(uiNavState)
+  //const [nav, setNav] = useRecoilState(uiNavState)
 
   const [profileId, setProfileId] = useRecoilState(profileIdState)
   const [tab, setTab] = useRecoilState(uiTabState)
@@ -309,8 +309,8 @@ function EntityEditContainer(props: AppProps) {
               key={group.qname}
               to={"#" + group.qname}
               // eslint-disable-next-line no-magic-numbers
-              onClick={() => setTimeout(() => setNav(group.qname), 150)}
-              className={nav === group.qname ? "on" : ""}
+              onClick={() => setGroupEd(group.qname)}
+              className={groupEd === group.qname ? "on" : ""}
             >
               <span>{label}</span>
             </Link>
