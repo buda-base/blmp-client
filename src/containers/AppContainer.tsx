@@ -26,7 +26,9 @@ import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
-import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
+import EntityCreationContainer, {
+  EntityCreationContainerOrRedirect,
+} from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
 import {
   uiDisabledTabsState,
@@ -338,21 +340,6 @@ function App(props: AppProps) {
             />
             <Route exact path="/new" component={NewEntityContainer} />
             <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
-            {/* // not that simple... we have to handle setting property value when needed
-            <Route
-              exact
-              path="/new/:shapeQname/:entityQname" //component={EntityCreationContainer} />
-              render={(props) => {
-                const entityIndex = entities.findIndex((e) => e.subjectQname === props.match.entityQname)
-                if (entityIndex != -1) {
-                  return <Redirect to={"/edit/" + props.match.entityQname + "/" + props.match.shapeQname} />
-                }
-                if (!userId) {
-                  return <p className="text-center text-muted">loading...</p>
-                }
-                return <EntityCreationContainer {...props} />
-              }}
-            /> */}
             <Route // we need that route to link back value to property where entity was created
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
@@ -366,12 +353,12 @@ function App(props: AppProps) {
             <Route // same with entityQname
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index/named/:entityQname"
-              component={EntityCreationContainer}
+              component={EntityCreationContainerOrRedirect}
             />
             <Route // same with entityQname
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
-              component={EntityCreationContainer}
+              component={EntityCreationContainerOrRedirect}
             />
             <Route
               exact

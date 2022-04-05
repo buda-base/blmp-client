@@ -83,4 +83,27 @@ function EntityCreationContainer(props: AppProps) {
   )
 }
 
+// path="/new/:shapeQname/:entityQname"
+export function EntityCreationContainerOrRedirect(props: AppProps) {
+  const shapeQname = props.match.params.shapeQname
+  const entityQname = props.match.params.entityQname
+
+  const [userId, setUserId] = useRecoilState(userIdState)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+
+  const entityIndex = entities.findIndex((e) => e.subjectQname === entityQname)
+
+  //debug("eIdx?", props.match.params.entityQname, entityIndex, props.match, entities.map(e => e.subjectQname))
+
+  if (entityIndex != -1) {
+    return <Redirect to={"/edit/" + entityQname + "/" + shapeQname} />
+  }
+
+  if (!userId) {
+    return <p className="text-center text-muted">loading...</p>
+  }
+
+  return <EntityCreationContainer {...props} />
+}
+
 export default EntityCreationContainer
