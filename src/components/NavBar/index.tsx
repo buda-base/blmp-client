@@ -201,9 +201,9 @@ function BottomBar(props: AppProps) {
   }
 
   const generate = async (): Promise<undefined> => {
-    //debug("gen:", entities[entity])
+    debug("gen:", entities[entity])
 
-    if (disabled) {
+    if (saved) {
       if (!gen) {
         setPopupOn(true)
         setGen(true)
@@ -377,9 +377,11 @@ function BottomBar(props: AppProps) {
     setOnlyNSync(event.target.value as boolean)
   }
 
-  const disabled =
+  const saved =
     entities[entity] &&
     [EditedEntityState.Saved, EditedEntityState.NotLoaded, EditedEntityState.Loading].includes(entities[entity].state)
+
+  debug("saved:", saved)
 
   return (
     <nav className="bottom navbar navbar-dark navbar-expand-md">
@@ -454,16 +456,18 @@ function BottomBar(props: AppProps) {
             variant="outlined"
             onClick={() => save(true)}
             className={"btn-rouge mr-2"}
-            {...(disabled || spinner ? { disabled: true } : {})}
+            {...(saved || spinner ? { disabled: true } : {})}
           >
             {"Save"}
           </Button>
         )}
         <Button
           variant="outlined"
-          onClick={isIInstance ? (willGen || disabled ? generate : () => save(!willGen)) : save}
+          onClick={isIInstance ? (willGen || saved ? generate : () => save(!willGen)) : save}
           className="btn-rouge"
-          {...(spinner || (message === "" && saving && !isUserProfile) ? { disabled: true } : {})}
+          {...(spinner || (message === "" && saving && !isUserProfile) || (saved && !isIInstance)
+            ? { disabled: true }
+            : {})}
           //{...(isIInstance && gen && !nbVolumes ? { disabled: true } : {})}
         >
           {spinner ? (
@@ -472,7 +476,7 @@ function BottomBar(props: AppProps) {
             "Ok"
           ) : !isIInstance ? (
             "Save"
-          ) : disabled ? (
+          ) : saved ? (
             gen ? (
               "Generate scan request"
             ) : (

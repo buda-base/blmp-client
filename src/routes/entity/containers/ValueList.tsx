@@ -805,6 +805,9 @@ const Create: FC<{
             alreadySaved,
             subject: undefined,
           }
+
+          delete history[entities[entity]?.subject?.uri]
+
           setEntities(newEntities)
 
           setTimeout(() => setReloadEntity(subject.qname), 300) //eslint-disable-line no-magic-numbers
@@ -1556,6 +1559,7 @@ const LiteralComponent: FC<{
   const deleteItem = () => {
     const newList = removeItemAtIndex(list, index)
     setList(newList)
+    updateEntityState(EditedEntityState.Saved, lit.id)
   }
 
   useEffect(() => {
