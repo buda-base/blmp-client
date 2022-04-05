@@ -26,9 +26,7 @@ import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
-import EntityCreationContainer, {
-  EntityCreationContainerOrRedirect,
-} from "../routes/entity/containers/EntityCreationContainer"
+import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
 import {
   uiDisabledTabsState,
@@ -353,12 +351,12 @@ function App(props: AppProps) {
             <Route // same with entityQname
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index/named/:entityQname"
-              component={EntityCreationContainerOrRedirect}
+              component={EntityCreationContainer}
             />
             <Route // same with entityQname
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
-              component={EntityCreationContainerOrRedirect}
+              component={EntityCreationContainer}
             />
             <Route
               exact

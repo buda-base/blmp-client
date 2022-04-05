@@ -358,7 +358,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [current, setCurrent] = useState(entityQname)
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
 
-  //debug("reload?", reloadEntity)
+  debug("reload?", reloadEntity, unmounting)
 
   useEffect(() => {
     return () => {
@@ -517,6 +517,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
     const index = entities.findIndex(
       (e) => e.subjectQname === entityQname || entityQname == "tmp:user" && e.subjectQname === profileId
     )
+
     if (
       reloadEntity === entityQname && !entities[index].subject ||
       current === entityQname && (index === -1 || entities[index] && !entities[index].subject)
