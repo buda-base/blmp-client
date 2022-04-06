@@ -24,18 +24,18 @@ function EntityShapeChooserContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
 
-  let unmounting = false
+  const unmounting = { val: false }
 
   useEffect(() => {
     return () => {
       //debug("unm:esc")
-      unmounting = true
+      unmounting.val = true
     }
   }, [])
 
   useEffect(() => {
     //debug("params", props.match.params.entityQname)
-    if (unmounting) return
+    if (unmounting.val) return
     else if (props.match.params.entityQname) setEntityQname(props.match.params.entityQname)
   }, [props.match.params])
 

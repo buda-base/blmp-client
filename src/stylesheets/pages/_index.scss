@@ -329,6 +329,7 @@ input[type="checkbox"].dmcheck {
         &.userprofile, &.user, &[data-shape="bds:UserProfileShape"] { 
           & > .shape-icon:before { background-image:url(/icons/user.png); background-size:auto;  }
         }
+        &.instance > .shape-icon:before { background-image:url(/icons/instance.svg); background-size:55px auto;  }
         &.imageinstance > .shape-icon:before { background-image:url(/icons/imageinstance.svg); background-size:55px auto;  }
 
 

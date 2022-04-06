@@ -1,4 +1,4 @@
-import React, { useEffect, useState, FC, ChangeEvent, useRef, useLayoutEffect } from "react"
+import React, { useEffect, useState, FC, ChangeEvent, useRef, useLayoutEffect, useCallback } from "react"
 import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
@@ -287,6 +287,8 @@ const ResourceSelector: FC<{
   // TODO: very dirty! this should be taken from the shape but this is another
   // level of asynchronous indirection
 
+  // (add shape:Shape as parameter of ResourceSelector component could work)
+
   const typeToQnamePrefix = (type: RDFResourceWithLabel): string => {
     const typeLname = type.lname
     if (typeLname == "Work") return "bdr:WA"
@@ -296,35 +298,42 @@ const ResourceSelector: FC<{
     throw "cannot find prefix for " + type.uri
   }
 
-  const createAndUpdate = (type: RDFResourceWithLabel) => () => {
-    debug(
-      "uri:",
-      type.uri,
-      shapes.typeUriToShape,
-      shapes.bdsIdentifierPrefix,
-      property.targetShape?.getPropStringValue(shapes.bdsIdentifierPrefix.value)
-    )
-    let url = ""
-    url =
-      "/new/" +
-      shapes.typeUriToShape[type.uri][0].qname +
-      "/" +
-      (owner?.qname && owner.qname !== subject.qname ? owner.qname : subject.qname) +
-      "/" +
-      qnameFromUri(property?.path?.sparqlString) +
-      "/" +
-      idx +
-      (owner?.qname && owner.qname !== subject.qname ? "/" + subject.qname : "")
+  const createAndUpdate = useCallback(
+    (type: RDFResourceWithLabel) => {
+      debug(
+        "uri:",
+        type.uri,
+        shapes.typeUriToShape,
+        shapes.bdsIdentifierPrefix,
+        property.targetShape?.getPropStringValue(shapes.bdsIdentifierPrefix.value)
+      )
+      let url = ""
+      url =
+        "/new/" +
+        shapes.typeUriToShape[type.uri][0].qname +
+        "/" +
+        (owner?.qname && owner.qname !== subject.qname ? owner.qname : subject.qname) +
+        "/" +
+        qnameFromUri(property?.path?.sparqlString) +
+        "/" +
+        idx +
+        (owner?.qname && owner.qname !== subject.qname ? "/" + subject.qname : "")
 
-    if (property.connectIDs) {
-      const lname = subject.lname
-      const unprefixedLname = ns.removeEntityPrefix(subject.lname)
-      // the bdr: here should be more safe
-      url += "/named/" + typeToQnamePrefix(type) + unprefixedLname
-    }
+      if (property.connectIDs) {
+        const lname = subject.lname
+        const unprefixedLname = ns.removeEntityPrefix(subject.lname)
+        // the bdr: here should be more safe
+        const newId = typeToQnamePrefix(type) + unprefixedLname
+        //debug("nId:",newId,exists(newId),exists)
 
-    history.push(url)
-  }
+        // use this id only if not already in current value list
+        if (!exists(newId)) url += "/named/" + newId
+      }
+
+      return url
+    },
+    [exists, entities, owner, subject, property]
+  )
 
   const chooseEntity = (ent: Entity, prefLabels: Record<string, string>) => () => {
     //debug("choose",ent)
@@ -607,7 +616,15 @@ const ResourceSelector: FC<{
             })}
             <hr className="my-1" />
             {property.expectedObjectTypes?.map((r) => (
-              <MenuItem key={r.qname} value={r.qname} onClick={createAndUpdate(r)}>
+              <MenuItem
+                key={r.qname}
+                value={r.qname}
+                onClick={() => {
+                  const url = createAndUpdate(r)
+                  debug("CaU?", url, property.qname, r.qname, createAndUpdate)
+                  history.push(url)
+                }}
+              >
                 {i18n.t("search.new", { type: r.qname.replace(/^bdo:/, "") })}
               </MenuItem>
             ))}

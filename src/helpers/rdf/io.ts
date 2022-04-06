@@ -208,7 +208,7 @@ export function ShapeFetcher(shapeQname: string, entityQname: string) {
   }
 
   useEffect(() => {
-    //debug("shM:",shapesMap)
+    //debug("shM:", shapeQname, shapesMap, current)
     if (shape && shapeQname === current && loadingState.status === "fetched") {
       return
     }
@@ -345,7 +345,7 @@ export const setUserLocalEntities = async (
   localStorage.setItem("localEntities", JSON.stringify(data))
 }
 
-export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabel | null, unmounting = false) {
+export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabel | null, unmounting = { val: false }) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject>(Subject.createEmpty())
   const [uiReady, setUiReady] = useRecoilState(uiReadyState)
@@ -363,12 +363,12 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   useEffect(() => {
     return () => {
       //debug("unm:ef")
-      unmounting = true
+      unmounting.val = true
     }
   }, [])
 
   useEffect(() => {
-    if (unmounting) return
+    if (unmounting.val) return
     if (current != entityQname) {
       reset()
     }
@@ -381,7 +381,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   }
 
   useEffect(() => {
-    if (unmounting) return
+    if (unmounting.val) return
     async function fetchResource(entityQname: string) {
       setEntityLoadingState({ status: "fetching", error: undefined })
       const fetchUrl = fetchUrlFromEntityQname(entityQname)
@@ -524,15 +524,15 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
     ) {
       if (entityQname != "tmp:user" || idToken) fetchResource(entityQname)
     } else {
-      if (unmounting) return
+      if (unmounting.val) return
       else setEntityLoadingState({ status: "fetched", error: undefined })
 
       const subj: Subject | null = entities[index] ? entities[index].subject : null
 
-      if (unmounting) return
+      if (unmounting.val) return
       else if (subj) setEntity(subj)
 
-      if (unmounting) return
+      if (unmounting.val) return
       else setUiReady(true)
     }
   }, [current, shapeRef, idToken, profileId, reloadEntity])

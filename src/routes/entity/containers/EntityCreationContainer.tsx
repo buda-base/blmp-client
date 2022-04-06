@@ -3,7 +3,7 @@ import { ShapeFetcher, EntityFetcher } from "../../../helpers/rdf/io"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { RDFResourceWithLabel, Subject, EntityGraph } from "../../../helpers/rdf/types"
 import { entitiesAtom, EditedEntityState } from "../../../containers/EntitySelectorContainer"
-import { uiLangState, userIdState, RIDprefixState } from "../../../atoms/common"
+import { uiLangState, userIdState, RIDprefixState, uiTabState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
@@ -29,6 +29,7 @@ export function EntityCreationContainer(props: AppProps) {
   const [userId, setUserId] = useRecoilState(userIdState)
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
+  const [uiTab, setUiTab] = useRecoilState(uiTabState)
 
   const unmounting = { val: false }
   useEffect(() => {
@@ -40,17 +41,40 @@ export function EntityCreationContainer(props: AppProps) {
 
   const i = entities.findIndex((e) => e.subjectQname === subjectQname)
   const theEntity = entities[i]
+  if (theEntity) {
+    return (
+      <Redirect
+        to={
+          "/edit/" +
+          (entityQname ? entityQname : entity.qname) +
+          "/" +
+          shapeQname +
+          "/" +
+          subjectQname +
+          "/" +
+          propertyQname +
+          "/" +
+          index +
+          (subnodeQname ? "/" + subnodeQname : "")
+        }
+      />
+    )
+  }
 
+  /*
   const { loadingState, shape } = theEntity
     ? ShapeFetcher(shapeQname, entityQname)
     : { loadingState: "idle", shape: null }
 
   if (theEntity) {
-    if (!shape) return <div>Loading...</div>
+    if (!shape) return <div></div>
     else return <EntityCreationContainerAlreadyOpen shape={shape} {...props} />
   }
+  */
 
-  if (!RIDprefix) return <Redirect to="/new" />
+  //debug("new:",RIDprefix)
+
+  if (RIDprefix == "") return <Redirect to="/new" />
 
   // TODO: if EntityCreator throws a 422 exception (the entity already exists),
   // we must give a choice to the user:
@@ -61,8 +85,10 @@ export function EntityCreationContainer(props: AppProps) {
     ? { entityLoadingState: { status: "idle" }, entity: null }
     : EntityCreator(shapeQname, entityQname, unmounting)
 
+  //debug("new:", entityLoadingState, entity, entityQname, entity?.qname, shapeQname)
+
   if (entity) {
-    if (subjectQname && propertyQname && index)
+    if (subjectQname && propertyQname && index != undefined)
       return (
         <Redirect
           to={
@@ -80,7 +106,7 @@ export function EntityCreationContainer(props: AppProps) {
           }
         />
       )
-    else return <Redirect to={"/edit/" + entityQname ? entityQname : entity.qname + "/" + shapeQname} />
+    else return <Redirect to={"/edit/" + (entityQname ? entityQname : entity.qname) + "/" + shapeQname} />
   }
   if (entityLoadingState.status === "error") {
     return (
@@ -96,74 +122,3 @@ export function EntityCreationContainer(props: AppProps) {
     </div>
   )
 }
-
-function EntityCreationContainerAlreadyOpen(props: AppProps) {
-  const subjectQname = props.match.params.subjectQname
-  const shapeQname = props.match.params.shapeQname
-  const propertyQname = props.match.params.propertyQname
-  const index = props.match.params.index
-  const subnodeQname = props.match.params.subnodeQname
-
-  // entityQname is an ID desired by the user. In that case we must:
-  // - if an entity with the same qname is already open in the editor, just redirect to it
-  // - else call EntityCreator
-  const entityQname = props.match.params.entityQname
-  const [userId, setUserId] = useRecoilState(userIdState)
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
-
-  let unmounting = false
-  useEffect(() => {
-    return () => {
-      //debug("unm:ecc")
-      unmounting = true
-    }
-  }, [])
-
-  if (!RIDprefix) return <Redirect to="/new" />
-
-  // TODO: if EntityCreator throws a 422 exception (the entity already exists),
-  // we must give a choice to the user:
-  //    * open the existing entity
-  //    * create an entity with a different id, in which case we call reserveLname again
-
-  const { entityLoadingState, entity } = unmounting
-    ? { entityLoadingState: { status: "idle" }, entity: null }
-    : EntityFetcher(entityQname, props.shape, unmounting)
-
-  if (entity) {
-    if (subjectQname && propertyQname && index != undefined) {
-      const redir =
-        "/edit/" +
-        (entityQname ? entityQname : entity.qname) +
-        "/" +
-        shapeQname +
-        "/" +
-        subjectQname +
-        "/" +
-        propertyQname +
-        "/" +
-        index +
-        (subnodeQname ? "/" + subnodeQname : "")
-
-      debug("what...", redir)
-
-      return <Redirect to={redir} />
-    } else return <Redirect to={"/edit/" + entityQname ? entityQname : entity.qname + "/" + shapeQname} />
-  }
-  if (entityLoadingState.status === "error") {
-    return (
-      <p className="text-center text-muted">
-        <NotFoundIcon className="icon mr-2" />
-        {entityLoadingState.error}
-      </p>
-    )
-  }
-  return (
-    <div>
-      <div>{i18n.t("types.creating")}</div>
-    </div>
-  )
-}
-
-export default EntityCreationContainer

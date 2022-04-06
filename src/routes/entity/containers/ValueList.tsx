@@ -1,4 +1,4 @@
-import React, { useEffect, FC, ChangeEvent, useState, useRef, useLayoutEffect } from "react"
+import React, { useEffect, FC, ChangeEvent, useState, useRef, useLayoutEffect, useCallback } from "react"
 import PropTypes from "prop-types"
 import * as rdf from "rdflib"
 import {
@@ -380,16 +380,21 @@ const ValueList: FC<{
   }
 
   // DONE prevent adding same resource twice
-  let exists: (uri: string) => boolean = () => false
-  useEffect(() => {
-    exists = (uri: string): boolean => {
+  const exists = useCallback(
+    (uri: string) => {
+      //debug("set exists",list)
+      //debug("exists?", uri, list)
       for (const val of list) {
-        if (val instanceof RDFResourceWithLabel && (val.qname === uri || val.uri === uri)) return true
+        if (val instanceof RDFResourceWithLabel && (val.qname === uri || val.uri === uri)) {
+          //debug("found " + uri + " in ", list)
+          return true
+        }
       }
-      //debug("not found "+uri+" in ",list)
+      //debug("not found " + uri + " in ", list)
       return false
-    }
-  }, [list])
+    },
+    [list]
+  )
 
   let firstValueIsEmptyField = true
 
