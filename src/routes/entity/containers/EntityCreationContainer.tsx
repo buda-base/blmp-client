@@ -122,3 +122,5 @@ export function EntityCreationContainer(props: AppProps) {
     </div>
   )
 }
+
+export default EntityCreationContainer
