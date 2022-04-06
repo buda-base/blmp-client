@@ -26,7 +26,9 @@ import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
-import EntityCreationContainer from "../routes/entity/containers/EntityCreationContainer"
+import EntityCreationContainer, {
+  EntityCreationContainerAlreadyOpen,
+} from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
 import {
   uiDisabledTabsState,
@@ -351,12 +353,24 @@ function App(props: AppProps) {
             <Route // same with entityQname
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index/named/:entityQname"
-              component={EntityCreationContainer}
+              render={(props) => {
+                const i = entities.findIndex((e) => e.subjectQname === props.match.params.entityQname)
+                const theEntity = entities[i]
+                debug("tE:", theEntity)
+                if (theEntity) return <EntityCreationContainerAlreadyOpen {...props} entity={theEntity.subject} />
+                else return <EntityCreationContainer {...props} />
+              }}
             />
             <Route // same with entityQname
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
-              component={EntityCreationContainer}
+              render={(props) => {
+                const i = entities.findIndex((e) => e.subjectQname === props.match.params.entityQname)
+                const theEntity = entities[i]
+                debug("tE:", theEntity)
+                if (theEntity) return <EntityCreationContainerAlreadyOpen {...props} entity={theEntity.subject} />
+                else return <EntityCreationContainer {...props} />
+              }}
             />
             <Route
               exact

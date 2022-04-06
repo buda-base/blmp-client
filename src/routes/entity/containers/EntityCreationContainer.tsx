@@ -39,9 +39,6 @@ export function EntityCreationContainer(props: AppProps) {
     }
   }, [])
 
-  const i = entities.findIndex((e) => e.subjectQname === entityQname)
-  const theEntity = entities[i]
-
   if (RIDprefix == "") return <Redirect to="/new" />
 
   // TODO: if EntityCreator throws a 422 exception (the entity already exists),
@@ -87,6 +84,56 @@ export function EntityCreationContainer(props: AppProps) {
   return (
     <div>
       <div>{i18n.t("types.creating")}</div>
+    </div>
+  )
+}
+export function EntityCreationContainerAlreadyOpen(props: AppProps) {
+  const subjectQname = props.match.params.subjectQname
+  const shapeQname = props.match.params.shapeQname
+  const propertyQname = props.match.params.propertyQname
+  const index = props.match.params.index
+  const subnodeQname = props.match.params.subnodeQname
+
+  // entityQname is an ID desired by the user. In that case we must:
+  // - if an entity with the same qname is already open in the editor, just redirect to it
+  // - else call EntityCreator
+  const entityQname = props.match.params.entityQname
+  const [userId, setUserId] = useRecoilState(userIdState)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
+  const [uiTab, setUiTab] = useRecoilState(uiTabState)
+
+  const unmounting = { val: false }
+  useEffect(() => {
+    return () => {
+      //debug("unm:ecc")
+      unmounting.val = true
+    }
+  }, [])
+
+  if (subjectQname && propertyQname && index != undefined)
+    return (
+      <Redirect
+        to={
+          "/edit/" +
+          entityQname +
+          "/" +
+          shapeQname +
+          "/" +
+          subjectQname +
+          "/" +
+          propertyQname +
+          "/" +
+          index +
+          (subnodeQname ? "/" + subnodeQname : "")
+        }
+      />
+    )
+  else return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
+
+  return (
+    <div>
+      <div>{i18n.t("types.loading")}</div>
     </div>
   )
 }
