@@ -39,40 +39,8 @@ export function EntityCreationContainer(props: AppProps) {
     }
   }, [])
 
-  const i = entities.findIndex((e) => e.subjectQname === subjectQname)
+  const i = entities.findIndex((e) => e.subjectQname === entityQname)
   const theEntity = entities[i]
-  if (theEntity) {
-    return (
-      <Redirect
-        to={
-          "/edit/" +
-          (entityQname ? entityQname : entity.qname) +
-          "/" +
-          shapeQname +
-          "/" +
-          subjectQname +
-          "/" +
-          propertyQname +
-          "/" +
-          index +
-          (subnodeQname ? "/" + subnodeQname : "")
-        }
-      />
-    )
-  }
-
-  /*
-  const { loadingState, shape } = theEntity
-    ? ShapeFetcher(shapeQname, entityQname)
-    : { loadingState: "idle", shape: null }
-
-  if (theEntity) {
-    if (!shape) return <div></div>
-    else return <EntityCreationContainerAlreadyOpen shape={shape} {...props} />
-  }
-  */
-
-  //debug("new:",RIDprefix)
 
   if (RIDprefix == "") return <Redirect to="/new" />
 
