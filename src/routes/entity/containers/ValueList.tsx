@@ -227,6 +227,7 @@ const generateDefault = async (
     case ObjectType.Literal:
     default:
       const defaultValue = property.defaultValue as rdf.Literal | null
+      debug("default:", property.qname, defaultValue)
       if (defaultValue !== null)
         return new LiteralWithId(defaultValue.value, defaultValue.language, defaultValue.datatype)
       const datatype = property.datatype?.value
@@ -1401,14 +1402,14 @@ const EditBool: FC<{
   //debug("bool:",lit)
 
   const changeCallback = (val: string) => {
-    onChange(lit.copyWithUpdatedValue(val))
+    onChange(lit.copyWithUpdatedValue(val == "false" ? "0" : "1"))
   }
   return (
     <TextField
       select
       style={{ padding: "1px", minWidth: "250px" }}
       label={label}
-      value={!lit.value || lit.value == "false" ? false : true}
+      value={!lit.value || lit.value == "false" || lit.value == "0" ? false : true}
       InputLabelProps={{ shrink: true }}
       onChange={(e) => changeCallback(e.target.value)}
       {...(!editable ? { disabled: true } : {})}

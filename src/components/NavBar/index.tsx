@@ -284,7 +284,9 @@ function BottomBar(props: AppProps) {
     const store = new rdf.Store()
     ns.setDefaultPrefixes(store)
     entitySubj?.graph.addNewValuestoStore(store)
+    debug("saving:", entitySubj)
     debugStore(store)
+    debug("saved:", store)
 
     // save ttl to localStorage
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
