@@ -349,7 +349,10 @@ function EntityEditContainer(props: AppProps) {
               key={group.qname}
               to={"#" + group.qname}
               // eslint-disable-next-line no-magic-numbers
-              onClick={() => setGroupEd(group.qname)}
+              onClick={() => {
+                setGroupEd(group.qname)
+                setEdit(group.qname)
+              }}
               className={groupEd === group.qname ? "on" : ""}
             >
               <span>{label}</span>

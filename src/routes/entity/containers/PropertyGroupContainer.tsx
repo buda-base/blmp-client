@@ -22,7 +22,7 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
   const label = lang.ValueByLangToStrPrefLang(group.prefLabels, uiLang)
   const [force, setForce] = useState(false)
 
-  //debug("propertyGroup:", subject.qname, group, subject)
+  //debug("propertyGroup:", subject.qname, errors, group, subject)
 
   const withDisplayPriority: PropertyShape[] = [],
     withoutDisplayPriority: PropertyShape[] = []

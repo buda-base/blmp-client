@@ -306,13 +306,15 @@ const ValueList: FC<{
       const ent: Entity = entities[n]
       if (status === EditedEntityState.Error) {
         //debug("error:", errors, status, n, ent, property.qname, id)
+
+        if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
+        errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id] = true
+
         if (ent.state != status) {
           const newEntities = [...entities]
           newEntities[n] = { ...entities[n], state: status }
           setEntities(newEntities)
         }
-        if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
-        errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id] = true
       } else if (status !== EditedEntityState.Error) {
         // DONE: update status to NeedsSaving for newly created entity and not for loaded entity
         status =
@@ -903,17 +905,19 @@ const EditLangString: FC<{
     let err = ""
     if (!val && property.minCount) err = i18n.t("error.empty")
     else if (globalError) err = globalError
+    //if(err) debug("error!",lit.id, lit, errors)
+    //else debug("no err?",lit.id, lit, errors)
     return err
   }
 
-  const [error, setError] = useState("") //getLangStringError(lit.value))
+  const [error, setError] = useState("")
 
   useEffect(() => {
     const newError = getLangStringError(lit.value)
-    //debug("newE:",newError,error,lit,lit.id)
     if (newError != error) {
-      setError(newError)
+      //debug("newE:",newError,error,errors,lit,lit.id)
       updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
+      setError(newError)
     }
   })
 
@@ -1576,7 +1580,9 @@ const LiteralComponent: FC<{
       const ent = entities[n]
       if (ent.state === EditedEntityState.Error) error = true
     }
-    if (!error) updateEntityState(EditedEntityState.Saved, lit.id)
+    if (!error && (!errors[entityQname] || !Object.keys(errors[entityQname]).length)) {
+      updateEntityState(EditedEntityState.Saved, lit.id)
+    }
   }, [undos])
 
   const t = property.datatype
