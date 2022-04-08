@@ -27,7 +27,7 @@ import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
 import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
 import EntityCreationContainer, {
-  EntityCreationContainerAlreadyOpen,
+  EntityCreationContainerRoute,
 } from "../routes/entity/containers/EntityCreationContainer"
 import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
 import {
@@ -343,34 +343,22 @@ function App(props: AppProps) {
             <Route // we need that route to link back value to property where entity was created
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
-              component={EntityCreationContainer}
+              component={EntityCreationContainerRoute}
             />
             <Route // this one as well
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
-              component={EntityCreationContainer}
+              component={EntityCreationContainerRoute}
             />
             <Route // same with entityQname
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index/named/:entityQname"
-              render={(props) => {
-                const i = entities.findIndex((e) => e.subjectQname === props.match.params.entityQname)
-                const theEntity = entities[i]
-                debug("tE:", theEntity)
-                if (theEntity) return <EntityCreationContainerAlreadyOpen {...props} entity={theEntity.subject} />
-                else return <EntityCreationContainer {...props} />
-              }}
+              component={EntityCreationContainerRoute}
             />
             <Route // same with entityQname
               exact
               path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
-              render={(props) => {
-                const i = entities.findIndex((e) => e.subjectQname === props.match.params.entityQname)
-                const theEntity = entities[i]
-                debug("tE:", theEntity)
-                if (theEntity) return <EntityCreationContainerAlreadyOpen {...props} entity={theEntity.subject} />
-                else return <EntityCreationContainer {...props} />
-              }}
+              component={EntityCreationContainerRoute}
             />
             <Route
               exact

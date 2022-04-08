@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useLayoutEffect } from "react"
 import { ShapeFetcher, EntityFetcher } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
-import { RDFResource, Subject, ExtRDFResourceWithLabel, history } from "../../../helpers/rdf/types"
+import { RDFResource, Subject, ExtRDFResourceWithLabel, history, LiteralWithId } from "../../../helpers/rdf/types"
 import * as shapes from "../../../helpers/rdf/shapes"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
@@ -21,6 +21,8 @@ import {
   personNamesLabelsSelector,
   possiblePrefLabelsSelector,
   initListAtom,
+  initMapAtom,
+  toCopySelector,
 } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { atom, useRecoilState, useRecoilSnapshot, useRecoilValue } from "recoil"
@@ -32,6 +34,7 @@ import { Redirect } from "react-router-dom"
 import { replaceItemAtIndex } from "../../../helpers/atoms"
 import { HashLink as Link } from "react-router-hash-link"
 import { useAuth0 } from "@auth0/auth0-react"
+import queryString from "query-string"
 import { getParentPath } from "../../helpers/observer"
 
 const debug = require("debug")("bdrc:entity:edit")
@@ -49,9 +52,12 @@ export function EntityEditContainerMayUpdate(props: AppProps) {
   const snapshot = useRecoilSnapshot()
   const [subject, setSubject] = useState(false)
 
+  const { copy } = queryString.parse(props.location.search)
+
   useEffect(() => {
     const i = entities.findIndex((e) => e.subjectQname === subjectQname)
     let subj
+    if (i === -1) return
     if (subnodeQname) {
       const pp = getParentPath(ns.uriFromQname(subjectQname), ns.uriFromQname(subnodeQname))
       //debug("gPP:", pp)
@@ -81,6 +87,7 @@ export function EntityEditContainerMayUpdate(props: AppProps) {
         propertyQname={propertyQname}
         objectQname={entityQname}
         index={Number(index)}
+        copy={copy}
         {...props}
       />
     )
@@ -102,13 +109,46 @@ function EntityEditContainerDoUpdate(props: AppPropsDoUpdate) {
   const atom = props.subject.getAtomForProperty(ns.uriFromQname(props.propertyQname))
   const [list, setList] = useRecoilState(atom)
 
-  debug("LIST:", list, atom)
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const i = entities.findIndex((e) => e.subjectQname === props.objectQname)
+  const subject = entities[i]?.subject
+
+  const copy = props.copy?.split(";").reduce((acc, p) => {
+    const q = p.split(",")
+    return {
+      ...acc,
+      [q[0]]: q.slice(1).map((v) => {
+        const lit = decodeURIComponent(v).split("@")
+        return new LiteralWithId(lit[0].replace(/(^")|("$)/g, ""), lit[1], ns.RDF("langString").value)
+      }),
+    }
+  }, {})
+
+  const [getProp, setProp] = useRecoilState(
+    subject && copy && Object.keys(copy).length
+      ? //? subject.getAtomForProperty(ns.SKOS("prefLabel").value)
+        toCopySelector({
+          list: Object.keys(copy).map((p) => ({
+            property: p,
+            atom: subject.getAtomForProperty(ns.uriFromQname(p)),
+          })),
+        })
+      : initListAtom
+  )
+
+  debug("LIST:", list, atom, props.copy, copy, props.prefLabel)
 
   useEffect(() => {
     const newObject = new ExtRDFResourceWithLabel(props.objectQname, {}, {})
     // DONE: must also give set index in url
     const newList = replaceItemAtIndex(list, props.index, newObject)
     setList(newList)
+
+    if (copy) {
+      for (const k of Object.keys(copy)) {
+        setProp({ k, val: copy[k] })
+      }
+    }
   }, [])
 
   return <Redirect to={"/edit/" + props.objectQname + "/" + shapeQname} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, FC, ChangeEvent, useRef, useLayoutEffect, useCallback } from "react"
-import { useRecoilState, useSetRecoilState, atomFamily } from "recoil"
+import { useRecoilState, useSetRecoilState, atomFamily, useRecoilValue } from "recoil"
 import { makeStyles } from "@material-ui/core/styles"
 import { TextField, MenuItem } from "@material-ui/core"
 import i18n from "i18next"
@@ -7,7 +7,14 @@ import { useHistory, Link } from "react-router-dom"
 import { fromWylie } from "jsewts"
 import * as shapes from "../../../helpers/rdf/shapes"
 import * as lang from "../../../helpers/lang"
-import { uiLangState, uiLitLangState, uiTabState } from "../../../atoms/common"
+import {
+  uiLangState,
+  uiLitLangState,
+  uiTabState,
+  initListAtom,
+  initMapAtom,
+  toCopySelector,
+} from "../../../atoms/common"
 import { RDFResource, ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import {
@@ -86,6 +93,20 @@ const ResourceSelector: FC<{
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   const isRid = keyword.startsWith("bdr:") || keyword.match(/^([cpgwrti]|mw|wa|was|ut|ie|pr)(\d|eap)[^ ]*$/i)
+
+  /// DONE: handle bdsCopyObjectsOfProperty
+  const toCopy = useRecoilValue(
+    property.copyObjectsOfProperty?.length
+      ? toCopySelector({
+          list: property.copyObjectsOfProperty.map((p) => ({
+            property: ns.qnameFromUri(p.value),
+            atom: (owner ? owner : subject).getAtomForProperty(p.uri),
+          })),
+        })
+      : initMapAtom
+  )
+
+  //debug("pL:",entityPrefLabel, property.qname,property.copyObjectsOfProperty)
 
   //debug("gE:", error, globalError)
   useEffect(() => {
@@ -300,6 +321,7 @@ const ResourceSelector: FC<{
 
   const createAndUpdate = useCallback(
     (type: RDFResourceWithLabel) => {
+      /*
       debug(
         "uri:",
         type.uri,
@@ -307,6 +329,8 @@ const ResourceSelector: FC<{
         shapes.bdsIdentifierPrefix,
         property.targetShape?.getPropStringValue(shapes.bdsIdentifierPrefix.value)
       )
+      */
+
       let url = ""
       url =
         "/new/" +
@@ -330,9 +354,28 @@ const ResourceSelector: FC<{
         if (!exists(newId)) url += "/named/" + newId
       }
 
+      // add requested values from this entity as url params
+      let urlParams = ""
+      if (property.copyObjectsOfProperty?.length) {
+        //debug("tC:",toCopy)
+        for (const k of Object.keys(toCopy)) {
+          if (urlParams) urlParams += ";"
+          let val = ""
+          for (const l of toCopy[k]) {
+            if (l.value) {
+              val += "," + encodeURIComponent('"' + l.value + (l.language ? '"@' + l.language : ""))
+            }
+          }
+          if (val) urlParams += k + val
+        }
+        if (urlParams) {
+          url += "?copy=" + urlParams
+          //debug("url:",url)
+        }
+      }
       return url
     },
-    [exists, entities, owner, subject, property]
+    [exists, entities, owner, subject, property, toCopy]
   )
 
   const chooseEntity = (ent: Entity, prefLabels: Record<string, string>) => () => {

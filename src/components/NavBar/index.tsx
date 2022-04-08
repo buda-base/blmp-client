@@ -284,9 +284,9 @@ function BottomBar(props: AppProps) {
     const store = new rdf.Store()
     ns.setDefaultPrefixes(store)
     entitySubj?.graph.addNewValuestoStore(store)
-    debug("saving:", entitySubj)
+    //debug("saving:", entitySubj)
     debugStore(store)
-    debug("saved:", store)
+    //debug("saved:", store)
 
     // save ttl to localStorage
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
@@ -383,7 +383,7 @@ function BottomBar(props: AppProps) {
     entities[entity] &&
     [EditedEntityState.Saved, EditedEntityState.NotLoaded, EditedEntityState.Loading].includes(entities[entity].state)
 
-  debug("saved:", saved)
+  //debug("saved:", saved)
 
   return (
     <nav className="bottom navbar navbar-dark navbar-expand-md">

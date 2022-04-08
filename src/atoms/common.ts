@@ -164,6 +164,8 @@ export const personNamesLabelsSelector = selectorFamily({
 
 export const initListAtom = atom<Array<Value>>({ key: "initListAtom", default: [] })
 
+export const initMapAtom = atom<Map<string, Value>>({ key: "initMapAtom", default: {} })
+
 export const possiblePrefLabelsSelector = selectorFamily({
   key: "possiblePrefLabelsSelector",
   get: ({ canPushPrefLabelGroups }) => ({ get }) => {
@@ -252,5 +254,24 @@ export const orderedNewValSelector = selectorFamily({
       //debug("newVal:", newVal) //, atom, propertyPath, parentList)
     }
     return "" + newVal
+  },
+})
+
+export const toCopySelector = selectorFamily({
+  key: "toCopySelector",
+  get: ({ list }) => ({ get }) => {
+    const res = {}
+    list.map(({ property, atom }) => {
+      const val = get(atom)
+      //debug("copy:",property, val, atom)
+      res[property] = val
+    })
+    return res
+  },
+  set: ({ list }) => ({ get, set }, { k, val }) => {
+    //debug("set:", list, k, val)
+    list.map(({ property, atom }) => {
+      if (k == property) set(atom, [...get(atom), ...val])
+    })
   },
 })

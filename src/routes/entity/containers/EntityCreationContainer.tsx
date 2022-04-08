@@ -7,11 +7,12 @@ import { uiLangState, userIdState, RIDprefixState, uiTabState } from "../../../a
 import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
-import { BrowserRouter as Router, Switch, Route, Link, Redirect } from "react-router-dom"
+import { BrowserRouter as Router, Switch, Route, Link, Redirect, useParams } from "react-router-dom"
 import React, { useEffect } from "react"
 import qs from "query-string"
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
+import queryString from "query-string"
 
 const debug = require("debug")("bdrc:entity:entitycreation")
 
@@ -67,7 +68,8 @@ export function EntityCreationContainer(props: AppProps) {
             propertyQname +
             "/" +
             index +
-            (subnodeQname ? "/" + subnodeQname : "")
+            (subnodeQname ? "/" + subnodeQname : "") +
+            (props.copy ? "?copy=" + props.copy : "")
           }
         />
       )
@@ -125,7 +127,8 @@ export function EntityCreationContainerAlreadyOpen(props: AppProps) {
           propertyQname +
           "/" +
           index +
-          (subnodeQname ? "/" + subnodeQname : "")
+          (subnodeQname ? "/" + subnodeQname : "") +
+          (props.copy ? "?copy=" + props.copy : "")
         }
       />
     )
@@ -136,6 +139,17 @@ export function EntityCreationContainerAlreadyOpen(props: AppProps) {
       <div>{i18n.t("types.loading")}</div>
     </div>
   )
+}
+
+export function EntityCreationContainerRoute(props: AppProps) {
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const i = entities.findIndex((e) => e.subjectQname === props.match.params.entityQname)
+  const theEntity = entities[i]
+
+  const { copy } = queryString.parse(props.location.search)
+
+  if (theEntity) return <EntityCreationContainerAlreadyOpen {...props} entity={theEntity.subject} copy={copy} />
+  else return <EntityCreationContainer {...props} copy={copy} />
 }
 
 export default EntityCreationContainer

@@ -98,6 +98,7 @@ export const bdsIndependentIdentifiers = ns.BDS("independentIdentifiers") as rdf
 export const bdsSpecialPattern = ns.BDS("specialPattern") as rdf.NamedNode
 export const bdsConnectIDs = ns.BDS("connectIDs") as rdf.NamedNode
 export const bdsAllowBatchManagement = ns.BDS("allowBatchManagement") as rdf.NamedNode
+export const bdsCopyObjectsOfProperty = ns.BDS("copyObjectsOfProperty") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
 typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
@@ -316,6 +317,12 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get group(): rdf.NamedNode | null {
     return this.getPropResValue(shGroup as rdf.NamedNode)
+  }
+
+  @Memoize()
+  public get copyObjectsOfProperty(): Array<rdf.NamedNode> | null {
+    const res: Array<PropertyShape> = []
+    return this.graph.store.each(this.node, bdsCopyObjectsOfProperty, null) as Array<rdf.NamedNode>
   }
 
   @Memoize()

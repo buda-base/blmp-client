@@ -227,7 +227,7 @@ const generateDefault = async (
     case ObjectType.Literal:
     default:
       const defaultValue = property.defaultValue as rdf.Literal | null
-      debug("default:", property.qname, defaultValue)
+      //debug("default:", property.qname, defaultValue)
       if (defaultValue !== null)
         return new LiteralWithId(defaultValue.value, defaultValue.language, defaultValue.datatype)
       const datatype = property.datatype?.value
