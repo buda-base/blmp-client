@@ -55,6 +55,7 @@ const enTranslations = {
     show: "Show",
     hide: "Hide",
     add_nb: "Number of {{val}} to add",
+    close: "Close all open entities",
   },
 }
 

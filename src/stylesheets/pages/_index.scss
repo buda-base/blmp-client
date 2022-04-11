@@ -273,6 +273,7 @@ input[type="checkbox"].dmcheck {
 
     &.Mui-selected { background:#eee;}
   }
+  
 
 
   [role=tablist] + span:last-child { display:none; }
@@ -305,24 +306,32 @@ input[type="checkbox"].dmcheck {
       &.state-2 { background-color: #f5a623; } // needs saving
     }
     
-    .close-facet-btn { font-size:18px; position: absolute; right: 3px; top:8px; color:#343434; display:none; }
-
-    &:hover .close-facet-btn { display:block;}
-
+    
+    
     img.entity-type {
       height: 25px; width:25px; position: absolute;
     }
-
+    
     &.Mui-selected:not(:last-of-type) { background-color: #fff; }
+
+    &:hover .close-facet-btn { display:block;}
+  }
+
+  h4 { position:relative; 
+    .close-facet-btn { cursor: pointer; top: -3px; }
   }
   
+  .close-facet-btn { font-size:18px; position: absolute; right: 3px; top:6px; color:#343434; display:none; }
+  
+  &:hover h4 .close-facet-btn { display:block;}
+  
   & + div { width:1225px; margin:auto; padding-left:125px; text-align:left; padding-top:20px !important;
-      & > div { width:810px; max-width:100%; min-width:660px; margin:auto; padding:15px; background:white;         
-        & > div.shape-icon { background: #fce08e; width:100%; height:120px;box-sizing: border-box; display:flex; align-items:center;  justify-content: center;
-          &::before { content:''; background-color:white; width:90px; height:90px; border-radius:50%; display:block; background-repeat: no-repeat; background-position:center; background-size:auto 70px;}
-        }        
-        &.person > .shape-icon:before { background-image:url(/icons/person.svg);  }
-        &.work > .shape-icon:before { background-image:url(/icons/work.svg);  }
+    & > div { width:810px; max-width:100%; min-width:660px; margin:auto; padding:15px; background:white;         
+      & > div.shape-icon { background: #fce08e; width:100%; height:120px;box-sizing: border-box; display:flex; align-items:center;  justify-content: center;
+        &::before { content:''; background-color:white; width:90px; height:90px; border-radius:50%; display:block; background-repeat: no-repeat; background-position:center; background-size:auto 70px;}
+      }        
+      &.person > .shape-icon:before { background-image:url(/icons/person.svg);  }
+      &.work > .shape-icon:before { background-image:url(/icons/work.svg);  }
         &.corporation > .shape-icon:before { background-image:url(/icons/corporation.svg);  }
         &.topic > .shape-icon:before { background-image:url(/icons/topic.svg);  }
         &.place > .shape-icon:before { background-image:url(/icons/place.svg);  }
@@ -331,8 +340,8 @@ input[type="checkbox"].dmcheck {
         }
         &.instance > .shape-icon:before { background-image:url(/icons/instance.svg); background-size:55px auto;  }
         &.imageinstance > .shape-icon:before { background-image:url(/icons/imageinstance.svg); background-size:55px auto;  }
-
-
+        
+        
         h1 { font-size:25px; line-height:37px; font-weight:700; text-align: left; color:#343434; padding-left:0px; padding-top:20px;}
         h1+span { color: rgba(0,0,0,.5); font-size: 12px; font-weight: 600; text-align:left; width:100%; display:block; padding-left:1px; }
         h1~p { padding-left:20px; padding-top:35px; font-size:15px; }

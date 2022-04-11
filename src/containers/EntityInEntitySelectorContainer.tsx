@@ -94,7 +94,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   }
 
   const closeEntity = (ev: MouseEvent) => {
-    if (entity.state === EditedEntityState.NeedsSaving) {
+    if (entity.state === EditedEntityState.NeedsSaving || entity.state === EditedEntityState.Error) {
       const go = window.confirm("unsaved data will be lost")
       if (!go) return
     }
