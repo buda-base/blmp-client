@@ -11,7 +11,14 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
 import { BrowserRouter as Router, Switch, Route, Link, useHistory } from "react-router-dom"
-import { uiDisabledTabsState, uiLangState, uiLitLangState, uiTabState, userIdState } from "../atoms/common"
+import {
+  uiDisabledTabsState,
+  uiLangState,
+  uiLitLangState,
+  uiTabState,
+  userIdState,
+  savePopupState,
+} from "../atoms/common"
 import { makeStyles } from "@material-ui/core/styles"
 import Tabs from "@material-ui/core/Tabs"
 import Tab from "@material-ui/core/Tab"
@@ -60,6 +67,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
   const [userId, setUserId] = useRecoilState(userIdState)
+  const [popupOn, setPopupOn] = useRecoilState(savePopupState)
 
   const history = useHistory()
   const auth0 = useAuth0()
@@ -90,6 +98,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     if (newTab !== tab) {
       setDisabled(true)
       setTab(newTab)
+      setPopupOn(false)
     }
   }
 

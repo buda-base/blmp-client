@@ -946,6 +946,13 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
       &.error {
         min-height:105px;
         &.on { top: calc(100% - 175px); }
+
+        &.user {
+          min-height:65px;
+          &.on { top: calc(100% - 135px); }
+
+          & > div { min-width:300px; font-size:12px; color:#d73449; font-style: italic; }
+        }
       }
     }
 

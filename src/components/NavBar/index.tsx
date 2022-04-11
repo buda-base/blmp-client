@@ -30,6 +30,7 @@ import {
   uiTabState,
   userIdState,
   RIDprefixState,
+  savePopupState,
 } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import * as ns from "../../helpers/rdf/ns"
@@ -153,7 +154,7 @@ function BottomBar(props: AppProps) {
   const [saving, setSaving] = useState(false)
   const [gen, setGen] = useState(false)
   const [willGen, setWillGen] = useState(true)
-  const [popupOn, setPopupOn] = useState(false)
+  const [popupOn, setPopupOn] = useRecoilState(savePopupState)
   const [userId, setUserId] = useRecoilState(userIdState)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
@@ -339,6 +340,8 @@ function BottomBar(props: AppProps) {
         setError(error.message ? error.message : error)
         setSpinner(false)
 
+        if (isUserProfile) setPopupOn(true)
+
         return
       }
     }
@@ -389,7 +392,7 @@ function BottomBar(props: AppProps) {
     <nav className="bottom navbar navbar-dark navbar-expand-md">
       <HistoryHandler entityUri={entityUri} />
       <span />
-      <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "")}>
+      <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "") + (isUserProfile ? "user " : "")}>
         <div>
           {gen && isIInstance && (
             <FormGroup>
@@ -414,6 +417,7 @@ function BottomBar(props: AppProps) {
               )}
             </FormGroup>
           )}
+          {isUserProfile && error && <div>{error}</div>}
           {saving && !isUserProfile && (
             <>
               <TextField

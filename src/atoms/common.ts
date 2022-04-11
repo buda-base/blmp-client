@@ -275,3 +275,8 @@ export const toCopySelector = selectorFamily({
     })
   },
 })
+
+export const savePopupState = atom<boolean>({
+  key: "savePopupState",
+  default: false,
+})
