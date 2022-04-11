@@ -99,7 +99,13 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       if (!go) return
     }
     // update user session
-    setUserSession(auth0, entity.subjectQname, shapeQname, !entity.preloadedLabel ? label : entity.preloadedLabel, true)
+    setUserSession(
+      auth0,
+      entity.subjectQname,
+      shapeQname,
+      !entity.preloadedLabel ? (label && entity.subject?.lname ? entity.subject?.lname : label) : entity.preloadedLabel,
+      true
+    )
     // remove data in local storage
     setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true, userId, entity.alreadySaved)
     // remove history for entity
@@ -137,10 +143,12 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     auth0,
     entity.subjectQname,
     shapeQname,
-    !entity.preloadedLabel ? label : entity.preloadedLabel,
+    !entity.preloadedLabel ? (entity.subject?.lname ? entity.subject?.lname : label) : entity.preloadedLabel,
     false,
     entity.alreadySaved
   )
+
+  //debug("label?",label,entity.subject?.lname)
 
   return (
     <Tab
@@ -164,7 +172,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
               />
             )}
             <span style={{ marginLeft: 30, marginRight: "auto", textAlign: "left" }}>
-              <span>{label}</span>
+              <span>{label && label != "..." ? label : entity.subject?.lname ? entity.subject.lname : label}</span>
               <br />
               <span className="RID">{entity.subjectQname}</span>
             </span>
