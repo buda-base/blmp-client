@@ -11400,12 +11400,19 @@ lcid@^1.0.0:
   dependencies:
     invert-kv "^1.0.0"
 
+leaflet-geosearch@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/leaflet-geosearch/-/leaflet-geosearch-3.6.0.tgz#1e2da4152e473df24467ca019334a981af9330c9"
+  integrity sha512-TkJOi+eVbsQB7wC0ssGzV9eGQv5BgEwDyb0QOunYA64qe53lB+ostUemvQD7Cmari0shtgBr3Patn5galjr3WA==
+  optionalDependencies:
+    leaflet "^1.6.0"
+
 leaflet.gridlayer.googlemutant@^0.13.5:
   version "0.13.5"
   resolved "https://registry.yarnpkg.com/leaflet.gridlayer.googlemutant/-/leaflet.gridlayer.googlemutant-0.13.5.tgz#7182c26f479e726bff8b85a7ebf9d3f44dd3ea57"
   integrity sha512-DHUEXpo1t0WZ9tpdLUHHkrTK7LldCXr/gqkV5E/4hHidDJB2srceLLCZj4PV/pl0jPdTkVBT+Lr8nL9EZDB5hw==
 
-leaflet@^1.7.1:
+leaflet@^1.6.0, leaflet@^1.7.1:
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.7.1.tgz#10d684916edfe1bf41d688a3b97127c0322a2a19"
   integrity sha512-/xwPEBidtg69Q3HlqPdU3DnrXQOvQU/CCHA1tcDQVzOwm91YMYaILjNp7L4Eaw5Z4sOYdbBz6koWyibppd8Zqw==

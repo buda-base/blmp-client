@@ -12,8 +12,11 @@ import i18n from "i18next"
 //import { Waypoint } from "react-waypoint"
 import { MapContainer, LayersControl, TileLayer, Popup, Marker, useMapEvents } from "react-leaflet"
 import ReactLeafletGoogleLayer from "react-leaflet-google-layer"
+import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch"
+
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import "leaflet-geosearch/dist/geosearch.css"
 
 import config from "../../../config"
 
@@ -59,6 +62,7 @@ function DraggableMarker({ pos, icon, setCoords }) {
 const MapEventHandler = ({ coords, redraw, setCoords }) => {
   const map = useMapEvents({
     click: (ev) => {
+      debug("click:", ev)
       setCoords(ev.latlng)
     },
   })
@@ -66,6 +70,27 @@ const MapEventHandler = ({ coords, redraw, setCoords }) => {
   useEffect(() => {
     if (coords.length === Number("2")) map.setView(coords, map.getZoom())
   })
+
+  useEffect(() => {
+    let provider = new OpenStreetMapProvider()
+    if (config.googleAPIkey) provider = new GoogleProvider({ params: { key: config.googleAPIkey } })
+
+    const searchControl = new GeoSearchControl({
+      provider,
+      showPopUp: false,
+      showMarker: false,
+    })
+    map.addControl(searchControl)
+    map.on("geosearch/showlocation", (params) => {
+      //debug("found",params)
+
+      // fix for first click not triggering marker event
+      const elem = document.querySelector(".leaflet-container")
+      if (elem) elem.click()
+    })
+
+    return () => map.removeControl(searchControl)
+  }, [])
 
   return null
 }

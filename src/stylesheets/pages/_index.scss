@@ -1183,6 +1183,10 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 }
 
 
+
+.leaflet-control-geosearch form input { height:30px !important; }
+
+
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}
 
