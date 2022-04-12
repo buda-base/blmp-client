@@ -72,8 +72,9 @@ const MapEventHandler = ({ coords, redraw, setCoords }) => {
   })
 
   useEffect(() => {
-    let provider = new OpenStreetMapProvider()
-    if (config.googleAPIkey) provider = new GoogleProvider({ params: { key: config.googleAPIkey } })
+    const provider = new OpenStreetMapProvider()
+    // TODO? allow use of search in Google API configuration
+    //if (config.googleAPIkey) provider = new GoogleProvider({ params: { key: config.googleAPIkey } })
 
     const searchControl = new GeoSearchControl({
       provider,
