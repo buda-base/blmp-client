@@ -12,7 +12,7 @@ import i18n from "i18next"
 //import { Waypoint } from "react-waypoint"
 import { MapContainer, LayersControl, TileLayer, Popup, Marker, useMapEvents } from "react-leaflet"
 import ReactLeafletGoogleLayer from "react-leaflet-google-layer"
-import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch"
+import { GeoSearchControl, OpenStreetMapProvider, GoogleProvider } from "leaflet-geosearch"
 
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
