@@ -32,3 +32,5 @@ s3_deploy.*
 s3_snapshot.sh
 
 src/react-app-env.d.ts
+
+src/config/config.private.js

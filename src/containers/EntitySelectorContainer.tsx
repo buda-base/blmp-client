@@ -151,7 +151,7 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
     }
     for (const entity of entities) {
       let shapeQname = entity.shapeRef
-      if (shapeQname.qname) shapeQname = shapeQname.qname
+      if (shapeQname?.qname) shapeQname = shapeQname.qname
 
       // update user session
       await setUserSession(auth0, entity.subjectQname, shapeQname, "", true)

@@ -4,13 +4,29 @@ import { RDFResource, Subject, errors } from "../../../helpers/rdf/types"
 import { PropertyGroup, PropertyShape } from "../../../helpers/rdf/shapes"
 import { uiLangState, uiEditState, uiNavState, uiGroupState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
+import * as ns from "../../../helpers/rdf/ns"
 import { ErrorIcon } from "../../../routes/layout/icons"
-import { atom, useRecoilState } from "recoil"
+import { atom, useRecoilState, useRecoilValue } from "recoil"
 import { OtherButton } from "./ValueList"
 import i18n from "i18next"
 //import { Waypoint } from "react-waypoint"
+import { MapContainer, LayersControl, TileLayer, Marker } from "react-leaflet"
+import ReactLeafletGoogleLayer from "react-leaflet-google-layer"
+import L from "leaflet"
+import "leaflet/dist/leaflet.css"
+
+import config from "../../../config"
 
 const debug = require("debug")("bdrc:entity:propertygroup")
+
+const redIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [25, 41], // eslint-disable-line no-magic-numbers
+  iconAnchor: [12, 41], // eslint-disable-line no-magic-numbers
+  popupAnchor: [1, -34], // eslint-disable-line no-magic-numbers
+  shadowSize: [41, 41], // eslint-disable-line no-magic-numbers
+})
 
 const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGroupOpen: () => void; shape: Shape }> = ({
   group,
@@ -64,6 +80,20 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
   const [edit, setEdit] = useRecoilState(uiEditState)
   const [groupEd, setGroupEd] = useRecoilState(uiGroupState)
 
+  // TODO: how not to hard code this here? add "useAsMapLatitude" property in shape?
+  const lat = useRecoilValue(subject.getAtomForProperty(ns.BDO("placeLat").value))
+  const lon = useRecoilValue(subject.getAtomForProperty(ns.BDO("placeLong").value))
+  let coords,
+    zoom = "5",
+    unset
+  debug("coords:", coords, lat, lon)
+  if (lat.length && lon.length && lat[0].value != "" && lat[0].value != "") coords = [lat[0].value, lon[0].value]
+  else {
+    unset = true
+    coords = ["30", 0]
+    zoom = "2"
+  }
+
   //const [nav, setNav] = useRecoilState(uiNavState)
 
   return (
@@ -113,6 +143,27 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
                       shape={shape}
                     />
                   ))}
+                  {group.qname === "bds:GISPropertyGroup" &&
+                    groupEd === group.qname && // to force updating map when switching between two place entities
+                    coords && ( // TODO: add a property in shape to enable this instead
+                      <div style={{ position: "relative", overflow: "hidden", marginTop: "16px" }}>
+                        <MapContainer style={{ width: "100%", height: "400px" }} zoom={zoom} center={coords}>
+                          <LayersControl position="topright">
+                            {config.googleAPIkey && (
+                              <ReactLeafletGoogleLayer //TODO: add editor url to allowed urls in Google API
+                                apiKey={config.googleAPIkey}
+                              />
+                            )}
+                            {!config.googleAPIkey && (
+                              <LayersControl.Overlay checked name="OpenStreetMap">
+                                <TileLayer url="https://{s}.tile.iosb.fraunhofer.de/tiles/osmde/{z}/{x}/{y}.png" />
+                              </LayersControl.Overlay>
+                            )}
+                          </LayersControl>
+                          {!unset && <Marker position={coords} icon={redIcon}></Marker>}
+                        </MapContainer>
+                      </div>
+                    )}
                   {hasExtra && (
                     <span className="toggle-btn  btn btn-rouge my-4" onClick={toggleExtra}>
                       {i18n.t("general.toggle", { show: force ? i18n.t("general.hide") : i18n.t("general.show") })}
