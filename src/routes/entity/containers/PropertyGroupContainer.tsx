@@ -1,4 +1,4 @@
-import React, { useState, FC, ReactElement } from "react"
+import React, { useState, FC, ReactElement, useRef, useMemo, useCallback, useEffect } from "react"
 import PropertyContainer from "./PropertyContainer"
 import { RDFResource, Subject, errors } from "../../../helpers/rdf/types"
 import { PropertyGroup, PropertyShape } from "../../../helpers/rdf/shapes"
@@ -10,7 +10,7 @@ import { atom, useRecoilState, useRecoilValue } from "recoil"
 import { OtherButton } from "./ValueList"
 import i18n from "i18next"
 //import { Waypoint } from "react-waypoint"
-import { MapContainer, LayersControl, TileLayer, Marker } from "react-leaflet"
+import { MapContainer, LayersControl, TileLayer, Popup, Marker, useMapEvents } from "react-leaflet"
 import ReactLeafletGoogleLayer from "react-leaflet-google-layer"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
@@ -27,6 +27,48 @@ const redIcon = new L.Icon({
   popupAnchor: [1, -34], // eslint-disable-line no-magic-numbers
   shadowSize: [41, 41], // eslint-disable-line no-magic-numbers
 })
+
+function DraggableMarker({ pos, icon, setCoords }) {
+  const [position, setPosition] = useState(pos)
+  const markerRef = useRef(null)
+  const eventHandlers = useMemo(
+    () => ({
+      dragend() {
+        const marker = markerRef.current
+        if (marker != null) {
+          setPosition(marker.getLatLng())
+          setCoords(marker.getLatLng())
+        }
+      },
+    }),
+    []
+  )
+
+  //debug("mark:",markerRef,pos)
+  useEffect(() => {
+    if (markerRef.current && (markerRef.current.lat != pos[0] || markerRef.current.lng != pos[1])) {
+      markerRef.current.setLatLng({ lat: pos[0], lng: pos[1] })
+    }
+  })
+
+  return (
+    <Marker draggable={true} eventHandlers={eventHandlers} position={position} icon={icon} ref={markerRef}></Marker>
+  )
+}
+
+const MapEventHandler = ({ coords, redraw, setCoords }) => {
+  const map = useMapEvents({
+    click: (ev) => {
+      setCoords(ev.latlng)
+    },
+  })
+
+  useEffect(() => {
+    if (coords.length === Number("2")) map.setView(coords, map.getZoom())
+  })
+
+  return null
+}
 
 const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGroupOpen: () => void; shape: Shape }> = ({
   group,
@@ -81,17 +123,30 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
   const [groupEd, setGroupEd] = useRecoilState(uiGroupState)
 
   // TODO: how not to hard code this here? add "useAsMapLatitude" property in shape?
-  const lat = useRecoilValue(subject.getAtomForProperty(ns.BDO("placeLat").value))
-  const lon = useRecoilValue(subject.getAtomForProperty(ns.BDO("placeLong").value))
+  const [lat, setLat] = useRecoilState(subject.getAtomForProperty(ns.BDO("placeLat").value))
+  const [lon, setLon] = useRecoilState(subject.getAtomForProperty(ns.BDO("placeLong").value))
+  const [redraw, setRedraw] = useState(false)
   let coords,
     zoom = "5",
     unset
-  debug("coords:", coords, lat, lon)
+  //debug("coords:", coords, lat, lon)
   if (lat.length && lon.length && lat[0].value != "" && lat[0].value != "") coords = [lat[0].value, lon[0].value]
   else {
     unset = true
     coords = ["30", 0]
     zoom = "2"
+  }
+
+  useEffect(() => {
+    //debug("update:",lon,lat)
+    setRedraw(true)
+  }, [lon, lat])
+
+  const setCoords = (val) => {
+    //debug("val:",val)
+    setRedraw(false)
+    if (!isNaN(val.lat)) setLat([lat[0].copyWithUpdatedValue("" + val.lat)])
+    if (!isNaN(val.lng)) setLon([lon[0].copyWithUpdatedValue("" + val.lng)])
   }
 
   //const [nav, setNav] = useRecoilState(uiNavState)
@@ -171,7 +226,8 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
                               </LayersControl.BaseLayer>
                             )}
                           </LayersControl>
-                          {!unset && <Marker position={coords} icon={redIcon}></Marker>}
+                          {!unset && <DraggableMarker pos={coords} icon={redIcon} setCoords={setCoords} />}
+                          <MapEventHandler coords={coords} redraw={redraw} setCoords={setCoords} />
                         </MapContainer>
                       </div>
                     )}
