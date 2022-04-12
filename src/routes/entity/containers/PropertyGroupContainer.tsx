@@ -151,24 +151,24 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
                           <LayersControl position="topright">
                             {config.googleAPIkey && (
                               <>
-                                <LayersControl.Overlay checked name="Satellite+Roadmap">
+                                <LayersControl.BaseLayer checked name="Satellite+Roadmap">
                                   <ReactLeafletGoogleLayer apiKey={config.googleAPIkey} type="hybrid" />
-                                </LayersControl.Overlay>
-                                <LayersControl.Overlay name="Satellite">
+                                </LayersControl.BaseLayer>
+                                <LayersControl.BaseLayer name="Satellite">
                                   <ReactLeafletGoogleLayer apiKey={config.googleAPIkey} type="satellite" />
-                                </LayersControl.Overlay>
-                                <LayersControl.Overlay name="Roadmap">
+                                </LayersControl.BaseLayer>
+                                <LayersControl.BaseLayer name="Roadmap">
                                   <ReactLeafletGoogleLayer apiKey={config.googleAPIkey} type="roadmap" />
-                                </LayersControl.Overlay>
-                                <LayersControl.Overlay name="Terrain">
+                                </LayersControl.BaseLayer>
+                                <LayersControl.BaseLayer name="Terrain">
                                   <ReactLeafletGoogleLayer apiKey={config.googleAPIkey} type="terrain" />
-                                </LayersControl.Overlay>
+                                </LayersControl.BaseLayer>
                               </>
                             )}
                             {!config.googleAPIkey && (
-                              <LayersControl.Overlay checked name="OpenStreetMap">
+                              <LayersControl.BaseLayer checked name="OpenStreetMap">
                                 <TileLayer url="https://{s}.tile.iosb.fraunhofer.de/tiles/osmde/{z}/{x}/{y}.png" />
-                              </LayersControl.Overlay>
+                              </LayersControl.BaseLayer>
                             )}
                           </LayersControl>
                           {!unset && <Marker position={coords} icon={redIcon}></Marker>}
