@@ -150,9 +150,20 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
                         <MapContainer style={{ width: "100%", height: "400px" }} zoom={zoom} center={coords}>
                           <LayersControl position="topright">
                             {config.googleAPIkey && (
-                              <ReactLeafletGoogleLayer //TODO: add editor url to allowed urls in Google API
-                                apiKey={config.googleAPIkey}
-                              />
+                              <>
+                                <LayersControl.Overlay checked name="Satellite+Roadmap">
+                                  <ReactLeafletGoogleLayer apiKey={config.googleAPIkey} type="hybrid" />
+                                </LayersControl.Overlay>
+                                <LayersControl.Overlay name="Satellite">
+                                  <ReactLeafletGoogleLayer apiKey={config.googleAPIkey} type="satellite" />
+                                </LayersControl.Overlay>
+                                <LayersControl.Overlay name="Roadmap">
+                                  <ReactLeafletGoogleLayer apiKey={config.googleAPIkey} type="roadmap" />
+                                </LayersControl.Overlay>
+                                <LayersControl.Overlay name="Terrain">
+                                  <ReactLeafletGoogleLayer apiKey={config.googleAPIkey} type="terrain" />
+                                </LayersControl.Overlay>
+                              </>
                             )}
                             {!config.googleAPIkey && (
                               <LayersControl.Overlay checked name="OpenStreetMap">
