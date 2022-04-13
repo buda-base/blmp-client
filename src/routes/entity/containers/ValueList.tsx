@@ -1354,7 +1354,7 @@ const EditString: FC<{
   }
 
   useEffect(() => {
-    const newError = getEmptyStringError(lit.value)
+    const newError = error || getEmptyStringError(lit.value)
     //debug("newE:",newError,error,lit,lit.id)
     if (newError != error) {
       setError(newError)
