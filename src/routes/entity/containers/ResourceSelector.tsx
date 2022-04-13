@@ -688,14 +688,17 @@ const LabelWithRID: FC<{ entity: Entity; choose?: (e: Entity, labels: Record<str
   const [labelValues] = useRecoilState(entity.subjectLabelState)
   const prefLabels = RDFResource.valuesByLang(labelValues)
   const label = lang.ValueByLangToStrPrefLang(prefLabels, uiLitLang)
+  let name =
+    label && label != "..." ? label : entity.subject?.lname ? entity.subject.lname : entity.subjectQname.split(":")[1]
+  if (!name) name = label
 
-  //debug("label:",label,entity.subject.lname, entity)
+  //debug("label:",name, label, entity.subject?.lname, entity)
 
-  if (!choose) return <span style={{ fontSize: "16px" }}>{label ? label : entity.subject.lname}</span>
+  if (!choose) return <span style={{ fontSize: "16px" }}>{name}</span>
   else
     return (
       <div className="px-3 py-1" style={{ width: "100%" }} onClick={choose(entity, prefLabels)}>
-        <div className="label">{label ? label : entity.subject.lname}</div>
+        <div className="label">{name}</div>
         <div className="RID">{entity.subjectQname}</div>
       </div>
     )
