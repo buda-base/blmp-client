@@ -200,9 +200,8 @@ const generateDefault = async (
       return generateSubnode(property.targetShape, parent, RIDprefix, idToken) //, n)
       break
     case ObjectType.ResInList:
-      // TODO: works but then save fails (default value for select like bdo:material)
-      //if (property.defaultValue) return property.defaultValue
-
+      // DONE: fix save (default value for select like bdo:material)
+      if (property.defaultValue) return new ExtRDFResourceWithLabel(property.defaultValue.value, {})
       // if a select property is not required, we don't select anything by default
       if (!property.minCount) return noneSelected
       // else we select the first one automatically
