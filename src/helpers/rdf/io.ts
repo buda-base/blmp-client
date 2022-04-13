@@ -5,7 +5,13 @@ import { useRecoilState } from "recoil"
 import { RDFResource, RDFResourceWithLabel, EntityGraph, Subject, Ontology, history } from "./types"
 import { NodeShape, prefLabel } from "./shapes"
 import { uriFromQname, qnameFromUri, BDSH_uri } from "./ns"
-import { profileIdState, uiReadyState, sessionLoadedState, reloadEntityState } from "../../atoms/common"
+import {
+  profileIdState,
+  uiReadyState,
+  sessionLoadedState,
+  reloadEntityState,
+  uiDisabledTabsState,
+} from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 import { useAuth0, Auth0ContextInterface } from "@auth0/auth0-react"
 
@@ -357,6 +363,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
   const [profileId, setProfileId] = useRecoilState(profileIdState)
   const [current, setCurrent] = useState(entityQname)
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
+  const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
 
   //debug("reload?", reloadEntity, unmounting)
 
@@ -506,6 +513,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         if (reloadEntity) setReloadEntity("")
       } catch (e) {
         debug("e:", e.message, e)
+        setDisabled(false)
         setEntityLoadingState({
           status: "error",
           error: e.message !== "not found" ? "error fetching entity" : "not found",
