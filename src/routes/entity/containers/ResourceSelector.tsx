@@ -130,7 +130,7 @@ const ResourceSelector: FC<{
 
   useEffect(() => {
     if (property.copyObjectsOfProperty?.length) {
-      debug("copy:", property.copyObjectsOfProperty, value.otherData)
+      //debug("copy:", property.copyObjectsOfProperty, value.otherData)
       const copy = []
       for (const prop of property.copyObjectsOfProperty) {
         const propQname = ns.qnameFromUri(prop.value)

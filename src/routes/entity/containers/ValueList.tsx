@@ -924,6 +924,13 @@ const EditLangString: FC<{
     }
   })
 
+  useEffect(() => {
+    return () => {
+      //debug("unmount", lit.id, errors)
+      updateEntityState(EditedEntityState.Saved, lit.id)
+    }
+  }, [])
+
   const errorData = {
     helperText: (
       <React.Fragment>
