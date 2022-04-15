@@ -15,7 +15,13 @@ import {
   initMapAtom,
   toCopySelector,
 } from "../../../atoms/common"
-import { RDFResource, ExtRDFResourceWithLabel, RDFResourceWithLabel, Subject } from "../../../helpers/rdf/types"
+import {
+  RDFResource,
+  ExtRDFResourceWithLabel,
+  RDFResourceWithLabel,
+  Subject,
+  LiteralWithId,
+} from "../../../helpers/rdf/types"
 import { PropertyShape } from "../../../helpers/rdf/shapes"
 import {
   SearchIcon,
@@ -26,6 +32,7 @@ import {
   EditIcon,
   LookupIcon,
   CloseIcon,
+  ContentPasteIcon,
 } from "../../layout/icons"
 import { entitiesAtom, Entity } from "../../../containers/EntitySelectorContainer"
 import { LangSelect } from "./ValueList"
@@ -76,7 +83,21 @@ const ResourceSelector: FC<{
   title: string
   globalError: string
   updateEntityState: (es: EditedEntityState) => void
-}> = ({ value, onChange, property, idx, exists, subject, editable, owner, title, globalError, updateEntityState }) => {
+  shape: Shape
+}> = ({
+  value,
+  onChange,
+  property,
+  idx,
+  exists,
+  subject,
+  editable,
+  owner,
+  title,
+  globalError,
+  updateEntityState,
+  shape,
+}) => {
   const classes = useStyles()
   const [keyword, setKeyword] = useState("")
   const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
@@ -91,11 +112,12 @@ const ResourceSelector: FC<{
   const [popupNew, setPopupNew] = useState(false)
   const [tab, setTab] = useRecoilState(uiTabState)
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [canCopy, setCanCopy] = useState([])
 
   const isRid = keyword.startsWith("bdr:") || keyword.match(/^([cpgwrti]|mw|wa|was|ut|ie|pr)(\d|eap)[^ ]*$/i)
 
   /// DONE: handle bdsCopyObjectsOfProperty
-  const toCopy = useRecoilValue(
+  const [toCopy, setProp] = useRecoilState(
     property.copyObjectsOfProperty?.length
       ? toCopySelector({
           list: property.copyObjectsOfProperty.map((p) => ({
@@ -106,7 +128,25 @@ const ResourceSelector: FC<{
       : initMapAtom
   )
 
-  //debug("pL:",entityPrefLabel, property.qname,property.copyObjectsOfProperty)
+  useEffect(() => {
+    if (property.copyObjectsOfProperty?.length) {
+      debug("copy:", property.copyObjectsOfProperty, value.otherData)
+      const copy = []
+      for (const prop of property.copyObjectsOfProperty) {
+        const propQname = ns.qnameFromUri(prop.value)
+        if (value.otherData[propQname]?.length)
+          copy.push({
+            k: propQname,
+            val: value.otherData[propQname].map(
+              (v) => new LiteralWithId(v["@value"], v["@language"], ns.RDF("langString").value)
+            ),
+          })
+      }
+      setCanCopy(copy)
+    }
+  }, [])
+
+  //debug("canCopy:", property.qname, canCopy)
 
   //debug("gE:", error, globalError)
   useEffect(() => {
@@ -120,6 +160,7 @@ const ResourceSelector: FC<{
 
   // TODO close iframe when clicking anywhere else
   const closeFrame = () => {
+    debug("close?", value, isRid, libraryURL)
     if (iframeRef.current && isRid) {
       debug("if:", iframeRef.current)
       iframeRef.current.click()
@@ -161,8 +202,10 @@ const ResourceSelector: FC<{
             .filter((a) => a)
             .map((a) => a.replace(/^bdo:/, ""))
             .join(", ") // TODO: translation (ontology?)
-        if (!isTypeOk)
-          setError("Has type: " + displayTypes(actual) + "; but should have one of: " + displayTypes(allow))
+        if (!isTypeOk) {
+          setError(i18n.t("error.type", { allow: displayTypes(allow), actual: displayTypes(actual), id: data["@id"] }))
+          if (libraryURL) setLibraryURL("")
+        }
       }
 
       if (isTypeOk) {
@@ -179,7 +222,12 @@ const ResourceSelector: FC<{
                   }
                 : {},
             },
-            { "tmp:keyword": { ...data["tmp:keyword"] }, ...data["tmp:otherData"] }
+            {
+              "tmp:keyword": { ...data["tmp:keyword"] },
+              ...data["tmp:otherData"],
+              ...data["skos:prefLabel"] ? { "skos:prefLabel": data["skos:prefLabel"] } : {},
+              ...data["skos:altLabel"] ? { "skos:altLabel": data["skos:altLabel"] } : {},
+            }
           )
           onChange(newRes, idx, false)
           //debug("url?",libraryURL)
@@ -202,7 +250,11 @@ const ResourceSelector: FC<{
           //debug("message: ", ev, value, JSON.stringify(value))
 
           const data = JSON.parse(ev.data) as messagePayload
-          if (data["tmp:propid"] === msgId && data["@id"]) {
+          if (data["tmp:propid"] === msgId && data["@id"] && data["tmp:notFound"]) {
+            debug("notfound msg: %o %o", msgId, data, ev, property.qname, libraryURL)
+            setLibraryURL("")
+            setError(i18n.t("error.notF", { RID: data["@id"] }))
+          } else if (data["tmp:propid"] === msgId && data["@id"]) {
             debug("received msg: %o %o", msgId, data, ev, property.qname, libraryURL)
             updateRes(data)
             //debug("URL:",libraryURL)
@@ -308,7 +360,8 @@ const ResourceSelector: FC<{
   // TODO: very dirty! this should be taken from the shape but this is another
   // level of asynchronous indirection
 
-  // (add shape:Shape as parameter of ResourceSelector component could work)
+  // -> add shape:Shape as parameter of ResourceSelector component could work
+  //  + put all identifierPrefix-es in each "high-level" shape
 
   const typeToQnamePrefix = (type: RDFResourceWithLabel): string => {
     const typeLname = type.lname
@@ -319,8 +372,20 @@ const ResourceSelector: FC<{
     throw "cannot find prefix for " + type.uri
   }
 
+  /*
+   // not needed 
+  const qnamePrefixToType = (qname:string): string => {    
+    if(qname.startsWith("bdr:")) qname = qname.replace(/bdr:/,"") 
+    if(qname.startsWith("WA")) return "Work"
+    else if(qname.startsWith("MW")) return "Instance"
+    else if(qname.startsWith("W")) return "ImageInstance"
+    else if(qname.startsWith("IE")) return "EtextInstance"
+    throw "cannot find type for qname " + qname
+  }
+  */
+
   const createAndUpdate = useCallback(
-    (type: RDFResourceWithLabel) => {
+    (type: RDFResourceWithLabel, named = "") => {
       /*
       debug(
         "uri:",
@@ -351,7 +416,7 @@ const ResourceSelector: FC<{
         //debug("nId:",newId,exists(newId),exists)
 
         // use this id only if not already in current value list
-        if (!exists(newId)) url += "/named/" + newId
+        if (!exists(newId)) url += "/named/" + (named ? named : newId)
       }
 
       // add requested values from this entity as url params
@@ -526,7 +591,7 @@ const ResourceSelector: FC<{
               <button
                 className="btn btn-sm btn-outline-primary py-3 ml-2 dots btn-rouge"
                 style={{ boxShadow: "none", alignSelf: "center" }}
-                {...(isRid ? { disabled: true } : {})}
+                //{...(isRid ? { disabled: true } : {})}
                 onClick={togglePopup}
                 {...(!editable ? { disabled: true } : {})}
               >
@@ -576,8 +641,18 @@ const ResourceSelector: FC<{
                   <EditIcon style={{ width: "16px" }} />
                 </Link>
                 &nbsp;
-                {/* // deprecated
-                
+                {canCopy.length > 0 && (
+                  <span title={i18n.t("general.import")}>
+                    <ContentPasteIcon
+                      style={{ width: "17px", cursor: "pointer" }}
+                      onClick={() => {
+                        for (const v of canCopy) setProp(v)
+                        setCanCopy([])
+                      }}
+                    />
+                  </span>
+                )}
+                {/* // deprecated                
                   value.otherData["tmp:keyword"] && (
                   <a title={i18n.t("search.help.replace")}>
                     <SearchIcon
@@ -671,6 +746,24 @@ const ResourceSelector: FC<{
                 {i18n.t("search.new", { type: r.qname.replace(/^bdo:/, "") })}
               </MenuItem>
             ))}
+            {/* 
+            // not needed (use actual keyword/rid to create entity)
+            isRid && keyword && <> 
+              <hr className="my-1" />
+              <MenuItem
+                key={keyword}
+                value={keyword}
+                onClick={() => {
+                  const r = qnamePrefixToType(keyword)
+                  const url = createAndUpdate(r, keyword)
+                  debug("CaU?", property.qname, keyword)
+                  //history.push(url)
+                }}
+              >
+                create {qnamePrefixToType(keyword)} {keyword}
+              </MenuItem>
+              </>  
+              */}
           </div>
           <div className="popup-new-BG" onClick={togglePopup}></div>
         </div>

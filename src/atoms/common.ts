@@ -271,7 +271,7 @@ export const toCopySelector = selectorFamily({
   set: ({ list }) => ({ get, set }, { k, val }) => {
     //debug("set:", list, k, val)
     list.map(({ property, atom }) => {
-      if (k == property) set(atom, [...get(atom), ...val])
+      if (k == property) set(atom, [...get(atom).filter((lit) => lit.value), ...val])
     })
   },
 })

@@ -588,6 +588,7 @@ const ValueList: FC<{
             {...(owner ? { owner } : {})}
             title={titleCase(propLabel)}
             updateEntityState={updateEntityState}
+            shape={shape}
           />
         )
       else {
@@ -1838,7 +1839,21 @@ const ExtEntityComponent: FC<{
   owner?: Subject
   title: string
   updateEntityState: (es: EditedEntityState) => void
-}> = ({ extRes, subject, property, canDel, onChange, idx, exists, editable, owner, title, updateEntityState }) => {
+  shape: Shape
+}> = ({
+  extRes,
+  subject,
+  property,
+  canDel,
+  onChange,
+  idx,
+  exists,
+  editable,
+  owner,
+  title,
+  updateEntityState,
+  shape,
+}) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === extRes)
@@ -1905,6 +1920,7 @@ const ExtEntityComponent: FC<{
           title={title}
           globalError={error}
           updateEntityState={updateEntityState}
+          shape={shape}
         />
         {extRes.uri !== "tmp:uri" && (
           <button className={"btn btn-link ml-2 px-0"} onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>

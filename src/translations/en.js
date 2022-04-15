@@ -47,6 +47,8 @@ const enTranslations = {
     minC: "at least {{count}} value must be provided",
     maxC: "at most {{count}} value can be provided",
     prefix: "RID prefix must be set in <res>user profile</res>",
+    notF: "Resource {{RID}} not found",
+    type: "{{id}} is a {{actual}}; but a {{allow}} is required here",
   },
   general: {
     add_another: "Add {{val}}",
@@ -56,6 +58,7 @@ const enTranslations = {
     hide: "Hide",
     add_nb: "Number of {{val}} to add",
     close: "Close all open entities",
+    import: "Import labels",
   },
 }
 
