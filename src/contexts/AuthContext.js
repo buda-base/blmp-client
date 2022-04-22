@@ -27,6 +27,12 @@ export function AuthContextWrapper({ children }) {
       const idToken = await getIdTokenClaims()
       setIdToken(idToken.__raw)
       localStorage.setItem("BLMPidToken", idToken.__raw)
+      const cookie = await axios.get("https://iiif.bdrc.io/setcookie", {
+        headers: {
+          Authorization: `Bearer ${idToken.__raw}`,
+        },
+      })
+      debug("cookie", cookie)
     }
     if (isAuthenticated) checkSession()
     else getAccessTokenSilently()
