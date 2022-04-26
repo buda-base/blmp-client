@@ -5,6 +5,7 @@ function OutlineEditorContainer() {
     <div>
       <div>
         <h1>Outline Editor</h1>
+        <p>Work in progress</p>
       </div>
     </div>
   )

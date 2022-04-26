@@ -1202,6 +1202,7 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
   
     & > div { width:1300px; background:white;
     
+      h1+p,
       h1 { text-align: center;}
     }
   }
