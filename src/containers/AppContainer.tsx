@@ -22,6 +22,7 @@ import EntitySelector, {
   EditedEntityState,
   defaultEntityLabelAtom,
 } from "../containers/EntitySelectorContainer"
+import OutlineEditorContainer from "../containers/OutlineEditorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
@@ -165,8 +166,12 @@ function HomeContainer() {
           click on the <em>New / Load</em> button.
         </p>
         {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
-        <p>
-          <Link className="menu-link" to="/bvmt">
+        <p className="menu">
+          <Link className="menu-link" to="/outline">
+            <img src="/icons/outline.svg" width="64" />
+            Outline Editor
+          </Link>
+          <Link className="menu-link iiif" to="/bvmt">
             <img src="/icons/iiif.png" />
             BUDA Volume Manifest Tool
           </Link>
@@ -380,6 +385,7 @@ function App(props: AppProps) {
               )}
             />
             <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
+            <Route exact path="/outline" render={(rprops) => <OutlineEditorContainer />} />
           </Switch>
         </div>
       </main>

@@ -326,7 +326,7 @@ input[type="checkbox"].dmcheck {
   &:hover h4 .close-facet-btn { display:block;}
   
   & + div { width:1225px; margin:auto; padding-left:125px; text-align:left; padding-top:20px !important;
-    & > div { width:810px; max-width:100%; min-width:660px; margin:auto; padding:15px; background:white;         
+    & > div { width:810px; max-width:100%; min-width:660px; margin:auto; padding:15px; background:white; padding-bottom:15px;
       & > div.shape-icon { background: #fce08e; width:100%; height:120px;box-sizing: border-box; display:flex; align-items:center;  justify-content: center;
         &::before { content:''; background-color:white; width:90px; height:90px; border-radius:50%; display:block; background-repeat: no-repeat; background-position:center; background-size:auto 70px;}
       }        
@@ -342,9 +342,9 @@ input[type="checkbox"].dmcheck {
         &.imageinstance > .shape-icon:before { background-image:url(/icons/imageinstance.svg); background-size:55px auto;  }
         
         
-        h1 { font-size:25px; line-height:37px; font-weight:700; text-align: left; color:#343434; padding-left:0px; padding-top:20px;}
-        h1+span { color: rgba(0,0,0,.5); font-size: 12px; font-weight: 600; text-align:left; width:100%; display:block; padding-left:1px; }
-        h1~p { padding-left:20px; padding-top:35px; font-size:15px; }
+        h1 { font-size:25px; line-height:37px; font-weight:700; text-align: left; color:#343434; padding-left:0px; padding-top:0px;}
+        h1+span { color: rgba(0,0,0,.5); font-size: 12px; font-weight: 600; text-align:left; width:100%; display:block; padding-left:1px; }      
+        h1~p { padding-left:0px; padding-top:15px; font-size:15px; }
       }
   }
 
@@ -1068,10 +1068,14 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 
 
 .menu-link { display:flex; align-items: center; color:#d73449; font-size: 18px; font-weight: 700;
-  img { height:48px; margin-right:20px;  }
+  img { height:25px; margin-right:15px; width:auto;  }
 
   &:hover { color:#d73449; }
+
+  &.iiif img { height:40px; }
 }
+
+
 
 
 .App.home .navbar.bottom { display:none; }
@@ -1182,6 +1186,26 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 }
 
+p.menu { display:flex; justify-content: space-between; padding-top:30px !important;
+  .menu-link { width:50%; }
+}
+
+
+[data-route^='/outline'] {
+
+  .App { padding-top:0 !important; }
+
+  main .tabs-select,
+  .navbar.bottom { display:none; }
+
+  main .tabs-select + div { display:flex; justify-content: center; padding-left:0; 
+  
+    & > div { width:1300px; background:white;
+    
+      h1 { text-align: center;}
+    }
+  }
+}
 
 
 .leaflet-control-geosearch form input { height:30px !important; }
