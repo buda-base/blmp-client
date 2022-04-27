@@ -1168,9 +1168,10 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 }
 
-
+[data-prop="bds:InstanceShape-hasTitle"] + div > .facet > .card,
 [data-prop="bds:PersonShape-personName"] + div > .facet > .card { flex-direction: row; align-items: baseline;
 
+  [data-prop="bds:TitleShape-type"] + div,
   [data-prop="bds:PersonNameShape-type"] + div {     
     & > div:first-child { padding-right:0 !important;
       & > div:first-child { min-width:160px !important; }
