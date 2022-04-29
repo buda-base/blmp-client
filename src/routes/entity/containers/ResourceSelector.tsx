@@ -546,7 +546,7 @@ const ResourceSelector: FC<{
                 value={language}
                 onChange={(lang: string) => {
                   setLanguage(lang)
-                  debug("yeah, changing lang!!", lang)
+                  //debug("yeah, changing lang!!", lang)
                   debug(lang)
                   if (libraryURL) updateLibrary(undefined, lang)
                 }}
@@ -570,13 +570,17 @@ const ResourceSelector: FC<{
                         error: true,
                       }
                     : {})}
-                  // TODO we need some prefLabels for types here (ontology? i18n?)
+                  // DONE: we need some prefLabels for types here (ontology? i18n?)
                 >
-                  {property.expectedObjectTypes?.map((r) => (
-                    <MenuItem key={r.qname} value={r.qname}>
-                      {r.qname.replace(/^bdo:/, "")}
-                    </MenuItem>
-                  ))}
+                  {property.expectedObjectTypes?.map((r) => {
+                    //debug("type:", r)
+                    const label = lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)
+                    return (
+                      <MenuItem key={r.qname} value={r.qname}>
+                        {label}
+                      </MenuItem>
+                    )
+                  })}
                 </TextField>
               )}
               <button

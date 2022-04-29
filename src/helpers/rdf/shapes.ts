@@ -27,8 +27,10 @@ export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
   "bds:PlaceShape": new ExtRDFResourceWithLabel(ns.BDS("PlaceShape").value, { en: "Place" }),
   "bds:WorkShape": new ExtRDFResourceWithLabel(ns.BDS("WorkShape").value, { en: "Work" }),
   "bds:SerialWorkShape": new ExtRDFResourceWithLabel(ns.BDS("SerialWorkShape").value, { en: "Serial Work" }),
-  "bds:InstanceShape": new ExtRDFResourceWithLabel(ns.BDS("InstanceShape").value, { en: "Instance" }),
-  "bds:ImageInstanceShape": new ExtRDFResourceWithLabel(ns.BDS("ImageInstanceShape").value, { en: "Image instance" }),
+  "bds:InstanceShape": new ExtRDFResourceWithLabel(ns.BDS("InstanceShape").value, { en: "Instance (Version)" }),
+  "bds:ImageInstanceShape": new ExtRDFResourceWithLabel(ns.BDS("ImageInstanceShape").value, {
+    en: "Image instance (Scans)",
+  }),
   "bds:ImagegroupShape": new ExtRDFResourceWithLabel(ns.BDS("ImagegroupShape").value, { en: "Image group" }),
   "bds:UserProfileShape": new ExtRDFResourceWithLabel(ns.BDS("UserProfileShape").value, { en: "User profile" }),
 }
