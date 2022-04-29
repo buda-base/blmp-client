@@ -737,19 +737,22 @@ const ResourceSelector: FC<{
               }
             })}
             <hr className="my-1" />
-            {property.expectedObjectTypes?.map((r) => (
-              <MenuItem
-                key={r.qname}
-                value={r.qname}
-                onClick={() => {
-                  const url = createAndUpdate(r)
-                  debug("CaU?", url, property.qname, r.qname, createAndUpdate)
-                  history.push(url)
-                }}
-              >
-                {i18n.t("search.new", { type: r.qname.replace(/^bdo:/, "") })}
-              </MenuItem>
-            ))}
+            {property.expectedObjectTypes?.map((r) => {
+              const label = lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)
+              return (
+                <MenuItem
+                  key={r.qname}
+                  value={r.qname}
+                  onClick={() => {
+                    const url = createAndUpdate(r)
+                    //debug("CaU?", url, property.qname, r.qname, createAndUpdate)
+                    history.push(url)
+                  }}
+                >
+                  {i18n.t("search.new", { type: label })}
+                </MenuItem>
+              )
+            })}
             {/* 
             // not needed (use actual keyword/rid to create entity)
             isRid && keyword && <> 
