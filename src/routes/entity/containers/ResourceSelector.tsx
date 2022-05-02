@@ -334,7 +334,20 @@ const ResourceSelector: FC<{
   if (value.uri && value.uri !== "tmp:uri" && value.otherData) {
     dates = ""
 
-    const getDate = (d: dateDate) => {
+    const getDate = (d: Array<dateDate>) => {
+      const onY = d.filter((i) => i.onYear != undefined)
+      const nB = d.filter((i) => i.notBefore != undefined)
+      const nA = d.filter((i) => i.notAfter != undefined)
+
+      if (nB.length || nA.length) {
+        let date = ""
+        if (nB[0].notBefore) date = nB[0].notBefore
+        date += "~"
+        if (nA[0].notAfter) date += nA[0].notAfter
+        return date
+      } else if (onY.length) return onY[0].onYear
+
+      /*
       if (d.onYear) return d.onYear
       // TODO use notBefore/notAfter
       else if (d.notBefore || d.notAfter) {
@@ -344,6 +357,8 @@ const ResourceSelector: FC<{
         if (d.notAfter) date += d.notAfter
         return date
       }
+      */
+
       return ""
     }
 
