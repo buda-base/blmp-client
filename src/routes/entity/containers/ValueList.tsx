@@ -324,8 +324,11 @@ const ValueList: FC<{
             ? EditedEntityState.Saved
             : EditedEntityState.NeedsSaving
 
-        //debug("no error:", status, n, ent, errors, property.qname, id)
-        if (ent.state != status) {
+        const hasError =
+          errors[ent.subjectQname] && errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
+
+        //debug("no error:", hasError, status, ent.state, ent, n, errors, property.qname, id)
+        if (ent.state != status || hasError) {
           //debug("status:", ent.state, status)
           if (removingFacet) {
             //debug("rf:", id)
@@ -335,10 +338,7 @@ const ValueList: FC<{
                 if (k.startsWith(id)) delete errors[ent.subjectQname][k]
               }
             }
-          } else if (
-            errors[ent.subjectQname] &&
-            errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
-          ) {
+          } else if (hasError) {
             delete errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
           }
           if (!errors[ent.subjectQname] || !Object.keys(errors[ent.subjectQname]).length) {
@@ -914,6 +914,8 @@ const EditLangString: FC<{
   }
 
   const [error, setError] = useState("")
+
+  //debug("val:", lit.id, lit.value, error, globalError)
 
   useEffect(() => {
     const newError = getLangStringError(lit.value)
