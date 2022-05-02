@@ -52,7 +52,7 @@ export function EntityEditContainerMayUpdate(props: AppProps) {
   const snapshot = useRecoilSnapshot()
   const [subject, setSubject] = useState(false)
 
-  const { copy } = queryString.parse(props.location.search)
+  const { copy } = queryString.parse(props.location.search, { decode: false })
 
   useEffect(() => {
     const i = entities.findIndex((e) => e.subjectQname === subjectQname)
@@ -123,6 +123,8 @@ function EntityEditContainerDoUpdate(props: AppPropsDoUpdate) {
       }),
     }
   }, {})
+
+  //debug("copy:",copy,props.copy)
 
   const [getProp, setProp] = useRecoilState(
     subject && copy && Object.keys(copy).length

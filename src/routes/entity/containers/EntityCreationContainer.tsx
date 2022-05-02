@@ -146,7 +146,9 @@ export function EntityCreationContainerRoute(props: AppProps) {
   const i = entities.findIndex((e) => e.subjectQname === props.match.params.entityQname)
   const theEntity = entities[i]
 
-  const { copy } = queryString.parse(props.location.search)
+  const { copy } = queryString.parse(props.location.search, { decode: false })
+
+  //debug("search/copy:", copy)
 
   if (theEntity) return <EntityCreationContainerAlreadyOpen {...props} entity={theEntity.subject} copy={copy} />
   else return <EntityCreationContainer {...props} copy={copy} />
