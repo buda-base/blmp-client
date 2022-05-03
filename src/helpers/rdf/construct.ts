@@ -152,7 +152,10 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
         subjectLabelState: newSubject.getAtomForProperty(shapes.prefLabel.uri),
         alreadySaved: false,
       }
-      if (!unmounting.val) setEntities([newEntity, ...entities])
+      if (!unmounting.val) {
+        const newEntities = [newEntity, ...entities]
+        setEntities(newEntities)
+      }
       if (!unmounting.val) setEntity(newSubject)
       if (!unmounting.val) setEntityLoadingState({ status: "created", error: undefined })
 

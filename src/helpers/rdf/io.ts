@@ -518,7 +518,9 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
           status: "error",
           error: e.message !== "not found" ? "error fetching entity" : "not found",
         })
-        if (!entities.length && _entities.length) setEntities(_entities)
+        if (!entities.length && _entities.length) {
+          setEntities(_entities)
+        }
       }
       if (!sessionLoaded) setSessionLoaded(true)
     }

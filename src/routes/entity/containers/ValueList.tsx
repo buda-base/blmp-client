@@ -295,9 +295,7 @@ const ValueList: FC<{
     if (property.maxInclusive && newVal > property.maxInclusive) newVal = property.maxInclusive
   }
 
-  //debug("vL:", newVal,property.qname, list)
-
-  const updateEntityState = (status: EditedEntityState, id: string, removingFacet = false) => {
+  const updateEntityState = (status: EditedEntityState, id: string, removingFacet = false, forceRemove = false) => {
     if (id === undefined) throw new Error("id undefined")
     const entityQname = topEntity ? topEntity.qname : subject.qname
     const undo = undos[ns.uriFromQname(entityQname)]
@@ -307,7 +305,7 @@ const ValueList: FC<{
     if (n > -1) {
       const ent: Entity = entities[n]
       if (status === EditedEntityState.Error) {
-        //debug("error:", errors, status, n, ent, property.qname, id)
+        //debug("error:", id, status, ent.state, ent, n, property.qname, errors)
 
         if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
         errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id] = true
@@ -327,8 +325,8 @@ const ValueList: FC<{
         const hasError =
           errors[ent.subjectQname] && errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
 
-        //debug("no error:", hasError, status, ent.state, ent, n, errors, property.qname, id)
-        if (ent.state != status || hasError) {
+        //debug("no error:", hasError, id, status, ent.state, ent, n, property.qname, errors)
+        if (ent.state != status || forceRemove && hasError) {
           //debug("status:", ent.state, status)
           if (removingFacet) {
             //debug("rf:", id)
@@ -908,8 +906,10 @@ const EditLangString: FC<{
     let err = ""
     if (!val && property.minCount) err = i18n.t("error.empty")
     else if (globalError) err = globalError
+
     //if(err) debug("error!",lit.id, lit, errors)
     //else debug("no err?",lit.id, lit, errors)
+
     return err
   }
 
@@ -926,10 +926,16 @@ const EditLangString: FC<{
     }
   })
 
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [uiTab] = useRecoilState(uiTabState)
+  const currentTabEntityIndex = entities.findIndex((e, i) => i === uiTab)
+  const inOtherEntity =
+    uiTab === -1 || currentTabEntityIndex === -1 || entities[currentTabEntityIndex].subjectQname != entity.subjectQname
+
   useEffect(() => {
     return () => {
       //debug("unmount", lit.id, errors)
-      updateEntityState(EditedEntityState.Saved, lit.id)
+      updateEntityState(EditedEntityState.Saved, lit.id, false, !inOtherEntity)
     }
   }, [])
 

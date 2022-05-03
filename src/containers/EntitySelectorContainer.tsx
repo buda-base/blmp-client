@@ -119,7 +119,9 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
           preloadedLabel: obj[k].label,
         })
       }
-      if (newEntities.length) setEntities(newEntities)
+      if (newEntities.length) {
+        setEntities(newEntities)
+      }
       if (!sessionLoaded) setSessionLoaded(true)
       if (props.location?.pathname == "/new") setTab(newEntities.length)
       if (props.location?.pathname.startsWith("/edit/")) {
