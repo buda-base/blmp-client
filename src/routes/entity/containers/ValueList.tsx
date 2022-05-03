@@ -325,8 +325,8 @@ const ValueList: FC<{
         const hasError =
           errors[ent.subjectQname] && errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
 
-        //debug("no error:", hasError, id, status, ent.state, ent, n, property.qname, errors)
-        if (ent.state != status || forceRemove && hasError) {
+        //debug("no error:", hasError, forceRemove, id, status, ent.state, ent, n, property.qname, errors)
+        if (ent.state != status || hasError && forceRemove) {
           //debug("status:", ent.state, status)
           if (removingFacet) {
             //debug("rf:", id)
@@ -926,15 +926,12 @@ const EditLangString: FC<{
     }
   })
 
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const [uiTab] = useRecoilState(uiTabState)
-  const currentTabEntityIndex = entities.findIndex((e, i) => i === uiTab)
-  const inOtherEntity =
-    uiTab === -1 || currentTabEntityIndex === -1 || entities[currentTabEntityIndex].subjectQname != entity.subjectQname
-
   useEffect(() => {
     return () => {
-      //debug("unmount", lit.id, errors)
+      // some not state-dependent flag to know entity we currently are
+      const inOtherEntity = !window.location.href.includes("/" + entity.qname + "/")
+
+      //debug("unmount", entity.qname, window.location.href, lit.id, errors, inOtherEntity)
       updateEntityState(EditedEntityState.Saved, lit.id, false, !inOtherEntity)
     }
   }, [])
