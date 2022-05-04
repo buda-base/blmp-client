@@ -344,16 +344,18 @@ function EntityEditContainer(props: AppProps) {
           <div>
             <h1>{shapeLabel}</h1>
             <span>{entity.qname}</span>
-            <div className="buda-link">
-              <a
-                className={"btn-rouge" + (!entityObj[0]?.alreadySaved ? " disabled" : "")}
-                target="_blank"
-                rel="noreferrer"
-                {...(!entityObj[0]?.alreadySaved ? { title: i18n.t("error.preview") } : { href: BUDAlink })}
-              >
-                {i18n.t("general.preview")}
-              </a>
-            </div>
+            {entityQname !== "tmp:user" && entityQname != profileId && (
+              <div className="buda-link">
+                <a
+                  className={"btn-rouge" + (!entityObj[0]?.alreadySaved ? " disabled" : "")}
+                  target="_blank"
+                  rel="noreferrer"
+                  {...(!entityObj[0]?.alreadySaved ? { title: i18n.t("error.preview") } : { href: BUDAlink })}
+                >
+                  {i18n.t("general.preview")}
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </div>

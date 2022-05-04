@@ -105,7 +105,8 @@ export const loadTtl = async (
       return
     }
 
-    const body = await response.text()
+    let body = await response.text()
+    body = body.replace(/<(bdr:[^>]+)>/g, "$1")
     //debug("ttl:", body)
     const store: rdf.Store = rdf.graph()
     rdf.parse(body, store, rdf.Store.defaultGraphURI, "text/turtle")
