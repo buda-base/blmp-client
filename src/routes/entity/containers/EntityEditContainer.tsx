@@ -36,6 +36,9 @@ import { HashLink as Link } from "react-router-hash-link"
 import { useAuth0 } from "@auth0/auth0-react"
 import queryString from "query-string"
 import { getParentPath } from "../../helpers/observer"
+import Button from "@material-ui/core/Button"
+
+import config from "../../../config"
 
 const debug = require("debug")("bdrc:entity:edit")
 
@@ -331,6 +334,8 @@ function EntityEditContainer(props: AppProps) {
     e.stopPropagation()
   }
 
+  const BUDAlink = config.LIBRARY_URL + "/show/" + entity.qname
+
   return (
     <React.Fragment>
       <div role="main" className="pt-4" style={{ textAlign: "center" }}>
@@ -339,6 +344,16 @@ function EntityEditContainer(props: AppProps) {
           <div>
             <h1>{shapeLabel}</h1>
             <span>{entity.qname}</span>
+            <div className="buda-link">
+              <a
+                className={"btn-rouge" + (!entityObj[0]?.alreadySaved ? " disabled" : "")}
+                target="_blank"
+                rel="noreferrer"
+                {...(!entityObj[0]?.alreadySaved ? { title: i18n.t("error.preview") } : { href: BUDAlink })}
+              >
+                {i18n.t("general.preview")}
+              </a>
+            </div>
           </div>
         </div>
       </div>

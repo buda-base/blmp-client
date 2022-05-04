@@ -49,6 +49,7 @@ const enTranslations = {
     prefix: "RID prefix must be set in <res>user profile</res>",
     notF: "Resource {{RID}} not found",
     type: "{{id}} is a {{actual}}; but a {{allow}} is required here",
+    preview: "This entity is not on BUDA because it has not been saved yet",
   },
   general: {
     add_another: "Add {{val}}",
@@ -59,6 +60,7 @@ const enTranslations = {
     add_nb: "Number of {{val}} to add",
     close: "Close all open entities",
     import: "Import labels",
+    preview: "View on BUDA",
   },
 }
 
