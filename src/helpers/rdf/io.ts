@@ -129,7 +129,7 @@ export const putTtl = async (
       const headers = new Headers()
       headers.set("Content-Type", "text/turtle")
       headers.set("Authorization", "Bearer " + idToken)
-      if (message) headers.set("X-Change-Message", message)
+      if (message) headers.set("X-Change-Message", encodeURIComponent(message))
       if (previousEtag) headers.set("If-Match", previousEtag)
 
       const response = await fetch(url, { headers, method, body: str })
