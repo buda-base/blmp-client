@@ -1,4 +1,5 @@
 import * as rdf from "rdflib"
+import i18n from "i18next"
 import config from "../../config"
 import { useState, useEffect, useContext } from "react"
 import { useRecoilState } from "recoil"
@@ -137,9 +138,16 @@ export const putTtl = async (
 
       // eslint-disable-next-line no-magic-numbers
       if (response.status == 403) {
-        reject(new Error("not authorized to modify " + url))
+        reject(new Error(i18n.t("error.unauthorized", { url })))
         return
       }
+
+      // eslint-disable-next-line no-magic-numbers
+      if (response.status == 412) {
+        reject(new Error(i18n.t("error.modified")))
+        return
+      }
+
       // eslint-disable-next-line no-magic-numbers
       if (response.status > 400) {
         reject(new Error("error " + response.status + " when saving " + url))

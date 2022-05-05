@@ -50,6 +50,9 @@ const enTranslations = {
     notF: "Resource {{RID}} not found",
     type: "{{id}} is a {{actual}}; but a {{allow}} is required here",
     preview: "This entity is not on BUDA because it has not been saved yet",
+    force: "Errors are detected and will be likely rejected by the server.\nTry anyway?",
+    modified: "Entity must be reloaded first (modified by someone else?)",
+    unauthorized: "not authorized to modify {{url}}",
   },
   general: {
     add_another: "Add {{val}}",

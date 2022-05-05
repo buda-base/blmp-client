@@ -272,7 +272,7 @@ function BottomBar(props: AppProps) {
     //debug("save:",onlySave,entities[entity])
 
     if (entities[entity].state === EditedEntityState.Error && (!saving || isUserProfile)) {
-      if (!window.confirm("errors are detected in this entity, save anyway?")) return
+      if (!window.confirm(i18n.t("error.force"))) return
     }
 
     if (!saving && !isUserProfile) {
