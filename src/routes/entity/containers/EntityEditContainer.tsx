@@ -334,7 +334,9 @@ function EntityEditContainer(props: AppProps) {
     e.stopPropagation()
   }
 
-  const BUDAlink = config.LIBRARY_URL + "/show/" + entity.qname
+  //debug("eO:",entityObj)
+
+  const BUDAlink = config.LIBRARY_URL + "/show/" + entity.qname + "?v=" + entityObj[0]?.alreadySaved
 
   return (
     <React.Fragment>

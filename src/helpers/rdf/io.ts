@@ -159,6 +159,13 @@ export const putTtl = async (
         return
       }
 
+      try {
+        const clear = await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+        //debug("cache:",await clear.text())
+      } catch (e) {
+        debug("error when cleaning cache:", e)
+      }
+
       resolve(etag)
     })
   })
@@ -449,7 +456,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
               subjectLabelState: defaultEntityLabelAtom,
               state: EditedEntityState.NotLoaded,
               preloadedLabel: obj[k].label,
-              alreadySave: obj[k].etag,
+              alreadySaved: obj[k].etag,
             })
           }
         }
