@@ -197,6 +197,7 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
         <Tab
           key="new"
           {...a11yProps(entities.length)}
+          id="new-load"
           label={
             <Link to="/new" className="btn-rouge" onClick={() => setDisabled(false)}>
               NEW / LOAD

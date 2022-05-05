@@ -272,6 +272,8 @@ input[type="checkbox"].dmcheck {
     &:last-child a:hover { text-decoration: underline;}
 
     &.Mui-selected { background:#eee;}
+
+    &#new-load { padding:0; outline:none; }
   }
   
 
