@@ -351,6 +351,7 @@ function BottomBar(props: AppProps) {
 
     history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])
     history[entityUri].push({ "tmp:allValuesLoaded": true })
+    newEntities[entity].subject.resetNoHisto()
 
     if (!isIInstance) {
       closePopup()
