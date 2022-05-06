@@ -53,6 +53,7 @@ const enTranslations = {
     force: "Errors are detected and will be likely rejected by the server.\nTry anyway?",
     modified: "Entity must be reloaded first (modified by someone else?)",
     unauthorized: "not authorized to modify {{url}}",
+    year: "Year must be between {{min}} and {{max}}",
   },
   general: {
     add_another: "Add {{val}}",

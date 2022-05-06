@@ -1320,7 +1320,13 @@ const EditString: FC<{
             const obj = parse(val)
             //debug("edtf:parse", obj)
             const edtfObj = edtf(val)
-            //debug("edtf:obj", edtfObj)
+            //debug("edtf:obj", obj, edtfObj)
+
+            const edtfMin = edtf(edtfObj.min)?.values[0]
+            const edtfMax = edtf(edtfObj.max)?.values[0]
+            // TODO: not sure how to get min/maxExclusive for onYear from shape here...
+            if (edtfMin <= -4000 || edtfMax >= 2100) throw Error(i18n.t("error.year", { min: -4000, max: 2100 }))
+
             setError("")
             setReadableEDTF(humanizeEDTF(obj, val, locales[uiLang[0]]))
             setEDTFtoOtherFields({ lit, val, obj })

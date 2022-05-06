@@ -211,11 +211,13 @@ export const EDTFtoOtherFieldsSelector = selectorFamily({
     //debug(humanizeEDTF(obj, val, true))
 
     if (obj.type === "Date" && !obj.unspecified) {
+      //debug("set EDTFa:",lit,val,obj)
       set(atoms["bdo:onYear"], [new LiteralWithId(String(obj.values[0]), "", ns.XSD("gYear"))])
       set(atoms["bdo:notBefore"], [])
       set(atoms["bdo:notAfter"], [])
     } else {
       try {
+        //debug("set EDTFb:",lit,val,obj)
         set(atoms["bdo:onYear"], [])
         const edtfMin = edtf(edtf(val).min)
         if (edtfMin.values[0])
