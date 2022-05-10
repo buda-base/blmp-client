@@ -2067,6 +2067,11 @@ const SelectComponent: FC<{
               )
             }
           })}
+          {!possibleValues.some((pv) => pv.id === val?.id) && (
+            <MenuItem key={"extra-val-id"} value={val?.id} className="withDescription">
+              {val.uri.includes("purl.bdrc.io") ? val.qname : val.uri}
+            </MenuItem>
+          )}
         </TextField>
         <div className="hoverPart">
           {canDel && (
