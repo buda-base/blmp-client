@@ -1193,8 +1193,8 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
   }
 }
 
-p.menu { display:flex; justify-content: space-between; padding-top:30px !important;
-  .menu-link { width:50%; }
+p.menu { display:flex; justify-content: space-between; padding-top:30px !important; flex-wrap: wrap;
+  .menu-link { width:50%; margin-top:10px;}
 }
 
 
@@ -1218,6 +1218,11 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
 
 .leaflet-control-geosearch form input { height:30px !important; }
 
+[data-route^='/withdraw'] {
+  
+  .navbar.bottom { display:none; }
+
+}
 
 /* css debug mode */
 // * { background-color: rgba(255,0,128,0.05);}

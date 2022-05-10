@@ -12,6 +12,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import i18n from "i18next"
 import { useTranslation, initReactI18next } from "react-i18next"
 import { useRecoilState } from "recoil"
+import ShuffleIcon from "@material-ui/icons/Shuffle"
 
 import config from "../config"
 
@@ -23,6 +24,7 @@ import EntitySelector, {
   defaultEntityLabelAtom,
 } from "../containers/EntitySelectorContainer"
 import OutlineEditorContainer from "../containers/OutlineEditorContainer"
+import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
@@ -167,13 +169,19 @@ function HomeContainer() {
         </p>
         {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
         <p className="menu">
+          <Link className="menu-link iiif" to="/bvmt">
+            <img src="/icons/iiif.png" />
+            BUDA Volume Manifest Tool
+          </Link>
           <Link className="menu-link" to="/outline">
             <img src="/icons/outline.svg" width="64" />
             Outline Editor
           </Link>
-          <Link className="menu-link iiif" to="/bvmt">
-            <img src="/icons/iiif.png" />
-            BUDA Volume Manifest Tool
+          <Link className="menu-link" to="/withdraw">
+            <span style={{ width: "44px", marginRight: "15px", display: "inline-flex", justifyContent: "center" }}>
+              <ShuffleIcon style={{ fontSize: "44px", color: "black" }} />
+            </span>
+            Withdrawing Editor
           </Link>
         </p>
       </div>
@@ -386,6 +394,7 @@ function App(props: AppProps) {
             />
             <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
             <Route exact path="/outline" render={(rprops) => <OutlineEditorContainer />} />
+            <Route exact path="/withdraw" render={(rprops) => <WithdrawingEditorContainer />} />
           </Switch>
         </div>
       </main>
