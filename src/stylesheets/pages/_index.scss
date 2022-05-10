@@ -1222,6 +1222,9 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
   
   .navbar.bottom { display:none; }
 
+  button:focus { outline:none; }
+
+  .disabled { opacity:0.5; }
 }
 
 /* css debug mode */
