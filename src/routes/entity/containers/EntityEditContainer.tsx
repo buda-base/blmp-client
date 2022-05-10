@@ -217,6 +217,10 @@ function EntityEditContainer(props: AppProps) {
   if (!prefLabelAtom) prefLabelAtom = initListAtom
   const [prefLabels, setPrefLabels] = useRecoilState(prefLabelAtom)
 
+  let altLabelAtom = entityObj[0]?.subject?.getAtomForProperty(ns.SKOS("altLabel").value)
+  if (!altLabelAtom) altLabelAtom = initListAtom
+  const altLabels = useRecoilValue(altLabelAtom)
+
   //debug("EntityEditContainer:", JSON.stringify(props), entityQname, isAuthenticated, profileId)
 
   useEffect(() => {
@@ -324,7 +328,10 @@ function EntityEditContainer(props: AppProps) {
       //debug("names:",personNamesLabels,prefLabels)
       const newLabels = [...prefLabels]
       for (const n of possiblePrefLabels[currentGroupName]) {
-        if (!newLabels.some((l) => l.language === n.language || isBo(l.language) && isBo(n.language)))
+        if (
+          !newLabels.some((l) => l.language === n.language || isBo(l.language) && isBo(n.language)) &&
+          !altLabels.some((l) => l.language === n.language || isBo(l.language) && isBo(n.language))
+        )
           newLabels.push(n)
       }
       if (newLabels.length != prefLabels.length) setPrefLabels(newLabels)
