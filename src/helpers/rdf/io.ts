@@ -15,6 +15,7 @@ import {
 } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
 import { useAuth0, Auth0ContextInterface } from "@auth0/auth0-react"
+import { fetchToCurl } from "fetch-to-curl"
 
 let shapesbase = BDSH_uri
 let profileshapesbase = "http://purl.bdrc.io/shapes/profile/"
@@ -122,7 +123,8 @@ export const putTtl = async (
   idToken: string,
   method = "PUT",
   message = "",
-  previousEtag: string | null = null
+  previousEtag: string | null = null,
+  curl = {}
 ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
@@ -134,6 +136,8 @@ export const putTtl = async (
       if (previousEtag) headers.set("If-Match", previousEtag)
 
       const response = await fetch(url, { headers, method, body: str })
+      curl.copy = fetchToCurl(url, { headers, method, body: str }).replace(/--data-binary /g, "--data-raw $")
+
       const etag = response.headers.get("etag")
 
       // eslint-disable-next-line no-magic-numbers

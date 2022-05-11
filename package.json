@@ -23,6 +23,7 @@
     "date-fns": "^2.16.1",
     "debug": "^4.2.0",
     "edtf": "https://github.com/buda-base/edtf.js",
+    "fetch-to-curl": "^0.5.2",
     "http-proxy-middleware": "^1.0.6",
     "i18next": "^19.8.9",
     "is_js": "^0.9.0",
@@ -70,7 +71,7 @@
     "analyze": "source-map-explorer 'dist/static/js/*.js'",
     "predeploy": "npm run build",
     "lint": "eslint --ignore-path .gitignore .",
-    "prebuild":"git submodule update --remote"
+    "prebuild": "git submodule update --remote"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json,css,tsx,ts}": [

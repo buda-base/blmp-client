@@ -162,6 +162,7 @@ function BottomBar(props: AppProps) {
   const [error, setError] = useState("")
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
   const [spinner, setSpinner] = useState(false)
+  const [curl, setCurl] = useState("")
 
   const isUserProfile = userId === entities[entity]?.subjectQname
 
@@ -314,6 +315,7 @@ function BottomBar(props: AppProps) {
       const url = isUser
         ? config.API_BASEURL + userId + "/focusgraph"
         : config.API_BASEURL + entities[entity]?.subjectQname + "/focusgraph"
+      const curl = {}
       try {
         const idTokenF = await auth0.getIdTokenClaims()
 
@@ -324,7 +326,8 @@ function BottomBar(props: AppProps) {
           idTokenF.__raw,
           entities[entity]?.alreadySaved ? "POST" : "PUT",
           '"' + message + '"@' + lang,
-          entities[entity]?.alreadySaved
+          entities[entity]?.alreadySaved,
+          curl
         )
         alreadySaved = loadRes // let's store Etag here
         setSpinner(false)
@@ -336,9 +339,10 @@ function BottomBar(props: AppProps) {
         })
       } catch (error) {
         // TODO: better error handling
-        debug("error:", error)
+        debug("error:", error, curl)
         setError(error.message ? error.message : error)
         setSpinner(false)
+        setCurl(curl.copy)
 
         if (isUserProfile) setPopupOn(true)
 
@@ -432,7 +436,18 @@ function BottomBar(props: AppProps) {
                       helperText: (
                         <React.Fragment>
                           <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                          <i>{error}</i>
+                          <i>{error}</i>&nbsp;&nbsp;
+                          {curl && (
+                            <Button
+                              className="btn-blanc"
+                              onClick={() => {
+                                navigator.clipboard.writeText(curl)
+                                closePopup()
+                              }}
+                            >
+                              copy trace
+                            </Button>
+                          )}
                         </React.Fragment>
                       ),
                       error: true,
