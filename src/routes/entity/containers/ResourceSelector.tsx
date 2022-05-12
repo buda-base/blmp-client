@@ -327,7 +327,18 @@ const ResourceSelector: FC<{
 
         // DONE move url to config + use dedicated route in library
         // TODO get type from ontology
-        setLibraryURL(config.LIBRARY_URL + "/simplesearch?q=" + key + "&lg=" + lang + "&t=" + t + "&for=" + msgId)
+        setLibraryURL(
+          config.LIBRARY_URL +
+            "/simplesearch?q=" +
+            key +
+            "&lg=" +
+            lang +
+            "&t=" +
+            t +
+            "&for=" +
+            msgId +
+            "&f=provider,inc,bda:CP021"
+        )
       }
     }
   }
