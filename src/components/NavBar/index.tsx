@@ -446,7 +446,7 @@ function BottomBar(props: AppProps) {
                             <Button
                               className="btn-blanc"
                               onClick={() => {
-                                navigator.clipboard.writeText(JSON.stringify(curl))
+                                navigator.clipboard.writeText(curl)
                                 closePopup()
                               }}
                             >

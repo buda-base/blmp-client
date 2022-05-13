@@ -136,7 +136,15 @@ export const putTtl = async (
       if (previousEtag) headers.set("If-Match", previousEtag)
 
       const response = await fetch(url, { headers, method, body: str })
-      curl.copy = fetchToCurl(url, { headers, method, body: str }).replace(/--data-binary /g, "--data-raw $")
+
+      curl.copy =
+        fetchToCurl(url, { headers, method, body: str }).replace(
+          /--data-binary '((.|[\n\r])+)'$/gm,
+          (m, g1) => "--data-raw $'" + g1.replace(/(['"])/g, "\\$1") + "'"
+        ) + " --verbose"
+
+      //debug("curl:",curl.copy)
+      //alert();
 
       const etag = response.headers.get("etag")
 
