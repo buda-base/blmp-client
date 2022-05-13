@@ -182,10 +182,15 @@ function BottomBar(props: AppProps) {
   }, [isAuthenticated])
 
   useEffect(() => {
-    setLang(uiLang)
+    let l = uiLang
+    // should fix lang not diplayed in commit popup + error when
+    if (Array.isArray(l)) l = l[0]
+    if (Array.isArray(l)) l = l[0]
+    //debug("l:",l)
+    setLang(l)
   }, [uiLang])
 
-  //debug("bottombar:", errors, isUserProfile, userId, entitySubj, shapeQname, entities[entity])
+  //debug("bottombar:", lang, errors, isUserProfile, userId, entitySubj, shapeQname, entities[entity])
 
   const delay = 300
   const closePopup = (delay1 = delay, delay2 = delay) => {
