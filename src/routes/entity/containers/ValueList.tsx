@@ -1424,7 +1424,10 @@ const EditBool: FC<{
 
   const dt = property.datatype
 
-  //debug("bool:",lit)
+  let val = !lit.value || lit.value == "false" || lit.value == "0" ? false : true
+  if (property.defaultValue === null && lit.value == "") val = "unset"
+
+  //debug("bool:",property.qname,property.defaultValue,lit)
 
   const changeCallback = (val: string) => {
     onChange(lit.copyWithUpdatedValue(val == "false" ? "0" : "1"))
@@ -1434,12 +1437,14 @@ const EditBool: FC<{
       select
       style={{ padding: "1px", minWidth: "250px" }}
       label={label}
-      value={!lit.value || lit.value == "false" || lit.value == "0" ? false : true}
+      value={val}
       InputLabelProps={{ shrink: true }}
-      onChange={(e) => changeCallback(e.target.value)}
+      onChange={(e) => {
+        if (e.target.value != "-") changeCallback(e.target.value)
+      }}
       {...(!editable ? { disabled: true } : {})}
     >
-      {["true", "false"].map((v) => (
+      {["true", "false"].concat(val === "unset" ? [val] : []).map((v) => (
         <MenuItem key={v} value={v}>
           {i18n.t("types." + v)}
         </MenuItem>

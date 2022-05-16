@@ -19,6 +19,7 @@ const enTranslations = {
     boolean: "Boolean",
     true: "True",
     false: "False",
+    unset: "-",
   },
   search: {
     help: {
