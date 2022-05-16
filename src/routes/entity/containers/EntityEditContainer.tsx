@@ -144,7 +144,7 @@ function EntityEditContainerDoUpdate(props: AppPropsDoUpdate) {
   debug("LIST:", list, atom, props.copy, copy, props.prefLabel)
 
   useEffect(() => {
-    const newObject = new ExtRDFResourceWithLabel(props.objectQname, {}, {})
+    const newObject = new ExtRDFResourceWithLabel(ns.uriFromQname(props.objectQname), {}, {})
     // DONE: must also give set index in url
     const newList = replaceItemAtIndex(list, props.index, newObject)
     setList(newList)
