@@ -172,6 +172,7 @@ export class EntityGraphValues {
   ) => ({ setSelf, onSet }: setSelfOnSelf) => {
     onSet((newValues: Array<Value> | DefaultValue): void => {
       if (!(newValues instanceof DefaultValue)) {
+        //debug("updating:",subjectUri, pathString, newValues)
         this.onUpdateValues(subjectUri, pathString, newValues)
       }
     })

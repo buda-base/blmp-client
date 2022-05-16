@@ -144,16 +144,19 @@ function EntityEditContainerDoUpdate(props: AppPropsDoUpdate) {
   debug("LIST:", list, atom, props.copy, copy, props.prefLabel)
 
   useEffect(() => {
+    if (copy) {
+      // we have to delay this a bit for value to be propagated to EntityGraph and be exported to ttl when saving
+      setTimeout(() => {
+        for (const k of Object.keys(copy)) {
+          setProp({ k, val: copy[k] })
+        }
+      }, 1150) // eslint-disable-line no-magic-numbers
+    }
+
     const newObject = new ExtRDFResourceWithLabel(ns.uriFromQname(props.objectQname), {}, {})
     // DONE: must also give set index in url
     const newList = replaceItemAtIndex(list, props.index, newObject)
     setList(newList)
-
-    if (copy) {
-      for (const k of Object.keys(copy)) {
-        setProp({ k, val: copy[k] })
-      }
-    }
   }, [])
 
   return <Redirect to={"/edit/" + props.objectQname + "/" + shapeQname} />
