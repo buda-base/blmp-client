@@ -50,6 +50,7 @@ import {
   EDTFtoOtherFieldsSelector,
   orderedNewValSelector,
   latestNewValSelector,
+  ESfromRecoilSelector,
 } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
@@ -295,59 +296,15 @@ const ValueList: FC<{
     if (property.maxInclusive && newVal > property.maxInclusive) newVal = property.maxInclusive
   }
 
+  const [getESfromRecoil, setESfromRecoil] = useRecoilState(ESfromRecoilSelector({}))
   const updateEntityState = (status: EditedEntityState, id: string, removingFacet = false, forceRemove = false) => {
     if (id === undefined) throw new Error("id undefined")
     const entityQname = topEntity ? topEntity.qname : subject.qname
     const undo = undos[ns.uriFromQname(entityQname)]
     const hStatus = getHistoryStatus(ns.uriFromQname(entityQname))
     //debug("undo:", undo, hStatus, history, entityQname, undos)
-    const n = entities.findIndex((e) => e.subjectQname === entityQname)
-    if (n > -1) {
-      const ent: Entity = entities[n]
-      if (status === EditedEntityState.Error) {
-        //debug("error:", id, status, ent.state, ent, n, property.qname, errors)
 
-        if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
-        errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id] = true
-
-        if (ent.state != status) {
-          const newEntities = [...entities]
-          newEntities[n] = { ...entities[n], state: status }
-          setEntities(newEntities)
-        }
-      } else if (status !== EditedEntityState.Error) {
-        // DONE: update status to NeedsSaving for newly created entity and not for loaded entity
-        status =
-          ent.alreadySaved && (!undo || undo.prev && !undo.prev.enabled)
-            ? EditedEntityState.Saved
-            : EditedEntityState.NeedsSaving
-
-        const hasError =
-          errors[ent.subjectQname] && errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
-
-        //debug("no error:", hasError, forceRemove, id, status, ent.state, ent, n, property.qname, errors)
-        if (ent.state != status || hasError && forceRemove) {
-          //debug("status:", ent.state, status)
-          if (removingFacet) {
-            //debug("rf:", id)
-            if (errors[ent.subjectQname]) {
-              const keys = Object.keys(errors[ent.subjectQname])
-              for (const k of keys) {
-                if (k.startsWith(id)) delete errors[ent.subjectQname][k]
-              }
-            }
-          } else if (hasError) {
-            delete errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
-          }
-          if (!errors[ent.subjectQname] || !Object.keys(errors[ent.subjectQname]).length) {
-            const newEntities = [...entities]
-            newEntities[n] = { ...entities[n], state: status }
-            setEntities(newEntities)
-            //debug("newEnt:",newEntities[n].state)
-          }
-        }
-      }
-    }
+    setESfromRecoil({ property, subject, entityQname, undo, hStatus, status, id, removingFacet, forceRemove })
   }
 
   const alreadyHasEmptyValue: () => boolean = (): boolean => {

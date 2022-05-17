@@ -3,8 +3,9 @@ import { FC } from "react"
 import _ from "lodash"
 
 import * as ns from "../helpers/rdf/ns"
-import { Value, Subject, LiteralWithId } from "../helpers/rdf/types"
+import { Value, Subject, LiteralWithId, errors } from "../helpers/rdf/types"
 import { humanizeEDTF } from "../routes/entity/containers/ValueList"
+import { entitiesAtom, EditedEntityState } from "../containers/EntitySelectorContainer"
 
 //import edtf from "edtf/dist/../index.js"
 import edtf, { parse } from "edtf" // see https://github.com/inukshuk/edtf.js/issues/36#issuecomment-1073778277
@@ -281,4 +282,79 @@ export const toCopySelector = selectorFamily({
 export const savePopupState = atom<boolean>({
   key: "savePopupState",
   default: false,
+})
+
+export const ESfromRecoilSelector = selectorFamily({
+  key: "ESfromRecoilSelector",
+  get: ({}) => ({ get }) => {
+    return true
+  },
+  set: ({}) => (
+    { get, set },
+    { property, subject, entityQname, undo, hStatus, status, id, removingFacet, forceRemove }
+  ) => {
+    const entities = get(entitiesAtom)
+    const setEntities = (val) => set(entitiesAtom, val)
+
+    //debug("UES:", entityQname, undo, hStatus, status, id, removingFacet, forceRemove)
+    const n = entities.findIndex((e) => e.subjectQname === entityQname)
+    if (n > -1) {
+      const ent: Entity = entities[n]
+      if (status === EditedEntityState.Error) {
+        //debug("error:", id, status, ent.state, ent, n, property.qname, errors)
+
+        if (!errors[ent.subjectQname]) errors[ent.subjectQname] = {}
+        errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id] = true
+
+        if (ent.state != status) {
+          const newEntities = [...entities]
+          newEntities[n] = { ...entities[n], state: status }
+
+          debug(
+            "sE:vL1",
+            entities.map((e) => e.subjectQname + ":" + e.alreadySaved),
+            newEntities.map((e) => e.subjectQname + ":" + e.alreadySaved)
+          )
+          setEntities(newEntities)
+        }
+      } else if (status !== EditedEntityState.Error) {
+        // DONE: update status to NeedsSaving for newly created entity and not for loaded entity
+        status =
+          ent.alreadySaved && (!undo || undo.prev && !undo.prev.enabled)
+            ? EditedEntityState.Saved
+            : EditedEntityState.NeedsSaving
+
+        const hasError =
+          errors[ent.subjectQname] && errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
+
+        //debug("no error:", hasError, forceRemove, id, status, ent.state, ent, n, property.qname, errors)
+        if (ent.state != status || hasError && forceRemove) {
+          //debug("status:", ent.state, status)
+          if (removingFacet) {
+            //debug("rf:", id)
+            if (errors[ent.subjectQname]) {
+              const keys = Object.keys(errors[ent.subjectQname])
+              for (const k of keys) {
+                if (k.startsWith(id)) delete errors[ent.subjectQname][k]
+              }
+            }
+          } else if (hasError) {
+            delete errors[ent.subjectQname][subject.qname + ";" + property.qname + ";" + id]
+          }
+          if (!errors[ent.subjectQname] || !Object.keys(errors[ent.subjectQname]).length) {
+            const newEntities = [...entities]
+            newEntities[n] = { ...entities[n], state: status }
+
+            debug(
+              "sE:vL2",
+              entities.map((e) => e.subjectQname + ":" + e.alreadySaved),
+              newEntities.map((e) => e.subjectQname + ":" + e.alreadySaved)
+            )
+            setEntities(newEntities)
+            //debug("newEnt:",newEntities[n].state)
+          }
+        }
+      }
+    }
+  },
 })
