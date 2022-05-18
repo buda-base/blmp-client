@@ -82,7 +82,7 @@ function NewEntityContainer(props: AppProps) {
             onChange={(e) => setRID(e.target.value)}
             helperText={"select an entity to load here by its RID"}
             onKeyDown={(event) => {
-              if (event.key === "Enter") props.history.push("/edit/" + (RID.startsWith("bdr:") ? "" : "bdr:") + RID)
+              if (event.key === "Enter") props.history.push("/edit/bdr:" + RID.replace(/^bdr:/, "").toUpperCase())
             }}
           />
         </div>
