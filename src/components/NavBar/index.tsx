@@ -78,7 +78,7 @@ function NavBar(props: AppProps) {
           <span title={latestVersion}>(your editor is up-to-date)</span>
         ) : (
           <a
-            className="btn-rouge px-2"
+            className="btn-rouge px-2 py-2"
             href="#"
             style={{ width: "auto" }}
             onClick={(e) => {
