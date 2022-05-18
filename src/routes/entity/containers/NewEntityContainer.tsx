@@ -88,7 +88,7 @@ function NewEntityContainer(props: AppProps) {
         </div>
         <div>
           <Link
-            to={"/edit/" + (RID.startsWith("bdr:") ? "" : "bdr:") + RID}
+            to={"/edit/bdr:" + RID.replace(/^bdr:/, "").toUpperCase()}
             className={"btn btn-sm btn-outline-primary py-3 ml-2 lookup btn-rouge " + (!RID ? "disabled" : "")}
             style={{ boxShadow: "none", alignSelf: "center", marginBottom: "15px" }}
           >
