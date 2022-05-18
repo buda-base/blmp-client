@@ -13,6 +13,7 @@ import i18n from "i18next"
 import { useTranslation, initReactI18next } from "react-i18next"
 import { useRecoilState } from "recoil"
 import ShuffleIcon from "@material-ui/icons/Shuffle"
+import { ClearCacheProvider } from "react-clear-cache"
 
 import config from "../config"
 
@@ -330,76 +331,83 @@ function App(props: AppProps) {
   if (isLoading) return <div></div>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
 
-  debug(props, routerHistory.location.pathname)
+  //debug("App:",props, routerHistory.location.pathname, latestVersion)
+
+  // check if latest version every 5 min
+  const checkVersionInterval = 5 * 60 * 1000 // eslint-disable-line no-magic-numbers
 
   return (
-    <div
-      ref={appEl}
-      data-route={props.location.pathname}
-      /*onClick={updateUndo} onKeyUp={updateUndo}*/ className={"App " + (props.location.pathname === "/" ? "home" : "")}
-    >
-      <NavBarContainer />
-      <main>
-        <div>
-          {!props.location.pathname.startsWith("/bvmt") && <EntitySelector {...props} />}
-          <Switch>
-            <Route exact path="/" component={HomeContainer} />
-            <Route
-              exact
-              path="/profile"
-              render={(rprops) => (
-                <EntityEditContainer {...rprops} entityQname="tmp:user" shapeQname="bds:UserProfileShape" />
-              )}
-            />
-            <Route exact path="/new" component={NewEntityContainer} />
-            <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
-            <Route // we need that route to link back value to property where entity was created
-              exact
-              path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
-              component={EntityCreationContainerRoute}
-            />
-            <Route // this one as well
-              exact
-              path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
-              component={EntityCreationContainerRoute}
-            />
-            <Route // same with entityQname
-              exact
-              path="/new/:shapeQname/:subjectQname/:propertyQname/:index/named/:entityQname"
-              component={EntityCreationContainerRoute}
-            />
-            <Route // same with entityQname
-              exact
-              path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
-              component={EntityCreationContainerRoute}
-            />
-            <Route
-              exact
-              path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index"
-              component={EntityEditContainerMayUpdate}
-            />
-            <Route
-              exact
-              path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
-              component={EntityEditContainerMayUpdate}
-            />
-            <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
-            <Route exact path="/edit/:entityQname" component={EntityShapeChooserContainer} />
-            <Route
-              exact
-              path="/bvmt/:volume"
-              render={(rprops) => (
-                <BVMT {...rprops} auth={auth} history={routerHistory} volume={rprops.match.params.volume} />
-              )}
-            />
-            <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
-            <Route exact path="/outline" render={(rprops) => <OutlineEditorContainer />} />
-            <Route exact path="/withdraw" render={(rprops) => <WithdrawingEditorContainer />} />
-          </Switch>
-        </div>
-      </main>
-      {!props.location.pathname.startsWith("/new") && <BottomBarContainer />}
-    </div>
+    <ClearCacheProvider duration={checkVersionInterval}>
+      <div
+        ref={appEl}
+        data-route={props.location.pathname}
+        /*onClick={updateUndo} onKeyUp={updateUndo}*/ className={
+          "App " + (props.location.pathname === "/" ? "home" : "")
+        }
+      >
+        <NavBarContainer />
+        <main>
+          <div>
+            {!props.location.pathname.startsWith("/bvmt") && <EntitySelector {...props} />}
+            <Switch>
+              <Route exact path="/" component={HomeContainer} />
+              <Route
+                exact
+                path="/profile"
+                render={(rprops) => (
+                  <EntityEditContainer {...rprops} entityQname="tmp:user" shapeQname="bds:UserProfileShape" />
+                )}
+              />
+              <Route exact path="/new" component={NewEntityContainer} />
+              <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
+              <Route // we need that route to link back value to property where entity was created
+                exact
+                path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
+                component={EntityCreationContainerRoute}
+              />
+              <Route // this one as well
+                exact
+                path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
+                component={EntityCreationContainerRoute}
+              />
+              <Route // same with entityQname
+                exact
+                path="/new/:shapeQname/:subjectQname/:propertyQname/:index/named/:entityQname"
+                component={EntityCreationContainerRoute}
+              />
+              <Route // same with entityQname
+                exact
+                path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
+                component={EntityCreationContainerRoute}
+              />
+              <Route
+                exact
+                path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index"
+                component={EntityEditContainerMayUpdate}
+              />
+              <Route
+                exact
+                path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
+                component={EntityEditContainerMayUpdate}
+              />
+              <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
+              <Route exact path="/edit/:entityQname" component={EntityShapeChooserContainer} />
+              <Route
+                exact
+                path="/bvmt/:volume"
+                render={(rprops) => (
+                  <BVMT {...rprops} auth={auth} history={routerHistory} volume={rprops.match.params.volume} />
+                )}
+              />
+              <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
+              <Route exact path="/outline" render={(rprops) => <OutlineEditorContainer />} />
+              <Route exact path="/withdraw" render={(rprops) => <WithdrawingEditorContainer />} />
+            </Switch>
+          </div>
+        </main>
+        {!props.location.pathname.startsWith("/new") && <BottomBarContainer />}
+      </div>
+    </ClearCacheProvider>
   )
 }
 export default App

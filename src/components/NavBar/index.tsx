@@ -19,6 +19,7 @@ import { FormHelperText, FormControl, TextField } from "@material-ui/core"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 import axios from "axios"
+import { useClearCache } from "react-clear-cache"
 
 import { AppProps } from "../../containers/AppContainer"
 import { HistoryHandler } from "../../routes/helpers/observer"
@@ -60,6 +61,8 @@ function NavBar(props: AppProps) {
 
   const [userId, setUserId] = useRecoilState(userIdState)
 
+  const { latestVersion, isLatestVersion, emptyCacheStorage } = useClearCache()
+
   return (
     <nav className="navbar navbar-dark navbar-expand-md">
       <a href="https://bdrc.io">
@@ -70,14 +73,31 @@ function NavBar(props: AppProps) {
         <span>EDITOR</span>
         <img className="" src="/images/BUDA-small.svg" height="50px" alt="buda editor" />
       </Link>
-      <FormControl className="ml-auto">
-        <Select labelId="uilanglabel" id="select" value={uiLang[0].toLowerCase()} onChange={uiLangOnChange}>
-          <MenuItem value="en">English</MenuItem>
-          <MenuItem value="bo">བོད་ཡིག</MenuItem>
-          <MenuItem value="zh-hans">中文</MenuItem>
-        </Select>
-        <FormHelperText>{i18n.t("home.uilang")}</FormHelperText>
-      </FormControl>
+      <div className="ml-auto" style={{ fontSize: "13px", alignItems: "center", display: "flex" }}>
+        {isLatestVersion ? (
+          <span>(your editor is up-to-date)</span>
+        ) : (
+          <a
+            className="btn-rouge px-2"
+            href="#"
+            style={{ width: "auto" }}
+            onClick={(e) => {
+              e.preventDefault()
+              emptyCacheStorage()
+            }}
+          >
+            update&nbsp;editor
+          </a>
+        )}
+        <FormControl style={{ marginLeft: "30px" }}>
+          <Select labelId="uilanglabel" id="select" value={uiLang[0].toLowerCase()} onChange={uiLangOnChange}>
+            <MenuItem value="en">English</MenuItem>
+            <MenuItem value="bo">བོད་ཡིག</MenuItem>
+            <MenuItem value="zh-hans">中文</MenuItem>
+          </Select>
+          <FormHelperText>{i18n.t("home.uilang")}</FormHelperText>
+        </FormControl>
+      </div>
 
       {isAuthenticated ? (
         <div className="btn-group ml-1" role="group">
