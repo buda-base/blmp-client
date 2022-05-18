@@ -75,7 +75,7 @@ function NavBar(props: AppProps) {
       </Link>
       <div className="ml-auto" style={{ fontSize: "13px", alignItems: "center", display: "flex" }}>
         {isLatestVersion ? (
-          <span>(your editor is up-to-date)</span>
+          <span title={latestVersion}>(your editor is up-to-date)</span>
         ) : (
           <a
             className="btn-rouge px-2"
