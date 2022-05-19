@@ -197,6 +197,7 @@ const ResourceSelector: FC<{
         if (!Array.isArray(allow)) allow = [allow]
         actual = data["tmp:otherData"]["tmp:type"]
         if (!Array.isArray(actual)) actual = [actual]
+        actual = actual.map((a) => a.replace(/Product/, "Collection"))
         if (actual.filter((t) => allow.includes(t)).length) isTypeOk = true
         //debug("typeOk",isTypeOk,actual,allow)
         const displayTypes = (t: string[]) =>
