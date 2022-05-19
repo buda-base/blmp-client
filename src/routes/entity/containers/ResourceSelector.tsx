@@ -324,6 +324,7 @@ const ResourceSelector: FC<{
         // #529: how to find scans
         if (t.includes("ImageInstance")) t = "Scan"
         else if (t.includes("EtextInstance")) t = "Etext"
+        else if (t.includes("Collection")) t = "Product"
 
         // DONE move url to config + use dedicated route in library
         // TODO get type from ontology
