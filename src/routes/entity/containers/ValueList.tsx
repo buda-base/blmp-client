@@ -889,7 +889,7 @@ const EditLangString: FC<{
       const inOtherEntity = !window.location.href.includes("/" + entity.qname + "/")
 
       //debug("unmount", entity.qname, window.location.href, lit.id, errors, inOtherEntity)
-      updateEntityState(EditedEntityState.Saved, lit.id, false, !inOtherEntity)
+      if (!inOtherEntity) updateEntityState(EditedEntityState.Saved, lit.id, false, !inOtherEntity)
     }
   }, [])
 

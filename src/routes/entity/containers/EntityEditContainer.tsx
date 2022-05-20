@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useLayoutEffect } from "react"
-import { ShapeFetcher, EntityFetcher } from "../../../helpers/rdf/io"
+import React, { useState, useEffect, useMemo, useLayoutEffect, useCallback, useRef } from "react"
+import { ShapeFetcher, EntityFetcher, setUserLocalEntities, debugStore } from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject, ExtRDFResourceWithLabel, history, LiteralWithId } from "../../../helpers/rdf/types"
 import * as shapes from "../../../helpers/rdf/shapes"
@@ -11,6 +11,7 @@ import PropertyGroupContainer from "./PropertyGroupContainer"
 import {
   reloadEntityState,
   profileIdState,
+  userIdState,
   uiLangState,
   uiEditState,
   uiUndosState,
@@ -168,7 +169,7 @@ function EntityEditContainer(props: AppProps) {
   const shapeQname = props.shapeQname ?? props.match.params.shapeQname
   const entityQname = props.entityQname ?? props.match.params.entityQname
   const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const { isAuthenticated } = useAuth0()
+  const auth0 = useAuth0()
 
   const [uiLang] = useRecoilState(uiLangState)
   const [edit, setEdit] = useRecoilState(uiEditState)
@@ -264,7 +265,103 @@ function EntityEditContainer(props: AppProps) {
     }, delay)
   }, [entities, tab, profileId, entityQname])
 
-  if (entityQname === "tmp:user" && !isAuthenticated) return <span>unauthorized</span>
+  const [userId, setUserId] = useRecoilState(userIdState)
+
+  const save = useCallback(
+    (entityObj) => {
+      return new Promise(async (resolve) => {
+        //debug("saving?",entityObj[0]?.state)
+        if ([EditedEntityState.NeedsSaving, EditedEntityState.Error].includes(entityObj[0]?.state)) {
+          // save to localStorage
+          const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
+          const store = new rdf.Store()
+          ns.setDefaultPrefixes(store)
+          entityObj[0]?.subject?.graph.addNewValuestoStore(store)
+          debug(store)
+          debugStore(store)
+          rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
+            if (err) {
+              debug(err, store)
+              throw "error when serializing"
+            }
+            let shape = entityObj[0]?.shapeRef
+            if (shape?.qname) shape = shape.qname
+            setUserLocalEntities(
+              auth0,
+              entityObj[0]?.subject?.qname,
+              shape,
+              str,
+              false,
+              userId,
+              entityObj[0].alreadySaved
+            )
+            //debug("RESOLVED")
+            resolve(true)
+          })
+        }
+      })
+    },
+    [entityQname, shapeQname, entityObj]
+  )
+
+  // trick to get current value when unmounting
+  // (see https://stackoverflow.com/questions/55139386/componentwillunmount-with-react-useeffect-hook)
+  const entityObjRef = useRef(null)
+
+  useEffect(() => {
+    /* // no luck for now
+    if(entityObjRef.current?.length && entityObj?.length){
+      if(entityObjRef.current[0]?.subjectQname != entityObj[0]?.subjectQname) {
+        debug("switched:",entityObjRef.current[0].subjectQname, entityObj[0].subjectQname)
+        save(entityObjRef.current)
+      }
+    }
+    */
+    entityObjRef.current = entityObj
+  })
+
+  useEffect(() => {
+    return async () => {
+      debug("unmounting /edit", entityObjRef.current[0]?.state)
+      await save(entityObjRef.current)
+    }
+  }, [])
+
+  const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+  useEffect(() => {
+    const willSave = []
+    for (const e of entities) {
+      if (e.state !== EditedEntityState.Saved && e.state !== EditedEntityState.NotLoaded) {
+        willSave.push(e)
+        //break // DAMN IT
+      }
+    }
+    //debug("wS:",willSave,entities)
+    if (willSave.length) {
+      window.removeEventListener("beforeunload", warning, true)
+      setWarning(() => async (event) => {
+        //debug("unload?",willSave)
+        for (const w of willSave) {
+          await save([w])
+        }
+        // Cancel the event as stated by the standard.
+        event.preventDefault()
+        // Chrome requires returnValue to be set.
+        event.returnValue = ""
+      })
+    } else {
+      window.removeEventListener("beforeunload", warning, true)
+      setWarning(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+    }
+  }, [entities])
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", warning, true)
+  }, [warning])
+
+  //debug("warning:",warning)
+
+  if (entityQname === "tmp:user" && !auth0.isAuthenticated) return <span>unauthorized</span>
 
   // useEffect(() => {
   //   debug("params", props.match.params.entityQname)

@@ -145,7 +145,7 @@ export class EntityGraphValues {
             if (listMode) collection.append(val)
             else store.add(subject, property, val, defaultGraphNode)
           } else {
-            debug("saving:", val)
+            //debug("saving:", val)
             if (val.node?.value == "tmp:uri" || val.node?.value == "tmp:none") continue
             if (listMode) {
               // val.node happens to be undefined when list has been updated in UI

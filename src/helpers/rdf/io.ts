@@ -361,13 +361,15 @@ export const setUserLocalEntities = async (
   ttl: string,
   del: boolean,
   userId: string,
-  etag: string | null
+  etag: string | null,
+  needSaving = false
 ) => {
   debug("auth:", auth, shapeQname)
   let data = localStorage.getItem("localEntities"),
     userData
   if (!data) data = '{"unregistered":{}}'
   data = await JSON.parse(data)
+  //if(needSaving) data.needSaving = true
   if (auth && auth.user && auth.user.email) {
     if (!data[auth.user.email]) data[auth.user.email] = {}
     userData = data[auth.user.email]

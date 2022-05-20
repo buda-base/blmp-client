@@ -296,7 +296,8 @@ export const ESfromRecoilSelector = selectorFamily({
     const entities = get(entitiesAtom)
     const setEntities = (val) => set(entitiesAtom, val)
 
-    //debug("UES:", entityQname, undo, hStatus, status, id, removingFacet, forceRemove)
+    //debug("UES:", status, entityQname, id, removingFacet, forceRemove, undo, hStatus)
+
     const n = entities.findIndex((e) => e.subjectQname === entityQname)
     if (n > -1) {
       const ent: Entity = entities[n]

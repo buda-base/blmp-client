@@ -208,37 +208,8 @@ function App(props: AppProps) {
   const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
   const appEl = useRef<HTMLDivElement>(null)
   // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
-  const [warning, setWarning] = useState(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
   const routerHistory = useHistory()
   const [userId, setUserId] = useRecoilState(userIdState)
-
-  useEffect(() => {
-    let warn = false
-    for (const e of entities) {
-      if (e.state !== EditedEntityState.Saved && e.state !== EditedEntityState.NotLoaded) {
-        warn = true
-        break
-      }
-    }
-    if (warn) {
-      window.removeEventListener("beforeunload", warning, true)
-      setWarning(() => (event) => {
-        // Cancel the event as stated by the standard.
-        event.preventDefault()
-        // Chrome requires returnValue to be set.
-        event.returnValue = ""
-      })
-    } else {
-      window.removeEventListener("beforeunload", warning, true)
-      setWarning(() => (event) => {}) // eslint-disable-line @typescript-eslint/no-empty-function
-    }
-  }, [entities])
-
-  useEffect(() => {
-    window.addEventListener("beforeunload", warning, true)
-  }, [warning])
-
-  //debug("warning:",warning)
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {
