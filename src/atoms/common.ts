@@ -309,12 +309,6 @@ export const ESfromRecoilSelector = selectorFamily({
         if (ent.state != status) {
           const newEntities = [...entities]
           newEntities[n] = { ...entities[n], state: status }
-
-          debug(
-            "sE:vL1",
-            entities.map((e) => e.subjectQname + ":" + e.alreadySaved),
-            newEntities.map((e) => e.subjectQname + ":" + e.alreadySaved)
-          )
           setEntities(newEntities)
         }
       } else if (status !== EditedEntityState.Error) {
@@ -344,12 +338,6 @@ export const ESfromRecoilSelector = selectorFamily({
           if (!errors[ent.subjectQname] || !Object.keys(errors[ent.subjectQname]).length) {
             const newEntities = [...entities]
             newEntities[n] = { ...entities[n], state: status }
-
-            debug(
-              "sE:vL2",
-              entities.map((e) => e.subjectQname + ":" + e.alreadySaved),
-              newEntities.map((e) => e.subjectQname + ":" + e.alreadySaved)
-            )
             setEntities(newEntities)
             //debug("newEnt:",newEntities[n].state)
           }

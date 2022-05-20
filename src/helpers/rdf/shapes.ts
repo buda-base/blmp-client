@@ -31,6 +31,9 @@ export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
   "bds:ImageInstanceShape": new ExtRDFResourceWithLabel(ns.BDS("ImageInstanceShape").value, {
     en: "Image instance (Scans)",
   }),
+  "bds:EtextInstanceShape": new ExtRDFResourceWithLabel(ns.BDS("EtextInstanceShape").value, {
+    en: "Etext instance",
+  }),
   "bds:ImagegroupShape": new ExtRDFResourceWithLabel(ns.BDS("ImagegroupShape").value, { en: "Image group" }),
   "bds:UserProfileShape": new ExtRDFResourceWithLabel(ns.BDS("UserProfileShape").value, { en: "User profile" }),
 }
@@ -108,9 +111,10 @@ typeUriToShape[ns.BDO_uri + "Topic"] = [shapeRefsMap["bds:TopicShape"]]
 typeUriToShape[ns.BDO_uri + "Place"] = [shapeRefsMap["bds:PlaceShape"]]
 typeUriToShape[ns.BDO_uri + "Instance"] = [shapeRefsMap["bds:InstanceShape"]]
 typeUriToShape[ns.BDO_uri + "ImageInstance"] = [shapeRefsMap["bds:ImageInstanceShape"]]
+typeUriToShape[ns.BDO_uri + "EtextInstance"] = [shapeRefsMap["bds:EtextInstanceShape"]]
 typeUriToShape[ns.BDO_uri + "Role"] = [shapeRefsMap["bds:RoleShape"]]
 typeUriToShape[ns.BDO_uri + "Collection"] = [shapeRefsMap["bds:CollectionShape"]]
-typeUriToShape[ns.BDO_uri + "ImageGroup"] = [shapeRefsMap["bds:ImageGroupShape"]]
+typeUriToShape[ns.BDO_uri + "Imagegroup"] = [shapeRefsMap["bds:ImagegroupShape"]]
 typeUriToShape[ns.BDO_uri + "Corporation"] = [shapeRefsMap["bds:CorporationShape"]]
 typeUriToShape[ns.BDO_uri + "Work"] = [shapeRefsMap["bds:WorkShape"]]
 typeUriToShape[ns.BDO_uri + "SerialWork"] = [shapeRefsMap["bds:SerialWorkShape"]]
