@@ -10,6 +10,7 @@ import { atom, useRecoilState, useRecoilValue, selectorFamily } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import { FormHelperText, FormControl } from "@material-ui/core"
 import { AppProps, IdTypeParams } from "./AppContainer"
+import { DialogBeforeClose } from "../components/Dialog"
 import { BrowserRouter as Router, Switch, Route, Link, useHistory } from "react-router-dom"
 import {
   uiDisabledTabsState,
@@ -102,7 +103,8 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     }
   }
 
-  const closeEntity = (ev: MouseEvent) => {
+  const closeEntity = async (ev: MouseEvent) => {
+    ev.persist()
     if (entity.state === EditedEntityState.NeedsSaving || entity.state === EditedEntityState.Error) {
       const go = window.confirm("unsaved data will be lost")
       if (!go) return
@@ -116,7 +118,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
       true
     )
     // remove data in local storage
-    setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true, userId, entity.alreadySaved)
+    await setUserLocalEntities(auth0, entity.subjectQname, shapeQname, "", true, userId, entity.alreadySaved)
     // remove history for entity
     if (undoHistory) {
       const uri = ns.uriFromQname(entity.subjectQname)
@@ -160,37 +162,39 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   //debug("label?",label,entity.subject?.lname)
 
   return (
-    <Tab
-      key={entity.subjectQname}
-      {...a11yProps(index)}
-      className={index === tab ? "Mui-selected" : ""}
-      onClick={(e) => handleClick(e, index)}
-      {...(disabled ? { disabled: true } : {})}
-      label={
-        <>
-          <Link to={link}>
-            {icon && (
-              <img
-                className="entity-type"
-                src={
-                  "/icons/" +
-                  icon.toLowerCase() +
-                  (index === tab ? "_" : "") +
-                  (icon && icon.startsWith("User") ? ".png" : ".svg")
-                }
-              />
-            )}
-            <span style={{ marginLeft: 30, marginRight: "auto", textAlign: "left" }}>
-              <span>{label && label != "..." ? label : entity.subject?.lname ? entity.subject.lname : label}</span>
-              <br />
-              <span className="RID">{entity.subjectQname}</span>
-            </span>
-          </Link>
-          <span className={"state state-" + entity.state}></span>
-          <CloseIcon className="close-facet-btn" onClick={closeEntity} />
-        </>
-      }
-    />
+    <>
+      <Tab
+        key={entity.subjectQname}
+        {...a11yProps(index)}
+        className={index === tab ? "Mui-selected" : ""}
+        onClick={(e) => handleClick(e, index)}
+        {...(disabled ? { disabled: true } : {})}
+        label={
+          <>
+            <Link to={link}>
+              {icon && (
+                <img
+                  className="entity-type"
+                  src={
+                    "/icons/" +
+                    icon.toLowerCase() +
+                    (index === tab ? "_" : "") +
+                    (icon && icon.startsWith("User") ? ".png" : ".svg")
+                  }
+                />
+              )}
+              <span style={{ marginLeft: 30, marginRight: "auto", textAlign: "left" }}>
+                <span>{label && label != "..." ? label : entity.subject?.lname ? entity.subject.lname : label}</span>
+                <br />
+                <span className="RID">{entity.subjectQname}</span>
+              </span>
+            </Link>
+            <span className={"state state-" + entity.state}></span>
+            <CloseIcon className="close-facet-btn" onClick={closeEntity} />
+          </>
+        }
+      />
+    </>
   )
 }
 

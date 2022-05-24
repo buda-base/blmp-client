@@ -268,15 +268,16 @@ function EntityEditContainer(props: AppProps) {
   const [userId, setUserId] = useRecoilState(userIdState)
 
   const save = useCallback(
-    (entityObj) => {
+    (obj) => {
       return new Promise(async (resolve) => {
-        //debug("saving?",entityObj[0]?.state)
-        if ([EditedEntityState.NeedsSaving, EditedEntityState.Error].includes(entityObj[0]?.state)) {
+        //debug("saving?",obj[0]?.subjectQname,obj[0]?.state,obj[0].alreadySaved)
+        if ([EditedEntityState.NeedsSaving, EditedEntityState.Error].includes(obj[0]?.state)) {
+          //debug("yes")
           // save to localStorage
           const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
           const store = new rdf.Store()
           ns.setDefaultPrefixes(store)
-          entityObj[0]?.subject?.graph.addNewValuestoStore(store)
+          obj[0]?.subject?.graph.addNewValuestoStore(store)
           debug(store)
           debugStore(store)
           rdf.serialize(defaultRef, store, undefined, "text/turtle", async function (err, str) {
@@ -284,16 +285,17 @@ function EntityEditContainer(props: AppProps) {
               debug(err, store)
               throw "error when serializing"
             }
-            let shape = entityObj[0]?.shapeRef
+            let shape = obj[0]?.shapeRef
             if (shape?.qname) shape = shape.qname
             setUserLocalEntities(
               auth0,
-              entityObj[0]?.subject?.qname,
+              obj[0]?.subject?.qname,
               shape,
               str,
               false,
               userId,
-              entityObj[0].alreadySaved
+              obj[0].alreadySaved,
+              obj[0].state === EditedEntityState.NeedsSaving
             )
             //debug("RESOLVED")
             resolve(true)
@@ -309,14 +311,13 @@ function EntityEditContainer(props: AppProps) {
   const entityObjRef = useRef(null)
 
   useEffect(() => {
-    /* // no luck for now
-    if(entityObjRef.current?.length && entityObj?.length){
-      if(entityObjRef.current[0]?.subjectQname != entityObj[0]?.subjectQname) {
-        debug("switched:",entityObjRef.current[0].subjectQname, entityObj[0].subjectQname)
+    // no luck for now
+    if (entityObjRef.current?.length && entityObj?.length) {
+      if (entityObjRef.current[0]?.subjectQname != entityObj[0]?.subjectQname) {
+        //debug("switched:",entityObjRef.current[0].subjectQname, entityObj[0].subjectQname)
         save(entityObjRef.current)
       }
     }
-    */
     entityObjRef.current = entityObj
   })
 

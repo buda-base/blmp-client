@@ -7,6 +7,7 @@ import { uiLangState, userIdState, RIDprefixState, uiTabState } from "../../../a
 import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
+import { Dialog422 } from "../../../components/Dialog"
 import { BrowserRouter as Router, Switch, Route, Link, Redirect, useParams, useHistory } from "react-router-dom"
 import React, { useEffect, useState } from "react"
 import qs from "query-string"
@@ -14,59 +15,8 @@ import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import i18n from "i18next"
 import queryString from "query-string"
 import Button from "@material-ui/core/Button"
-import Dialog from "@material-ui/core/Dialog"
-import DialogActions from "@material-ui/core/DialogActions"
-import DialogContent from "@material-ui/core/DialogContent"
-import DialogContentText from "@material-ui/core/DialogContentText"
-import DialogTitle from "@material-ui/core/DialogTitle"
 
 const debug = require("debug")("bdrc:entity:entitycreation")
-
-function Dialog422(props) {
-  const [open, setOpen] = React.useState(props.open)
-  const shape = props.shaped.split(":")[1]?.replace(/Shape$/, "")
-  const [createNew, setCreateNew] = useState(false)
-  const [loadNamed, setLoadNamed] = useState(false)
-
-  debug("422:", props)
-
-  const handleLoad = () => {
-    setLoadNamed(true)
-    setOpen(false)
-  }
-
-  const handleNew = () => {
-    setCreateNew(true)
-    setOpen(false)
-  }
-
-  if (createNew) return <Redirect to={props.newUrl} />
-  else if (loadNamed) return <Redirect to={props.editUrl} />
-  else
-    return (
-      <div>
-        <Dialog open={open}>
-          <DialogTitle>
-            {shape} {props.named} has already been created
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Do you want to use it, or to create a new {shape} with another RID instead?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions style={{ justifyContent: "space-around" }}>
-            <Button className="btn-rouge" onClick={handleLoad} color="primary">
-              Use&nbsp;<span style={{ textTransform: "none" }}>{props.named}</span>
-            </Button>
-            <Button className="btn-rouge" onClick={handleNew} color="primary">
-              Create&nbsp;<span style={{ textTransform: "none" }}>{shape}</span>&nbsp;with another RID
-            </Button>
-          </DialogActions>
-          <br />
-        </Dialog>
-      </div>
-    )
-}
 
 export function EntityCreationContainer(props: AppProps) {
   const subjectQname = props.match.params.subjectQname

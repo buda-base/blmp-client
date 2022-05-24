@@ -67,7 +67,8 @@ export type Entity = {
   state: EditedEntityState
   subjectLabelState: RecoilState<Array<Value>> | null
   preloadedLabel?: string
-  alreadySaved: boolean
+  alreadySaved: boolean // false or current etag
+  loadedUnsavedFromLocalStorage: boolean // true when localStorage has unsaved changes
 }
 
 export const entitiesAtom = atom<Array<Entity>>({

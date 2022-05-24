@@ -272,7 +272,7 @@ export function ShapeFetcher(shapeQname: string, entityQname: string) {
               ...newEntities[index],
               shapeRef: shape.qname,
             }
-            debug("shape:", shape, entityQname, index, newEntities, newEntities[index])
+            //debug("shape:", shape, entityQname, index, newEntities, newEntities[index])
             setEntities(newEntities)
           }
         }
@@ -284,7 +284,7 @@ export function ShapeFetcher(shapeQname: string, entityQname: string) {
       }
     }
     if (current === shapeQname) fetchResource(shapeQname)
-  }, [current])
+  }, [current, entities])
 
   const retVal =
     shapeQname === current && shape && shapeQname == shape.qname
@@ -362,21 +362,20 @@ export const setUserLocalEntities = async (
   del: boolean,
   userId: string,
   etag: string | null,
-  needSaving = false
+  needsSaving = false
 ) => {
-  debug("auth:", auth, shapeQname)
+  debug("auth:", auth, shapeQname, needsSaving, etag)
   let data = localStorage.getItem("localEntities"),
     userData
   if (!data) data = '{"unregistered":{}}'
   data = await JSON.parse(data)
-  //if(needSaving) data.needSaving = true
   if (auth && auth.user && auth.user.email) {
     if (!data[auth.user.email]) data[auth.user.email] = {}
     userData = data[auth.user.email]
   } else userData = data["unregistered"]
   // TODO: also check if rid is current user's
   if (userId === rid && shapeQname?.includes("UserProfile")) rid = "tmp:user"
-  if (!del) userData[rid] = { shapeQname, ttl, etag }
+  if (!del) userData[rid] = { shapeQname, ttl, etag, needsSaving }
   else if (userData[rid]) delete userData[rid]
   localStorage.setItem("localEntities", JSON.stringify(data))
 }
@@ -429,10 +428,10 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       // TODO: UI "save draft" / "publish"
 
-      let loadRes, loadLabels, localRes, useLocal, notFound, etag, res
+      let loadRes, loadLabels, localRes, useLocal, notFound, etag, res, needsSaving
       const localEntities = await getUserLocalEntities(auth0)
       // 1 - check if entity has local edits (once shape is defined)
-      //debug("local?", entityQname, localEntities[entityQname])
+      //debug("local?", shapeRef, reloadEntity,entityQname, localEntities[entityQname])
       if (reloadEntity !== entityQname && shapeRef && localEntities[entityQname] !== undefined) {
         useLocal = window.confirm("found previous local edits for this resource, load them?")
         const store: rdf.Store = rdf.graph()
@@ -440,6 +439,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
           try {
             rdf.parse(localEntities[entityQname].ttl, store, rdf.Store.defaultGraphURI, "text/turtle")
             etag = localEntities[entityQname].etag
+            needsSaving = localEntities[entityQname].needsSaving
+            debug("nS:", needsSaving)
           } catch (e) {
             debug(e)
             debug(localEntities[entityQname])
@@ -455,7 +456,10 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
 
       // 2 - try to load data from server if not or if user wants to
       try {
-        if (!useLocal) res = await loadTtl(fetchUrl, false, idToken, true)
+        if (!useLocal) {
+          res = await loadTtl(fetchUrl, false, idToken, true)
+          needsSaving = false
+        }
         loadLabels = await loadTtl(labelQueryUrl, true)
       } catch (e) {
         // 3 - case when entity is not on server and user does not want to use local edits that already exist
@@ -529,6 +533,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
             subjectLabelState: subject.getAtomForProperty(prefLabel.uri),
             preloadedLabel: "",
             alreadySaved: etag,
+            ...etag ? { loadedUnsavedFromLocalStorage: needsSaving } : {},
           }
 
           // DONE: issue #2 fixed, fully using getEntities

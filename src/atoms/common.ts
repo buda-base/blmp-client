@@ -315,7 +315,7 @@ export const ESfromRecoilSelector = selectorFamily({
       } else if (status !== EditedEntityState.Error) {
         // DONE: update status to NeedsSaving for newly created entity and not for loaded entity
         status =
-          ent.alreadySaved && (!undo || undo.prev && !undo.prev.enabled)
+          ent.alreadySaved && (!undo || undo.prev && !undo.prev.enabled) && !ent.loadedUnsavedFromLocalStorage
             ? EditedEntityState.Saved
             : EditedEntityState.NeedsSaving
 

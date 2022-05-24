@@ -770,6 +770,7 @@ const Create: FC<{
             state: EditedEntityState.Saved,
             alreadySaved,
             subject: undefined,
+            loadedUnsavedFromLocalStorage: false,
           }
 
           delete history[entities[entity]?.subject?.uri]

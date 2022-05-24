@@ -329,7 +329,8 @@ function BottomBar(props: AppProps) {
         str,
         false,
         userId,
-        entities[entity].alreadySaved
+        entities[entity].alreadySaved,
+        entities[entity].state === EditedEntityState.NeedsSaving
       )
     })
 
@@ -375,7 +376,12 @@ function BottomBar(props: AppProps) {
       }
     }
     const newEntities = [...entities]
-    newEntities[entity] = { ...newEntities[entity], state: EditedEntityState.Saved, alreadySaved }
+    newEntities[entity] = {
+      ...newEntities[entity],
+      state: EditedEntityState.Saved,
+      alreadySaved,
+      loadedUnsavedFromLocalStorage: false,
+    }
     setEntities(newEntities)
 
     history[entityUri] = history[entityUri].filter((h) => !h["tmp:allValuesLoaded"])

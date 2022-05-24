@@ -223,6 +223,8 @@ function App(props: AppProps) {
     }
   }, [])
 
+  //debug("entities:",entities.map(e => e?.subjectQname+","+e?.subject?.qname+"="+e?.state))
+
   /*
   useEffect( () => {
     debug("undos!",undo,undos)
@@ -233,6 +235,7 @@ function App(props: AppProps) {
   // (link between recoil/react states and data updates automatically stored in EntityGraphValues)
   useEffect(() => {
     //if (undoTimer === 0 || entityUri !== undoEntity) {
+    //debug("clear:",entities[entity]?.subject,undoTimer, entity, entityUri,entities)
     undoEntity = entityUri
     clearInterval(undoTimer)
     const delay = 150
@@ -240,6 +243,7 @@ function App(props: AppProps) {
       //debug("timer", undoTimer, entity, entityUri, profileId, history[entityUri], history)
       if (!history[entityUri]) return
       const { top, first, current } = getHistoryStatus(entityUri)
+      //debug("disable:",disabled,first)
       if (first === -1) return
       if (disabled) setDisabled(false)
       // check if flag is on top => nothing modified
@@ -297,7 +301,7 @@ function App(props: AppProps) {
     return () => {
       clearInterval(undoTimer)
     }
-  }, [entities, undos, profileId, uiTab])
+  }, [disabled, entities, undos, profileId, uiTab])
 
   if (isLoading) return <div></div>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />
