@@ -399,6 +399,7 @@ const ResourceSelector: FC<{
     if (typeLname == "Instance") return "bdr:MW"
     if (typeLname == "ImageInstance") return "bdr:W"
     if (typeLname == "EtextInstance") return "bdr:IE"
+    if (typeLname == "SerialWork") return "bdr:WAS"
     throw "cannot find prefix for " + type.uri
   }
 
