@@ -333,25 +333,26 @@ input[type="checkbox"].dmcheck {
         &::before { content:''; background-color:white; width:90px; height:90px; border-radius:50%; display:block; background-repeat: no-repeat; background-position:center; background-size:auto 70px;}
       }        
       &.person > .shape-icon:before { background-image:url(/icons/person.svg);  }
-      &.work > .shape-icon:before { background-image:url(/icons/work.svg);  }
-        &.corporation > .shape-icon:before { background-image:url(/icons/corporation.svg);  }
-        &.topic > .shape-icon:before { background-image:url(/icons/topic.svg);  }
-        &.place > .shape-icon:before { background-image:url(/icons/place.svg);  }
-        &.userprofile, &.user, &[data-shape="bds:UserProfileShape"] { 
-          & > .shape-icon:before { background-image:url(/icons/user.png); background-size:auto;  }
-        }
-        &.instance > .shape-icon:before { background-image:url(/icons/instance.svg); background-size:55px auto;  }
-        &.imageinstance > .shape-icon:before { background-image:url(/icons/imageinstance.svg); background-size:55px auto;  }
-        
-        
-        h1 { font-size:25px; line-height:35px; font-weight:700; text-align: left; color:#343434; padding-left:0px; padding-top:10px;}
-        h1+span { color: rgba(0,0,0,.5); font-size: 12px; font-weight: 600; text-align:left; width:100%; display:block; padding-left:1px; }      
-        h1~p { padding-left:0px; padding-top:15px; font-size:15px; }
-        .buda-link { position: absolute; right:15px;bottom:27px;         
-          a:hover { text-decoration: none; color:white;}
-          .disabled { opacity:0.65; cursor:default; }
-        } 
+      &.serialwork > .shape-icon:before,
+      &.work > .shape-icon:before { background-image:url(/icons/work.svg);  background-size:55px auto; background-position: 55% 50%; }
+      &.corporation > .shape-icon:before { background-image:url(/icons/corporation.svg);  }
+      &.topic > .shape-icon:before { background-image:url(/icons/topic.svg);  }
+      &.place > .shape-icon:before { background-image:url(/icons/place.svg);  }
+      &.userprofile, &.user, &[data-shape="bds:UserProfileShape"] { 
+        & > .shape-icon:before { background-image:url(/icons/user.png); background-size:auto;  }
       }
+      &.instance > .shape-icon:before { background-image:url(/icons/instance.svg); background-size:55px auto;  }
+      &.imageinstance > .shape-icon:before { background-image:url(/icons/imageinstance.svg); background-size:55px auto;  }
+      
+      
+      h1 { font-size:25px; line-height:35px; font-weight:700; text-align: left; color:#343434; padding-left:0px; padding-top:10px;}
+      h1+span { color: rgba(0,0,0,.5); font-size: 12px; font-weight: 600; text-align:left; width:100%; display:block; padding-left:1px; }      
+      h1~p { padding-left:0px; padding-top:15px; font-size:15px; }
+      .buda-link { position: absolute; right:15px;bottom:27px;         
+        a:hover { text-decoration: none; color:white;}
+        .disabled { opacity:0.65; cursor:default; }
+      } 
+    }
   }
 
 }
