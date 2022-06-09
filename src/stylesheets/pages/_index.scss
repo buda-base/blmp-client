@@ -553,8 +553,11 @@ label .help.literal,
 
 .MuiTooltip-popper { z-index:15000 !important; }
 
-[data-prop="bds:InstanceShape-biblioNote"] + div .langString label { transform:translate(0, 1.5px) scale(1); }
+[data-prop="bds:WorkShape-catalogInfo"] + div .langString label,
+[data-prop="bds:InstanceShape-biblioNote"] + div .langString label 
+{ transform:translate(0, 1.5px) scale(1); }
 
+[data-prop="bds:WorkShape-catalogInfo"] + div .langString label,
 [data-prop="bds:InstanceShape-biblioNote"] + div .langString label,
 .propLabel { display:block; //color:rgb(245, 0, 87); font-size:12px; font-weight:500; 
   margin-bottom:4px; 
