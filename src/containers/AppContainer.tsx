@@ -26,6 +26,7 @@ import EntitySelector, {
 } from "../containers/EntitySelectorContainer"
 import OutlineEditorContainer from "../containers/OutlineEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
+import ScanRequestContainer from "../containers/ScanRequestContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
 import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
@@ -170,6 +171,10 @@ function HomeContainer() {
         </p>
         {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
         <p className="menu">
+          <Link className="menu-link" to="/scanrequest">
+            <img src="/icons/images.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
+            Scan Request
+          </Link>
           <Link className="menu-link iiif" to="/bvmt">
             <img src="/icons/iiif.png" />
             BUDA Volume Manifest Tool
@@ -377,6 +382,7 @@ function App(props: AppProps) {
               <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
               <Route exact path="/outline" render={(rprops) => <OutlineEditorContainer />} />
               <Route exact path="/withdraw" render={(rprops) => <WithdrawingEditorContainer />} />
+              <Route exact path="/scanrequest" render={(rprops) => <ScanRequestContainer />} />
             </Switch>
           </div>
         </main>
