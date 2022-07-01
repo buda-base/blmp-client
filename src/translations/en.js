@@ -42,6 +42,7 @@ const enTranslations = {
     superiorToStrict: "must be superior and not equal to {{val}}",
     empty: "should not be empty",
     unique: "duplicate language",
+    uniqueV: "duplicate value",
     exist: "Entity {{id}} does not exist",
     shape: "Cannot find any appropriate shape for entity {{id}}",
     redirect: "Create new or load another entity",

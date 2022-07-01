@@ -347,3 +347,25 @@ export const ESfromRecoilSelector = selectorFamily({
     }
   },
 })
+
+export const isUniqueTestSelector = selectorFamily({
+  key: "isUniqueTestSelector",
+  get: ({ checkUnique, siblingsAtom, propertyPath }) => ({ get }) => {
+    if (!checkUnique) return true
+    //debug("iUvS:",siblingsAtom, propertyPath)
+    const siblings = get(siblingsAtom),
+      vals = []
+    for (const s of siblings) {
+      const lit = get(s.getAtomForProperty(propertyPath))
+      if (lit.length) {
+        if (vals.includes(lit[0].value)) {
+          //debug("non unique:",propertyPath,vals,lit,siblings)
+          return false
+        }
+        vals.push(lit[0].value)
+      }
+    }
+    //debug("unique:",propertyPath,vals,siblings)
+    return true
+  },
+})

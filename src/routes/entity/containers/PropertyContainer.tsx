@@ -18,10 +18,11 @@ const PropertyContainer: FC<{
   owner?: Subject
   topEntity?: Subject
   shape: Shape
-}> = ({ property, subject, embedded, force, editable, owner, topEntity, shape }) => {
+  siblingsPath?: string
+}> = ({ property, subject, embedded, force, editable, owner, topEntity, shape, siblingsPath }) => {
   const objectType = property.objectType
 
-  //debug("propertyCtn:", property.qname, property, subject.qname, subject)
+  //debug("propertyCtn:", property.qname, property, subject.qname, subject, siblingsPath)
 
   return (
     <React.Fragment>
@@ -40,6 +41,7 @@ const PropertyContainer: FC<{
               {...(owner ? { owner } : {})}
               {...(topEntity ? { topEntity } : {})}
               shape={shape}
+              siblingsPath={siblingsPath}
             />
           </div>
         </section>

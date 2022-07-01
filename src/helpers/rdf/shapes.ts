@@ -104,6 +104,7 @@ export const bdsSpecialPattern = ns.BDS("specialPattern") as rdf.NamedNode
 export const bdsConnectIDs = ns.BDS("connectIDs") as rdf.NamedNode
 export const bdsAllowBatchManagement = ns.BDS("allowBatchManagement") as rdf.NamedNode
 export const bdsCopyObjectsOfProperty = ns.BDS("copyObjectsOfProperty") as rdf.NamedNode
+export const bdsUniqueValueAmongSiblings = ns.BDS("uniqueValueAmongSiblings") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
 typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
@@ -296,6 +297,11 @@ export class PropertyShape extends RDFResourceWithLabel {
   @Memoize()
   public get allowBatchManagement(): boolean | null {
     return this.getPropBooleanValue(bdsAllowBatchManagement)
+  }
+
+  @Memoize()
+  public get uniqueValueAmongSiblings(): boolean | null {
+    return this.getPropBooleanValue(bdsUniqueValueAmongSiblings)
   }
 
   @Memoize()

@@ -51,6 +51,7 @@ import {
   orderedNewValSelector,
   latestNewValSelector,
   ESfromRecoilSelector,
+  isUniqueTestSelector,
 } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
@@ -259,7 +260,8 @@ const ValueList: FC<{
   owner?: Subject
   topEntity?: Subject
   shape: Shape
-}> = ({ subject, property, embedded, force, editable, owner, topEntity, shape }) => {
+  siblingsPath?: string
+}> = ({ subject, property, embedded, force, editable, owner, topEntity, shape, siblingsPath }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [unsortedList, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -521,8 +523,17 @@ const ValueList: FC<{
 
   const canPush = property.allowPushToTopLevelSkosPrefLabel
 
-  const renderListElem = (val: Value, i: number, nbvalues: number) => {
-    //debug("render:", property.qname, property, val, i)
+  const isUniqueValueAmongSiblings = useRecoilValue(
+    isUniqueTestSelector({
+      checkUnique: property.uniqueValueAmongSiblings,
+      siblingsAtom: siblingsPath ? (owner ? owner : subject).getAtomForProperty(siblingsPath) : initListAtom,
+      propertyPath: property.path.sparqlString,
+    })
+  )
+
+  const renderListElem = useCallback((val: Value, i: number, nbvalues: number) => {
+    //debug("render:", property.qname, isUniqueValueAmongSiblings, property, val, i)
+
     if (
       val instanceof RDFResourceWithLabel ||
       property.objectType == ObjectType.ResInList ||
@@ -586,17 +597,15 @@ const ValueList: FC<{
       )
     } else if (val instanceof LiteralWithId) {
       addBtn = false
-      const isUnique =
-        list.filter((l) => l instanceof LiteralWithId && /*l.value === val.value &&*/ l.language === val.language)
-          .length === 1
+      const isUniqueLang = list.filter((l) => l instanceof LiteralWithId && l.language === val.language).length === 1
+
       return (
         <LiteralComponent
           key={val.id}
           subject={subject}
           property={property}
           lit={val}
-          canDel={canDel}
-          isUnique={isUnique}
+          {...{ canDel, isUniqueLang, isUniqueValueAmongSiblings }}
           create={
             <Create
               disable={!canAdd || !(val && val.value !== "")}
@@ -613,7 +622,7 @@ const ValueList: FC<{
         />
       )
     }
-  }
+  })
 
   return (
     <React.Fragment>
@@ -1420,7 +1429,8 @@ const EditInt: FC<{
   updateEntityState: (es: EditedEntityState) => void
   hasNoOtherValue: boolean
   index: number
-}> = ({ property, lit, onChange, label, editable, updateEntityState, hasNoOtherValue, index }) => {
+  globalError?: string
+}> = ({ property, lit, onChange, label, editable, updateEntityState, hasNoOtherValue, index, globalError }) => {
   // used for integers and gYear
 
   const classes = useStyles()
@@ -1433,7 +1443,9 @@ const EditInt: FC<{
 
   const getIntError = (val: string) => {
     let err = ""
-    if (hasNoOtherValue && val === "") {
+    if (globalError) {
+      err = globalError
+    } else if (hasNoOtherValue && val === "") {
       err = i18n.t("error.empty")
     } else if (val !== undefined && val !== "") {
       const valueInt = parseInt(val)
@@ -1529,12 +1541,24 @@ const LiteralComponent: FC<{
   subject: Subject
   property: PropertyShape
   canDel: boolean
-  isUnique: boolean
+  isUniqueLang: boolean
+  isUniqueValueAmongSiblings: boolean
   create?: Create
   editable: boolean
   topEntity?: Subject
   updateEntityState: (es: EditedEntityState) => void
-}> = ({ lit, subject, property, canDel, isUnique, create, editable, topEntity, updateEntityState }) => {
+}> = ({
+  lit,
+  subject,
+  property,
+  canDel,
+  isUniqueValueAmongSiblings,
+  isUniqueLang,
+  create,
+  editable,
+  topEntity,
+  updateEntityState,
+}) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const index = list.findIndex((listItem) => listItem === lit)
@@ -1544,6 +1568,8 @@ const LiteralComponent: FC<{
 
   const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
   const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLang)
+
+  //debug("lit:", property.qname, isUniqueValueAmongSiblings, lit.val)
 
   const onChange: (value: LiteralWithId) => void = (value: LiteralWithId) => {
     const newList = replaceItemAtIndex(list, index, value)
@@ -1587,7 +1613,7 @@ const LiteralComponent: FC<{
             </Tooltip>
           ) : null,
         ]}
-        {...(property.uniqueLang && !isUnique ? { globalError: i18n.t("error.unique") } : {})}
+        {...(property.uniqueLang && !isUniqueLang ? { globalError: i18n.t("error.unique") } : {})}
         editable={editable && !property.readOnly}
         updateEntityState={updateEntityState}
         entity={topEntity ? topEntity : subject}
@@ -1614,6 +1640,9 @@ const LiteralComponent: FC<{
         updateEntityState={updateEntityState}
         hasNoOtherValue={property.minCount === 1 && list.length === 1}
         index={index}
+        {...(property.uniqueValueAmongSiblings && !isUniqueValueAmongSiblings
+          ? { globalError: i18n.t("error.uniqueV") }
+          : {})}
       />
     )
   } else if (t?.value === xsdboolean) {
@@ -1766,6 +1795,7 @@ const FacetComponent: FC<{
               owner={subject}
               topEntity={topEntity}
               shape={shape}
+              siblingsPath={property.path.sparqlString}
             />
           ))}
           {withDisplayPriority.map((p, index) => (
@@ -1779,6 +1809,7 @@ const FacetComponent: FC<{
               owner={subject}
               topEntity={topEntity}
               shape={shape}
+              siblingsPath={property.path.sparqlString}
             />
           ))}
           {hasExtra && (
