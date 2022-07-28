@@ -423,7 +423,7 @@ function EntityEditContainer(props: AppProps) {
   //const entityLabel = lang.ValueByLangToStrPrefLang(entity.prefLabels, uiLang)
 
   const checkPushNameAsPrefLabel = (e, currentGroupName) => {
-    debug("closing: ", currentGroupName, possiblePrefLabels[currentGroupName])
+    //debug("closing: ", currentGroupName, possiblePrefLabels[currentGroupName])
     const isBo = (l) => ["bo", "bo-x-ewts"].includes(l)
     if (possiblePrefLabels[currentGroupName]?.length) {
       //debug("names:",personNamesLabels,prefLabels)

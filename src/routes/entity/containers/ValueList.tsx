@@ -576,6 +576,7 @@ const ValueList: FC<{
                 <Create subject={subject} property={property} embedded={embedded} newVal={newVal} shape={shape} />
               )
             }
+            updateEntityState={updateEntityState}
           />
         )
       }
@@ -1955,11 +1956,16 @@ const SelectComponent: FC<{
   selectIdx: number
   editable: boolean
   create?: Element
-}> = ({ res, subject, property, canDel, canSelectNone, selectIdx, editable, create }) => {
+  updateEntityState: (es: EditedEntityState) => void
+}> = ({ res, subject, property, canDel, canSelectNone, selectIdx, editable, create, updateEntityState }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [list, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
+
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [uiTab] = useRecoilState(uiTabState)
+  const entity = entities.findIndex((e, i) => i === uiTab)
 
   const propLabel = ValueByLangToStrPrefLang(property.prefLabels, uiLang)
   const helpMessage = ValueByLangToStrPrefLang(property.helpMessage, uiLitLang)
@@ -2011,6 +2017,26 @@ const SelectComponent: FC<{
     setList([possibleValues[0]])
   }
 
+  const [error, setError] = useState("")
+  const valueNotInList = !possibleValues.some((pv) => pv.id === val?.id)
+  useEffect(() => {
+    if (valueNotInList) {
+      //debug("not in list:",property.path.sparqlString+"_"+selectIdx,res,val,possibleValues)
+      setError(i18n.t("error.select", { val: val.uri.includes("purl.bdrc.io") ? val.qname : val.uri }))
+      updateEntityState(EditedEntityState.Error, property.path.sparqlString + "_" + selectIdx)
+    } else {
+      updateEntityState(EditedEntityState.Saved, property.path.sparqlString + "_" + selectIdx)
+    }
+  }, [valueNotInList])
+
+  useEffect(() => {
+    return () => {
+      const inOtherEntity = !window.location.href.includes("/" + entities[entity].qname + "/")
+      if (!inOtherEntity)
+        updateEntityState(EditedEntityState.Saved, property.path.sparqlString + "_" + selectIdx, false, !inOtherEntity)
+    }
+  }, [])
+
   return (
     possibleValues.length > 1 && (
       <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
@@ -2029,6 +2055,17 @@ const SelectComponent: FC<{
               </Tooltip>
             ) : null,
           ]}
+          {...(error
+            ? {
+                helperText: (
+                  <React.Fragment>
+                    <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                    <i> {error}</i>
+                  </React.Fragment>
+                ),
+                error: true,
+              }
+            : {})}
           {...(!editable ? { disabled: true } : {})}
         >
           {possibleValues.map((v, k) => {
@@ -2061,8 +2098,14 @@ const SelectComponent: FC<{
               )
             }
           })}
-          {!possibleValues.some((pv) => pv.id === val?.id) && (
-            <MenuItem key={"extra-val-id"} value={val?.id} className="withDescription">
+          {valueNotInList && (
+            <MenuItem
+              key={"extra-val-id"}
+              value={val?.id}
+              className="withDescription"
+              style={{ color: "red" }}
+              disabled
+            >
               {val.uri.includes("purl.bdrc.io") ? val.qname : val.uri}
             </MenuItem>
           )}
