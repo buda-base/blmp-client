@@ -2069,19 +2069,17 @@ const SelectComponent: FC<{
           {...(!editable ? { disabled: true } : {})}
         >
           {possibleValues.map((v, k) => {
+            //debug("possible:",v,v.uri)
             if (v instanceof RDFResourceWithLabel) {
               const r = v as RDFResourceWithLabel
               const label = ValueByLangToStrPrefLang(r.prefLabels, uiLitLang)
+              const span = <span>{label ? label : r.lname}</span>
               return (
                 <MenuItem key={"menu-uri_" + selectIdx + r.id} value={r.id} className="withDescription">
                   {r.description ? (
-                    <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLitLang)}>
-                      <span>{label}</span>
-                    </Tooltip>
-                  ) : label ? 
-                    label
-                   : 
-                    r.lname
+                    <Tooltip title={ValueByLangToStrPrefLang(r.description, uiLitLang)}>{span}</Tooltip>
+                  ) : 
+                    span
                   }
                 </MenuItem>
               )
