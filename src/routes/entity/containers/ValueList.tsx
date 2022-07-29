@@ -261,7 +261,8 @@ const ValueList: FC<{
   topEntity?: Subject
   shape: Shape
   siblingsPath?: string
-}> = ({ subject, property, embedded, force, editable, owner, topEntity, shape, siblingsPath }) => {
+  setCssClass?: (string) => void
+}> = ({ subject, property, embedded, force, editable, owner, topEntity, shape, siblingsPath, setCssClass }) => {
   if (property.path == null) throw "can't find path of " + property.qname
   const [unsortedList, setList] = useRecoilState(subject.getAtomForProperty(property.path.sparqlString))
   const [uiLang] = useRecoilState(uiLangState)
@@ -493,6 +494,13 @@ const ValueList: FC<{
   }
 
   const hasNonEmptyValue = list.some((v) => !isEmptyValue(v) || isErrorValue(v))
+
+  useEffect(() => {
+    if (setCssClass) {
+      if (!hasNonEmptyValue) setCssClass("unset")
+      else setCssClass("unset", false)
+    }
+  }, [hasNonEmptyValue])
 
   /* eslint-disable no-magic-numbers */
   const showLabel =
@@ -2048,7 +2056,7 @@ const SelectComponent: FC<{
           style={{ padding: "1px", minWidth: "250px" }}
           onChange={onChange}
           label={[
-            propLabel,
+            propLabel ? propLabel : "[unlabelled]",
             helpMessage ? (
               <Tooltip key={"tooltip_" + selectIdx + "_" + index} title={helpMessage}>
                 <HelpIcon className="help" />

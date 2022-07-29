@@ -24,9 +24,19 @@ const PropertyContainer: FC<{
 
   //debug("propertyCtn:", property.qname, property, subject.qname, subject, siblingsPath)
 
+  const [css, setCss] = useState("")
+
+  const setCssClass = (txt, add = true) => {
+    if (add) {
+      if (!css.includes(txt)) setCss(css + txt + " ")
+    } else {
+      if (css.includes(txt)) setCss(css.replace(new RegExp(txt), ""))
+    }
+  }
+
   return (
     <React.Fragment>
-      <div role="main">
+      <div role="main" {...(css ? { className: css } : {})}>
         <section className="album">
           <div
             className={"container" + (embedded ? " px-0" : "") + " editable-" + editable}
@@ -42,6 +52,7 @@ const PropertyContainer: FC<{
               {...(topEntity ? { topEntity } : {})}
               shape={shape}
               siblingsPath={siblingsPath}
+              setCssClass={setCssClass}
             />
           </div>
         </section>
