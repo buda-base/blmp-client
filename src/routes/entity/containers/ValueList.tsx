@@ -2038,7 +2038,7 @@ const SelectComponent: FC<{
   }, [])
 
   return (
-    possibleValues.length > 1 && (
+    (possibleValues.length > 1 || error) && (
       <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
         <TextField
           select
