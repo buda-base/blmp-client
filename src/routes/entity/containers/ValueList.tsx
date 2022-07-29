@@ -2056,7 +2056,7 @@ const SelectComponent: FC<{
           style={{ padding: "1px", minWidth: "250px" }}
           onChange={onChange}
           label={[
-            propLabel ? propLabel : "[unlabelled]",
+            propLabel, // ? propLabel : "[unlabelled]",
             helpMessage ? (
               <Tooltip key={"tooltip_" + selectIdx + "_" + index} title={helpMessage}>
                 <HelpIcon className="help" />
