@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from "react-redux"
 
-const debug = require("debug")("bdrc:outline")
+const debug = require("debug")("bdrc:outline:info")
 
 function OutlineInfo(props: any) {
   //debug("props:",props)

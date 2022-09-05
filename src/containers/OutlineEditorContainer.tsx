@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
+import { Redirect } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import { useHistory } from "react-router-dom"
 import { connect } from "react-redux"
@@ -8,15 +9,19 @@ import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles"
 import CircularProgress from "@material-ui/core/CircularProgress"
 import InfiniteScroll from "react-infinite-scroller"
 import { lensPath, view, map, addIndex } from "ramda"
+import axios from "axios"
 
 //import { default as BVMT } from "../libs/bvmt/src/App"
-import VolumeSearch from "../libs/bvmt/src/components/VolumeSearch"
+import InstanceSearch from "../components/InstanceSearch"
 import UpdateManifestError from "../libs/bvmt/src/components/UpdateManifestError"
 import { setManifest } from "../libs/bvmt/src/redux/actions/manifest"
 import { getOrInitManifest } from "../libs/bvmt/src/api/getManifest"
 import Card from "../libs/bvmt/src/components/Card"
 
 import OutlineInfo from "../components/OutlineInfo"
+import config from "../config"
+
+const debug = require("debug")("bdrc:outline")
 
 const mapIndex = addIndex(map)
 const theme = createMuiTheme({
@@ -44,6 +49,9 @@ function OutlineApp(props: any) {
   const search = window.location.search
   const params = new URLSearchParams(search)
   const volume = params.get("volume") || props.volume
+  const instance = params.get("instance") || props.instance
+
+  const [first, setFirst] = useState("")
 
   const { dispatch } = props
 
@@ -58,21 +66,32 @@ function OutlineApp(props: any) {
   // (see https://github.com/react-dnd/react-dnd/issues/894#issuecomment-386698852)
   window.__isReactDndBackendSetUp = false
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const getFirstVolume = async () => {
+      if (instance && !volume) {
+        const data = await axios.get(
+          `${config.TEMPLATES_BASE}query/graph/Outline_root_pervolume?I_VNUM=1&R_RES=${instance}&format=jsonld`
+        )
+        //debug("outline:",data)
+        if (data.data && data.data["tmp:firstImageGroup"]?.id) setFirst(data.data["tmp:firstImageGroup"].id)
+      }
+    }
+    getFirstVolume()
+
     return () => {
       //console.log("unmounting BVMT")
     }
   }, [])
 
-  React.useEffect(() => {
+  useEffect(() => {
     setFetchErr(null)
-    if (!volume) {
+    if (!volume && !first) {
       setIsFetching(false)
     } else {
       const getData = async () => {
         setIsFetching(true)
         try {
-          const { manifest } = await getOrInitManifest(volume, {
+          const { manifest } = await getOrInitManifest(volume ? volume : first, {
             uiLanguage: "en",
           })
           setIsFetching(false)
@@ -84,7 +103,19 @@ function OutlineApp(props: any) {
       }
       getData()
     }
-  }, [dispatch, volume])
+  }, [dispatch, volume, first])
+
+  //debug("i&v:",instance,volume)
+
+  if (instance && !volume) {
+    if (!first)
+      return (
+        <div style={{ textAlign: "center", padding: 100 }}>
+          <CircularProgress />
+        </div>
+      )
+    else return <Redirect to={"/outline?instance=" + instance + "&volume=" + first} />
+  }
 
   const handleLoadMore = () => {
     setRenderToIdx(renderToIdx + 10) // eslint-disable-line no-magic-numbers
@@ -102,7 +133,7 @@ function OutlineApp(props: any) {
       <DndProvider backend={Backend}>
         <UpdateManifestError postErr={postErr} setPostErr={setPostErr} />
         {manifest.isDefault ? (
-          <VolumeSearch
+          <InstanceSearch
             history={props.history}
             isFetching={isFetching}
             fetchErr={fetchErr}
