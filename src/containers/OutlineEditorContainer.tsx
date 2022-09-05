@@ -10,6 +10,7 @@ import CircularProgress from "@material-ui/core/CircularProgress"
 import InfiniteScroll from "react-infinite-scroller"
 import { lensPath, view, map, addIndex } from "ramda"
 import axios from "axios"
+import { useRecoilState } from "recoil"
 
 //import { default as BVMT } from "../libs/bvmt/src/App"
 import InstanceSearch from "../components/InstanceSearch"
@@ -17,10 +18,10 @@ import UpdateManifestError from "../libs/bvmt/src/components/UpdateManifestError
 import { setManifest } from "../libs/bvmt/src/redux/actions/manifest"
 import { getOrInitManifest } from "../libs/bvmt/src/api/getManifest"
 import Card from "../libs/bvmt/src/components/Card"
-
 import OutlineInfo from "../components/OutlineInfo"
-import config from "../config"
+import { outlinesAtom } from "../atoms/common"
 
+import config from "../config"
 const debug = require("debug")("bdrc:outline")
 
 const mapIndex = addIndex(map)
@@ -51,9 +52,13 @@ function OutlineApp(props: any) {
   const volume = params.get("volume") || props.volume
   const instance = params.get("instance") || props.instance
 
-  const [first, setFirst] = useState("")
+  const [first, setFirst] = useState(volume)
+  const [outlines, setOutlines] = useRecoilState(outlinesAtom)
+  const [volNum, setVolNum] = useState(1)
 
   const { dispatch } = props
+
+  const already = {}
 
   //console.log("vol:",volume,props,manifest)
 
@@ -66,6 +71,18 @@ function OutlineApp(props: any) {
   // (see https://github.com/react-dnd/react-dnd/issues/894#issuecomment-386698852)
   window.__isReactDndBackendSetUp = false
 
+  const getOutline = async (rid) => {
+    if (already[rid]) return
+    already[rid] = true
+    let data = await axios.get(`${config.TEMPLATES_BASE}query/graph/Outline_root?&R_RES=${rid}&format=jsonld`)
+    if (data) {
+      if (data.data) data = data.data
+      if (data["@graph"]) data = data["@graph"]
+      else data = [data]
+      setOutlines({ ...outlines, [rid]: data })
+    }
+  }
+
   useEffect(() => {
     const getFirstVolume = async () => {
       if (instance && !volume) {
@@ -73,10 +90,19 @@ function OutlineApp(props: any) {
           `${config.TEMPLATES_BASE}query/graph/Outline_root_pervolume?I_VNUM=1&R_RES=${instance}&format=jsonld`
         )
         //debug("outline:",data)
-        if (data.data && data.data["tmp:firstImageGroup"]?.id) setFirst(data.data["tmp:firstImageGroup"].id)
+        if (data.data) {
+          let graph = data.data
+          if (data.data["@graph"]) graph = data.data["@graph"]
+          else graph = [data.data]
+          const root = graph.filter((n) => n.id === instance)
+          if (root.length && root[0]["tmp:firstImageGroup"]?.id) setFirst(root[0]["tmp:firstImageGroup"].id)
+        }
       }
     }
-    getFirstVolume()
+    if (!first) getFirstVolume()
+    else if (!outlines[instance]) {
+      getOutline(instance)
+    }
 
     return () => {
       //console.log("unmounting BVMT")
@@ -105,7 +131,7 @@ function OutlineApp(props: any) {
     }
   }, [dispatch, volume, first])
 
-  //debug("i&v:",instance,volume)
+  debug("i&v:", instance, volume, outlines, manifest)
 
   if (instance && !volume) {
     if (!first)
@@ -164,6 +190,10 @@ function OutlineApp(props: any) {
                           data={item}
                           key={item.id + "_outline-info"}
                           i={i}
+                          instance={instance}
+                          volume={volume}
+                          volNum={volNum}
+                          getOutline={getOutline}
                         />
                       </React.Fragment>
                     ),

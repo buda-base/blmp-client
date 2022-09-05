@@ -369,3 +369,8 @@ export const isUniqueTestSelector = selectorFamily({
     return true
   },
 })
+
+export const outlinesAtom = atom<Map<string, any>>({
+  key: "outlinesAtom",
+  default: {},
+})
