@@ -56,6 +56,8 @@ function OutlineApp(props: any) {
   const [outlines, setOutlines] = useRecoilState(outlinesAtom)
   const [volNum, setVolNum] = useState(1)
 
+  const [breadcrumbs, setBreadcrumbs] = useState({})
+
   const { dispatch } = props
 
   const already = {}
@@ -108,6 +110,85 @@ function OutlineApp(props: any) {
       //console.log("unmounting BVMT")
     }
   }, [])
+
+  // getting "breadcrumbs" for each image
+  useEffect(() => {
+    let id = instance,
+      node = "",
+      sub,
+      location,
+      labels
+    const path = []
+    do
+      loop: {
+        //debug("id:",id)
+
+        if (id && !outlines[id]) {
+          getOutline(id)
+          break
+        }
+        node = outlines[id]?.filter((n) => n.id === id)
+        if (node?.length && node[0].hasPart) {
+          sub = node[0].hasPart
+          if (sub && !Array.isArray(sub)) sub = [sub]
+          if (sub?.length) {
+            sub = outlines[id].filter((n) => sub.includes(n.id))
+            sub = _.orderBy(sub, ["partIndex"], ["asc"])
+
+            //debug("sub:",sub)
+
+            for (const index in sub) {
+              location = sub[index].contentLocation
+              if (id && location) {
+                location = outlines[id]?.filter((n) => location === n.id)
+                if (location?.length) location = location[0]
+              }
+              id = sub[index].id
+              labels = sub[0]["skos:prefLabel"]
+              if (labels && !Array.isArray(labels)) labels = [labels]
+
+              node = [sub[index]]
+
+              //debug("index:",index,sub[index].id,sub[index],location)
+
+              if (sub[index].hasPart) {
+                path.push({ id, location, labels })
+                //debug("break:",path)
+                break
+              } else if (location) {
+                if (location.contentLocationVolume > volNum) {
+                  break loop
+                } else if (location.contentLocationVolume == volNum) {
+                  debug("last?", id, location, labels)
+
+                  path.push({ id, location, labels })
+
+                  let endPage = imageListLength
+                  if (location.contentLocationEndVolume === undefined && location.contentLocationEndPage)
+                    endPage = location.contentLocationEndPage
+
+                  const breadC = {}
+                  for (let i = location.contentLocationPage; i <= endPage; i++) {
+                    breadC["page-" + i] = [...path]
+                  }
+                  //debug("breadC:",breadC)
+                  setBreadcrumbs({ ...breadcrumbs, ...breadC })
+
+                  if (location.contentLocationEndVolume > volNum || location.contentLocationEndPage > renderToIdx + 1) {
+                    break loop
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    while (node && node[0]?.hasPart)
+
+    //debug("path:",path, breadcrumbs)
+  }, [outlines, renderToIdx])
+
+  debug("bC:", breadcrumbs)
 
   useEffect(() => {
     setFetchErr(null)
@@ -190,10 +271,7 @@ function OutlineApp(props: any) {
                           data={item}
                           key={item.id + "_outline-info"}
                           i={i}
-                          instance={instance}
-                          volume={volume}
-                          volNum={volNum}
-                          getOutline={getOutline}
+                          title={breadcrumbs["page-" + (1 + i)]}
                         />
                       </React.Fragment>
                     ),
