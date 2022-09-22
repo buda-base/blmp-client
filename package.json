@@ -72,6 +72,7 @@
     "analyze": "source-map-explorer 'dist/static/js/*.js'",
     "predeploy": "npm run build",
     "lint": "eslint --ignore-path .gitignore .",
+    "postinstall":"if [ ! -r src/libs/bvmt/yarn.lock ] ; then git submodule update --init ; fi",
     "prebuild": "git submodule update --remote && yarn run generate-build-meta",
     "generate-build-meta": "./node_modules/react-clear-cache/bin/cli.js"
   },
