@@ -2030,7 +2030,7 @@ const SelectComponent: FC<{
   useEffect(() => {
     if (valueNotInList) {
       //debug("not in list:",property.path.sparqlString+"_"+selectIdx,res,val,possibleValues)
-      setError(i18n.t("error.select", { val: val.uri.includes("purl.bdrc.io") ? val.qname : val.uri }))
+      setError(i18n.t("error.select", { val: val?.uri.includes("purl.bdrc.io") ? val?.qname : val?.uri }))
       updateEntityState(EditedEntityState.Error, property.path.sparqlString + "_" + selectIdx)
     } else {
       updateEntityState(EditedEntityState.Saved, property.path.sparqlString + "_" + selectIdx)
@@ -2112,7 +2112,7 @@ const SelectComponent: FC<{
               style={{ color: "red" }}
               disabled
             >
-              {val.uri.includes("purl.bdrc.io") ? val.qname : val.uri}
+              {val?.uri?.includes("purl.bdrc.io") ? val?.qname : val?.uri}
             </MenuItem>
           )}
         </TextField>
