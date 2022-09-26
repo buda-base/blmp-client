@@ -117,11 +117,13 @@ function OutlineApp(props: any) {
       node = "",
       sub,
       location,
-      labels
+      labels,
+      parentId,
+      siblings
     const path = []
     do
       loop: {
-        //debug("id:",id)
+        debug("id:", id, volNum, path)
 
         if (id && !outlines[id]) {
           getOutline(id)
@@ -132,15 +134,19 @@ function OutlineApp(props: any) {
           sub = node[0].hasPart
           if (sub && !Array.isArray(sub)) sub = [sub]
           if (sub?.length) {
-            sub = outlines[id].filter((n) => sub.includes(n.id))
+            parentId = id
+            siblings = outlines[id]
+            sub = siblings.filter((n) => sub.includes(n.id))
             sub = _.orderBy(sub, ["partIndex"], ["asc"])
 
-            //debug("sub:",sub)
+            //debug("sub:",sub,siblings)
 
             for (const index in sub) {
               location = sub[index].contentLocation
-              if (id && location) {
-                location = outlines[id]?.filter((n) => location === n.id)
+              //if(outlines[sub[index].id]) siblings = outlines[sub[index].id]
+              //else siblings = outlines[parentId]
+              if (location) {
+                location = siblings?.filter((n) => location === n.id)
                 if (location?.length) location = location[0]
               }
               id = sub[index].id
@@ -159,7 +165,7 @@ function OutlineApp(props: any) {
                 if (location.contentLocationVolume > volNum) {
                   break loop
                 } else if (location.contentLocationVolume == volNum) {
-                  debug("last?", id, location, labels)
+                  //debug("last?", id, location, labels)
 
                   path.push({ id, location, labels })
 
@@ -168,11 +174,17 @@ function OutlineApp(props: any) {
                     endPage = location.contentLocationEndPage
 
                   const breadC = {}
+                  let hasNew = false
                   for (let i = location.contentLocationPage; i <= endPage; i++) {
                     breadC["page-" + i] = [...path]
+                    if (!breadcrumbs["page-" + i]) hasNew = true
                   }
-                  //debug("breadC:",breadC)
-                  setBreadcrumbs({ ...breadcrumbs, ...breadC })
+                  path.pop()
+
+                  if (hasNew) {
+                    debug("new breadC:", location, breadC)
+                    setBreadcrumbs({ ...breadcrumbs, ...breadC })
+                  }
 
                   if (location.contentLocationEndVolume > volNum || location.contentLocationEndPage > renderToIdx + 1) {
                     break loop
@@ -186,9 +198,9 @@ function OutlineApp(props: any) {
     while (node && node[0]?.hasPart)
 
     //debug("path:",path, breadcrumbs)
-  }, [outlines, renderToIdx])
+  }, [outlines, renderToIdx, breadcrumbs])
 
-  debug("bC:", breadcrumbs)
+  //debug("bC:", breadcrumbs)
 
   useEffect(() => {
     setFetchErr(null)
@@ -212,7 +224,7 @@ function OutlineApp(props: any) {
     }
   }, [dispatch, volume, first])
 
-  debug("i&v:", instance, volume, outlines, manifest)
+  //debug("i&v:", instance, volume, outlines, manifest)
 
   if (instance && !volume) {
     if (!first)
