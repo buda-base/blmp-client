@@ -125,82 +125,99 @@ function OutlineApp(props: any) {
         location,
         labels,
         parentId,
-        siblings
-      const path = []
-      do
-        {
-          //debug("id:", id, vol, page, path)
+        siblings,
+        partType,
+        path = []
 
-          if (id && !outlines[id]) {
-            getOutline(id)
-            break
-          }
-          node = outlines[id]?.filter((n) => n.id === id)
-          if (node?.length && node[0].hasPart) {
-            sub = node[0].hasPart
-            if (sub && !Array.isArray(sub)) sub = [sub]
-            if (sub?.length) {
-              parentId = id
-              siblings = outlines[id]
-              sub = siblings.filter((n) => sub.includes(n.id))
-              sub = _.orderBy(sub, ["partIndex"], ["asc"])
+      do {
+        //debug("id:", id, vol, page, path)
 
-              //debug("sub:",sub,siblings)
+        if (id && !outlines[id]) {
+          getOutline(id)
+          break
+        }
+        node = outlines[id]?.filter((n) => n.id === id)
+        if (node?.length && node[0].hasPart) {
+          sub = node[0].hasPart
+          if (sub && !Array.isArray(sub)) sub = [sub]
+          if (sub?.length) {
+            parentId = id
+            siblings = outlines[id]
+            sub = siblings.filter((n) => sub.includes(n.id))
+            sub = _.orderBy(sub, ["partIndex"], ["asc"])
 
-              for (const index in sub) {
-                location = sub[index].contentLocation
-                //if(outlines[sub[index].id]) siblings = outlines[sub[index].id]
-                //else siblings = outlines[parentId]
-                if (location) {
-                  location = siblings?.filter((n) => location === n.id)
-                  if (location?.length) location = location[0]
-                }
-                id = sub[index].id
-                labels = sub[index]["skos:prefLabel"]
-                if (labels && !Array.isArray(labels)) labels = [labels]
+            //debug("sub:",sub,siblings)
 
-                node = [sub[index]]
+            for (const index in sub) {
+              partType = sub[index].partType
+              location = sub[index].contentLocation
+              //if(outlines[sub[index].id]) siblings = outlines[sub[index].id]
+              //else siblings = outlines[parentId]
+              if (location) {
+                location = siblings?.filter((n) => location === n.id)
+                if (location?.length) location = location[0]
+              }
+              id = sub[index].id
+              labels = sub[index]["skos:prefLabel"]
+              if (labels && !Array.isArray(labels)) labels = [labels]
 
-                //debug("index:",index,sub[index].id,sub[index],location)
+              node = [sub[index]]
 
-                if (sub[index].hasPart) {
-                  path.push({ id, location, labels })
-                  //debug("break:",path)
-                  break
-                } else if (location) {
-                  if (
-                    location.contentLocationVolume == vol &&
-                    location.contentLocationPage <= page &&
-                    page <= location.contentLocationEndPage
-                  ) {
-                    //debug("last?", id, location, labels)
+              //debug("index:",index,sub[index].id,sub[index],location)
 
-                    path.push({ id, location, labels })
+              if (sub[index].hasPart) {
+                path.push({ id, location, labels, partType })
+                //debug("break:",path)
+                break
+              } else if (location) {
+                if (
+                  location.contentLocationVolume == vol &&
+                  location.contentLocationPage <= page &&
+                  page <= location.contentLocationEndPage
+                ) {
+                  //debug("last?", id, location, labels)
 
-                    let endPage = imageListLength
-                    if (location.contentLocationEndVolume === undefined && location.contentLocationEndPage)
-                      endPage = location.contentLocationEndPage
+                  path.push({ id, location, labels, partType })
 
-                    const breadC = {}
-                    let hasNew = false
-                    for (let i = location.contentLocationPage; i <= endPage; i++) {
-                      breadC["page-" + i] = [...path]
-                      if (!breadcrumbs["page-" + i]) hasNew = true
-                    }
+                  let endPage = imageListLength
+                  if (location.contentLocationEndVolume === undefined && location.contentLocationEndPage)
+                    endPage = location.contentLocationEndPage
 
-                    if (hasNew) {
-                      //debug("new breadC:", location, breadC, breadcrumbs)
-                      setBreadcrumbs({ ...breadcrumbs, ...breadC })
-                    }
-
-                    return
+                  const breadC = {}
+                  let hasNew = false
+                  for (let i = location.contentLocationPage; i <= endPage; i++) {
+                    breadC["page-" + i] = [...path]
+                    if (!breadcrumbs["page-" + i]) hasNew = true
                   }
+
+                  if (hasNew) {
+                    //debug("new breadC:", location, breadC, breadcrumbs)
+                    setBreadcrumbs({ ...breadcrumbs, ...breadC })
+                  }
+
+                  return
                 }
               }
             }
           }
         }
-      while (node && node[0]?.hasPart)
+      } while (node && node[0]?.hasPart)
+
+      let p, q
+      if (
+        !breadcrumbs["page-" + page] &&
+        (p = breadcrumbs["page-" + (page - 1)]) &&
+        (q = breadcrumbs["page-" + (1 + page)])
+      ) {
+        if (p[p.length - 1].location?.contentLocationVolume === q[q.length - 1].location?.contentLocationVolume) {
+          path = []
+          for (const i in p) {
+            path.push(p[i])
+            if (p[i].partType === "bdr:PartTypeVolume") break
+          }
+          setBreadcrumbs({ ...breadcrumbs, ["page-" + page]: path })
+        }
+      }
     },
     [outlines, breadcrumbs]
   )
