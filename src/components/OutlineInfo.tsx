@@ -9,18 +9,23 @@ const debug = require("debug")("bdrc:outline:info")
 
 function OutlineInfo(props: any) {
   //debug("props:",props)
-  const { manifest, data, title } = props
+  const { manifest, data, title, getPageTitlePath, i } = props
+
+  useEffect(() => {
+    if (!title) getPageTitlePath(i + 1)
+  })
+
+  const indent = 20,
+    init = 5
 
   return (
     <div className="outline-info">
-      {props.i}
       <br />
       {!title || !title.length
         ? data.filename
-        : title.map((t) => (
+        : title.map((t, i) => (
             <>
-              {t.labels[0]["@value"]}
-              <br />
+              <div style={{ marginLeft: indent * i + init }}>{t.labels[0]["@value"]}</div>
             </>
           ))}
     </div>

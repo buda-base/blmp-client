@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import { Redirect } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import { useHistory } from "react-router-dom"
@@ -113,92 +113,97 @@ function OutlineApp(props: any) {
 
   // getting "breadcrumbs" for each image
   useEffect(() => {
-    let id = instance,
-      node = "",
-      sub,
-      location,
-      labels,
-      parentId,
-      siblings
-    const path = []
-    do
-      loop: {
-        debug("id:", id, volNum, path)
+    getPageTitlePath()
+  }, [])
 
-        if (id && !outlines[id]) {
-          getOutline(id)
-          break
-        }
-        node = outlines[id]?.filter((n) => n.id === id)
-        if (node?.length && node[0].hasPart) {
-          sub = node[0].hasPart
-          if (sub && !Array.isArray(sub)) sub = [sub]
-          if (sub?.length) {
-            parentId = id
-            siblings = outlines[id]
-            sub = siblings.filter((n) => sub.includes(n.id))
-            sub = _.orderBy(sub, ["partIndex"], ["asc"])
+  const getPageTitlePath = useCallback(
+    (page = 1, vol = volNum, id = instance) => {
+      //debug("path:", page, vol, Object.keys(breadcrumbs))
 
-            //debug("sub:",sub,siblings)
+      let node = "",
+        sub,
+        location,
+        labels,
+        parentId,
+        siblings
+      const path = []
+      do
+        {
+          //debug("id:", id, vol, page, path)
 
-            for (const index in sub) {
-              location = sub[index].contentLocation
-              //if(outlines[sub[index].id]) siblings = outlines[sub[index].id]
-              //else siblings = outlines[parentId]
-              if (location) {
-                location = siblings?.filter((n) => location === n.id)
-                if (location?.length) location = location[0]
-              }
-              id = sub[index].id
-              labels = sub[0]["skos:prefLabel"]
-              if (labels && !Array.isArray(labels)) labels = [labels]
+          if (id && !outlines[id]) {
+            getOutline(id)
+            break
+          }
+          node = outlines[id]?.filter((n) => n.id === id)
+          if (node?.length && node[0].hasPart) {
+            sub = node[0].hasPart
+            if (sub && !Array.isArray(sub)) sub = [sub]
+            if (sub?.length) {
+              parentId = id
+              siblings = outlines[id]
+              sub = siblings.filter((n) => sub.includes(n.id))
+              sub = _.orderBy(sub, ["partIndex"], ["asc"])
 
-              node = [sub[index]]
+              //debug("sub:",sub,siblings)
 
-              //debug("index:",index,sub[index].id,sub[index],location)
+              for (const index in sub) {
+                location = sub[index].contentLocation
+                //if(outlines[sub[index].id]) siblings = outlines[sub[index].id]
+                //else siblings = outlines[parentId]
+                if (location) {
+                  location = siblings?.filter((n) => location === n.id)
+                  if (location?.length) location = location[0]
+                }
+                id = sub[index].id
+                labels = sub[index]["skos:prefLabel"]
+                if (labels && !Array.isArray(labels)) labels = [labels]
 
-              if (sub[index].hasPart) {
-                path.push({ id, location, labels })
-                //debug("break:",path)
-                break
-              } else if (location) {
-                if (location.contentLocationVolume > volNum) {
-                  break loop
-                } else if (location.contentLocationVolume == volNum) {
-                  //debug("last?", id, location, labels)
+                node = [sub[index]]
 
+                //debug("index:",index,sub[index].id,sub[index],location)
+
+                if (sub[index].hasPart) {
                   path.push({ id, location, labels })
+                  //debug("break:",path)
+                  break
+                } else if (location) {
+                  if (
+                    location.contentLocationVolume == vol &&
+                    location.contentLocationPage <= page &&
+                    page <= location.contentLocationEndPage
+                  ) {
+                    //debug("last?", id, location, labels)
 
-                  let endPage = imageListLength
-                  if (location.contentLocationEndVolume === undefined && location.contentLocationEndPage)
-                    endPage = location.contentLocationEndPage
+                    path.push({ id, location, labels })
 
-                  const breadC = {}
-                  let hasNew = false
-                  for (let i = location.contentLocationPage; i <= endPage; i++) {
-                    breadC["page-" + i] = [...path]
-                    if (!breadcrumbs["page-" + i]) hasNew = true
-                  }
-                  path.pop()
+                    let endPage = imageListLength
+                    if (location.contentLocationEndVolume === undefined && location.contentLocationEndPage)
+                      endPage = location.contentLocationEndPage
 
-                  if (hasNew) {
-                    debug("new breadC:", location, breadC)
-                    setBreadcrumbs({ ...breadcrumbs, ...breadC })
-                  }
+                    const breadC = {}
+                    let hasNew = false
+                    for (let i = location.contentLocationPage; i <= endPage; i++) {
+                      breadC["page-" + i] = [...path]
+                      if (!breadcrumbs["page-" + i]) hasNew = true
+                    }
 
-                  if (location.contentLocationEndVolume > volNum || location.contentLocationEndPage > renderToIdx + 1) {
-                    break loop
+                    if (hasNew) {
+                      //debug("new breadC:", location, breadC, breadcrumbs)
+                      setBreadcrumbs({ ...breadcrumbs, ...breadC })
+                    }
+
+                    return
                   }
                 }
               }
             }
           }
         }
-      }
-    while (node && node[0]?.hasPart)
-
-    //debug("path:",path, breadcrumbs)
-  }, [outlines, renderToIdx, breadcrumbs])
+      while (node && node[0]?.hasPart)
+    },
+    [outlines, breadcrumbs]
+  )
 
   //debug("bC:", breadcrumbs)
 
@@ -279,7 +284,7 @@ function OutlineApp(props: any) {
                       <React.Fragment key={i}>
                         <Card imageListLength={imageListLength} data={item} key={item.id} i={i} />
                         <OutlineInfo
-                          imageListLength={imageListLength}
+                          {...{ imageListLength, getPageTitlePath }}
                           data={item}
                           key={item.id + "_outline-info"}
                           i={i}
