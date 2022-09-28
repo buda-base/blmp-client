@@ -55,6 +55,7 @@ function OutlineApp(props: any) {
   const [first, setFirst] = useState(volume)
   const [outlines, setOutlines] = useRecoilState(outlinesAtom)
   const [volNum, setVolNum] = useState(1)
+  const [start, setStart] = useState(Number(params.get("start") || props.start || 1))
 
   const [breadcrumbs, setBreadcrumbs] = useState({})
 
@@ -118,7 +119,7 @@ function OutlineApp(props: any) {
 
   const getPageTitlePath = useCallback(
     (page = 1, vol = volNum, id = instance) => {
-      //debug("path:", page, vol, Object.keys(breadcrumbs))
+      //debug("path:", page, vol) //, Object.keys(breadcrumbs))
 
       let node = "",
         sub,
@@ -258,13 +259,13 @@ function OutlineApp(props: any) {
     else return <Redirect to={"/outline?instance=" + instance + "&volume=" + first} />
   }
 
-  const handleLoadMore = () => {
+  const handleLoadMore = (params) => {
     setRenderToIdx(renderToIdx + 10) // eslint-disable-line no-magic-numbers
     // setting this isfetching stops the infinite scroll from getting caught in a loop
     setIsLoadingMore(true)
     setTimeout(() => {
       setIsLoadingMore(false)
-    }, 3000) // eslint-disable-line no-magic-numbers
+    }, 10) // eslint-disable-line no-magic-numbers
   }
 
   const imageListLength = imageList.length
@@ -299,17 +300,17 @@ function OutlineApp(props: any) {
                   {mapIndex(
                     (item: Buda.Image, i: number) => (
                       <React.Fragment key={i}>
-                        <Card imageListLength={imageListLength} data={item} key={item.id} i={i} />
+                        <Card imageListLength={imageListLength} data={item} key={item.id} i={i + start - 1} />
                         <OutlineInfo
                           {...{ imageListLength, getPageTitlePath }}
                           data={item}
                           key={item.id + "_outline-info"}
-                          i={i}
-                          title={breadcrumbs["page-" + (1 + i)]}
+                          i={i + start - 1}
+                          title={breadcrumbs["page-" + (1 + i + start - 1)]}
                         />
                       </React.Fragment>
                     ),
-                    imageList.slice(0, renderToIdx)
+                    imageList.slice(start - 1, renderToIdx)
                   )}
                 </InfiniteScroll>
               </div>

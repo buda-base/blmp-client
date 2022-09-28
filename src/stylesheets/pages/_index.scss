@@ -1227,8 +1227,13 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
     }
   }
 
-  main .tabs-select,
-  .navbar.bottom { display:none; }
+  main .tabs-select { display:none; }
+  
+  .navbar.bottom {
+    .buttons {
+      button { opacity:0.5; pointer-events: none; }
+    }
+  }
 
   main .tabs-select + div { display:flex; justify-content: center; padding-left:0; 
   

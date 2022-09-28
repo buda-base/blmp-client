@@ -20,7 +20,7 @@ function LoginContainer(props) {
 
   useEffect(() => {
     loginWithRedirect({
-      redirect_uri: `${config.SITE_URL}${redirect}`,
+      redirect_uri: `${config.SITE_URL}${decodeURIComponent(redirect)}`,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

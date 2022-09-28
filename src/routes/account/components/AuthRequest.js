@@ -21,7 +21,10 @@ export function AuthRequest(props) {
               <br />
             </p>
             <div className="container col-md-4">
-              <Link className="btn btn-danger px-4" to={"/login?redirect=" + window.location.pathname}>
+              <Link
+                className="btn btn-danger px-4"
+                to={"/login?redirect=" + encodeURIComponent(window.location.pathname + window.location.search)}
+              >
                 Login
               </Link>
               <p className="card-text small text-center pt-1 pb-4 mt-3">
