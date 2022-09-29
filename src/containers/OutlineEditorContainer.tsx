@@ -118,7 +118,7 @@ function OutlineApp(props: any) {
   }, [])
 
   const getPageTitlePath = useCallback(
-    (page = 1, vol = volNum, id = instance) => {
+    (page = start, vol = volNum, id = instance) => {
       //debug("path:", page, vol) //, Object.keys(breadcrumbs))
 
       let node = "",
@@ -167,9 +167,16 @@ function OutlineApp(props: any) {
               //debug("index:",index,sub[index].id,sub[index],location)
 
               if (sub[index].hasPart) {
-                path.push({ id, location, labels, partType })
-                //debug("break:",path)
-                break
+                if (
+                  !location ||
+                  location.contentLocationVolume == vol &&
+                    location.contentLocationPage <= page &&
+                    page <= location.contentLocationEndPage
+                ) {
+                  path.push({ id, location, labels, partType })
+                  //debug("break:",path)
+                  break
+                }
               } else if (location) {
                 if (
                   location.contentLocationVolume == vol &&
@@ -185,10 +192,18 @@ function OutlineApp(props: any) {
                     endPage = location.contentLocationEndPage
 
                   const breadC = {}
-                  let hasNew = false
+                  let hasNew = false,
+                    existLoca
                   for (let i = location.contentLocationPage; i <= endPage; i++) {
                     breadC["page-" + i] = [...path]
-                    if (!breadcrumbs["page-" + i]) hasNew = true
+                    if (!(existLoca = breadcrumbs["page-" + i])) hasNew = true
+                    else {
+                      existLoca = existLoca[existLoca.length - 1]
+                      if (existLoca.location && existLoca.location.id != location.id) {
+                        hasNew = true
+                        breadC["page-" + i] = [breadcrumbs["page-" + i], [...path]]
+                      }
+                    }
                   }
 
                   if (hasNew) {
