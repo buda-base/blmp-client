@@ -70,6 +70,8 @@ this function must allow users to select a resource based on a text query. In th
 
 ### Acknowledgement
 
+We would like to thank the [The Robert H. N. Ho Family Foundation Global](https://www.rhfamilyfoundationglobal.org/) for funding the initial development of RDE.
+
 We would like to thank Ashveen Bucktowar for his initial code and for suggesting the most excellent [Recoil](https://recoiljs.org/) library.
 
 ### License
