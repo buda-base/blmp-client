@@ -32,6 +32,7 @@ import {
   userIdState,
   RIDprefixState,
   savePopupState,
+  demoAtom,
 } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import * as ns from "../../helpers/rdf/ns"
@@ -63,8 +64,10 @@ function NavBar(props: AppProps) {
 
   const { latestVersion, isLatestVersion, emptyCacheStorage } = useClearCache()
 
+  const [demo, setDemo] = useRecoilState(demoAtom)
+
   return (
-    <nav className="navbar navbar-dark navbar-expand-md">
+    <nav className="navbar navbar-dark navbar-expand-md demo">
       <a href="https://bdrc.io">
         <img className="" src="/images/BDRC.svg" alt="bdrc" height="50" />
         <span>BDRC</span>
@@ -183,6 +186,7 @@ function BottomBar(props: AppProps) {
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
   const [spinner, setSpinner] = useState(false)
   const [curl, setCurl] = useState("")
+  const [demo, setDemo] = useRecoilState(demoAtom)
 
   const isUserProfile = userId === entities[entity]?.subjectQname
 
@@ -425,7 +429,7 @@ function BottomBar(props: AppProps) {
   //debug("saved:", saved)
 
   return (
-    <nav className="bottom navbar navbar-dark navbar-expand-md">
+    <nav className="bottom navbar navbar-dark navbar-expand-md demo">
       <HistoryHandler entityUri={entityUri} />
       <span />
       <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "") + (isUserProfile ? "user " : "")}>

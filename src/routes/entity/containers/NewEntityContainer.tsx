@@ -3,7 +3,7 @@ import { EntityCreator } from "../../../helpers/rdf/construct"
 import * as shapes from "../../../helpers/rdf/shapes"
 import { RDFResourceWithLabel } from "../../../helpers/rdf/types"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../../containers/EntitySelectorContainer"
-import { uiDisabledTabsState, uiLangState, uiTabState, RIDprefixState } from "../../../atoms/common"
+import { uiDisabledTabsState, uiLangState, uiTabState, RIDprefixState, userIdState } from "../../../atoms/common"
 import * as lang from "../../../helpers/lang"
 import { useRecoilState } from "recoil"
 import { AppProps } from "../../../containers/AppContainer"
@@ -20,6 +20,7 @@ function NewEntityContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)
   const [RID, setRID] = useState("")
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
+  const [userId, setUserId] = useRecoilState(userIdState)
 
   const disabled = !RIDprefix
 

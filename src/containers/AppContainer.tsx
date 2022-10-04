@@ -56,6 +56,8 @@ import enTranslations from "../translations/en"
 //import PreviewImage from "../libs/bvmt/src/components/PreviewImage"
 import { default as BVMT } from "../libs/bvmt/src/App"
 
+import { demoUserId } from "./DemoContainer"
+
 const debug = require("debug")("bdrc:router")
 
 const numtobodic: Record<string, string> = {
@@ -161,39 +163,61 @@ function HomeContainer() {
   } else {
     */
 
-  return (
-    <div className="centered-ctn">
-      <div>
-        <h1>Welcome!</h1>
-        <span>{i18n.t("home.title")}</span>
-        <p>
-          To start the editor, you must first set up the RID prefix in your user profile (ex: <em>3KG</em>), and then
-          click on the <em>New / Load</em> button.
-        </p>
-        {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
-        <p className="menu">
-          <Link className="menu-link" to="/scanrequest">
-            <img src="/icons/images.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
-            Scan Request
-          </Link>
-          <Link className="menu-link iiif" to="/bvmt">
-            <img src="/icons/iiif.png" />
-            BUDA Volume Manifest Tool
-          </Link>
-          <Link className="menu-link" to="/outline">
-            <img src="/icons/outline.svg" width="64" />
-            Outline Editor
-          </Link>
-          <Link className="menu-link" to="/withdraw">
-            <span style={{ width: "44px", marginRight: "15px", display: "inline-flex", justifyContent: "center" }}>
-              <ShuffleIcon style={{ fontSize: "44px", color: "black" }} />
-            </span>
-            Withdrawing Editor
-          </Link>
-        </p>
+  const [userId, setUserId] = useRecoilState(userIdState)
+
+  if (userId === demoUserId)
+    return (
+      <div className="centered-ctn">
+        <div>
+          <h1>Welcome to RDF document editor demo!</h1>
+          <span>{i18n.t("home.title")}</span>
+          <p>
+            You can click the <em>New / Load</em> button on the left, or the link to an example entity below.
+          </p>
+          {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
+          <p className="menu">
+            <Link className="menu-link" to="/edit/bdr:P1583">
+              <img src="/icons/person.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
+              Open example entity
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
-  )
+    )
+  else
+    return (
+      <div className="centered-ctn">
+        <div>
+          <h1>Welcome!</h1>
+          <span>{i18n.t("home.title")}</span>
+          <p>
+            To start the editor, you must first set up the RID prefix in your user profile (ex: <em>3KG</em>), and then
+            click on the <em>New / Load</em> button.
+          </p>
+          {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
+          <p className="menu">
+            <Link className="menu-link" to="/scanrequest">
+              <img src="/icons/images.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
+              Scan Request
+            </Link>
+            <Link className="menu-link iiif" to="/bvmt">
+              <img src="/icons/iiif.png" />
+              BUDA Volume Manifest Tool
+            </Link>
+            <Link className="menu-link" to="/outline">
+              <img src="/icons/outline.svg" width="64" />
+              Outline Editor
+            </Link>
+            <Link className="menu-link" to="/withdraw">
+              <span style={{ width: "44px", marginRight: "15px", display: "inline-flex", justifyContent: "center" }}>
+                <ShuffleIcon style={{ fontSize: "44px", color: "black" }} />
+              </span>
+              Withdrawing Editor
+            </Link>
+          </p>
+        </div>
+      </div>
+    )
   //}
 }
 
@@ -310,9 +334,10 @@ function App(props: AppProps) {
   }, [disabled, entities, undos, profileId, uiTab])
 
   if (isLoading) return <div></div>
-  if (config.requireAuth && !isAuthenticated && props.location.pathname !== "/demo") return <AuthRequest />
+  if (config.requireAuth && !isAuthenticated && props.location.pathname !== "/demo" && userId != demoUserId)
+    return <AuthRequest />
 
-  //debug("App:",props, routerHistory.location.pathname, latestVersion)
+  debug("App:", entities)
 
   // check if latest version every 5 min
   const checkVersionInterval = 5 * 60 * 1000 // eslint-disable-line no-magic-numbers

@@ -14,6 +14,7 @@ import {
   uiDisabledTabsState,
 } from "../../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../containers/EntitySelectorContainer"
+import { demoUserId } from "../../containers/DemoContainer"
 import { useAuth0, Auth0ContextInterface } from "@auth0/auth0-react"
 import { fetchToCurl } from "fetch-to-curl"
 
@@ -45,7 +46,8 @@ export const fetchUrlFromshapeQname = (shapeQname: string): string => {
 }
 
 export const fetchUrlFromEntityQname = (entityQname: string): string => {
-  if (entityQname == "bdr:PTEST") return "/examples/ptest.ttl"
+  if (entityQname == demoUserId) return "/examples/DemoUser.ttl"
+  else if (entityQname == "bdr:PTEST") return "/examples/ptest.ttl"
   else if (entityQname == "tmp:user") return config.API_BASEURL + "me/focusgraph"
   return config.API_BASEURL + entityQname + "/focusgraph"
 }
@@ -424,7 +426,7 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
       const labelQueryUrl = labelQueryUrlFromEntityQname(entityQname)
       const entityUri = uriFromQname(entityQname)
 
-      debug("fetching", entity, entityQname, fetchUrl, labelQueryUrl, entityUri, entities) //, isAuthenticated, idToken)
+      debug("fetching", entity, shapeRef, entityQname, fetchUrl, labelQueryUrl, entityUri, entities) //, isAuthenticated, idToken)
 
       // TODO: UI "save draft" / "publish"
 
@@ -466,6 +468,8 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
         if (localRes) res = { store: localRes, etag }
         else notFound = true
       }
+
+      debug("ttl:", res)
 
       // load session before updating entities
       let _entities = entities
@@ -511,6 +515,9 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
           new rdf.NamedNode(actualUri),
           new EntityGraph(entityStore, actualUri, labelsStore)
         )
+
+        debug("subj?", subject, entityStore, actualUri)
+
         // update state with loaded entity
         let index = _entities.findIndex((e) => e.subjectQname === actualQname)
         const newEntities = [..._entities]

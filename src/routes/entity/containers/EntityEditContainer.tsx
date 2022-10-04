@@ -454,7 +454,7 @@ function EntityEditContainer(props: AppProps) {
           <div>
             <h1>{shapeLabel}</h1>
             <span>{entity.qname}</span>
-            {entityQname !== "tmp:user" && entityQname != profileId && (
+            {entityQname !== "tmp:user" && shape.qname != "bds:UserProfileShape" && (
               <div className="buda-link">
                 <a
                   className={"btn-rouge" + (!entityObj[0]?.alreadySaved ? " disabled" : "")}
