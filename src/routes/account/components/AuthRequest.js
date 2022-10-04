@@ -22,10 +22,14 @@ export function AuthRequest(props) {
             </p>
             <div className="container col-md-4">
               <Link
+                style={{ width: 130 }}
                 className="btn btn-danger px-4"
                 to={"/login?redirect=" + encodeURIComponent(window.location.pathname + window.location.search)}
               >
                 Login
+              </Link>
+              <Link style={{ width: 130 }} className="btn btn-outline-contrast px-4 ml-4" to={"/demo"}>
+                Try demo
               </Link>
               <p className="card-text small text-center pt-1 pb-4 mt-3">
                 <a href="/register" className="text-secondary">

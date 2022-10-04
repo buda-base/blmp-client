@@ -1305,7 +1305,7 @@ const EditString: FC<{
 
             setError("")
             setReadableEDTF(humanizeEDTF(obj, val, locales[uiLang[0]]))
-            setEDTFtoOtherFields({ lit, val, obj })
+            //setEDTFtoOtherFields({ lit, val, obj })
             updateEntityState(EditedEntityState.Saved, lit.id)
           } catch (e) {
             //debug("EDTF error:", e.message)

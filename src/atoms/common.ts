@@ -374,3 +374,8 @@ export const outlinesAtom = atom<Map<string, any>>({
   key: "outlinesAtom",
   default: {},
 })
+
+export const demoAtom = atom<boolean>({
+  key: "demoAtom",
+  default: false,
+})

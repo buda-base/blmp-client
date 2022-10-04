@@ -32,10 +32,20 @@ export function AuthContextWrapper({ children }) {
           Authorization: `Bearer ${idToken.__raw}`,
         },
       })
-      debug("cookie", cookie)
+      //debug("cookie", cookie)
     }
-    if (isAuthenticated) checkSession()
-    else getAccessTokenSilently()
+
+    const tryAuth = async () => {
+      if (isAuthenticated) checkSession()
+      else
+        try {
+          await getAccessTokenSilently()
+        } catch (e) {
+          //debug("login error")
+        }
+    }
+
+    tryAuth()
   }, [getAccessTokenSilently, isAuthenticated])
 
   useEffect(() => {

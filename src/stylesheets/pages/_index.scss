@@ -80,6 +80,12 @@ body.dark-mode .btn-outline-contrast {
   }
 }
 
+
+.btn-outline-contrast:hover {
+  background-color:#eee;
+  color:#d73449;
+}
+
 body.dark-mode .btn-neutral {
   color: $msb-light !important;
   background-color: #1b2938 !important;

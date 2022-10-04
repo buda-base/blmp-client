@@ -24,6 +24,7 @@ import EntitySelector, {
   EditedEntityState,
   defaultEntityLabelAtom,
 } from "../containers/EntitySelectorContainer"
+import DemoContainer from "../containers/DemoContainer"
 import OutlineEditorContainer from "../containers/OutlineEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
 import ScanRequestContainer from "../containers/ScanRequestContainer"
@@ -309,7 +310,7 @@ function App(props: AppProps) {
   }, [disabled, entities, undos, profileId, uiTab])
 
   if (isLoading) return <div></div>
-  if (config.requireAuth && !isAuthenticated) return <AuthRequest />
+  if (config.requireAuth && !isAuthenticated && props.location.pathname !== "/demo") return <AuthRequest />
 
   //debug("App:",props, routerHistory.location.pathname, latestVersion)
 
@@ -380,9 +381,10 @@ function App(props: AppProps) {
                 )}
               />
               <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
-              <Route exact path="/outline" render={(rprops) => <OutlineEditorContainer />} />
-              <Route exact path="/withdraw" render={(rprops) => <WithdrawingEditorContainer />} />
-              <Route exact path="/scanrequest" render={(rprops) => <ScanRequestContainer />} />
+              <Route exact path="/outline" component={OutlineEditorContainer} />
+              <Route exact path="/withdraw" component={WithdrawingEditorContainer} />
+              <Route exact path="/scanrequest" component={ScanRequestContainer} />
+              <Route exact path="/demo" component={DemoContainer} />
             </Switch>
           </div>
         </main>
