@@ -515,9 +515,6 @@ export function EntityFetcher(entityQname: string, shapeRef: RDFResourceWithLabe
           new rdf.NamedNode(actualUri),
           new EntityGraph(entityStore, actualUri, labelsStore)
         )
-
-        debug("subj?", subject, entityStore, actualUri)
-
         // update state with loaded entity
         let index = _entities.findIndex((e) => e.subjectQname === actualQname)
         const newEntities = [..._entities]

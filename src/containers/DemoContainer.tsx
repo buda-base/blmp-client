@@ -3,7 +3,7 @@ import { useRecoilState, useRecoilValue } from "recoil"
 import { Redirect } from "react-router-dom"
 
 import { Subject } from "../atoms/types"
-import { demoAtom, userIdState, initListAtom, RIDprefixState } from "../atoms/common"
+import { demoAtom, userIdState, initListAtom, RIDprefixState, reloadProfileState } from "../atoms/common"
 import { ShapeFetcher, EntityFetcher, demoUser } from "../helpers/rdf/io"
 import * as shapes from "../helpers/rdf/shapes"
 import * as ns from "../helpers/rdf/ns"
@@ -17,15 +17,26 @@ export default function DemoContainer(props) {
   const unmounting = { val: false }
 
   const [demo, setDemo] = useRecoilState(demoAtom)
+  const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
+  const [userId, setUserId] = useRecoilState(userIdState)
 
   useEffect(() => {
     debug("init demo")
-    if (!unmounting.val) setDemo(true)
+    if (!unmounting.val) {
+      setDemo(true)
+      setReloadProfile(true)
+    }
 
     return () => {
       unmounting.val = true
     }
   }, [])
+
+  if (demoUserId === userId) return <Redirect to="/" />
+  return <div></div>
+}
+
+/* // cant' use ttl at all... EntityGraphValues keeps being empty (unless we start displaying/editing its values) 
 
   const { shapeLoadingState, shape } = ShapeFetcher("bds:UserProfileShape", demoUserId)
 
@@ -50,13 +61,12 @@ function DemoContainerWithShape(props) {
       unmounting.val = true
     }
   }, [])
-
-  /*
+  
   useEffect(() => {    
     if(!unmounting.val) setUserId(demoUserId)
   }, [entity])
-  */
-
+ 
   if (demoUserId === userId) return <Redirect to="/" />
   else return <div></div>
 }
+*/

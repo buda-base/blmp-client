@@ -4,8 +4,9 @@ import { useRecoilState } from "recoil"
 import axios from "axios"
 
 import config from "../config"
-import { reloadProfileState, uiLangState, uiLitLangState, userIdState, RIDprefixState } from "../atoms/common"
+import { reloadProfileState, uiLangState, uiLitLangState, userIdState, RIDprefixState, demoAtom } from "../atoms/common"
 import * as ns from "../helpers/rdf/ns"
+import { demoUserId } from "../containers/DemoContainer"
 
 const debug = require("debug")("bdrc:auth")
 
@@ -21,6 +22,7 @@ export function AuthContextWrapper({ children }) {
   const [userId, setUserId] = useRecoilState(userIdState)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
+  const [demo, setDemo] = useRecoilState(demoAtom)
 
   useEffect(() => {
     async function checkSession() {
@@ -52,9 +54,10 @@ export function AuthContextWrapper({ children }) {
     //debug("reload?",isAuthenticated,reloadProfile,loadingState.status)
     if (!reloadProfile) return
 
-    if (isAuthenticated && idToken) fetchProfile()
+    if (isAuthenticated && idToken || demo) fetchProfile()
 
-    //debug("uP:",user)
+    debug("uP:", user, demo)
+
     let groups
     if (
       user &&
@@ -64,19 +67,25 @@ export function AuthContextWrapper({ children }) {
     ) {
       logout({ returnTo: window.location.origin + "?notAdmin=true" })
     }
-  }, [idToken, isAuthenticated, user, reloadProfile])
+  }, [idToken, isAuthenticated, user, reloadProfile, demo])
 
   async function fetchProfile() {
     if (loadingState.status === "idle" || reloadProfile && loadingState.status === "fetched") {
       setLoadingState({ status: "fetching", error: null })
+      let baseURL = config.API_BASEURL
+      let url = "me/focusgraph"
+      if (demo) {
+        baseURL = "/examples/"
+        url = "DemoUser.json"
+      }
       await axios
         .request({
           method: "get",
           timeout: 4000,
-          baseURL: config.API_BASEURL,
-          url: "me/focusgraph",
+          baseURL,
+          url,
           headers: {
-            Authorization: `Bearer ${idToken}`,
+            ...!demo ? { Authorization: `Bearer ${idToken}` } : {},
             Accept: "application/json", //"text/turtle",
           },
         })
@@ -87,7 +96,7 @@ export function AuthContextWrapper({ children }) {
             prefix
           const idx = id.findIndex((k) => k.includes("/user/U"))
           if (id.length) {
-            //debug("Profile loaded", response.data)
+            //debug("Profile loaded", response.data, id, idx, id[idx])
             uiL = response.data[id[idx]][ns.BDOU("preferredUiLang").value]
             //if (uiL?.length) uiL = uiL[0].value
             if (uiL?.length) setUiLang(uiL.map((u) => u.value))
@@ -128,7 +137,7 @@ export function AuthContextWrapper({ children }) {
         })
         .catch(function (error) {
           debug("%O / retrying", error)
-          fetchProfile()
+          if (!demo) fetchProfile()
         })
       /*
         .then(function (response) {
