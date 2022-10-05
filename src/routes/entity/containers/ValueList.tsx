@@ -52,6 +52,7 @@ import {
   latestNewValSelector,
   ESfromRecoilSelector,
   isUniqueTestSelector,
+  demoAtom,
 } from "../../../atoms/common"
 import ResourceSelector from "./ResourceSelector"
 import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/EntitySelectorContainer"
@@ -93,6 +94,12 @@ export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement
 }) => {
   const [n, setN] = useState(1)
   const [disable, setDisable] = useState(false)
+  const [demo, setDemo] = useRecoilState(demoAtom)
+
+  // #36 disable batch add in demo mode
+  useEffect(() => {
+    if (count > 1 && demo && !disable) setDisable(true)
+  })
 
   return (
     <div
@@ -101,9 +108,13 @@ export const BlockAddButton: FC<{ add: React.MouseEventHandler<HTMLButtonElement
     >
       <button
         className="btn btn-sm btn-block btn-outline-primary px-0"
-        style={{ boxShadow: "none", pointerEvents: disable ? "none" : "auto" }}
+        style={{
+          boxShadow: "none",
+          pointerEvents: disable ? "none" : "auto",
+          ...disable ? { opacity: 0.5, pointerEvents: "none" } : {},
+        }}
         onClick={(e) => add(e, n)}
-        disabled={disable}
+        //disabled={disable}
       >
         {i18n.t("general.add_another", { val: label, count })}
         &nbsp;

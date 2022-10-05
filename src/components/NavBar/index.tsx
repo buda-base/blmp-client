@@ -41,6 +41,7 @@ import { debugStore, setUserLocalEntities, putTtl } from "../../helpers/rdf/io"
 import { history, errors } from "../../helpers/rdf/types"
 import config from "../../config"
 import { ErrorIcon, InfoIcon } from "../../routes/layout/icons"
+import { demoUserId } from "../../containers/DemoContainer"
 
 const debug = require("debug")("bdrc:NavBar")
 
@@ -102,7 +103,7 @@ function NavBar(props: AppProps) {
         </FormControl>
       </div>
 
-      {isAuthenticated ? (
+      {isAuthenticated || (demo && userId == demoUserId) ? (
         <div className="btn-group ml-1" role="group">
           <button
             id="userDropDown"
@@ -112,7 +113,7 @@ function NavBar(props: AppProps) {
             aria-haspopup="false"
             aria-expanded="false"
           >
-            {user ? user.email : null}
+            {user?.email ? user.email : userId}
           </button>
           <div className="dropdown-menu" aria-labelledby="userDropDown">
             <Link
@@ -533,6 +534,7 @@ function BottomBar(props: AppProps) {
           </Button>
         )}
         <Button
+          {...(demo ? { style: { pointerEvents: "none", opacity: 0.5 } } : {})}
           variant="outlined"
           onClick={isIInstance ? (willGen || saved ? generate : () => save(!willGen)) : save}
           className="btn-rouge"

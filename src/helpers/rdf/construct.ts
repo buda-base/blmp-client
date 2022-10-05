@@ -10,7 +10,7 @@ import * as shapes from "./shapes"
 import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
 import { useAuth0 } from "@auth0/auth0-react"
 import { nanoid, customAlphabet } from "nanoid"
-import { uiTabState, userIdState, RIDprefixState } from "../../atoms/common"
+import { uiTabState, userIdState, RIDprefixState, demoAtom } from "../../atoms/common"
 
 const debug = require("debug")("bdrc:rdf:construct")
 
@@ -85,6 +85,7 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
   const [tab, setTab] = useRecoilState(uiTabState)
   const [userId, setUserId] = useRecoilState(userIdState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
+  const [demo, setDemo] = useRecoilState(demoAtom)
 
   //debug("RIDp:", RIDprefix, idToken)
 
@@ -128,7 +129,7 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
       if (!unmounting.val) setEntityLoadingState({ status: "creating", error: undefined })
       let lname
       try {
-        if (!idToken) throw new Error("no token when reserving id")
+        if (!idToken && !demo) throw new Error("no token when reserving id")
         const prefix = shapePrefix + RIDprefix
         // if entityQname is not null, we call reserveLname with the entityQname
         const proposedLname = entityQname ? ns.lnameFromQname(entityQname) : null
@@ -164,7 +165,7 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }
-    if (idToken && RIDprefix !== null) createResource(shapeQname, entityQname)
+    if ((idToken || demo) && RIDprefix !== null) createResource(shapeQname, entityQname)
   }, [shapeQname, entityQname, RIDprefix])
 
   return { entityLoadingState, entity, reset }

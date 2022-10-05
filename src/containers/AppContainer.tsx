@@ -46,6 +46,7 @@ import {
   undoState,
   sameUndo,
   userIdState,
+  demoAtom,
 } from "../atoms/common"
 
 import { Subject, history } from "../helpers/rdf/types"
@@ -240,6 +241,7 @@ function App(props: AppProps) {
   // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
   const routerHistory = useHistory()
   const [userId, setUserId] = useRecoilState(userIdState)
+  const [demo, setDemo] = useRecoilState(demoAtom)
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {
@@ -361,7 +363,11 @@ function App(props: AppProps) {
                 exact
                 path="/profile"
                 render={(rprops) => (
-                  <EntityEditContainer {...rprops} entityQname="tmp:user" shapeQname="bds:UserProfileShape" />
+                  <EntityEditContainer
+                    {...rprops}
+                    entityQname={demo ? demoUserId : "tmp:user"}
+                    shapeQname="bds:UserProfileShape"
+                  />
                 )}
               />
               <Route exact path="/new" component={NewEntityContainer} />

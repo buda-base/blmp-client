@@ -1274,5 +1274,5 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
 
 
 .navbar:not(.bottom).demo {
-  .btn-rouge { pointer-events:none; opacity:0.5; }
+  .btn-rouge[href="/login"] { pointer-events:none; opacity:0.5; }
 }

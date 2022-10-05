@@ -38,6 +38,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import queryString from "query-string"
 import { getParentPath } from "../../helpers/observer"
 import Button from "@material-ui/core/Button"
+import { demoUserId } from "../../../containers/DemoContainer"
 
 import config from "../../../config"
 
@@ -362,7 +363,7 @@ function EntityEditContainer(props: AppProps) {
 
   //debug("warning:",warning)
 
-  if (entityQname === "tmp:user" && !auth0.isAuthenticated) return <span>unauthorized</span>
+  if (entityQname === "tmp:user" && !auth0.isAuthenticated && userId != demoUserId) return <span>unauthorized</span>
 
   // useEffect(() => {
   //   debug("params", props.match.params.entityQname)
