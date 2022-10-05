@@ -40,7 +40,7 @@ import { langs } from "../../helpers/lang"
 import { debugStore, setUserLocalEntities, putTtl } from "../../helpers/rdf/io"
 import { history, errors } from "../../helpers/rdf/types"
 import config from "../../config"
-import { ErrorIcon } from "../../routes/layout/icons"
+import { ErrorIcon, InfoIcon } from "../../routes/layout/icons"
 
 const debug = require("debug")("bdrc:NavBar")
 
@@ -347,18 +347,22 @@ function BottomBar(props: AppProps) {
         : config.API_BASEURL + entities[entity]?.subjectQname + "/focusgraph"
       const curl = {}
       try {
-        const idTokenF = await auth0.getIdTokenClaims()
-
         setSpinner(true)
-        const loadRes = await putTtl(
-          url,
-          store,
-          idTokenF.__raw,
-          entities[entity]?.alreadySaved ? "POST" : "PUT",
-          '"' + message + '"@' + lang,
-          entities[entity]?.alreadySaved,
-          curl
-        )
+        let loadRes
+        if (!demo) {
+          const idTokenF = await auth0.getIdTokenClaims()
+          loadRes = await putTtl(
+            url,
+            store,
+            idTokenF.__raw,
+            entities[entity]?.alreadySaved ? "POST" : "PUT",
+            '"' + message + '"@' + lang,
+            entities[entity]?.alreadySaved,
+            curl
+          )
+        } else {
+          loadRes = true
+        }
         alreadySaved = loadRes // let's store Etag here
         setSpinner(false)
 
@@ -466,6 +470,16 @@ function BottomBar(props: AppProps) {
                 onChange={onMessageChangeHandler}
                 InputLabelProps={{ shrink: true }}
                 style={{ minWidth: 300 }}
+                {...(demo
+                  ? {
+                      helperText: (
+                        <React.Fragment>
+                          <InfoIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
+                          <i>{"Demo mode: saving to localStorage only"}</i>
+                        </React.Fragment>
+                      ),
+                    }
+                  : {})}
                 {...(error
                   ? {
                       helperText: (

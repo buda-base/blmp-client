@@ -978,6 +978,10 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
       }
     }
 
+    &.demo {
+      .popup.on { top: calc(100% - 175px); } 
+    }
+
     .buttons {
       & > button { min-width:75px; }
     }
@@ -1269,6 +1273,6 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
 
 
 
-.navbar.demo {
+.navbar:not(.bottom).demo {
   .btn-rouge { pointer-events:none; opacity:0.5; }
 }

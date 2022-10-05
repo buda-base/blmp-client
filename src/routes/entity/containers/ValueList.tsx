@@ -769,17 +769,19 @@ const Create: FC<{
 
         const url = config.API_BASEURL + subject.qname + "/focusgraph"
         try {
-          const idTokenF = await getIdTokenClaims()
-
           let alreadySaved = false
-          const loadRes = await putTtl(
-            url,
-            store,
-            idTokenF.__raw,
-            entities[entity]?.alreadySaved ? "POST" : "PUT",
-            '"batch add volumes"@en',
-            entities[entity]?.alreadySaved
-          )
+          let loadRes
+          if (!demo) {
+            const idTokenF = await getIdTokenClaims()
+            loadRes = await putTtl(
+              url,
+              store,
+              idTokenF.__raw,
+              entities[entity]?.alreadySaved ? "POST" : "PUT",
+              '"batch add volumes"@en',
+              entities[entity]?.alreadySaved
+            )
+          } else loadRes = true
           alreadySaved = loadRes
 
           const newEntities = [...entities]
