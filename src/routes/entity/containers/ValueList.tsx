@@ -2052,7 +2052,7 @@ const SelectComponent: FC<{
 
   useEffect(() => {
     return () => {
-      const inOtherEntity = !window.location.href.includes("/" + entities[entity].qname + "/")
+      const inOtherEntity = !window.location.href.includes("/" + entities[entity]?.qname + "/")
       if (!inOtherEntity)
         updateEntityState(EditedEntityState.Saved, property.path.sparqlString + "_" + selectIdx, false, !inOtherEntity)
     }
