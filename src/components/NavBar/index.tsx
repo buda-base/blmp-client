@@ -534,7 +534,7 @@ function BottomBar(props: AppProps) {
           </Button>
         )}
         <Button
-          {...(demo ? { style: { pointerEvents: "none", opacity: 0.5 } } : {})}
+          {...(demo && isIInstance ? { style: { pointerEvents: "none", opacity: 0.5 } } : {})}
           variant="outlined"
           onClick={isIInstance ? (willGen || saved ? generate : () => save(!willGen)) : save}
           className="btn-rouge"
