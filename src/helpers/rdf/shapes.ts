@@ -18,41 +18,14 @@ const debug = require("debug")("rde:rdf:shapes")
 
 // TODO: this should be fetched somewhere... unclear where yet
 export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
-  "bds:PersonShapeTest": new ExtRDFResourceWithLabel(ns.BDS("PersonShapeTest").value, { en: "Test (Person)" }),
   "bds:PersonShape": new ExtRDFResourceWithLabel(ns.BDS("PersonShape").value, { en: "Person" }),
-  "bds:CorporationShape": new ExtRDFResourceWithLabel(ns.BDS("CorporationShape").value, { en: "Corporation" }),
-  "bds:CollectionShape": new ExtRDFResourceWithLabel(ns.BDS("CollectionShape").value, { en: "Collection" }),
-  "bds:RoleShape": new ExtRDFResourceWithLabel(ns.BDS("RoleShape").value, { en: "Role" }),
-  "bds:TopicShape": new ExtRDFResourceWithLabel(ns.BDS("TopicShape").value, { en: "Topic" }),
-  "bds:PlaceShape": new ExtRDFResourceWithLabel(ns.BDS("PlaceShape").value, { en: "Place" }),
-  "bds:WorkShape": new ExtRDFResourceWithLabel(ns.BDS("WorkShape").value, { en: "Work" }),
-  "bds:SerialWorkShape": new ExtRDFResourceWithLabel(ns.BDS("SerialWorkShape").value, { en: "Serial Work" }),
-  "bds:InstanceShape": new ExtRDFResourceWithLabel(ns.BDS("InstanceShape").value, { en: "Instance (Version)" }),
-  "bds:ImageInstanceShape": new ExtRDFResourceWithLabel(ns.BDS("ImageInstanceShape").value, {
-    en: "Image instance (Scans)",
-  }),
-  "bds:EtextInstanceShape": new ExtRDFResourceWithLabel(ns.BDS("EtextInstanceShape").value, {
-    en: "Etext instance",
-  }),
-  "bds:ImagegroupShape": new ExtRDFResourceWithLabel(ns.BDS("ImagegroupShape").value, { en: "Image group" }),
+  //"bds:TopicShape": new ExtRDFResourceWithLabel(ns.BDS("TopicShape").value, { en: "Topic" }), //etc.
   "bds:UserProfileShape": new ExtRDFResourceWithLabel(ns.BDS("UserProfileShape").value, { en: "User profile" }),
 }
 
 export const possibleShapeRefs: Array<RDFResourceWithLabel> = [
-  shapeRefsMap["bds:InstanceShape"],
   shapeRefsMap["bds:PersonShape"],
-  shapeRefsMap["bds:PlaceShape"],
-  shapeRefsMap["bds:TopicShape"],
-  shapeRefsMap["bds:SerialWorkShape"],
-  shapeRefsMap["bds:CorporationShape"],
-  shapeRefsMap["bds:RoleShape"],
-  shapeRefsMap["bds:CollectionShape"],
-  // removed from the UI
-  //shapeRefsMap["bds:WorkShape"],
-  //shapeRefsMap["bds:ImageInstanceShape"],
-  //shapeRefsMap["bds:UserProfileShape"],
-  //shapeRefsMap["bds:ImagegroupShape"],
-  //shapeRefsMap["bds:PersonShapeTest"],
+  //shapeRefsMap["bds:TopicShape"], // etc.
 ]
 
 export const rdfType = ns.RDF("type") as rdf.NamedNode
