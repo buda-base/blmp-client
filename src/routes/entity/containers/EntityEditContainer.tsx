@@ -399,7 +399,12 @@ function EntityEditContainer(props: AppProps) {
     )
   }
 
-  if (!shape || !entity) return null
+  if (!shape || !entity)
+    return (
+      <div>
+        <div>{i18n.t("types.loading")}</div>
+      </div>
+    )
 
   //debug("entity:", entity, shape)
 
