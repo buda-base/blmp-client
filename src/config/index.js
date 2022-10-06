@@ -1,4 +1,4 @@
-const debug = require("debug")("bdrc:config")
+const debug = require("debug")("rde:config")
 
 const appEnv = process.env.NODE_ENV || "development"
 let priv = {}

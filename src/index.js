@@ -12,9 +12,7 @@ import { undoRef, redoRef } from "./routes/helpers/observer"
 
 import { Provider } from "react-redux"
 
-import store from "./libs/bvmt/src/store"
-
-const debug = require("debug")("bdrc:root")
+const debug = require("debug")("rde:root")
 
 const target = document.querySelector("#root")
 
@@ -53,18 +51,16 @@ if (module.hot) {
 
 render(
   <BrowserRouter>
-    <Provider store={store}>
-      <Auth0ProviderWithHistory>
-        <RecoilRoot>
-          <AuthContextWrapper>
-            <Route exact path="/login" component={LoginContainer} />
-            <Switch>
-              <Route component={App} />
-            </Switch>
-          </AuthContextWrapper>
-        </RecoilRoot>
-      </Auth0ProviderWithHistory>
-    </Provider>
+    <Auth0ProviderWithHistory>
+      <RecoilRoot>
+        <AuthContextWrapper>
+          <Route exact path="/login" component={LoginContainer} />
+          <Switch>
+            <Route component={App} />
+          </Switch>
+        </AuthContextWrapper>
+      </RecoilRoot>
+    </Auth0ProviderWithHistory>
   </BrowserRouter>,
   target
 )

@@ -14,7 +14,7 @@ import * as ns from "./ns"
 import { debugStore } from "./io"
 import { Memoize } from "typescript-memoize"
 
-const debug = require("debug")("bdrc:rdf:shapes")
+const debug = require("debug")("rde:rdf:shapes")
 
 // TODO: this should be fetched somewhere... unclear where yet
 export const shapeRefsMap: Record<string, RDFResourceWithLabel> = {
@@ -107,21 +107,12 @@ export const bdsCopyObjectsOfProperty = ns.BDS("copyObjectsOfProperty") as rdf.N
 export const bdsUniqueValueAmongSiblings = ns.BDS("uniqueValueAmongSiblings") as rdf.NamedNode
 
 export const typeUriToShape: Record<string, Array<RDFResourceWithLabel>> = {}
-typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
-typeUriToShape[ns.BDO_uri + "Topic"] = [shapeRefsMap["bds:TopicShape"]]
-typeUriToShape[ns.BDO_uri + "Place"] = [shapeRefsMap["bds:PlaceShape"]]
-typeUriToShape[ns.BDO_uri + "Instance"] = [shapeRefsMap["bds:InstanceShape"]]
-typeUriToShape[ns.BDO_uri + "ImageInstance"] = [shapeRefsMap["bds:ImageInstanceShape"]]
-typeUriToShape[ns.BDO_uri + "EtextInstance"] = [shapeRefsMap["bds:EtextInstanceShape"]]
-typeUriToShape[ns.BDO_uri + "Role"] = [shapeRefsMap["bds:RoleShape"]]
-typeUriToShape[ns.BDO_uri + "Collection"] = [shapeRefsMap["bds:CollectionShape"]]
-typeUriToShape[ns.BDO_uri + "Imagegroup"] = [shapeRefsMap["bds:ImagegroupShape"]]
-typeUriToShape[ns.BDO_uri + "Corporation"] = [shapeRefsMap["bds:CorporationShape"]]
-typeUriToShape[ns.BDO_uri + "Work"] = [shapeRefsMap["bds:WorkShape"]]
-typeUriToShape[ns.BDO_uri + "SerialWork"] = [shapeRefsMap["bds:SerialWorkShape"]]
+typeUriToShape[ns.BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"]]
+//typeUriToShape[ns.BDO_uri + "Topic"] = [shapeRefsMap["bds:TopicShape"]] // etc.
 
 export const shapeRefsForEntity = (subject: Subject): Array<RDFResourceWithLabel> | null => {
   const type = subject.getPropResValue(rdfType)
+  debug("type:", subject, type)
   if (type == null) return null
   return typeUriToShape[type.uri]
 }

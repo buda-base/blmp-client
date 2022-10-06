@@ -9,7 +9,7 @@ import * as shapes from "../helpers/rdf/shapes"
 import * as ns from "../helpers/rdf/ns"
 import { entitiesAtom } from "./EntitySelectorContainer"
 
-const debug = require("debug")("bdrc:demo")
+const debug = require("debug")("rde:demo")
 
 export const demoUserId = "bdu:U0DEMO01"
 

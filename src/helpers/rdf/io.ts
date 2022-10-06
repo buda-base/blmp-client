@@ -20,25 +20,18 @@ import { fetchToCurl } from "fetch-to-curl"
 
 let shapesbase = BDSH_uri
 let profileshapesbase = "http://purl.bdrc.io/shapes/profile/"
-if (config.TEMPLATES_BASE) {
+if (config.DEMO_MODE) {
+  shapesbase = shapesbase.replace("http://purl.bdrc.io/shapes/core/", "/examples/")
+  profileshapesbase = profileshapesbase.replace("http://purl.bdrc.io/shapes/profile/", "/examples/")
+} else if (config.TEMPLATES_BASE) {
   shapesbase = shapesbase.replace("http://purl.bdrc.io/", config.TEMPLATES_BASE)
   profileshapesbase = profileshapesbase.replace("http://purl.bdrc.io/", config.TEMPLATES_BASE)
 }
 
 export const shapeQnameToUri: Record<string, string> = {
-  "bds:PersonShapeTest": "/shapes/personpreflabel.ttl",
-  "bds:PersonShape": shapesbase + "PersonUIShapes",
-  "bds:CorporationShape": shapesbase + "CorporationUIShapes",
-  "bds:TopicShape": shapesbase + "TopicUIShapes",
-  "bds:PlaceShape": shapesbase + "PlaceUIShapes",
-  "bds:WorkShape": shapesbase + "WorkUIShapes",
-  "bds:SerialWorkShape": shapesbase + "SerialWorkUIShapes",
-  "bds:InstanceShape": shapesbase + "InstanceUIShapes",
-  "bds:ImageInstanceShape": shapesbase + "ImageInstanceUIShapes",
-  "bds:RoleShape": shapesbase + "RoleUIShapes",
-  "bds:CollectionShape": shapesbase + "CollectionUIShapes",
-  "bds:ImagegroupShape": shapesbase + "ImagegroupUIShapes",
-  "bds:UserProfileShape": profileshapesbase + "UserProfileUIShapes",
+  "bds:PersonShape": shapesbase + "PersonUIShapes" + (config.DEMO_MODE ? ".ttl" : ""),
+  //"bds:TopicShape": shapesbase + "TopicUIShapes"+ (config.DEMO_MODE ? ".ttl" : ""), // etc.
+  "bds:UserProfileShape": profileshapesbase + "UserProfileUIShapes" + (config.DEMO_MODE ? ".ttl" : ""),
 }
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
@@ -47,13 +40,13 @@ export const fetchUrlFromshapeQname = (shapeQname: string): string => {
 
 export const fetchUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == demoUserId) return "/examples/DemoUser.ttl"
-  else if (entityQname == "bdr:PTEST") return "/examples/ptest.ttl"
+  else if (entityQname == "bdr:PTEST") return "/examples/PTEST.ttl"
   else if (entityQname == "tmp:user") return config.API_BASEURL + "me/focusgraph"
   return config.API_BASEURL + entityQname + "/focusgraph"
 }
 
 export const labelQueryUrlFromEntityQname = (entityQname: string): string => {
-  if (entityQname == "bdr:PTEST") return "/examples/ptest-assocLabels.ttl"
+  if (entityQname == "bdr:PTEST") return "/examples/PTEST-associatedLabels.ttl"
   // TODO: a little approximative... but should work for now
   return (
     "//ldspdi.bdrc.io/query/graph/getAssociatedLabels?R_GR=bdg:" +
@@ -62,7 +55,7 @@ export const labelQueryUrlFromEntityQname = (entityQname: string): string => {
   )
 }
 
-const debug = require("debug")("bdrc:rdf:io")
+const debug = require("debug")("rde:rdf:io")
 
 export const debugStore = (s: rdf.Store, debugNs?: string) => {
   const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
@@ -202,7 +195,7 @@ export interface IFetchState {
 export const shapesMap: Record<string, NodeShape> = {}
 
 export let ontologyConst: EntityGraph | undefined = undefined
-export const ontologyUrl = "https://purl.bdrc.io/ontology/data/ttl"
+export const ontologyUrl = config.DEMO_MODE ? "/examples/ontology.ttl" : "https://purl.bdrc.io/ontology/data/ttl"
 
 export async function loadOntology(): Promise<EntityGraph> {
   debug("loading ontology")

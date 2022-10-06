@@ -170,14 +170,14 @@ function HomeContainer() {
     return (
       <div className="centered-ctn">
         <div>
-          <h1>Welcome to RDF document editor demo!</h1>
+          <h1>Welcome to RDF Document Editor demo!</h1>
           <span>{i18n.t("home.title")}</span>
           <p>
             You can click the <em>New / Load</em> button on the left, or the link to an example entity below.
           </p>
           {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
           <p className="menu">
-            <Link className="menu-link" to="/edit/bdr:P1583">
+            <Link className="menu-link" to="/edit/bdr:PTEST">
               <img src="/icons/person.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
               Open example entity
             </Link>
@@ -189,7 +189,7 @@ function HomeContainer() {
     return (
       <div className="centered-ctn">
         <div>
-          <h1>Welcome!</h1>
+          <h1>Welcome to RDF Document Editor!</h1>
           <span>{i18n.t("home.title")}</span>
           <p>
             To start the editor, you must first set up the RID prefix in your user profile (ex: <em>3KG</em>), and then
@@ -197,23 +197,9 @@ function HomeContainer() {
           </p>
           {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
           <p className="menu">
-            <Link className="menu-link" to="/scanrequest">
-              <img src="/icons/images.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
-              Scan Request
-            </Link>
-            <Link className="menu-link iiif" to="/bvmt">
-              <img src="/icons/iiif.png" />
-              BUDA Volume Manifest Tool
-            </Link>
-            <Link className="menu-link" to="/outline">
-              <img src="/icons/outline.svg" width="64" />
-              Outline Editor
-            </Link>
-            <Link className="menu-link" to="/withdraw">
-              <span style={{ width: "44px", marginRight: "15px", display: "inline-flex", justifyContent: "center" }}>
-                <ShuffleIcon style={{ fontSize: "44px", color: "black" }} />
-              </span>
-              Withdrawing Editor
+            <Link className="menu-link" to="/edit/bdr:PTEST">
+              <img src="/icons/person.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
+              Open example entity
             </Link>
           </p>
         </div>
@@ -249,6 +235,9 @@ function App(props: AppProps) {
       appEl?.current?.click()
     }
     window.addEventListener("message", updateUndoOnMsg)
+
+    if (config.DEMO_MODE) setDemo(true)
+
     return () => {
       if (undoTimer) clearInterval(undoTimer)
       window.removeEventListener("message", updateUndoOnMsg)
@@ -404,17 +393,6 @@ function App(props: AppProps) {
               />
               <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
               <Route exact path="/edit/:entityQname" component={EntityShapeChooserContainer} />
-              <Route
-                exact
-                path="/bvmt/:volume"
-                render={(rprops) => (
-                  <BVMT {...rprops} auth={auth} history={routerHistory} volume={rprops.match.params.volume} />
-                )}
-              />
-              <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
-              <Route exact path="/outline" component={OutlineEditorContainer} />
-              <Route exact path="/withdraw" component={WithdrawingEditorContainer} />
-              <Route exact path="/scanrequest" component={ScanRequestContainer} />
               <Route exact path="/demo" component={DemoContainer} />
             </Switch>
           </div>

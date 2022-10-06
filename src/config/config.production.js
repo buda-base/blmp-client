@@ -6,6 +6,7 @@ const config = {
   requireAuth: true,
   LIBRARY_URL: "https://library.bdrc.io",
   TEMPLATES_BASE: "https://purl.bdrc.io/",
+  DEMO_MODE: true,
 }
 
 export default config
