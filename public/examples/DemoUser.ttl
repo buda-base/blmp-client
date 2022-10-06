@@ -48,7 +48,7 @@
 
 bdu:U0DEMO01  skos:prefLabel  "Demo User" ;
    bdo:personGender  bdr:GenderMale ;
-   bdou:localNameDefaultPrefix  "0DU" ;
+   bdou:localNameDefaultPrefix  "0DEMO" ;
    bdou:preferredUiLang  "en" ;
    bdou:preferredUiLiteralLangs  ( "en" "bo-x-ewts" "inc-x-iast" "zh-latn-pinyin" "km-x-twktt" ) ;
    foaf:mbox     "demo@bdrc.io" .

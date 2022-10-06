@@ -133,7 +133,26 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
         const prefix = shapePrefix + RIDprefix
         // if entityQname is not null, we call reserveLname with the entityQname
         const proposedLname = entityQname ? ns.lnameFromQname(entityQname) : null
-        lname = await reserveLname(prefix, proposedLname, idToken)
+        if (idToken) lname = await reserveLname(prefix, proposedLname, idToken)
+        else if (demo) {
+          const max = 9999
+          let free = false
+          // check first if entity with id not already open
+          do {
+            if (proposedLname) {
+              lname = proposedLname
+            } else {
+              lname = prefix + Math.floor(Math.random() * max)
+            }
+            if (entities.some((ent) => ent.entityQname === "bdr:" + lname)) {
+              free = false
+              if (proposedLname) proposedLname = ""
+            } else {
+              free = true
+            }
+          } while (!free)
+        }
+        debug("lname:", lname, prefix, proposedLname)
       } catch (e) {
         debug(e)
         // TODO: handle 422?

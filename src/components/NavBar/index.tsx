@@ -143,6 +143,7 @@ function NavBar(props: AppProps) {
               onClick={(e) => {
                 e.preventDefault()
                 logout({ returnTo: window.location.origin })
+                if (localStorage.getItem("BLMPidToken")) localStorage.removeItem("BLMPidToken")
                 props.history.push("/")
               }}
             >
