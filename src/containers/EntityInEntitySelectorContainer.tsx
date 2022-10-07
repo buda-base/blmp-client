@@ -29,7 +29,7 @@ import { Entity, EditedEntityState, entitiesAtom, defaultEntityLabelAtom } from 
 import * as rdf from "rdflib"
 import { CloseIcon } from "../routes/layout/icons"
 
-const debug = require("debug")("bdrc:entity:selector")
+const debug = require("debug")("rde:entity:selector")
 
 function a11yProps(index: number) {
   return {

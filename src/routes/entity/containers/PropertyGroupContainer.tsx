@@ -20,7 +20,7 @@ import "leaflet-geosearch/dist/geosearch.css"
 
 import config from "../../../config"
 
-const debug = require("debug")("bdrc:entity:propertygroup")
+const debug = require("debug")("rde:entity:propertygroup")
 
 const redIcon = new L.Icon({
   iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",

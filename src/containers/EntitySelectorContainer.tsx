@@ -36,7 +36,7 @@ import { EntityInEntitySelectorContainer } from "./EntityInEntitySelectorContain
 import { getUserSession, setUserSession, setUserLocalEntities } from "../helpers/rdf/io"
 import { sessionLoadedState } from "../atoms/common"
 
-const debug = require("debug")("bdrc:entity:selector")
+const debug = require("debug")("rde:entity:selector")
 
 function a11yProps(index: number) {
   return {

@@ -46,8 +46,8 @@
 @prefix wd:    <http://www.wikidata.org/entity/> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
 
-bda:PTEST  a     adm:AdminData ;
-   adm:adminAbout  bdr:PTEST ;
+bda:P1583  a     adm:AdminData ;
+   adm:adminAbout  bdr:P1583 ;
    adm:metadataLegal  bda:LD_BDRC_CC0 ;
    adm:status    bda:StatusReleased .
 
@@ -126,7 +126,7 @@ bdr:NTF24F5C4DD8140821
    a             bdo:Note ;
    bdo:noteText  "L. v.d. Kuijp has verified that the date of death of the subject was January, 1364. Also the unrecorded teacher Ston tshul may have been Btsun pa Ston tshul, Sa-skya scholar and author of at least two works on Tshad ma."@en .
 
-bdr:PTEST  a     bdo:Person ;
+bdr:P1583  a     bdo:Person ;
    skos:prefLabel  "klong chen rab 'byams pa dri med 'od zer/"@bo-x-ewts , "隆钦热降巴·赤墨俄色"@zh-hans ;
    bdo:associatedTradition  bdr:TraditionNyingma ;
    bdo:hasFather  bdr:P1584 ;
@@ -135,4 +135,4 @@ bdr:PTEST  a     bdo:Person ;
    bdo:personEvent  bdr:EV00B857229AAA1BF0 , bdr:EV81A442B676BCDB2A , bdr:EVDD9AB2BD104D0A7D ;
    bdo:personGender  bdr:GenderMale ;
    bdo:personName  bdr:NM27A9E6B52AE2AFD6 , bdr:NM6E5B539FC14B81F1 , bdr:NM9C8DEB6FF7CEC129 , bdr:NMBC6B2B658373DD69 , bdr:NME2F236C649A1C622 , bdr:NMED06EB68CC7F2B88 , bdr:NMF942A81B0A73E4AA , bdr:NMFB54273C9888828B ;
-   bdo:personStudentOf  bdr:P1226 , bdr:P144 , bdr:P1584 , bdr:P1586 , bdr:P1587 , bdr:P1588 , bdr:P2085 , bdr:P2349 , bdr:P2JM183 , bdr:P2JM184 , bdr:P2JM185 , bdr:P2JM186 , bdr:P2JM187 , bdr:P2JM188 , bdr:P2JM189 , bdr:P2JM190 , bdr:P2JM191 , bdr:P403 , bdr:P4312 , bdr:P4860 , bdr:P66 .
+   bdo:personStudentOf bdr:P1584 , bdr:P1586 , bdr:P1587 , bdr:P1588 , bdr:P2085 , bdr:P2349 , bdr:P2JM183 , bdr:P2JM184 , bdr:P2JM185 , bdr:P2JM186 , bdr:P2JM187 , bdr:P2JM188 , bdr:P2JM189 , bdr:P2JM190 , bdr:P2JM191 , bdr:P403 , bdr:P4312 , bdr:P4860 , bdr:P66 .

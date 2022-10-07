@@ -16,7 +16,7 @@ import i18n from "i18next"
 import queryString from "query-string"
 import Button from "@material-ui/core/Button"
 
-const debug = require("debug")("bdrc:entity:entitycreation")
+const debug = require("debug")("rde:entity:entitycreation")
 
 export function EntityCreationContainer(props: AppProps) {
   const subjectQname = props.match.params.subjectQname

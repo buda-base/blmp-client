@@ -14,7 +14,7 @@ import i18n from "i18next"
 import { Trans } from "react-i18next"
 import { TextField, MenuItem } from "@material-ui/core"
 
-const debug = require("debug")("bdrc:entity:newentity")
+const debug = require("debug")("rde:entity:newentity")
 
 function NewEntityContainer(props: AppProps) {
   const [uiLang] = useRecoilState(uiLangState)

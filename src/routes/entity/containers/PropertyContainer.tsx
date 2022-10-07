@@ -7,7 +7,7 @@ import { atom, useRecoilState, atomFamily } from "recoil"
 import ValueList from "./ValueList"
 import * as rdf from "rdflib"
 
-const debug = require("debug")("bdrc:entity:property")
+const debug = require("debug")("rde:entity:property")
 
 const PropertyContainer: FC<{
   property: PropertyShape

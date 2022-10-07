@@ -10,7 +10,7 @@ import { entitiesAtom, EditedEntityState } from "../containers/EntitySelectorCon
 //import edtf from "edtf/dist/../index.js"
 import edtf, { parse } from "edtf" // see https://github.com/inukshuk/edtf.js/issues/36#issuecomment-1073778277
 
-const debug = require("debug")("bdrc:common")
+const debug = require("debug")("rde:common")
 
 export const uiLangState = atom<array<string>>({
   key: "uiLangState",

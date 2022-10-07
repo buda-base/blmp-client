@@ -27,7 +27,7 @@ import {
 import { Entity, entitiesAtom } from "../../containers/EntitySelectorContainer"
 import { replaceItemAtIndex, removeItemAtIndex } from "../../helpers/atoms"
 
-const debug = require("debug")("bdrc:observer")
+const debug = require("debug")("rde:observer")
 
 export let undoRef = null
 export let redoRef = null

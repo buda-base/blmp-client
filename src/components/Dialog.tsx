@@ -7,7 +7,7 @@ import DialogContent from "@material-ui/core/DialogContent"
 import DialogContentText from "@material-ui/core/DialogContentText"
 import DialogTitle from "@material-ui/core/DialogTitle"
 
-const debug = require("debug")("bdrc:entity:entitycreation")
+const debug = require("debug")("rde:entity:entitycreation")
 
 export function DialogBeforeClose(props) {
   return (

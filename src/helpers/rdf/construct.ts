@@ -12,7 +12,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { nanoid, customAlphabet } from "nanoid"
 import { uiTabState, userIdState, RIDprefixState, demoAtom } from "../../atoms/common"
 
-const debug = require("debug")("bdrc:rdf:construct")
+const debug = require("debug")("rde:rdf:construct")
 
 const NANOID_LENGTH = 8
 const nanoidCustom = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", NANOID_LENGTH)

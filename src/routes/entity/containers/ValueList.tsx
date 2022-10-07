@@ -67,7 +67,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 
 import config from "../../../config"
 
-const debug = require("debug")("bdrc:entity:container:ValueList")
+const debug = require("debug")("rde:entity:container:ValueList")
 
 export const MinimalAddButton: FC<{
   add: React.MouseEventHandler<HTMLButtonElement>

@@ -638,7 +638,8 @@ label ~ .selector {
   & + .blockAdd { display:none; }
 }
 
-.ValueList .facet:not(.edit) > .card > div:not(.unset) ~ div .resSelect { margin-top: 16px; }
+// reverting (see commit https://github.com/buda-base/blmp-client/commit/190852588539681f988d0efed45646a56f1d52fc)
+// .ValueList .facet:not(.edit) > .card > div:not(.unset) ~ div .resSelect { margin-top: 16px; }
 
 .ValueList .facet.edit .ValueList { overflow:visible; max-height:none; } 
 .ValueList .facet.edit .ValueList .facet:not(.edit) .ValueList { overflow:hidden; } 
@@ -925,7 +926,7 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 
     & > a:nth-of-type(2),
     & > a:first-of-type { display:flex; align-items: center;
-      span { font-size:24px; color:#192229; font-weight:500; line-height:24px; display:block; margin:0 10px; margin-left:20px;}
+      span { font-size:20px; color:#192229; font-weight:500; line-height:24px; display:block; margin:0 10px; margin-left:0px;}
     }
 
     & > a:nth-of-type(2) { 

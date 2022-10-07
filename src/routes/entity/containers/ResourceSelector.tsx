@@ -41,7 +41,7 @@ import * as ns from "../../../helpers/rdf/ns"
 
 import config from "../../../config"
 
-const debug = require("debug")("bdrc:atom:event:RS")
+const debug = require("debug")("rde:atom:event:RS")
 
 const useStyles = makeStyles((theme) => ({
   root: {

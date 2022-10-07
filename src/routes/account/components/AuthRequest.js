@@ -2,7 +2,7 @@ import React from "react"
 import { Link } from "react-router-dom"
 import qs from "query-string"
 
-const debug = require("debug")("bdrc:auth:request")
+const debug = require("debug")("rde:auth:request")
 
 export function AuthRequest(props) {
   const urlParams = qs.parse(window.location.search)

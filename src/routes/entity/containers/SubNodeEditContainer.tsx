@@ -13,7 +13,7 @@ import { AppProps, IdTypeParams } from "../../../containers/AppContainer"
 import Button from "@material-ui/core/Button"
 import * as rdf from "rdflib"
 
-const debug = require("debug")("bdrc:entity:edit:subnode")
+const debug = require("debug")("rde:entity:edit:subnode")
 
 const SubNodeEditContainer: FC<{ shape: NodeShape; subject: Subject }> = ({ shape, subject }) => {
   return (

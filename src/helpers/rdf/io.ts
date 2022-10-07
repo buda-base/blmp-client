@@ -29,9 +29,9 @@ if (config.DEMO_MODE) {
 }
 
 export const shapeQnameToUri: Record<string, string> = {
-  "bds:PersonShape": shapesbase + "PersonUIShapes" + (config.DEMO_MODE ? ".ttl" : ""),
-  //"bds:TopicShape": shapesbase + "TopicUIShapes"+ (config.DEMO_MODE ? ".ttl" : ""), // etc.
-  "bds:UserProfileShape": profileshapesbase + "UserProfileUIShapes" + (config.DEMO_MODE ? ".ttl" : ""),
+  "bds:PersonShape": shapesbase + "PersonUIShapes",
+  //"bds:TopicShape": shapesbase + "TopicUIShapes", // etc.
+  "bds:UserProfileShape": profileshapesbase + "UserProfileUIShapes",
 }
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
@@ -42,12 +42,14 @@ export const fetchUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == demoUserId) return "/examples/DemoUser.ttl"
   else if (entityQname == "bdr:PTEST") return "/examples/PTEST.ttl"
   else if (entityQname == "tmp:user") return config.API_BASEURL + "me/focusgraph"
+  else if (config.DEMO_MODE) return "/examples/" + entityQname.split(":")[1] + ".ttl"
   return config.API_BASEURL + entityQname + "/focusgraph"
 }
 
 export const labelQueryUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == "bdr:PTEST") return "/examples/PTEST-associatedLabels.ttl"
   // TODO: a little approximative... but should work for now
+  else if (config.DEMO_MODE) return "/examples/" + entityQname.split(":")[1] + "-associatedLabels.ttl"
   return (
     "//ldspdi.bdrc.io/query/graph/getAssociatedLabels?R_GR=bdg:" +
     entityQname.substring(entityQname.indexOf(":") + 1) +
@@ -248,7 +250,7 @@ export function ShapeFetcher(shapeQname: string, entityQname: string) {
     }
     async function fetchResource(shapeQname: string) {
       setLoadingState({ status: "fetching", error: undefined })
-      const url = fetchUrlFromshapeQname(shapeQname)
+      const url = fetchUrlFromshapeQname(shapeQname) + (config.DEMO_MODE ? ".ttl" : "")
       const loadRes = loadTtl(url)
       const loadOnto = loadOntology()
       try {

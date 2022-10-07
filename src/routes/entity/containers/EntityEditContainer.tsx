@@ -42,7 +42,7 @@ import { demoUserId } from "../../../containers/DemoContainer"
 
 import config from "../../../config"
 
-const debug = require("debug")("bdrc:entity:edit")
+const debug = require("debug")("rde:entity:edit")
 
 export function EntityEditContainerMayUpdate(props: AppProps) {
   const shapeQname = props.match.params.shapeQname

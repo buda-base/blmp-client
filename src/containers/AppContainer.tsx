@@ -59,7 +59,7 @@ import { default as BVMT } from "../libs/bvmt/src/App"
 
 import { demoUserId } from "./DemoContainer"
 
-const debug = require("debug")("bdrc:router")
+const debug = require("debug")("rde:router")
 
 const numtobodic: Record<string, string> = {
   "0": "༠",
@@ -177,7 +177,7 @@ function HomeContainer() {
           </p>
           {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
           <p className="menu">
-            <Link className="menu-link" to="/edit/bdr:PTEST">
+            <Link className="menu-link" to="/edit/bdr:P1583">
               <img src="/icons/person.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
               Open example entity
             </Link>
@@ -197,7 +197,7 @@ function HomeContainer() {
           </p>
           {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
           <p className="menu">
-            <Link className="menu-link" to="/edit/bdr:PTEST">
+            <Link className="menu-link" to="/edit/bdr:P1583">
               <img src="/icons/person.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
               Open example entity
             </Link>

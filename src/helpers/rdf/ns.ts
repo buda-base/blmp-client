@@ -39,7 +39,7 @@ export const BDU = rdf.Namespace(BDU_uri)
 export const FOAF_uri = "http://xmlns.com/foaf/0.1/"
 export const FOAF = rdf.Namespace(FOAF_uri)
 
-const debug = require("debug")("bdrc:rdf:ns")
+const debug = require("debug")("rde:rdf:ns")
 
 export const prefixToURI: { [key: string]: string } = {
   bdr: BDR_uri,

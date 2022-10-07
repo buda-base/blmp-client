@@ -2,7 +2,7 @@ import "./jsewts.d.ts"
 
 import { fromWylie } from "jsewts"
 
-const debug = require("debug")("bdrc:rdf:lang")
+const debug = require("debug")("rde:rdf:lang")
 
 export const ValueByLangToStrPrefLang = (vbl: Record<string, string> | null, prefLang: string | Array<string>) => {
   if (vbl == null) return ""

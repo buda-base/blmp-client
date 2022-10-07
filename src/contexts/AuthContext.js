@@ -8,7 +8,7 @@ import { reloadProfileState, uiLangState, uiLitLangState, userIdState, RIDprefix
 import * as ns from "../helpers/rdf/ns"
 import { demoUserId } from "../containers/DemoContainer"
 
-const debug = require("debug")("bdrc:auth")
+const debug = require("debug")("rde:auth")
 
 export const AuthContext = React.createContext()
 

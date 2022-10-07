@@ -18,7 +18,7 @@ import { uiHistoryState } from "../../atoms/common"
 import { getParentPath } from "../../routes/helpers/observer"
 import { nanoid } from "nanoid"
 
-const debug = require("debug")("bdrc:rdf:types")
+const debug = require("debug")("rde:rdf:types")
 
 const defaultGraphNode = new rdf.NamedNode(rdf.Store.defaultGraphURI)
 const prefLabel = ns.SKOS("prefLabel") as rdf.NamedNode

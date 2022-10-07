@@ -5,7 +5,7 @@ import _ from "lodash"
 import { outlinesAtom } from "../atoms/common"
 import { useRecoilState } from "recoil"
 
-const debug = require("debug")("bdrc:outline:info")
+const debug = require("debug")("rde:outline:info")
 
 function OutlineInfo(props: any) {
   //debug("props:",props)

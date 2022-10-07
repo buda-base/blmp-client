@@ -17,7 +17,7 @@ import * as rdf from "rdflib"
 import { BrowserRouter as Router, Switch, Route, Link, Redirect } from "react-router-dom"
 import { TextField, MenuItem } from "@material-ui/core"
 
-const debug = require("debug")("bdrc:entity:shape")
+const debug = require("debug")("rde:entity:shape")
 
 function EntityShapeChooserContainer(props: AppProps) {
   const [entityQname, setEntityQname] = useState(props.match.params.entityQname)

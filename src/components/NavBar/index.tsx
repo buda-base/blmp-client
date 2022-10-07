@@ -43,7 +43,7 @@ import config from "../../config"
 import { ErrorIcon, InfoIcon } from "../../routes/layout/icons"
 import { demoUserId } from "../../containers/DemoContainer"
 
-const debug = require("debug")("bdrc:NavBar")
+const debug = require("debug")("rde:NavBar")
 
 function NavBar(props: AppProps) {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
@@ -69,13 +69,8 @@ function NavBar(props: AppProps) {
 
   return (
     <nav className="navbar navbar-dark navbar-expand-md demo">
-      <a href="https://bdrc.io">
-        <img className="" src="/images/BDRC.svg" alt="bdrc" height="50" />
-        <span>BDRC</span>
-      </a>
       <Link to={"/"} onClick={() => setUiTab(-1)} className="navbar-left">
-        <span>EDITOR</span>
-        <img className="" src="/images/BUDA-small.svg" height="50px" alt="buda editor" />
+        <span>RDF Document Editor</span>
       </Link>
       <div className="ml-auto" style={{ fontSize: "13px", alignItems: "center", display: "flex" }}>
         {isLatestVersion ? (
