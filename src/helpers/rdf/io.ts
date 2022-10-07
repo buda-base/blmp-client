@@ -17,6 +17,7 @@ import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../../c
 import { demoUserId } from "../../containers/DemoContainer"
 import { useAuth0, Auth0ContextInterface } from "@auth0/auth0-react"
 import { fetchToCurl } from "fetch-to-curl"
+import * as ns from "./ns"
 
 let shapesbase = BDSH_uri
 let profileshapesbase = "http://purl.bdrc.io/shapes/profile/"
@@ -35,6 +36,7 @@ export const shapeQnameToUri: Record<string, string> = {
 }
 
 export const fetchUrlFromshapeQname = (shapeQname: string): string => {
+  if (config.DEMO_MODE) return shapeQnameToUri[shapeQname] + ".ttl"
   return shapeQnameToUri[shapeQname]
 }
 
@@ -250,7 +252,7 @@ export function ShapeFetcher(shapeQname: string, entityQname: string) {
     }
     async function fetchResource(shapeQname: string) {
       setLoadingState({ status: "fetching", error: undefined })
-      const url = fetchUrlFromshapeQname(shapeQname) + (config.DEMO_MODE ? ".ttl" : "")
+      const url = fetchUrlFromshapeQname(shapeQname)
       const loadRes = loadTtl(url)
       const loadOnto = loadOntology()
       try {
