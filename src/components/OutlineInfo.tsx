@@ -27,7 +27,7 @@ function OutlineInfo(props: any) {
   }
 
   return (
-    <div className="outline-info" data-i={i}>
+    <div className="outline-info" data-i={i} ref={(el) => props.refs.current[i] = el}>
       {i + 1}
       <br />
       {!title || !title.length ? data.filename : Array.isArray(title[0]) ? title.map(renderTitle) : renderTitle(title)}

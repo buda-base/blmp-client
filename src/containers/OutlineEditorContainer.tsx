@@ -7,10 +7,11 @@ import { DndProvider } from "react-dnd"
 import Backend from "react-dnd-html5-backend"
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles"
 import CircularProgress from "@material-ui/core/CircularProgress"
-import InfiniteScroll from "react-infinite-scroller"
+import InfiniteScroll from "react-infinite-scroll-component"
 import { lensPath, view, map, addIndex } from "ramda"
 import axios from "axios"
 import { useRecoilState } from "recoil"
+import { useScrollDirection } from "react-use-scroll-direction"
 
 //import { default as BVMT } from "../libs/bvmt/src/App"
 import InstanceSearch from "../components/InstanceSearch"
@@ -35,6 +36,8 @@ const theme = createMuiTheme({
 
 const imageListLens = lensPath(["view", "view1", "imagelist"])
 
+let scrollY = 0
+
 // there's nothing to extend because it's a functional component...
 // so let's copy/paste what we need instead
 function OutlineApp(props: any) {
@@ -43,7 +46,6 @@ function OutlineApp(props: any) {
   const imageList = view(imageListLens, manifest) as Buda.Image[] || []
   const [isFetching, setIsFetching] = React.useState(false)
   const [fetchErr, setFetchErr] = React.useState(null)
-  const [renderToIdx, setRenderToIdx] = React.useState(9) // eslint-disable-line no-magic-numbers
   const [isLoadingMore, setIsLoadingMore] = React.useState(false)
   const [postErr, setPostErr] = React.useState(null)
 
@@ -55,7 +57,10 @@ function OutlineApp(props: any) {
   const [first, setFirst] = useState(volume)
   const [outlines, setOutlines] = useRecoilState(outlinesAtom)
   const [volNum, setVolNum] = useState(1)
+
+  const nbPages = 10
   const [start, setStart] = useState(Number(params.get("start") || props.start || 1))
+  const [renderToIdx, setRenderToIdx] = React.useState(start + nbPages)
 
   const [breadcrumbs, setBreadcrumbs] = useState({})
 
@@ -264,6 +269,49 @@ function OutlineApp(props: any) {
 
   //debug("i&v:", instance, volume, outlines, manifest)
 
+  const imageListLength = imageList.length
+
+  const refs = useRef([])
+
+  let currentPage
+  const threshold = 650,
+    delay = 350
+  const handleScroll = useCallback(
+    (args) => {
+      //debug("scroll:",args,scrollY,window.pageYOffset,isLoadingMore)
+
+      if (scrollY < threshold && scrollY > window.pageYOffset) {
+        currentPage = refs.current[start - 1 - 1]
+        setIsLoadingMore(true)
+        fetchMoreData(true)
+        const inter = 10,
+          timer = setInterval(() => {
+            currentPage?.scrollIntoView()
+          }, inter)
+        setTimeout(() => {
+          clearInterval(timer)
+          setIsLoadingMore(false)
+        }, delay)
+      }
+
+      scrollY = window.pageYOffset
+    },
+    [isLoadingMore]
+  )
+
+  const fetchMoreData = useCallback(
+    (inverse = false) => {
+      //debug("more!",renderToIdx)
+
+      if (!inverse) {
+        if (renderToIdx < imageListLength) setRenderToIdx(Math.min(renderToIdx + nbPages, imageListLength))
+      } else {
+        if (start > 1) setStart(Math.max(start - nbPages, 1))
+      }
+    },
+    [start, renderToIdx]
+  )
+
   if (instance && !volume) {
     if (!first)
       return (
@@ -273,17 +321,6 @@ function OutlineApp(props: any) {
       )
     else return <Redirect to={"/outline?instance=" + instance + "&volume=" + first} />
   }
-
-  const handleLoadMore = (params) => {
-    setRenderToIdx(renderToIdx + 10) // eslint-disable-line no-magic-numbers
-    // setting this isfetching stops the infinite scroll from getting caught in a loop
-    setIsLoadingMore(true)
-    setTimeout(() => {
-      setIsLoadingMore(false)
-    }, 10) // eslint-disable-line no-magic-numbers
-  }
-
-  const imageListLength = imageList.length
 
   return (
     <ThemeProvider theme={theme}>
@@ -300,23 +337,28 @@ function OutlineApp(props: any) {
           <div className="App" style={{ paddingTop: 125 }}>
             <div>
               <div className="container mx-auto">
+                {isLoadingMore && (
+                  <div key="circular" className="container mx-auto flex items-center justify-center">
+                    <CircularProgress />
+                  </div>
+                )}
                 <InfiniteScroll
-                  pageStart={0}
-                  key={0}
-                  loadMore={handleLoadMore}
-                  hasMore={imageList.length > renderToIdx && !isLoadingMore}
+                  dataLength={renderToIdx - start + 1}
+                  next={fetchMoreData}
+                  hasMore={imageList.length > renderToIdx || start > 1}
                   loader={
                     <div key="circular" className="container mx-auto flex items-center justify-center">
                       <CircularProgress />
                     </div>
                   }
-                  useWindow={true}
+                  onScroll={handleScroll}
                 >
                   {mapIndex(
                     (item: Buda.Image, i: number) => (
                       <React.Fragment key={i}>
                         <Card imageListLength={imageListLength} data={item} key={item.id} i={i + start - 1} />
                         <OutlineInfo
+                          refs={refs}
                           {...{ imageListLength, getPageTitlePath }}
                           data={item}
                           key={item.id + "_outline-info"}
