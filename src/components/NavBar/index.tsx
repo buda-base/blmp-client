@@ -381,7 +381,13 @@ function BottomBar(props: AppProps) {
         debug("error:", error.code, error.message, error, curl)
         if (error.code === wrongEtagCode) {
           setErrorCode(error.code)
-          setError(i18n.t("error.newer") + " " + i18n.t("error.lost"))
+          setError(
+            <>
+              {i18n.t("error.newer")}
+              <br />
+              {i18n.t("error.lost")}
+            </>
+          )
         } else {
           setError(error.code ? error.code : error.message ? error.message : error)
           setCurl(curl.copy)
@@ -504,12 +510,13 @@ function BottomBar(props: AppProps) {
                 {...(error
                   ? {
                       helperText: (
-                        <React.Fragment>
-                          <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                          <i>{error}</i>&nbsp;&nbsp;
+                        <span style={{ display: "flex", alignItems: "center" }}>
+                          <ErrorIcon style={{ fontSize: "20px" }} />
+                          <i style={{ paddingLeft: "5px", lineHeight: "14px", display: "inline-block" }}>{error}</i>
+                          &nbsp;&nbsp;
                           {errorCode === wrongEtagCode && (
                             <Button className="btn-blanc" onClick={handleReload}>
-                              reload
+                              {i18n.t("general.reload")}
                             </Button>
                           )}
                           {curl && (
@@ -523,7 +530,7 @@ function BottomBar(props: AppProps) {
                               copy trace
                             </Button>
                           )}
-                        </React.Fragment>
+                        </span>
                       ),
                       error: true,
                     }

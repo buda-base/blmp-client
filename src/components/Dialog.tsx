@@ -136,11 +136,8 @@ export function Dialog412(props) {
         </DialogContent>
         <DialogActions style={{ justifyContent: "space-around" }}>
           <Button className="btn-rouge" onClick={handleReload} color="primary">
-            Reload
+            {i18n.t("general.reload")}
           </Button>
-          {/* <Button className="btn-rouge" onClick={handleNew} color="primary">
-              LATER 
-            </Button> */}
         </DialogActions>
         <br />
       </Dialog>
