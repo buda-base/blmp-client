@@ -231,6 +231,7 @@ function BottomBar(props: AppProps) {
         setGen(false)
         setNbVolumes("")
         setError("")
+        setErrorCode(0)
         setSpinner(false)
       }, delay2)
     }, delay1)
