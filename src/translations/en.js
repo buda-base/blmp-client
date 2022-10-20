@@ -57,6 +57,8 @@ const enTranslations = {
     unauthorized: "not authorized to modify {{url}}",
     year: "Year must be between {{min}} and {{max}}",
     select: "'{{val}}' is not in list of allowed values",
+    newer: "There is a newer version of this entity.",
+    lost: "Local changes will be lost.",
   },
   general: {
     add_another: "Add {{val}}",

@@ -7,6 +7,7 @@ import DialogActions from "@material-ui/core/DialogActions"
 import DialogContent from "@material-ui/core/DialogContent"
 import DialogContentText from "@material-ui/core/DialogContentText"
 import DialogTitle from "@material-ui/core/DialogTitle"
+import i18n from "i18next"
 
 import { reloadEntityState, uiTabState } from "../atoms/common"
 import { entitiesAtom } from "../containers/EntitySelectorContainer"
@@ -127,7 +128,11 @@ export function Dialog412(props) {
       <Dialog open={open}>
         <DialogTitle></DialogTitle>
         <DialogContent>
-          <DialogContentText>There is a newer version of this entity.</DialogContentText>
+          <DialogContentText>
+            {i18n.t("error.newer")}
+            <br />
+            {i18n.t("error.lost")}
+          </DialogContentText>
         </DialogContent>
         <DialogActions style={{ justifyContent: "space-around" }}>
           <Button className="btn-rouge" onClick={handleReload} color="primary">
