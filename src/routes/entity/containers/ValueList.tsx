@@ -787,7 +787,7 @@ const Create: FC<{
             loadRes = await putTtl(
               url,
               store,
-              idTokenF.__raw,
+              idTokenF?.__raw,
               entities[entity]?.alreadySaved ? "POST" : "PUT",
               '"batch add volumes"@en',
               entities[entity]?.alreadySaved

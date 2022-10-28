@@ -205,7 +205,7 @@ function BottomBar(props: AppProps) {
   useEffect(() => {
     async function checkSession() {
       const idToken = await getIdTokenClaims()
-      setIdToken(idToken.__raw)
+      setIdToken(idToken?.__raw)
     }
     if (isAuthenticated) checkSession()
   }, [isAuthenticated])
@@ -360,7 +360,7 @@ function BottomBar(props: AppProps) {
           loadRes = await putTtl(
             url,
             store,
-            idTokenF.__raw,
+            idTokenF?.__raw,
             entities[entity]?.alreadySaved ? "POST" : "PUT",
             '"' + message + '"@' + lang,
             entities[entity]?.alreadySaved,
