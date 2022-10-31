@@ -72,6 +72,16 @@ export const debugStore = (s: rdf.Store, debugNs?: string) => {
   })
 }
 
+export class ErrorWithCode extends Error {
+  constructor(txt: string, n: integer) {
+    super(txt)
+    this.code = n
+  }
+  toString(): string {
+    return this.code + ":" + txt
+  }
+}
+
 const acceptTtl = new Headers()
 acceptTtl.set("Accept", "text/turtle")
 
@@ -158,7 +168,7 @@ export const putTtl = async (
 
       // eslint-disable-next-line no-magic-numbers
       if (response.status == 412) {
-        reject(new Error(i18n.t("error.modified")))
+        reject(new ErrorWithCode(i18n.t("error.modified"), response.status))
         return
       }
 
@@ -182,8 +192,11 @@ export const putTtl = async (
       }
 
       try {
-        const clear = await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
-        //debug("cache:",await clear.text())
+        let clear = await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+        if (url.match(/[/]bdr:((MW)|(W[^A]))[^/]+[/]focusgraph$/)) {
+          clear = await fetch("http://iiif.bdrc.io/cache/clear", { method: "POST" })
+          clear = await fetch("http://iiifpres.bdrc.io/clearcache", { method: "POST" })
+        }
       } catch (e) {
         debug("error when cleaning cache:", e)
       }

@@ -57,6 +57,8 @@ const enTranslations = {
     unauthorized: "not authorized to modify {{url}}",
     year: "Year must be between {{min}} and {{max}}",
     select: "'{{val}}' is not in list of allowed values",
+    newer: "There is a new version of this record in the database.",
+    lost: "Please reload the record, apply your changes again and save.",
   },
   general: {
     add_another: "Add {{val}}",
@@ -68,6 +70,7 @@ const enTranslations = {
     close: "Close all open entities",
     import: "Import labels",
     preview: "View on BUDA",
+    reload: "reload the record",
   },
 }
 

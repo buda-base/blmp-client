@@ -68,7 +68,7 @@ function NavBar(props: AppProps) {
   const [demo, setDemo] = useRecoilState(demoAtom)
 
   return (
-    <nav className="navbar navbar-dark navbar-expand-md demo">
+    <nav className={"navbar navbar-dark navbar-expand-md " + (demo ? "demo" : "")}>
       <a href="https://bdrc.io">
         <img className="" src="/images/BDRC.svg" alt="bdrc" height="50" />
         <span>BDRC</span>
@@ -185,10 +185,13 @@ function BottomBar(props: AppProps) {
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
   const shapeQname = entities[entity]?.shapeRef?.qname ? entities[entity]?.shapeRef?.qname : entities[entity]?.shapeRef
   const [error, setError] = useState("")
+  const [errorCode, setErrorCode] = useState(0)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
   const [spinner, setSpinner] = useState(false)
   const [curl, setCurl] = useState("")
   const [demo, setDemo] = useRecoilState(demoAtom)
+
+  const wrongEtagCode = 412
 
   const isUserProfile = userId === entities[entity]?.subjectQname
 
@@ -202,7 +205,7 @@ function BottomBar(props: AppProps) {
   useEffect(() => {
     async function checkSession() {
       const idToken = await getIdTokenClaims()
-      setIdToken(idToken.__raw)
+      setIdToken(idToken?.__raw)
     }
     if (isAuthenticated) checkSession()
   }, [isAuthenticated])
@@ -228,6 +231,7 @@ function BottomBar(props: AppProps) {
         setGen(false)
         setNbVolumes("")
         setError("")
+        setErrorCode(0)
         setSpinner(false)
       }, delay2)
     }, delay1)
@@ -356,7 +360,7 @@ function BottomBar(props: AppProps) {
           loadRes = await putTtl(
             url,
             store,
-            idTokenF.__raw,
+            idTokenF?.__raw,
             entities[entity]?.alreadySaved ? "POST" : "PUT",
             '"' + message + '"@' + lang,
             entities[entity]?.alreadySaved,
@@ -375,10 +379,21 @@ function BottomBar(props: AppProps) {
         })
       } catch (error) {
         // TODO: better error handling
-        debug("error:", error, curl)
-        setError(error.message ? error.message : error)
+        debug("error:", error.code, error.message, error, curl)
+        if (error.code === wrongEtagCode) {
+          setErrorCode(error.code)
+          setError(
+            <>
+              {i18n.t("error.newer")}
+              <br />
+              {i18n.t("error.lost")}
+            </>
+          )
+        } else {
+          setError(error.code ? error.code : error.message ? error.message : error)
+          setCurl(curl.copy)
+        }
         setSpinner(false)
-        setCurl(curl.copy)
 
         if (isUserProfile) setPopupOn(true)
 
@@ -434,8 +449,19 @@ function BottomBar(props: AppProps) {
 
   //debug("saved:", saved)
 
+  const handleReload = () => {
+    if (history && history[entityUri]) delete history[entityUri]
+    const newEntities = [...entities]
+    newEntities[entity] = { ...newEntities[entity], subject: null }
+    setEntities(newEntities)
+
+    setReloadEntity(entitySubj.qname)
+
+    closePopup()
+  }
+
   return (
-    <nav className="bottom navbar navbar-dark navbar-expand-md demo">
+    <nav className={"bottom navbar navbar-dark navbar-expand-md" + (demo ? "demo" : "")}>
       <HistoryHandler entityUri={entityUri} />
       <span />
       <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "") + (isUserProfile ? "user " : "")}>
@@ -485,9 +511,15 @@ function BottomBar(props: AppProps) {
                 {...(error
                   ? {
                       helperText: (
-                        <React.Fragment>
-                          <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-7px" }} />
-                          <i>{error}</i>&nbsp;&nbsp;
+                        <span style={{ display: "flex", alignItems: "center" }}>
+                          <ErrorIcon style={{ fontSize: "20px" }} />
+                          <i style={{ paddingLeft: "5px", lineHeight: "14px", display: "inline-block" }}>{error}</i>
+                          &nbsp;&nbsp;
+                          {errorCode === wrongEtagCode && (
+                            <Button className="btn-blanc" onClick={handleReload}>
+                              {i18n.t("general.reload")}
+                            </Button>
+                          )}
                           {curl && (
                             <Button
                               className="btn-blanc"
@@ -499,7 +531,7 @@ function BottomBar(props: AppProps) {
                               copy trace
                             </Button>
                           )}
-                        </React.Fragment>
+                        </span>
                       ),
                       error: true,
                     }
@@ -539,7 +571,7 @@ function BottomBar(props: AppProps) {
           variant="outlined"
           onClick={isIInstance ? (willGen || saved ? generate : () => save(!willGen)) : save}
           className="btn-rouge"
-          {...(spinner || (message === "" && saving && !isUserProfile) || (saved && !isIInstance)
+          {...(spinner || (message === "" && saving && !isUserProfile) || (saved && !isIInstance) || errorCode
             ? { disabled: true }
             : {})}
           //{...(isIInstance && gen && !nbVolumes ? { disabled: true } : {})}

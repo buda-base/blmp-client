@@ -27,11 +27,11 @@ export function AuthContextWrapper({ children }) {
   useEffect(() => {
     async function checkSession() {
       const idToken = await getIdTokenClaims()
-      setIdToken(idToken.__raw)
-      localStorage.setItem("BLMPidToken", idToken.__raw)
+      setIdToken(idToken?.__raw)
+      localStorage.setItem("BLMPidToken", idToken?.__raw)
       const cookie = await axios.get("https://iiif.bdrc.io/setcookie", {
         headers: {
-          Authorization: `Bearer ${idToken.__raw}`,
+          Authorization: `Bearer ${idToken?.__raw}`,
         },
       })
       //debug("cookie", cookie)

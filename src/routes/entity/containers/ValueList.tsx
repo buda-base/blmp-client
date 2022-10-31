@@ -787,7 +787,7 @@ const Create: FC<{
             loadRes = await putTtl(
               url,
               store,
-              idTokenF.__raw,
+              idTokenF?.__raw,
               entities[entity]?.alreadySaved ? "POST" : "PUT",
               '"batch add volumes"@en',
               entities[entity]?.alreadySaved
@@ -1935,6 +1935,7 @@ const ExtEntityComponent: FC<{
                 border: "1px solid #ccc",
                 flexDirection: "row",
                 position: "static",
+                ...error ? { border: "1px solid red" } : {},
               }
             : {
                 display: "flex",
@@ -1957,11 +1958,19 @@ const ExtEntityComponent: FC<{
           shape={shape}
         />
         {extRes.uri !== "tmp:uri" && (
-          <button className={"btn btn-link ml-2 px-0"} onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>
-            {extRes.uri === "tmp:uri" ? <RemoveIcon /> : <CloseIcon />}
-          </button>
+          <>
+            <button className={"btn btn-link ml-2 px-0"} onClick={deleteItem} {...(!canDel ? { disabled: true } : {})}>
+              {extRes.uri === "tmp:uri" ? <RemoveIcon /> : <CloseIcon />}
+            </button>
+          </>
         )}
       </div>
+      {extRes.uri !== "tmp:uri" && error && (
+        <div style={{ marginTop: 5 }}>
+          <ErrorIcon style={{ fontSize: "20px", verticalAlign: "-6px", color: "red" }} />
+          <span style={{ fontSize: 12, color: "red", fontStyle: "italic", paddingLeft: 5 }}>{error}</span>
+        </div>
+      )}
     </div>
   )
 }

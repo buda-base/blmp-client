@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useMemo, useLayoutEffect, useCallback, useRef } from "react"
-import { ShapeFetcher, EntityFetcher, setUserLocalEntities, debugStore } from "../../../helpers/rdf/io"
+import {
+  ShapeFetcher,
+  EntityFetcher,
+  setUserLocalEntities,
+  debugStore,
+  fetchUrlFromEntityQname,
+} from "../../../helpers/rdf/io"
 import { setDefaultPrefixes } from "../../../helpers/rdf/ns"
 import { RDFResource, Subject, ExtRDFResourceWithLabel, history, LiteralWithId } from "../../../helpers/rdf/types"
 import * as shapes from "../../../helpers/rdf/shapes"
@@ -39,6 +45,8 @@ import queryString from "query-string"
 import { getParentPath } from "../../helpers/observer"
 import Button from "@material-ui/core/Button"
 import { demoUserId } from "../../../containers/DemoContainer"
+import useInterval from "../../../helpers/hooks/useInterval"
+import { Dialog412 } from "../../../components/Dialog"
 
 import config from "../../../config"
 
@@ -322,8 +330,10 @@ function EntityEditContainer(props: AppProps) {
     entityObjRef.current = entityObj
   })
 
+  let unmounting = false
   useEffect(() => {
     return async () => {
+      unmounting = true
       debug("unmounting /edit", entityObjRef.current[0]?.state)
       await save(entityObjRef.current)
     }
@@ -360,8 +370,35 @@ function EntityEditContainer(props: AppProps) {
   useEffect(() => {
     window.addEventListener("beforeunload", warning, true)
   }, [warning])
-
   //debug("warning:",warning)
+
+  const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
+  const [etagChanged, setEtagChanged] = useState(false)
+  const localEtag = entityObj?.length ? entityObj[0].alreadySaved : ""
+  const checkEtag = useCallback(async () => {
+    let newEtag = false
+    if (localEtag) {
+      const url = fetchUrlFromEntityQname(entityQname)
+      const response = await fetch(url, { method: "HEAD" })
+      const onlineEtag = response.headers.get("etag")
+      if (onlineEtag && onlineEtag !== localEtag && !unmounting) {
+        //debug("etag?",onlineEtag, localEtag)
+        newEtag = true
+      }
+    }
+    setEtagChanged(newEtag)
+  }, [entityQname, localEtag, unmounting])
+
+  // if reloading we'll have to check again once it's done
+  useEffect(() => {
+    setEtagChanged(false)
+  }, [reloadEntity])
+
+  // check etag for current entity when loaded, then every minute
+  useEffect(() => {
+    checkEtag()
+  }, [localEtag])
+  useInterval(checkEtag, localEtag ? 1000 * 60 * 1 : false) // eslint-disable-line no-magic-numbers
 
   if (entityQname === "tmp:user" && !auth0.isAuthenticated && userId != demoUserId) return <span>unauthorized</span>
 
@@ -399,7 +436,12 @@ function EntityEditContainer(props: AppProps) {
     )
   }
 
-  if (!shape || !entity) return null
+  if (!shape || !entity)
+    return (
+      <div>
+        <div>{i18n.t("types.loading")}</div>
+      </div>
+    )
 
   //debug("entity:", entity, shape)
 
@@ -506,6 +548,8 @@ function EntityEditContainer(props: AppProps) {
           </>
         ))}
       </div>
+      {etagChanged && <Dialog412 open={true // can not return <Dialog /> earlier above ("rendered more hooks" failure)
+          } {...{ localEtag, entityQname }} />}
     </React.Fragment>
   )
 }
