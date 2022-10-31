@@ -56,14 +56,14 @@ export function AuthContextWrapper({ children }) {
 
     if (isAuthenticated && idToken || demo) fetchProfile()
 
-    debug("uP:", user, demo)
+    //debug("uP:", user, demo)
 
     let groups
     if (
       user &&
       user["https://auth.bdrc.io/groups"] &&
       (groups = user["https://auth.bdrc.io/groups"]) &&
-      !groups.includes("admin")
+      !groups.some((g) => ["editors", "contributors"].includes(g))
     ) {
       logout({ returnTo: window.location.origin + "?notAdmin=true" })
     }
