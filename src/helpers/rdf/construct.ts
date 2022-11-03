@@ -133,8 +133,7 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
         const prefix = shapePrefix + RIDprefix
         // if entityQname is not null, we call reserveLname with the entityQname
         const proposedLname = entityQname ? ns.lnameFromQname(entityQname) : null
-        if (idToken) lname = await reserveLname(prefix, proposedLname, idToken)
-        else if (demo) {
+        if (demo) {
           const max = 9999
           let free = false
           // check first if entity with id not already open
@@ -151,7 +150,8 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
               free = true
             }
           } while (!free)
-        }
+        } else if (idToken) lname = await reserveLname(prefix, proposedLname, idToken)
+
         debug("lname:", lname, prefix, proposedLname)
       } catch (e) {
         debug(e)
