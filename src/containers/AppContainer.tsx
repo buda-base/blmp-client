@@ -2,11 +2,8 @@ import React, { useEffect, useRef, useState } from "react"
 import {
   BrowserRouter as Router,
   Route,
-  RouteComponentProps,
-  Switch,
+  Routes,
   Link,
-  useHistory,
-  Redirect,
 } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import i18n from "i18next"
@@ -18,48 +15,24 @@ import { ClearCacheProvider } from "react-clear-cache"
 import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
-import { NavBarContainer, BottomBarContainer } from "../components/NavBar"
-import EntitySelector, {
-  entitiesAtom,
-  EditedEntityState,
-  defaultEntityLabelAtom,
-} from "../containers/EntitySelectorContainer"
+import { NavBarContainer } from "../components/NavBar"
+import { enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer } from "rdf-document-editor"
 import DemoContainer from "../containers/DemoContainer"
 import OutlineEditorContainer from "../containers/OutlineEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
 import ScanRequestContainer from "../containers/ScanRequestContainer"
 import Home from "../routes/home"
-import ProfileContainer from "../routes/account/containers/Profile"
-import EntityEditContainer, { EntityEditContainerMayUpdate } from "../routes/entity/containers/EntityEditContainer"
-import NewEntityContainer from "../routes/entity/containers/NewEntityContainer"
-import EntityCreationContainer, {
-  EntityCreationContainerRoute,
-} from "../routes/entity/containers/EntityCreationContainer"
-import EntityShapeChooserContainer from "../routes/entity/containers/EntityShapeChooserContainer"
 import {
-  uiDisabledTabsState,
   profileIdState,
-  uiTabState,
-  uiUndosState,
-  noUndo,
-  noUndoRedo,
-  undoState,
-  sameUndo,
   userIdState,
   demoAtom,
 } from "../atoms/common"
 
-import { Subject, history } from "../helpers/rdf/types"
-
-import enTranslations from "../translations/en"
-
-//import axios from "axios"
-//import PreviewImage from "../libs/bvmt/src/components/PreviewImage"
 import { default as BVMT } from "../libs/bvmt/src/App"
-
 import { demoUserId } from "./DemoContainer"
+import { debug as debugfactory } from "debug"
 
-const debug = require("debug")("bdrc:router")
+const debug = debugfactory("blmp:app")
 
 const numtobodic: Record<string, string> = {
   "0": "༠",
@@ -107,71 +80,16 @@ i18n
     },
   })
 
-export interface IdTypeParams {
-  shapeQname: string
-  entityQname: string
-  subjectQname?: string
-  propertyQname?: string
-  index?: string
-}
-
-export interface AppProps extends RouteComponentProps<IdTypeParams> {}
-
-// get info from history (values modified? values undone?)
-export const getHistoryStatus = (entityUri) => {
-  if (!history[entityUri]) return {}
-
-  // DONE: optimizing a bit (1 for instead of 2 .findIndex + 1 .some)
-  const top = history[entityUri].length - 1
-  let first = -1,
-    current = -1
-  for (const i in history[entityUri]) {
-    const h = history[entityUri][i]
-    if (h["tmp:allValuesLoaded"]) first = i
-    else if (h["tmp:undone"]) current = i - 1
-    if (first != -1 && current != -1) break
-  }
-  return { top, first, current }
-}
-
 function HomeContainer() {
-  // uncommenting this triggers "Can't perform a React state update on an unmounted component" error (see #11)
-  // const [tab, setTab] = useRecoilState(uiTabState)
-
-  /* // PoC bvmt
-  const [iiif, setiiif] = useState(null)
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const data = await axios.get(
-          "https://iiif.bdrc.io/bdr:I4CZ75258::I4CZ752580003.jpg/info.json"
-          //`https://iiif.bdrc.io/${props.volumeId}::${image.filename}/info.json`,
-        )
-        const iiif = data.data
-        setiiif(iiif)
-      } catch (err) {
-        debug("iiifErr", err)
-      }
-    }
-    getData()
-  }, [])
-
-  debug("iiif:", iiif)
-
-  if (!iiif) {
-    return <div>loading</div>
-  } else {
-    */
 
   const [userId, setUserId] = useRecoilState(userIdState)
 
   if (userId === demoUserId)
     return (
-      <div className="centered-ctn">
+      <><div className="centered-ctn">
         <div>
           <h1>Welcome to RDF document editor demo!</h1>
-          <span>{i18n.t("home.title")}</span>
+          <span><>{i18n.t("home.title")}</></span>
           <p>
             You can click the <em>New / Load</em> button on the left, or the link to an example entity below.
           </p>
@@ -183,14 +101,14 @@ function HomeContainer() {
             </Link>
           </p>
         </div>
-      </div>
+      </div></>
     )
   else
     return (
-      <div className="centered-ctn">
+      <><div className="centered-ctn">
         <div>
           <h1>Welcome!</h1>
-          <span>{i18n.t("home.title")}</span>
+          <span><>{i18n.t("home.title")}</></span>
           <p>
             To start the editor, you must first set up the RID prefix in your user profile (ex: <em>3KG</em>), and then
             click on the <em>New / Load</em> button.
@@ -217,7 +135,7 @@ function HomeContainer() {
             </Link>
           </p>
         </div>
-      </div>
+      </div></>
     )
   //}
 }
@@ -225,21 +143,19 @@ function HomeContainer() {
 let undoTimer = 0,
   undoEntity = "tmp:uri"
 
-function App(props: AppProps) {
+function App(props: RDEProps) {
   const auth = useAuth0()
   const { isAuthenticated, isLoading } = auth
-  const [undos, setUndos] = useRecoilState(uiUndosState)
-  const [entities, setEntities] = useRecoilState(entitiesAtom)
-  const [uiTab, setTab] = useRecoilState(uiTabState)
+  const [undos, setUndos] = useRecoilState(atoms.uiUndosState)
+  const [entities, setEntities] = useRecoilState(atoms.entitiesAtom)
+  const [uiTab, setTab] = useRecoilState(atoms.uiTabState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
   const [profileId, setProfileId] = useRecoilState(profileIdState)
   const undo = undos[entityUri]
-  const setUndo = (s: Record<string, undoState>) => setUndos({ ...undos, [entityUri]: s })
-  const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
+  const setUndo = (s: atoms.undoPN) => setUndos({ ...undos, [entityUri]: s })
+  const [disabled, setDisabled] = useRecoilState(atoms.uiDisabledTabsState)
   const appEl = useRef<HTMLDivElement>(null)
-  // see https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1 for the wrapping anonymous function
-  const routerHistory = useHistory()
   const [userId, setUserId] = useRecoilState(userIdState)
   const [demo, setDemo] = useRecoilState(demoAtom)
 
@@ -255,14 +171,6 @@ function App(props: AppProps) {
     }
   }, [])
 
-  //debug("entities:",entities.map(e => e?.subjectQname+","+e?.subject?.qname+"="+e?.state))
-
-  /*
-  useEffect( () => {
-    debug("undos!",undo,undos)
-  }, [undos])
-  */
-
   // this is needed to initialize undo/redo without any button being clicked
   // (link between recoil/react states and data updates automatically stored in EntityGraphValues)
   useEffect(() => {
@@ -271,7 +179,7 @@ function App(props: AppProps) {
     undoEntity = entityUri
     clearInterval(undoTimer)
     const delay = 150
-    undoTimer = setInterval(() => {
+    undoTimer = window.setInterval(() => {
       //debug("timer", undoTimer, entity, entityUri, profileId, history[entityUri], history)
       if (!history[entityUri]) return
       const { top, first, current } = getHistoryStatus(entityUri)
@@ -280,9 +188,9 @@ function App(props: AppProps) {
       if (disabled) setDisabled(false)
       // check if flag is on top => nothing modified
       if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) {
-        if (!sameUndo(undo, noUndoRedo)) {
+        if (!atoms.sameUndo(undo, atoms.noUndoRedo)) { //
           //debug("no undo:",undo)
-          setUndo(noUndoRedo)
+          setUndo(atoms.noUndoRedo)
         }
       } else {
         if (first !== -1) {
@@ -296,7 +204,7 @@ function App(props: AppProps) {
                   prev: { enabled: true, subjectUri: entityUri, propertyPath: prop[0], parentPath: [] },
                   next: noUndo,
                 }
-                if (!sameUndo(undo, newUndo)) {
+                if (!atoms.sameUndo(undo, newUndo)) {
                   //debug("has undo1:", undo, newUndo, first, top, history, current, entities[entity])
                   setUndo(newUndo)
                 }
@@ -313,10 +221,10 @@ function App(props: AppProps) {
                   const prop = Object.keys(history[entityUri][top][sub[0]])
                   if (prop && prop.length && entities[entity].subject !== null) {
                     const newUndo = {
-                      next: noUndo,
+                      next: atoms.noUndo,
                       prev: { enabled: true, subjectUri: sub[0], propertyPath: prop[0], parentPath },
                     }
-                    if (!sameUndo(undo, newUndo)) {
+                    if (!atoms.sameUndo(undo, newUndo)) {
                       //debug("has undo2:", undo, newUndo, first, top, history, current, entities[entity])
                       setUndo(newUndo)
                     }
@@ -357,10 +265,9 @@ function App(props: AppProps) {
         <main>
           <div>
             {!props.location.pathname.startsWith("/bvmt") && <EntitySelector {...props} />}
-            <Switch>
-              <Route exact path="/" component={HomeContainer} />
+            <Routes>
+              <Route path="/" element={<HomeContainer/>} />
               <Route
-                exact
                 path="/profile"
                 render={(rprops) => (
                   <EntityEditContainer
@@ -370,8 +277,8 @@ function App(props: AppProps) {
                   />
                 )}
               />
-              <Route exact path="/new" component={NewEntityContainer} />
-              <Route exact path="/new/:shapeQname" component={EntityCreationContainer} />
+              <Route path="/new" element={<NewEntityContainer/>} />
+              <Route path="/new/:shapeQname" element={<EntityCreationContainer/>} />
               <Route // we need that route to link back value to property where entity was created
                 exact
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
@@ -411,12 +318,12 @@ function App(props: AppProps) {
                   <BVMT {...rprops} auth={auth} history={routerHistory} volume={rprops.match.params.volume} />
                 )}
               />
-              <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
-              <Route exact path="/outline" component={OutlineEditorContainer} />
-              <Route exact path="/withdraw" component={WithdrawingEditorContainer} />
-              <Route exact path="/scanrequest" component={ScanRequestContainer} />
-              <Route exact path="/demo" component={DemoContainer} />
-            </Switch>
+              <Route path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
+              <Route path="/outline" component={OutlineEditorContainer} />
+              <Route path="/withdraw" component={WithdrawingEditorContainer} />
+              <Route path="/scanrequest" component={ScanRequestContainer} />
+              <Route path="/demo" component={DemoContainer} />
+            </Routes>
           </div>
         </main>
         {!props.location.pathname.startsWith("/new") && <BottomBarContainer />}
