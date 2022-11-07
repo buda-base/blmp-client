@@ -73,7 +73,7 @@
     "postinstall": "if [ ! -r src/libs/bvmt/yarn.lock ] ; then git submodule update --init ; fi",
     "prebuild": "git submodule update --remote && yarn run generate-build-meta",
     "generate-build-meta": "./node_modules/react-clear-cache/bin/cli.js",
-    "refresh-rde": "cd ../rdf-document-editor/ && yarn build && cd ../blmp-client/node_modules/rdf-document-editor/ && rm -rf dist && cp -rf ../../../rdf-document-editor/dist . && cd ../.. && rm node_modules/.cache -rf && yarn start"
+    "refresh-rde": "cd ../rdf-document-editor/ && yarn build && cd ../blmp-client/node_modules/rdf-document-editor/ && rm -rf dist && cp -rf ../../../rdf-document-editor/dist . && cd ../.. && rm node_modules/.cache -rf"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json,css,tsx,ts}": [

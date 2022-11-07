@@ -4,6 +4,28 @@ import { fromWylie } from "jsewts"
 
 const debug = require("debug")("bdrc:rdf:lang")
 
+const numtobodic: Record<string, string> = {
+  "0": "༠",
+  "1": "༡",
+  "2": "༢",
+  "3": "༣",
+  "4": "༤",
+  "5": "༥",
+  "6": "༦",
+  "7": "༧",
+  "8": "༨",
+  "9": "༩",
+}
+
+export const numtobo = function (cstr: string): string {
+  let res = ""
+  for (const ch of cstr) {
+    if (numtobodic[ch]) res += numtobodic[ch]
+    else res += ch
+  }
+  return res
+}
+
 export const ValueByLangToStrPrefLang = (vbl: Record<string, string> | null, prefLang: string | Array<string>) => {
   if (vbl == null) return ""
   if (!Array.isArray(prefLang)) prefLang = [prefLang]

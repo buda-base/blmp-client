@@ -16,7 +16,7 @@ import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import { NavBarContainer } from "../components/NavBar"
-import { enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer } from "rdf-document-editor"
+import { enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus } from "rdf-document-editor"
 import DemoContainer from "../containers/DemoContainer"
 import OutlineEditorContainer from "../containers/OutlineEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
@@ -28,33 +28,17 @@ import {
   demoAtom,
 } from "../atoms/common"
 
+import {
+  numtobo,
+  ValueByLangToStrPrefLang,
+  langs,
+} from "../helpers/lang"
+
 import { default as BVMT } from "../libs/bvmt/src/App"
 import { demoUserId } from "./DemoContainer"
 import { debug as debugfactory } from "debug"
 
 const debug = debugfactory("blmp:app")
-
-const numtobodic: Record<string, string> = {
-  "0": "༠",
-  "1": "༡",
-  "2": "༢",
-  "3": "༣",
-  "4": "༤",
-  "5": "༥",
-  "6": "༦",
-  "7": "༧",
-  "8": "༨",
-  "9": "༩",
-}
-
-const numtobo = function (cstr: string): string {
-  let res = ""
-  for (const ch of cstr) {
-    if (numtobodic[ch]) res += numtobodic[ch]
-    else res += ch
-  }
-  return res
-}
 
 i18n
   .use(initReactI18next) // passes i18n down to react-i18next
@@ -182,7 +166,7 @@ function App(props: RDEProps) {
     undoTimer = window.setInterval(() => {
       //debug("timer", undoTimer, entity, entityUri, profileId, history[entityUri], history)
       if (!history[entityUri]) return
-      const { top, first, current } = getHistoryStatus(entityUri)
+      const { top, first, current }:HistoryStatus = getHistoryStatus(entityUri)
       //debug("disable:",disabled,first)
       if (first === -1) return
       if (disabled) setDisabled(false)
@@ -202,7 +186,7 @@ function App(props: RDEProps) {
               if (prop && prop.length && entities[entity].subject !== null) {
                 const newUndo = {
                   prev: { enabled: true, subjectUri: entityUri, propertyPath: prop[0], parentPath: [] },
-                  next: noUndo,
+                  next: atoms.noUndo,
                 }
                 if (!atoms.sameUndo(undo, newUndo)) {
                   //debug("has undo1:", undo, newUndo, first, top, history, current, entities[entity])
