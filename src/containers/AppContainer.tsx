@@ -236,6 +236,10 @@ function App(props: RDEProps) {
   // check if latest version every 5 min
   const checkVersionInterval = 5 * 60 * 1000 // eslint-disable-line no-magic-numbers
 
+  const config = {
+
+  }
+
   return (
     <ClearCacheProvider duration={checkVersionInterval}>
       <div
@@ -248,7 +252,7 @@ function App(props: RDEProps) {
         <NavBarContainer />
         <main>
           <div>
-            {!props.location.pathname.startsWith("/bvmt") && <EntitySelector {...props} />}
+            {!props.location.pathname.startsWith("/bvmt") && <EntitySelectorContainer {...props} />}
             <Routes>
               <Route path="/" element={<HomeContainer/>} />
               <Route
@@ -264,7 +268,6 @@ function App(props: RDEProps) {
               <Route path="/new" element={<NewEntityContainer/>} />
               <Route path="/new/:shapeQname" element={<EntityCreationContainer/>} />
               <Route // we need that route to link back value to property where entity was created
-                exact
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
                 component={EntityCreationContainerRoute}
               />
