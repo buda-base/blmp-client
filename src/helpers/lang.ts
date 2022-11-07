@@ -1,6 +1,7 @@
 import "./jsewts.d.ts"
 
 import { fromWylie } from "jsewts"
+import { Lang } from "rdf-document-editor"
 
 const debug = require("debug")("bdrc:rdf:lang")
 
@@ -43,11 +44,6 @@ export const ValueByLangToStrPrefLang = (vbl: Record<string, string> | null, pre
   if (vals[0]) return vals[0]
 
   return ""
-}
-
-export type Lang = {
-  value: string
-  keyboard?: string[]
 }
 
 export const langs: Array<Lang> = [

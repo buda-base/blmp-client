@@ -118,7 +118,7 @@ export const possibleShapeRefs: Array<ExtRDFResourceWithLabel> = [
 ]
 
 export const typeUriToShape: Record<string, Array<ExtRDFResourceWithLabel>> = {}
-typeUriToShape[BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"] /*, shapeRefsMap["bds:PersonShapeTest"] */]
+typeUriToShape[BDO_uri + "Person"] = [shapeRefsMap["bds:PersonShape"]]
 typeUriToShape[BDO_uri + "Topic"] = [shapeRefsMap["bds:TopicShape"]]
 typeUriToShape[BDO_uri + "Place"] = [shapeRefsMap["bds:PlaceShape"]]
 typeUriToShape[BDO_uri + "Instance"] = [shapeRefsMap["bds:InstanceShape"]]
@@ -130,6 +130,7 @@ typeUriToShape[BDO_uri + "Imagegroup"] = [shapeRefsMap["bds:ImagegroupShape"]]
 typeUriToShape[BDO_uri + "Corporation"] = [shapeRefsMap["bds:CorporationShape"]]
 typeUriToShape[BDO_uri + "Work"] = [shapeRefsMap["bds:WorkShape"]]
 typeUriToShape[BDO_uri + "SerialWork"] = [shapeRefsMap["bds:SerialWorkShape"]]
+typeUriToShape[BDOU_uri + "UserProfile"] = [shapeRefsMap["bds:UserProfileShape"]]
 
 export const reserveLname = async (
   prefix: string,
@@ -202,6 +203,40 @@ export const removeEntityPrefix = (lname: string): string => {
   return lname.substring(1)
 }
 
+export const getEntityPrefix = (lname: string): string => {
+  if (lname.length > 3) {
+    const prefix_3 = lname.substring(0, 3)
+    if (entity_prefix_3.includes(prefix_3))
+      return prefix_3
+  }
+  if (lname.length > 2) {
+    const prefix_2 = lname.substring(0, 2)
+    if (entity_prefix_2.includes(prefix_2))
+      return prefix_2
+  }
+  return lname.substring(0, 1)
+}
+
+const entityPrefixToType: Record<string,rdf.NamedNode> = {
+  "WAS": BDO("SerialWork") as rdf.NamedNode,
+  //"ITW": BDO("Item") as rdf.NamedNode,
+  //"PRA": BDO("Item") as rdf.NamedNode,
+  "WA": BDO("Work") as rdf.NamedNode,
+  "MW": BDO("Instance") as rdf.NamedNode,
+  "PR": BDO("Collection") as rdf.NamedNode,
+  "IE": BDO("EtextInstance") as rdf.NamedNode,
+  "UT": BDO("Etext") as rdf.NamedNode,
+  "IT": BDO("Item") as rdf.NamedNode,
+  "W": BDO("ImageInstance") as rdf.NamedNode,
+  "G": BDO("Place") as rdf.NamedNode,
+  "C": BDO("Corporation") as rdf.NamedNode,
+  "P": BDO("Person") as rdf.NamedNode,
+  "T": BDO("Topic") as rdf.NamedNode,
+  "R": BDO("Role") as rdf.NamedNode,
+  "L": BDO("Lineage") as rdf.NamedNode,
+  "U": BDOU("UserProfile") as rdf.NamedNode,
+}
+
 const typeToURIPrefix = (type: RDFResource): string | null => {
   const typeLname = type.lname
   if (typeLname == "Work") return BDR_uri+"WA"
@@ -210,6 +245,14 @@ const typeToURIPrefix = (type: RDFResource): string | null => {
   if (typeLname == "EtextInstance") return BDR_uri+"IE"
   if (typeLname == "SerialWork") return BDR_uri+"WAS"
   return null
+}
+
+export const entityToType = (entity: rdf.NamedNode): rdf.NamedNode | null => {
+  const lname = prefixMap.lnameFromUri(entity.uri)
+  let entityPrefix = getEntityPrefix(lname)
+  if (!(entityPrefix in entityPrefixToType))
+    return null
+  return entityPrefixToType[entityPrefix]
 }
 
 const generateConnectedID = async (old_resource: RDFResource, old_shape: NodeShape, type: RDFResource): Promise<rdf.NamedNode> => {
@@ -229,26 +272,39 @@ if (config.TEMPLATES_BASE) {
 
 export const shapeUriToFetchUri: Record<string, string> = {
   [BDS_uri+"PersonShape"]: shapesbase + "PersonUIShapes",
-  [BDS_uri+"bds:CorporationShape"]: shapesbase + "CorporationUIShapes",
-  [BDS_uri+"bds:TopicShape"]: shapesbase + "TopicUIShapes",
-  [BDS_uri+"bds:PlaceShape"]: shapesbase + "PlaceUIShapes",
-  [BDS_uri+"bds:WorkShape"]: shapesbase + "WorkUIShapes",
-  [BDS_uri+"bds:SerialWorkShape"]: shapesbase + "SerialWorkUIShapes",
-  [BDS_uri+"bds:InstanceShape"]: shapesbase + "InstanceUIShapes",
-  [BDS_uri+"bds:ImageInstanceShape"]: shapesbase + "ImageInstanceUIShapes",
-  [BDS_uri+"bds:RoleShape"]: shapesbase + "RoleUIShapes",
-  [BDS_uri+"bds:CollectionShape"]: shapesbase + "CollectionUIShapes",
-  [BDS_uri+"bds:ImagegroupShape"]: shapesbase + "ImagegroupUIShapes",
-  [BDS_uri+"bds:UserProfileShape"]: profileshapesbase + "UserProfileUIShapes",
+  [BDS_uri+"CorporationShape"]: shapesbase + "CorporationUIShapes",
+  [BDS_uri+"TopicShape"]: shapesbase + "TopicUIShapes",
+  [BDS_uri+"PlaceShape"]: shapesbase + "PlaceUIShapes",
+  [BDS_uri+"WorkShape"]: shapesbase + "WorkUIShapes",
+  [BDS_uri+"SerialWorkShape"]: shapesbase + "SerialWorkUIShapes",
+  [BDS_uri+"InstanceShape"]: shapesbase + "InstanceUIShapes",
+  [BDS_uri+"ImageInstanceShape"]: shapesbase + "ImageInstanceUIShapes",
+  [BDS_uri+"RoleShape"]: shapesbase + "RoleUIShapes",
+  [BDS_uri+"CollectionShape"]: shapesbase + "CollectionUIShapes",
+  [BDS_uri+"ImagegroupShape"]: shapesbase + "ImagegroupUIShapes",
+  [BDS_uri+"UserProfileShape"]: profileshapesbase + "UserProfileUIShapes",
 }
 
-const getShapesDocument = async (entity: rdf.NamedNode): Promise<NodeShape> => {
+const possibleShapeRefsForType = (type: rdf.NamedNode) => {
+  if (! (type.uri in typeUriToShape))
+    return null
+  return typeUriToShape[type.uri]
+}
+
+const possibleShapeRefsForEntity = (entity: rdf.NamedNode) => {
+  const type = entityToType(entity)
+  if (!type)
+    return null
+  return possibleShapeRefsForType(type)
+}
+
+export const getShapesDocument = async (entity: rdf.NamedNode): Promise<NodeShape> => {
   if (! (entity.uri in typeUriToShape))
     return Promise.reject("cannot find appropriate shape for "+entity.uri)
   const shaperef = typeUriToShape[entity.uri][0]
   if (! (shaperef.uri in shapeUriToFetchUri))
     return Promise.reject("cannot find fetch url for shape "+shaperef.uri)
-  // we always load the example shape in the demo
+  // this should be cached
   const loadRes = fetchTtl(shapeUriToFetchUri[shaperef.uri])
   const { store, etag } = await loadRes
   const shape = new NodeShape(shaperef.node, new EntityGraph(store, shaperef.uri, prefixMap))
@@ -515,4 +571,22 @@ const previewLiteral = (lit: rdf.Literal, uiLangs: string[]) => {
     return { value: uni, error: null }
   }
   return { value: null, error: null }
+}
+
+export const descProps: Array<rdf.NamedNode> = [
+  ns.shDescription,
+  ns.skosDefinition,
+  ADM('CatalogingConvention') as rdf.NamedNode,
+  ADM('admUserTooltip') as rdf.NamedNode,
+  ns.rdfsComment,
+]
+
+export const labelProps: Array<rdf.NamedNode> = [
+  ns.prefLabel,
+  ns.rdfsLabel,
+]
+
+export const getPreviewLink = (entity: rdf.NamedNode) => {
+  const qname = prefixMap.qnameFromUri(entity.uri)
+  return config.LIBRARY_URL+"/show/"+qname
 }
