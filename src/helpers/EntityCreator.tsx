@@ -19,11 +19,11 @@ const debug = debugfactory("blmp:app")
 
 export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNode | null, unmounting = { val: false }) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
-  const [entity, setEntity] = useState<Subject>()
+  const [entity, setEntity] = useState<Subject | null>(null)
+  const [shape, setShape] = useState<NodeShape | null>(null)
   const [entities, setEntities] = useRecoilState(atoms.entitiesAtom)
   const { getAccessTokenSilently, isAuthenticated, getIdTokenClaims } = useAuth0()
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
-  const [shape, setShape] = useState<NodeShape>()
   const auth0 = useAuth0()
   const [tab, setTab] = useRecoilState(atoms.uiTabState)
   const [userId, setUserId] = useRecoilState(userIdState)
@@ -36,8 +36,8 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
   }, [])
 
   const reset = () => {
-    setEntity(undefined)
-    setShape(undefined)
+    setEntity(null)
+    setShape(null)
     setEntityLoadingState({ status: "idle", error: undefined })
   }
 

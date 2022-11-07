@@ -6,6 +6,8 @@ import {
   Link,
 } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
+import * as rde_config from "../helpers/config"
+import { EntityCreator } from "../helpers/EntityCreator"
 import i18n from "i18next"
 import { useTranslation, initReactI18next } from "react-i18next"
 import { useRecoilState } from "recoil"
@@ -16,7 +18,7 @@ import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import { NavBarContainer } from "../components/NavBar"
-import { enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus } from "rdf-document-editor"
+import { enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus, RDEConfig, BUDAResourceSelector } from "rdf-document-editor"
 import DemoContainer from "../containers/DemoContainer"
 import OutlineEditorContainer from "../containers/OutlineEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
@@ -141,7 +143,7 @@ function App(props: RDEProps) {
   const [disabled, setDisabled] = useRecoilState(atoms.uiDisabledTabsState)
   const appEl = useRef<HTMLDivElement>(null)
   const [userId, setUserId] = useRecoilState(userIdState)
-  const [demo, setDemo] = useRecoilState(demoAtom)
+  const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {
@@ -227,7 +229,7 @@ function App(props: RDEProps) {
     }
   }, [disabled, entities, undos, profileId, uiTab])
 
-  if (isLoading) return <div></div>
+  if (isLoading || !idToken) return <div>Loading...</div>
   if (config.requireAuth && !isAuthenticated && props.location.pathname !== "/demo" && userId != demoUserId)
     return <AuthRequest />
 
@@ -236,8 +238,31 @@ function App(props: RDEProps) {
   // check if latest version every 5 min
   const checkVersionInterval = 5 * 60 * 1000 // eslint-disable-line no-magic-numbers
 
-  const config = {
-
+  const config: RDEConfig = {
+    generateSubnodes: rde_config.generateSubnodesFactory(idToken),
+    valueByLangToStrPrefLang: ValueByLangToStrPrefLang,
+    possibleLiteralLangs: langs,
+    labelProperties: rde_config.labelProperties,
+    descriptionProperties: rde_config.descriptionProperties,
+    prefixMap: rde_config.prefixMap,
+    getConnexGraph: rde_config.getConnexGraph,
+    generateConnectedID: rde_config.generateConnectedID,
+    getShapesDocument: rde_config.getShapesDocument,
+    getDocument: rde_config.getDocumentGraphFactory(idToken),
+    entityCreator: EntityCreator,
+    iconFromEntity: rde_config.iconFromEntity,
+    getUserMenuState: rde_config.getUserMenuStateFactory(userId),
+    setUserMenuState: rde_config.setUserMenuStateFactory(userId),
+    getUserLocalEntities: rde_config.getUserLocalEntitiesFactory(userId),
+    setUserLocalEntity: rde_config.setUserLocalEntityFactory(userId),
+    possibleShapeRefs: rde_config.possibleShapeRefs,
+    possibleShapeRefsForEntity: rde_config.possibleShapeRefsForEntity,
+    possibleShapeRefsForType: rde_config.possibleShapeRefsForEntity,
+    libraryUrl: "https://library.bdrc.io",
+    resourceSelector: BUDAResourceSelector,
+    previewLiteral: rde_config.previewLiteral,
+    putDocument: rde_config.putDocumentFactory(idToken),
+    getPreviewLink: rde_config.getPreviewLink,
   }
 
   return (

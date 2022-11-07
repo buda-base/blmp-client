@@ -153,33 +153,31 @@ export const reserveLname = async (
   return body
 }
 
-export const generateSubnodes = async (
+export const generateSubnodesFactory = (idToken: string | null) => async (
   subshape: NodeShape,
   parent: RDFResource,
   userPrefix: string,
-  idToken: string | null,
   n = 1
 ): Promise<Subject[]> => {
   if (subshape.node.uri.startsWith("http://purl.bdrc.io/ontology/shapes/adm/AdmEntityShape")) {
     // special case for admin entities
     // in that case n can never be 1
     const res = new Subject(new rdf.NamedNode(BDA_uri + parent.lname), parent.graph)
-    return Promise.resolve([res])
+    return [res]
   }
   let prefix = subshape.getPropStringValue(ns.rdeIdentifierPrefix)
-  if (prefix == null) throw "cannot find entity prefix for " + subshape.qname
+  if (prefix == null) throw new Error("cannot find entity prefix for " + subshape.qname)
   let namespace = subshape.getPropStringValue(ns.shNamespace)
   if (namespace == null) namespace = parent.namespace
   if (subshape.independentIdentifiers) {
     prefix += userPrefix
-    if (!idToken) return Promise.reject("no token when reserving id")
+    if (!idToken) throw new Error("no token when reserving id")
     const reservedId = await reserveLname(prefix, null, idToken, n)
     if (n == 1) {
     const res = new Subject(new rdf.NamedNode(namespace + reservedId), parent.graph)
-      return Promise.resolve([res])
+      return [res]
     } else {
-      const res = reservedId.split(/[ \n]+/).map((id) => new Subject(new rdf.NamedNode(namespace + id), parent.graph))
-      return Promise.resolve(res)
+      return reservedId.split(/[ \n]+/).map((id) => new Subject(new rdf.NamedNode(namespace + id), parent.graph))
     }
   }
   const res: Subject[] = []
@@ -191,7 +189,7 @@ export const generateSubnodes = async (
     }
     res.push(new Subject(new rdf.NamedNode(uri), parent.graph))
   }
-  return Promise.resolve(res)
+  return res
 }
 
 const entity_prefix_3 = ["WAS", "ITW", "PRA"]
@@ -255,12 +253,12 @@ export const entityToType = (entity: rdf.NamedNode): rdf.NamedNode | null => {
   return entityPrefixToType[entityPrefix]
 }
 
-const generateConnectedID = async (old_resource: RDFResource, old_shape: NodeShape, type: RDFResource): Promise<rdf.NamedNode> => {
+export const generateConnectedID = async (old_resource: RDFResource, old_shape: NodeShape, type: RDFResource): Promise<rdf.NamedNode> => {
   const unprefixedLname = removeEntityPrefix(old_resource.lname)
   const newURI = typeToURIPrefix(type)
   if (newURI == null)
-    return Promise.reject("cannot generate connected ID for "+old_resource.uri)
-  return Promise.resolve(rdf.sym(newURI + unprefixedLname))
+    throw new Error("cannot generate connected ID for "+old_resource.uri)
+  return rdf.sym(newURI + unprefixedLname)
 }
 
 let shapesbase = BDSH_uri
@@ -285,55 +283,58 @@ export const shapeUriToFetchUri: Record<string, string> = {
   [BDS_uri+"UserProfileShape"]: profileshapesbase + "UserProfileUIShapes",
 }
 
-const possibleShapeRefsForType = (type: rdf.NamedNode) => {
+export const possibleShapeRefsForType = (type: rdf.NamedNode) => {
   if (! (type.uri in typeUriToShape))
-    return null
+    return []
   return typeUriToShape[type.uri]
 }
 
-const possibleShapeRefsForEntity = (entity: rdf.NamedNode) => {
+export const possibleShapeRefsForEntity = (entity: rdf.NamedNode) => {
   const type = entityToType(entity)
   if (!type)
-    return null
+    return []
   return possibleShapeRefsForType(type)
 }
 
 export const getShapesDocument = async (entity: rdf.NamedNode): Promise<NodeShape> => {
   if (! (entity.uri in typeUriToShape))
-    return Promise.reject("cannot find appropriate shape for "+entity.uri)
+    throw new Error("cannot find appropriate shape for "+entity.uri)
   const shaperef = typeUriToShape[entity.uri][0]
   if (! (shaperef.uri in shapeUriToFetchUri))
-    return Promise.reject("cannot find fetch url for shape "+shaperef.uri)
+    throw new Error("cannot find fetch url for shape "+shaperef.uri)
   // this should be cached
   const loadRes = fetchTtl(shapeUriToFetchUri[shaperef.uri])
   const { store, etag } = await loadRes
   const shape = new NodeShape(shaperef.node, new EntityGraph(store, shaperef.uri, prefixMap))
-  return Promise.resolve(shape)
+  return shape
 }
 
-const getDocumentGraph = async (entity: rdf.NamedNode): Promise<{subject:Subject, etag: string | null}> => {
+export const getDocumentGraphFactory = (idToken: string) => async (entity: rdf.NamedNode): Promise<{subject:Subject, etag: string | null}> => {
   let uri = config.API_BASEURL + prefixMap.qnameFromUri(entity.uri) + "/focusgraph"
   if (entity.uri == TMP_uri+"user")
     uri = config.API_BASEURL + "me/focusgraph"
-  const loadRes = fetchTtl(uri, true)
+  const headers = new Headers()
+  headers.set("Content-Type", "text/turtle")
+  headers.set("Authorization", "Bearer " + idToken)
+  const loadRes = fetchTtl(uri, true, headers)
   const { store, etag } = await loadRes
   const subject = new Subject(entity, new EntityGraph(store, entity.uri, prefixMap))
-  return Promise.resolve({subject, etag})
+  return {subject, etag}
 }
 
-const getConnexGraph = async (entity: rdf.NamedNode): Promise<rdf.Store> => {
+export const getConnexGraph = async (entity: rdf.NamedNode): Promise<rdf.Store> => {
   const uri = "//ldspdi.bdrc.io/query/graph/getAssociatedLabels?R_GR=bdg:" +
     prefixMap.lnameFromUri(entity.uri) + "&format=ttl"
   const loadRes = fetchTtl(uri, true)
   const { store, etag } = await loadRes
-  return Promise.resolve(store)
+  return store
 }
 
 const defaultRef = rdf.sym(rdf.Store.defaultGraphURI)
 
 export let latestcurl = ""
 
-const putDocument = async (idToken: string, entity: rdf.NamedNode, document: rdf.Store, etag: string | null, message: string | undefined): Promise<string> => {
+export const putDocumentFactory = (idToken: string) => async (entity: rdf.NamedNode, document: rdf.Store, etag: string | null, message: string | undefined): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
     rdf.serialize(defaultRef, document, undefined, "text/turtle", async function (err, str) {
@@ -429,13 +430,12 @@ export const iconFromEntity = (entity: Entity | null): string => {
   return icon as string
 }
 
-export const getUserMenuState = async (userId: string): Promise<Record<string, Entity>> => {
+export const getUserMenuStateFactory = (userId: string) => async (): Promise<Record<string, Entity>> => {
   const datastr = localStorage.getItem("rde_menu_state_"+userId)
   return datastr ? await JSON.parse(datastr) : {}
 }
 
-export const setUserMenuState = async (
-  userId: string,
+export const setUserMenuStateFactory = (userId: string) => async (
   subjectQname: string,
   shapeQname: string | null,
   labels: string | undefined,
@@ -450,13 +450,12 @@ export const setUserMenuState = async (
   localStorage.setItem("rde_menu_state_"+userId, dataNewStr)
 }
 
-export const getUserLocalEntities = async (userId: string): Promise<Record<string, LocalEntityInfo>> => {
+export const getUserLocalEntitiesFactory = (userId: string) => async (): Promise<Record<string, LocalEntityInfo>> => {
   const datastr = localStorage.getItem("rde_entities_"+userId)
   return datastr ? await JSON.parse(datastr) : {}
 }
 
-export const setUserLocalEntity = async (
-  userId: string,
+export const setUserLocalEntityFactory = (userId: string) => async (
   subjectQname: string,
   shapeQname: string | null,
   ttl: string | undefined,
@@ -524,7 +523,7 @@ export const humanizeEDTF = (obj: Record<string, any>, str = "", locale = "en-US
 
 const locales: Record<string, string> = { en: "en-US", "zh-hans": "zh-Hans-CN", bo: "bo-CN" }
 
-const previewLiteral = (lit: rdf.Literal, uiLangs: string[]) => {
+export const previewLiteral = (lit: rdf.Literal, uiLangs: string[]) => {
   if (lit.datatype.value == EDTF_DT.value) {
     try {
       const obj = parse(lit.value)
@@ -561,7 +560,7 @@ const previewLiteral = (lit: rdf.Literal, uiLangs: string[]) => {
         error: (
           <>
             Warnings during conversion to Unicode:
-            {warns.map((warn, index) => (
+            { warns.map((warn, index) => (
               <>warn</>
               ))}
           </>
@@ -573,7 +572,7 @@ const previewLiteral = (lit: rdf.Literal, uiLangs: string[]) => {
   return { value: null, error: null }
 }
 
-export const descProps: Array<rdf.NamedNode> = [
+export const descriptionProperties: Array<rdf.NamedNode> = [
   ns.shDescription,
   ns.skosDefinition,
   ADM('CatalogingConvention') as rdf.NamedNode,
@@ -581,7 +580,7 @@ export const descProps: Array<rdf.NamedNode> = [
   ns.rdfsComment,
 ]
 
-export const labelProps: Array<rdf.NamedNode> = [
+export const labelProperties: Array<rdf.NamedNode> = [
   ns.prefLabel,
   ns.rdfsLabel,
 ]
