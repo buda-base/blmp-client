@@ -153,10 +153,9 @@ export const reserveLname = async (
   return body
 }
 
-export const generateSubnodesFactory = (idToken: string | null) => async (
+export const generateSubnodesFactory = (idToken: string | null, RIDprefix: string | null) => async (
   subshape: NodeShape,
   parent: RDFResource,
-  userPrefix: string,
   n = 1
 ): Promise<Subject[]> => {
   if (subshape.node.uri.startsWith("http://purl.bdrc.io/ontology/shapes/adm/AdmEntityShape")) {
@@ -170,7 +169,7 @@ export const generateSubnodesFactory = (idToken: string | null) => async (
   let namespace = subshape.getPropStringValue(ns.shNamespace)
   if (namespace == null) namespace = parent.namespace
   if (subshape.independentIdentifiers) {
-    prefix += userPrefix
+    prefix += RIDprefix ? RIDprefix : ""
     if (!idToken) throw new Error("no token when reserving id")
     const reservedId = await reserveLname(prefix, null, idToken, n)
     if (n == 1) {

@@ -18,7 +18,7 @@ import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import { NavBarContainer } from "../components/NavBar"
-import { enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus, RDEConfig, BUDAResourceSelector } from "rdf-document-editor"
+import { EntityEditContainerMayUpdate, enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus, RDEConfig, BUDAResourceSelector } from "rdf-document-editor"
 import DemoContainer from "../containers/DemoContainer"
 import OutlineEditorContainer from "../containers/OutlineEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
@@ -27,6 +27,7 @@ import Home from "../routes/home"
 import {
   profileIdState,
   userIdState,
+  RIDprefixState,
   demoAtom,
 } from "../atoms/common"
 
@@ -143,6 +144,7 @@ function App(props: RDEProps) {
   const [disabled, setDisabled] = useRecoilState(atoms.uiDisabledTabsState)
   const appEl = useRef<HTMLDivElement>(null)
   const [userId, setUserId] = useRecoilState(userIdState)
+  const [RIDPrefix, setRIDPrefix] = useRecoilState(RIDprefixState)
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
 
   // DONE: update undo buttons status after selecting entity in iframe
@@ -239,7 +241,7 @@ function App(props: RDEProps) {
   const checkVersionInterval = 5 * 60 * 1000 // eslint-disable-line no-magic-numbers
 
   const config: RDEConfig = {
-    generateSubnodes: rde_config.generateSubnodesFactory(idToken),
+    generateSubnodes: rde_config.generateSubnodesFactory(idToken, RIDPrefix),
     valueByLangToStrPrefLang: ValueByLangToStrPrefLang,
     possibleLiteralLangs: langs,
     labelProperties: rde_config.labelProperties,
@@ -270,14 +272,14 @@ function App(props: RDEProps) {
       <div
         ref={appEl}
         data-route={props.location.pathname}
-        /*onClick={updateUndo} onKeyUp={updateUndo}*/ className={
+        className={
           "App " + (props.location.pathname === "/" ? "home" : "")
         }
       >
         <NavBarContainer />
         <main>
           <div>
-            {!props.location.pathname.startsWith("/bvmt") && <EntitySelectorContainer {...props} />}
+            {!props.location.pathname.startsWith("/bvmt") && <EntitySelectorContainer config={config} />}
             <Routes>
               <Route path="/" element={<HomeContainer/>} />
               <Route
@@ -285,60 +287,54 @@ function App(props: RDEProps) {
                 render={(rprops) => (
                   <EntityEditContainer
                     {...rprops}
-                    entityQname={demo ? demoUserId : "tmp:user"}
+                    entityQname={"tmp:user"}
                     shapeQname="bds:UserProfileShape"
+                    config={config}
                   />
                 )}
               />
-              <Route path="/new" element={<NewEntityContainer/>} />
-              <Route path="/new/:shapeQname" element={<EntityCreationContainer/>} />
+              <Route path="/new" element={<NewEntityContainer config={config} />} />
+              <Route path="/new/:shapeQname" element={<EntityCreationContainer config={config}/>} />
               <Route // we need that route to link back value to property where entity was created
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
-                component={EntityCreationContainerRoute}
+                element={<EntityCreationContainer config={config} />}
               />
               <Route // this one as well
-                exact
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
-                component={EntityCreationContainerRoute}
+                element={<EntityCreationContainer config={config} />}
               />
               <Route // same with entityQname
-                exact
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index/named/:entityQname"
-                component={EntityCreationContainerRoute}
+                element={<EntityCreationContainer config={config} />}
               />
               <Route // same with entityQname
-                exact
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
-                component={EntityCreationContainerRoute}
+                element={<EntityCreationContainer config={config} />}
               />
               <Route
-                exact
                 path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index"
-                component={EntityEditContainerMayUpdate}
+                element={<EntityEditContainerMayUpdate config={config} />}
               />
               <Route
-                exact
                 path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
-                component={EntityEditContainerMayUpdate}
+                element={<EntityEditContainerMayUpdate config={config} />}
               />
-              <Route exact path="/edit/:entityQname/:shapeQname" component={EntityEditContainer} />
-              <Route exact path="/edit/:entityQname" component={EntityShapeChooserContainer} />
+              <Route path="/edit/:entityQname/:shapeQname" element={<EntityEditContainer config={config} />} />
+              <Route path="/edit/:entityQname" element={<EntityShapeChooserContainer config={config} />} />
               <Route
-                exact
                 path="/bvmt/:volume"
                 render={(rprops) => (
                   <BVMT {...rprops} auth={auth} history={routerHistory} volume={rprops.match.params.volume} />
                 )}
               />
               <Route path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
-              <Route path="/outline" component={OutlineEditorContainer} />
-              <Route path="/withdraw" component={WithdrawingEditorContainer} />
-              <Route path="/scanrequest" component={ScanRequestContainer} />
-              <Route path="/demo" component={DemoContainer} />
+              <Route path="/outline" element={<OutlineEditorContainer />} />
+              <Route path="/withdraw" element={<WithdrawingEditorContainer />} />
+              <Route path="/scanrequest" element={<ScanRequestContainer />} />
             </Routes>
           </div>
         </main>
-        {!props.location.pathname.startsWith("/new") && <BottomBarContainer />}
+        {!props.location.pathname.startsWith("/new") && <BottomBarContainer config={config} />}
       </div>
     </ClearCacheProvider>
   )
