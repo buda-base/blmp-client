@@ -1,21 +1,31 @@
 import React, { useEffect, useRef, useState } from "react"
 import { TextField, Button, CircularProgress } from "@material-ui/core"
 
+type ErrorInfo = {
+  error: boolean
+  helperText: React.ReactNode
+}
+
+type Errors = {
+  to?: ErrorInfo,
+  from?: ErrorInfo
+}
+
 function WithdrawingEditorContainer() {
   const [RIDfrom, setRIDfrom] = useState("")
   const [RIDto, setRIDto] = useState("")
-  const [errors, setErrors] = useState({ to: {}, from: {} })
+  const [errors, setErrors] = useState<Errors>({ })
   const [spinner, setSpinner] = useState(false)
-  const [message, setMessage] = useState(false)
+  const [message, setMessage] = useState<string|null>(null)
 
-  const checkFormat = (id, str) => {
+  const checkFormat = (id: "from" | "to", str: string) => {
     if (!str || str.match(/^([cpgwrti]|mw|wa|was|ut|ie|pr)(\d|eap)[^ ]*$/i)) setErrors({ ...errors, [id]: {} })
     else setErrors({ ...errors, [id]: { error: true, helperText: <i>Check RID format</i> } })
   }
 
-  const disabled = !RIDfrom || !RIDto || errors["to"].error || errors["from"].error
+  const disabled = !RIDfrom || !RIDto || errors["to"]?.error || errors["from"]?.error
 
-  const handleClick = async (ev) => {
+  const handleClick = async (ev: React.MouseEvent) => {
     setSpinner(true)
 
     setTimeout(() => {
@@ -63,7 +73,7 @@ function WithdrawingEditorContainer() {
           className={"btn-rouge outlined " + (disabled ? "disabled" : "")}
           onClick={handleClick}
         >
-          {spinner ? <CircularProgress size="14px" color="white" /> : "WITHDRAW"}
+          {spinner ? <CircularProgress size="14px" color="primary" /> : "WITHDRAW"}
         </Button>
         <p>{message}</p>
       </div>

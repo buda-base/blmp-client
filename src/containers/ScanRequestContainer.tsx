@@ -11,9 +11,20 @@ import config from "../config"
 
 const debug = require("debug")("bdrc:NavBar")
 
+type ErrorInfo = {
+  error: boolean
+  helperText?: React.ReactNode
+}
+
+type Errors = {
+  from?: ErrorInfo,
+  io?: ErrorInfo,
+  id?: ErrorInfo
+}
+
 function ScanRequestContainer() {
-  const [RIDfrom, setRIDfrom] = useState("")
-  const [errors, setErrors] = useState({ from: {} })
+  const [RIDfrom, setRIDfrom] = useState<string|null>(null)
+  const [errors, setErrors] = useState<Errors>({ })
   const [spinner, setSpinner] = useState(false)
   const [message, setMessage] = useState(false)
   const [onlyNSync, setOnlyNSync] = useState(false)
@@ -25,20 +36,23 @@ function ScanRequestContainer() {
   useEffect(() => {
     async function checkSession() {
       const idToken = await getIdTokenClaims()
-      setIdToken(idToken.__raw)
+      if (idToken)
+        setIdToken(idToken.__raw)
     }
     if (isAuthenticated) checkSession()
   }, [isAuthenticated])
 
-  const checkFormat = (id, str) => {
-    if (!str || str.match(/^([w])(\d|eap)[^ ]*$/i)) setErrors({ ...errors, io: false, [id]: {} })
-    else setErrors({ ...errors, io: false, [id]: { error: true, helperText: <i>Check RID format</i> } })
+  const checkFormat = (str: string) => {
+    if (!str || str.match(/^([w])(\d|eap)[^ ]*$/i)) setErrors({ ...errors, io: {error: false}, from: {error: false} })
+    else setErrors({ ...errors, io: {error: false}, from: { error: true, helperText: <i>Check RID format</i> } })
   }
 
-  const disabled = !RIDfrom || errors["from"].error || errors.io
+  const disabled = !RIDfrom || errors["from"]?.error || errors.io
 
   const handleClick = useCallback(
-    async (ev) => {
+    async (ev: React.MouseEvent) => {
+      if (!RIDfrom)
+        return
       const entityLname = RIDfrom.replace(/^[^:]+:/, "").toUpperCase()
       const entityQname = "bdr:" + entityLname
 
@@ -74,13 +88,13 @@ function ScanRequestContainer() {
           //debug("filename:",filename)
           link.setAttribute("download", filename)
           link.click()
-          window.URL.revokeObjectURL(link)
+          window.URL.revokeObjectURL(temp)
 
-          setErrors({ ...errors, io: false })
+          setErrors({ ...errors, io: {error: false} })
         })
         .catch(function (error) {
           debug("error:", error.message)
-          setErrors({ ...errors, io: error.message })
+          setErrors({ ...errors, io: {error: true, helperText: <i>error.message</i> })
           setSpinner(false)
         })
 
@@ -106,7 +120,7 @@ function ScanRequestContainer() {
           placeholder={"Type here the RID of Image Instance"}
           onChange={(ev) => {
             setRIDfrom(ev.target.value)
-            checkFormat("from", ev.target.value)
+            checkFormat(ev.target.value)
           }}
           {...errors["from"]}
         />
@@ -117,7 +131,6 @@ function ScanRequestContainer() {
             control={
               <Checkbox
                 style={{ transform: "scale(0.85)", top: "2px" }}
-                type="checkbox"
                 value={onlyNSync}
                 onChange={onOnlyNSyncChangeHandler}
               />
@@ -129,7 +142,7 @@ function ScanRequestContainer() {
           className={"btn-rouge outlined " + (disabled ? "disabled" : "")}
           onClick={handleClick}
         >
-          {spinner ? <CircularProgress size="14px" color="white" /> : "scan request"}
+          {spinner ? <CircularProgress size="14px" color="primary" /> : "scan request"}
         </Button>
         {errors.io && <p style={{ color: "red", fontStyle: "italic", fontWeight: 500 }}>{errors.io}</p>}
       </div>

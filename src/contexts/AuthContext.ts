@@ -1,40 +1,45 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, Context } from "react"
 import { useAuth0 } from "@auth0/auth0-react"
 import { useRecoilState } from "recoil"
 import axios from "axios"
 
 import config from "../config"
-import { reloadProfileState, uiLangState, uiLitLangState, userIdState, RIDprefixState, demoAtom } from "../atoms/common"
-import * as ns from "../helpers/rdf/ns"
-import { demoUserId } from "../containers/DemoContainer"
+import { reloadProfileState, userIdState, RIDprefixState, demoAtom } from "../atoms/common"
+import { fetchTtl, atoms, ns, RDFResource, EntityGraph } from "rdf-document-editor"
+import * as rdf from "rdflib"
+import * as rde_config from "../helpers/config"
 
 const debug = require("debug")("bdrc:auth")
 
-export const AuthContext = React.createContext()
+type AuthContextType = {
+  idToken: string | null,
+}
+
+export const AuthContext = React.createContext({idToken: null})
 
 export function AuthContextWrapper({ children }) {
-  const { isAuthenticated, getIdTokenClaims, getAccessTokenSilently, user, logout, loading } = useAuth0()
-  const [idToken, setIdToken] = useState("")
+  const { isAuthenticated, getIdTokenClaims, getAccessTokenSilently, user, logout } = useAuth0()
+  const [idToken, setIdToken] = useState<string|null>(null)
   const [profile, setProfile] = useState(null)
   const [loadingState, setLoadingState] = useState({ status: "idle", error: null })
-  const [uiLang, setUiLang] = useRecoilState(uiLangState)
-  const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
+  const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
+  const [uiLitLang, setUiLitLang] = useRecoilState(atoms.uiLitLangState)
   const [userId, setUserId] = useRecoilState(userIdState)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
-  const [demo, setDemo] = useRecoilState(demoAtom)
 
   useEffect(() => {
     async function checkSession() {
       const idToken = await getIdTokenClaims()
-      setIdToken(idToken?.__raw)
-      localStorage.setItem("BLMPidToken", idToken?.__raw)
-      const cookie = await axios.get("https://iiif.bdrc.io/setcookie", {
-        headers: {
-          Authorization: `Bearer ${idToken?.__raw}`,
-        },
-      })
-      //debug("cookie", cookie)
+      if (idToken) {
+        setIdToken(idToken.__raw)
+        localStorage.setItem("BLMPidToken", idToken?.__raw)
+        const cookie = await axios.get("https://iiif.bdrc.io/setcookie", {
+          headers: {
+            Authorization: `Bearer ${idToken?.__raw}`,
+          },
+        })
+      }
     }
 
     const tryAuth = async () => {
@@ -43,7 +48,7 @@ export function AuthContextWrapper({ children }) {
         try {
           await getAccessTokenSilently()
         } catch (e) {
-          //debug("login error")
+          debug("login error:", e)
         }
     }
 
@@ -54,7 +59,7 @@ export function AuthContextWrapper({ children }) {
     //debug("reload?",isAuthenticated,reloadProfile,loadingState.status)
     if (!reloadProfile) return
 
-    if (isAuthenticated && idToken || demo) fetchProfile()
+    if (isAuthenticated && idToken) fetchProfile()
 
     //debug("uP:", user, demo)
 
@@ -67,17 +72,25 @@ export function AuthContextWrapper({ children }) {
     ) {
       logout({ returnTo: window.location.origin + "?notAdmin=true" })
     }
-  }, [idToken, isAuthenticated, user, reloadProfile, demo])
+  }, [idToken, isAuthenticated, user, reloadProfile])
 
   async function fetchProfile() {
     if (loadingState.status === "idle" || reloadProfile && loadingState.status === "fetched") {
       setLoadingState({ status: "fetching", error: null })
+      const headers = new Headers({
+        Authorization: `Bearer ${idToken}`,
+        Accept: "text/turtle"
+      })
+      const fetchProfile = fetchTtl(config.API_BASEURL+"me/focusgraph", false, headers)
+      const store_etag = await fetchProfile
+      const store = store_etag.store
+      const userNode = store.any(null, ns.rdfType, rde_config.userProfile) as rdf.NamedNode | null
+      if (userNode == null)
+        throw "cannot find user in profile"
+      setUserId(rde_config.prefixMap.qnameFromUri(userNode.uri))
+      const userRes = new RDFResource(userNode, new EntityGraph(store, userNode.uri, rde_config.prefixMap))
       let baseURL = config.API_BASEURL
-      let url = "me/focusgraph"
-      if (demo) {
-        baseURL = "/examples/"
-        url = "DemoUser.json"
-      }
+      let url =
       await axios
         .request({
           method: "get",
@@ -136,24 +149,8 @@ export function AuthContextWrapper({ children }) {
           setLoadingState({ status: "fetched", error: null })
         })
         .catch(function (error) {
-          debug("%O / retrying", error)
-          if (!demo) fetchProfile()
+          throw "error fetching user profile: "+error
         })
-      /*
-        .then(function (response) {
-          debug("Profile loaded", response.data)
-          setProfile(response.data)
-        })
-        .catch(function (error) {
-          // debug("%O", error)
-
-          if (error.response && error.response.data.output.payload.error === "Not Found") {
-            // this may be normal as no profile is created until 1st order
-            setLoadingState({ status: "error", error: "Customer not found" })
-          } else {
-            setLoadingState({ status: "error", error: "Unable to process" })
-          }
-        */
     }
   }
 

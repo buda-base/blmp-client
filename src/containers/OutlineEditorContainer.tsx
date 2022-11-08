@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
-import { Redirect } from "react-router-dom"
+import { redirect } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
-import { useHistory } from "react-router-dom"
+import { useLocation } from "react-router-dom"
 import { connect } from "react-redux"
 import { DndProvider } from "react-dnd"
 import Backend from "react-dnd-html5-backend"
@@ -66,7 +66,7 @@ function OutlineApp(props: any) {
 
   const { dispatch } = props
 
-  const already = {}
+  const already: Record<string,boolean> = {}
 
   //console.log("vol:",volume,props,manifest)
 
@@ -79,14 +79,12 @@ function OutlineApp(props: any) {
   // (see https://github.com/react-dnd/react-dnd/issues/894#issuecomment-386698852)
   window.__isReactDndBackendSetUp = false
 
-  const getOutline = async (rid) => {
+  const getOutline = async (rid: string) => {
     if (already[rid]) return
     already[rid] = true
-    let data = await axios.get(`${config.TEMPLATES_BASE}query/graph/Outline_root?&R_RES=${rid}&format=jsonld`)
-    if (data) {
-      if (data.data) data = data.data
-      if (data["@graph"]) data = data["@graph"]
-      else data = [data]
+    const resp = await axios.get(`${config.TEMPLATES_BASE}query/graph/Outline_root?&R_RES=${rid}&format=jsonld`)
+    if (resp) {
+      const data = resp.data["@graph"] ? resp.data["@graph"] : resp.data
       setOutlines({ ...outlines, [rid]: data })
     }
   }
@@ -319,7 +317,7 @@ function OutlineApp(props: any) {
           <CircularProgress />
         </div>
       )
-    else return <Redirect to={"/outline?instance=" + instance + "&volume=" + first} />
+    else return redirect("/outline?instance=" + instance + "&volume=" + first)
   }
 
   return (
@@ -388,15 +386,14 @@ const mapStateToProps = function (state: any) {
 const OutlineAppContainer = connect(mapStateToProps)(OutlineApp)
 
 function OutlineEditorContainer(props) {
-  const auth = useAuth0()
-  const routerHistory = useHistory()
+  const routerHistory = useLocation()
 
   return (
     <div>
       <div>
         <h1>Outline Editor</h1>
         <p>Work in progress</p>
-        <OutlineAppContainer {...props} auth={auth} history={routerHistory} />
+        <OutlineAppContainer {...props} history={routerHistory} />
       </div>
     </div>
   )

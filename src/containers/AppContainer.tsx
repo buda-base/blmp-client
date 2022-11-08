@@ -22,7 +22,6 @@ import config from "../config"
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import { NavBarContainer } from "../components/NavBar"
 import { EntityEditContainerMayUpdate, enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus, RDEConfig, BUDAResourceSelector } from "rdf-document-editor"
-import DemoContainer from "../containers/DemoContainer"
 import OutlineEditorContainer from "../containers/OutlineEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
 import ScanRequestContainer from "../containers/ScanRequestContainer"
@@ -41,7 +40,6 @@ import {
 } from "../helpers/lang"
 
 import { default as BVMT } from "../libs/bvmt/src/App"
-import { demoUserId } from "./DemoContainer"
 import { debug as debugfactory } from "debug"
 
 const debug = debugfactory("blmp:app")
@@ -288,14 +286,13 @@ function App(props: RouteProps) {
               <Route path="/" element={<HomeContainer/>} />
               <Route
                 path="/profile"
-                render={(rprops) => (
+                element={
                   <EntityEditContainer
-                    {...rprops}
                     entityQname={"tmp:user"}
                     shapeQname="bds:UserProfileShape"
                     config={config_rde}
                   />
-                )}
+                }
               />
               <Route path="/new" element={<NewEntityContainer config={config_rde} />} />
               <Route path="/new/:shapeQname" element={<EntityCreationContainer config={config_rde}/>} />
@@ -327,11 +324,9 @@ function App(props: RouteProps) {
               <Route path="/edit/:entityQname" element={<EntityShapeChooserContainer config={config_rde} />} />
               <Route
                 path="/bvmt/:volume"
-                render={(rprops) => (
-                  <BVMT {...rprops} auth={auth} history={routerHistory} volume={rprops.match.params.volume} />
-                )}
+                element={<BVMT auth={auth} history={location} />}
               />
-              <Route path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
+              <Route path="/bvmt" element={<BVMT auth={auth} history={location} />} />
               <Route path="/outline" element={<OutlineEditorContainer />} />
               <Route path="/withdraw" element={<WithdrawingEditorContainer />} />
               <Route path="/scanrequest" element={<ScanRequestContainer />} />
