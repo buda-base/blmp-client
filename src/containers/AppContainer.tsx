@@ -2,7 +2,10 @@ import React, { useEffect, useRef, useState } from "react"
 import {
   BrowserRouter as Router,
   Route,
+  useParams,
   Routes,
+  RouteProps,
+  useLocation,
   Link,
 } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
@@ -130,7 +133,7 @@ function HomeContainer() {
 let undoTimer = 0,
   undoEntity = "tmp:uri"
 
-function App(props: RDEProps) {
+function App(props: RouteProps) {
   const auth = useAuth0()
   const { isAuthenticated, isLoading } = auth
   const [undos, setUndos] = useRecoilState(atoms.uiUndosState)
@@ -146,6 +149,7 @@ function App(props: RDEProps) {
   const [userId, setUserId] = useRecoilState(userIdState)
   const [RIDPrefix, setRIDPrefix] = useRecoilState(RIDprefixState)
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
+  let location = useLocation()
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {
@@ -232,7 +236,7 @@ function App(props: RDEProps) {
   }, [disabled, entities, undos, profileId, uiTab])
 
   if (isLoading || !idToken) return <div>Loading...</div>
-  if (config.requireAuth && !isAuthenticated && props.location.pathname !== "/demo" && userId != demoUserId)
+  if (config.requireAuth && !isAuthenticated && location.pathname !== "/demo" && userId != demoUserId)
     return <AuthRequest />
 
   debug("App:", entities)
@@ -240,7 +244,7 @@ function App(props: RDEProps) {
   // check if latest version every 5 min
   const checkVersionInterval = 5 * 60 * 1000 // eslint-disable-line no-magic-numbers
 
-  const config: RDEConfig = {
+  const config_rde: RDEConfig = {
     generateSubnodes: rde_config.generateSubnodesFactory(idToken, RIDPrefix),
     valueByLangToStrPrefLang: ValueByLangToStrPrefLang,
     possibleLiteralLangs: langs,
@@ -271,15 +275,15 @@ function App(props: RDEProps) {
     <ClearCacheProvider duration={checkVersionInterval}>
       <div
         ref={appEl}
-        data-route={props.location.pathname}
+        data-route={location.pathname}
         className={
-          "App " + (props.location.pathname === "/" ? "home" : "")
+          "App " + (location.pathname === "/" ? "home" : "")
         }
       >
         <NavBarContainer />
         <main>
           <div>
-            {!props.location.pathname.startsWith("/bvmt") && <EntitySelectorContainer config={config} />}
+            {!location.pathname.startsWith("/bvmt") && <EntitySelectorContainer config={config_rde} />}
             <Routes>
               <Route path="/" element={<HomeContainer/>} />
               <Route
@@ -289,38 +293,38 @@ function App(props: RDEProps) {
                     {...rprops}
                     entityQname={"tmp:user"}
                     shapeQname="bds:UserProfileShape"
-                    config={config}
+                    config={config_rde}
                   />
                 )}
               />
-              <Route path="/new" element={<NewEntityContainer config={config} />} />
-              <Route path="/new/:shapeQname" element={<EntityCreationContainer config={config}/>} />
+              <Route path="/new" element={<NewEntityContainer config={config_rde} />} />
+              <Route path="/new/:shapeQname" element={<EntityCreationContainer config={config_rde}/>} />
               <Route // we need that route to link back value to property where entity was created
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index"
-                element={<EntityCreationContainer config={config} />}
+                element={<EntityCreationContainer config={config_rde} />}
               />
               <Route // this one as well
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
-                element={<EntityCreationContainer config={config} />}
+                element={<EntityCreationContainer config={config_rde} />}
               />
               <Route // same with entityQname
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index/named/:entityQname"
-                element={<EntityCreationContainer config={config} />}
+                element={<EntityCreationContainer config={config_rde} />}
               />
               <Route // same with entityQname
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
-                element={<EntityCreationContainer config={config} />}
+                element={<EntityCreationContainer config={config_rde} />}
               />
               <Route
                 path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index"
-                element={<EntityEditContainerMayUpdate config={config} />}
+                element={<EntityEditContainerMayUpdate config={config_rde} />}
               />
               <Route
                 path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname"
-                element={<EntityEditContainerMayUpdate config={config} />}
+                element={<EntityEditContainerMayUpdate config={config_rde} />}
               />
-              <Route path="/edit/:entityQname/:shapeQname" element={<EntityEditContainer config={config} />} />
-              <Route path="/edit/:entityQname" element={<EntityShapeChooserContainer config={config} />} />
+              <Route path="/edit/:entityQname/:shapeQname" element={<EntityEditContainer config={config_rde} />} />
+              <Route path="/edit/:entityQname" element={<EntityShapeChooserContainer config={config_rde} />} />
               <Route
                 path="/bvmt/:volume"
                 render={(rprops) => (
@@ -334,7 +338,7 @@ function App(props: RDEProps) {
             </Routes>
           </div>
         </main>
-        {!props.location.pathname.startsWith("/new") && <BottomBarContainer config={config} />}
+        {!location.pathname.startsWith("/new") && <BottomBarContainer config={config_rde} />}
       </div>
     </ClearCacheProvider>
   )
