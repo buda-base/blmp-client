@@ -5,6 +5,11 @@ export const sessionLoadedState = atom<boolean>({
   default: false,
 })
 
+export const reloadProfileState = atom<boolean>({
+  key: "reloadProfileState",
+  default: true,
+})
+
 export const profileIdState = atom<string>({
   key: "profileIdState",
   default: "",

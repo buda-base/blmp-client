@@ -13,18 +13,19 @@ const debug = require("debug")("bdrc:auth")
 
 type AuthContextType = {
   idToken: string | null,
+  userUri: string | null
 }
 
-export const AuthContext = React.createContext({idToken: null})
+export const AuthContext = React.createContext<AuthContextType>({idToken: null, userUri: null})
 
-export function AuthContextWrapper({ children }) {
+export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) => {
   const { isAuthenticated, getIdTokenClaims, getAccessTokenSilently, user, logout } = useAuth0()
   const [idToken, setIdToken] = useState<string|null>(null)
   const [profile, setProfile] = useState(null)
   const [loadingState, setLoadingState] = useState({ status: "idle", error: null })
   const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(atoms.uiLitLangState)
-  const [userId, setUserId] = useRecoilState(userIdState)
+  const [userUri, setUserUri] = useRecoilState(userIdState)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
@@ -87,78 +88,28 @@ export function AuthContextWrapper({ children }) {
       const userNode = store.any(null, ns.rdfType, rde_config.userProfile) as rdf.NamedNode | null
       if (userNode == null)
         throw "cannot find user in profile"
-      setUserId(rde_config.prefixMap.qnameFromUri(userNode.uri))
+      setUserUri(userNode.uri)
+      localStorage.setItem("blmp_user_uri", userNode.uri)
       const userRes = new RDFResource(userNode, new EntityGraph(store, userNode.uri, rde_config.prefixMap))
-      let baseURL = config.API_BASEURL
-      let url =
-      await axios
-        .request({
-          method: "get",
-          timeout: 4000,
-          baseURL,
-          url,
-          headers: {
-            ...!demo ? { Authorization: `Bearer ${idToken}` } : {},
-            Accept: "application/json", //"text/turtle",
-          },
+      const uiLang = store.any(userNode, rde_config.preferredUiLang, null) as rdf.Literal | null
+      setUiLang(uiLang ? uiLang.value : "en"))
+      const ridPrefix = store.any(userNode, rde_config.localNameDefaultPrefix, null) as rdf.Literal | null
+      setRIDprefix(ridPrefix ? ridPrefix.value : ""))
+      const uiLitLangs = userRes.getPropLitValuesFromList(rde_config.preferredUiLiteralLangs)
+      if (uiLitLangs) {
+        const uiLitLangsStr = uiLitLangs.map((lit: rdf.Literal): string => {
+          return lit.value
         })
-        .then(function (response) {
-          let id = Object.keys(response.data),
-            uiL,
-            uiLitL,
-            prefix
-          const idx = id.findIndex((k) => k.includes("/user/U"))
-          if (id.length) {
-            //debug("Profile loaded", response.data, id, idx, id[idx])
-            uiL = response.data[id[idx]][ns.BDOU("preferredUiLang").value]
-            //if (uiL?.length) uiL = uiL[0].value
-            if (uiL?.length) setUiLang(uiL.map((u) => u.value))
-
-            uiLitL = response.data[id[idx]][ns.BDOU("preferredUiLiteralLangs").value]
-            //if (uiLitL?.length) uiLitL = uiLitL[0].value
-            if (uiLitL?.length) {
-              let head = uiLitL[0].value
-              const list = [],
-                first = ns.RDF("first").value,
-                rest = ns.RDF("first").value,
-                nil = ns.RDF("nil").value
-              do {
-                if (head && response.data[head]) {
-                  if (response.data[head][first]?.length) {
-                    list.push(response.data[head][first][0].value)
-                  }
-                  if (response.data[head][rest]?.length && response.data[head][rest][0].value !== nil) {
-                    head = response.data[head][rest][0].value
-                  }
-                } else head = null
-              } while (head)
-              //debug("list:",list)
-              if (list.length) setUiLitLang(list)
-            }
-
-            prefix = response.data[id[idx]][ns.BDOU("localNameDefaultPrefix").value]
-            //debug("RIDp:",prefix,response.data[id[idx]],ns.BDOU("localNameDefaultPrefix").value)
-            if (prefix?.length && prefix[0].value) setRIDprefix(prefix[0].value)
-            else setRIDprefix("")
-
-            id = ns.qnameFromUri(id[idx])
-            if (id) setUserId(id)
-          }
-          debug("Profile loaded", response.data, id, uiL)
-          setReloadProfile(false)
-          setLoadingState({ status: "fetched", error: null })
-        })
-        .catch(function (error) {
-          throw "error fetching user profile: "+error
-        })
+        setUiLitLang(uiLitLangsStr)
+      }
+      setReloadProfile(false)
+      setLoadingState({ status: "fetched", error: null })
     }
   }
 
   const defaultContext = {
-    profile,
-    idToken,
-    setProfile,
-    fetchProfile,
+    userUri,
+    idToken
   }
 
   return <AuthContext.Provider value={defaultContext}>{children}</AuthContext.Provider>
