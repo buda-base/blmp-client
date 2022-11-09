@@ -68,7 +68,7 @@ export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) =
       user &&
       user["https://auth.bdrc.io/groups"] &&
       (groups = user["https://auth.bdrc.io/groups"]) &&
-      !groups.some((g) => ["editors", "contributors"].includes(g))
+      !groups.some((g: string) => ["editors", "contributors"].includes(g))
     ) {
       logout({ returnTo: window.location.origin + "?notAdmin=true" })
     }

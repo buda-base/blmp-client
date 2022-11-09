@@ -12,7 +12,7 @@ import { EntityCreator } from "../helpers/EntityCreator"
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
 import { useRecoilState } from "recoil"
-import ShuffleIcon from "@material-ui/icons/Shuffle"
+import { Shuffle as ShuffleIcon  } from '@mui/icons-material'
 import { ClearCacheProvider } from "react-clear-cache"
 
 import config from "../config"
@@ -117,6 +117,7 @@ function App(props: RouteProps) {
   const [RIDPrefix, setRIDPrefix] = useRecoilState(RIDprefixState)
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
   const location = useLocation()
+  let undoEntity: string | null = null
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {

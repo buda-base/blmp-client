@@ -15,12 +15,12 @@ import { useClearCache } from "react-clear-cache"
 import {
   userIdState,
 } from "../../atoms/common"
-import { atoms, RDEProps } from "rdf-document-editor"
+import { atoms } from "rdf-document-editor"
 import { debug as debugfactory } from "debug"
 
 const debug = debugfactory("bdrc:NavBar")
 
-export const NavBarContainer = (props: RDEProps) => {
+export const NavBarContainer = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
   const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
   const [entities] = useRecoilState(atoms.entitiesAtom)

@@ -73,7 +73,7 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
       } catch (e) {
         debug(e)
         // TODO: handle 422?
-        if (!unmounting.val) setEntityLoadingState({ status: "error", error: e })
+        if (!unmounting.val) setEntityLoadingState({ status: "error", error: e as string })
         return
       }
       const uri = namespace + lname
@@ -98,7 +98,7 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
       if (!unmounting.val) setEntityLoadingState({ status: "created", error: undefined })
 
       // save to localStorage
-      rde_config.setUserLocalEntity(userId, newSubject.qname, shape.qname, "", false, null, true)
+      rde_config.setUserLocalEntityFactory(userId)(newSubject.qname, shape.qname, "", false, null, true)
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }
