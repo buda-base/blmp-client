@@ -10,8 +10,7 @@ import {
   EntityGraph,
   ExtRDFResourceWithLabel,
   Entity,
-  ns,
-  HttpError
+  ns
 } from "rdf-document-editor"
 import i18n from "i18next"
 import "./jsewts.d.ts"
@@ -24,6 +23,16 @@ import { debug as debugFactory } from "debug"
 import fetchToCurl from "fetch-to-curl"
 
 const debug = debugFactory("rde:entity:container:demo")
+
+class HttpError extends Error {
+
+  public status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.status = status
+  }
+}
 
 const NANOID_LENGTH = 8
 const nanoidCustom = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", NANOID_LENGTH)

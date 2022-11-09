@@ -87,6 +87,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.186",
     "@types/node": "^16.11.66",
+    "@types/ramda": "^0.28.19",
     "@types/react": "^18.0.23",
     "@types/react-dom": "^18.0.7",
     "@types/react-router": "^5.1.19",

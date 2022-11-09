@@ -2993,6 +2993,13 @@
   dependencies:
     ts-toolbelt "^6.15.1"
 
+"@types/ramda@^0.28.19":
+  version "0.28.19"
+  resolved "https://registry.yarnpkg.com/@types/ramda/-/ramda-0.28.19.tgz#255921a62ab137d4e5d78652fea505da5a0d21bb"
+  integrity sha512-RCrYC/dg8K67QtIOACIpSriN1BdcC8a3mV4wLTUVafaY00MKBjuOSI+8fHRV92embUsZ67bZlzmgtO5wBsxcmg==
+  dependencies:
+    ts-toolbelt "^6.15.1"
+
 "@types/range-parser@*":
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.4.tgz#cd667bcfdd025213aafb7ca5915a932590acdcdc"
@@ -15069,7 +15076,7 @@ rdf-canonize@^3.0.0:
 
 "rdf-document-editor@https://github.com/buda-base/rdf-document-editor":
   version "0.1.0"
-  resolved "https://github.com/buda-base/rdf-document-editor#12a769017d888f571c7936972880994b5eac1c64"
+  resolved "https://github.com/buda-base/rdf-document-editor#a871985fcb42da768616491094d59ca9899dd34b"
   dependencies:
     "@emotion/react" "^11.10.5"
     "@emotion/styled" "^11.10.5"
