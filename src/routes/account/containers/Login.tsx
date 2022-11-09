@@ -1,22 +1,21 @@
 /* eslint-disable no-magic-numbers */
 import React, { useEffect, useState } from "react"
 import { useAuth0 } from "@auth0/auth0-react"
-import queryString from "query-string"
+import { useParams } from "react-router-dom"
 import i18n from "i18next"
 
 import config from "../../../config"
 
-function LoginContainer(props) {
+function LoginContainer() {
   const [redirect, setRedirect] = useState("/")
   const { loginWithRedirect } = useAuth0()
+  const params = useParams()
 
   useEffect(() => {
-    const params = queryString.parse(props.location.search)
-
     if (params.redirect) {
       setRedirect(params.redirect === "" || params.redirect === null ? "/" : params.redirect)
     }
-  }, [props])
+  }, [params])
 
   useEffect(() => {
     loginWithRedirect({
@@ -28,7 +27,7 @@ function LoginContainer(props) {
   return (
     <div id="login-container">
       <p>
-        <span className="btn btn-light">{i18n.t("types.redirect")}</span>
+        <span className="btn btn-light"><>{i18n.t("types.redirect")}</></span>
       </p>
     </div>
   )

@@ -1,6 +1,6 @@
 import React from "react"
 
-export function formErrorAlert(e) {
+export function formErrorAlert(e: string | React.ReactNode) {
   return (
     <div
       className="alert alert-danger alert-dismissible fade show"

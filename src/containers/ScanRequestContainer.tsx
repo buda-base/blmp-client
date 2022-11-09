@@ -3,13 +3,11 @@ import { TextField, Button, CircularProgress, Checkbox, FormGroup, FormControlLa
 import { useRecoilState } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import axios from "axios"
-
-import * as ns from "../helpers/rdf/ns"
 import { RIDprefixState } from "../atoms/common"
-import { entitiesAtom } from "./EntitySelectorContainer"
 import config from "../config"
+import { debug as debugfactory } from "debug"
 
-const debug = require("debug")("bdrc:NavBar")
+const debug = debugfactory("bdrc:ScanRequestContainer")
 
 type ErrorInfo = {
   error: boolean

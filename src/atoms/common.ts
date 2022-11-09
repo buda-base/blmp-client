@@ -10,14 +10,14 @@ export const reloadProfileState = atom<boolean>({
   default: true,
 })
 
-export const profileIdState = atom<string>({
+export const profileIdState = atom<string|null>({
   key: "profileIdState",
-  default: "",
+  default: null,
 })
 
-export const userIdState = atom<string>({
+export const userIdState = atom<string|null>({
   key: "userIdState",
-  default: "",
+  default: null,
 })
 
 export const RIDprefixState = atom<string|null>({

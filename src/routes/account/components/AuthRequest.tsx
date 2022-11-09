@@ -1,12 +1,13 @@
 import React from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation, useParams } from "react-router-dom"
 import qs from "query-string"
 
 const debug = require("debug")("bdrc:auth:request")
 
-export function AuthRequest(props) {
-  const urlParams = qs.parse(window.location.search)
-  const notAdmin = urlParams.notAdmin === "true"
+export function AuthRequest() {
+  const location = useLocation()
+  const params = useParams()
+  const notAdmin = params["notAdmin"] === "true"
   //debug("urlP:",urlParams)
 
   return (
@@ -24,7 +25,7 @@ export function AuthRequest(props) {
               <Link
                 style={{ width: 130 }}
                 className="btn btn-danger px-4"
-                to={"/login?redirect=" + encodeURIComponent(window.location.pathname + window.location.search)}
+                to={"/login?redirect=" + encodeURIComponent(location.pathname)}
               >
                 Login
               </Link>

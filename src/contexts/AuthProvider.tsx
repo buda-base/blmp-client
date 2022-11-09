@@ -1,15 +1,18 @@
 import React from "react"
-import { useHistory } from "react-router-dom"
-import { Auth0Provider } from "@auth0/auth0-react"
+import { useNavigate } from "react-router-dom"
+import { Auth0Provider, AppState } from "@auth0/auth0-react"
 
-const Auth0ProviderWithHistory = ({ children }) => {
+const Auth0ProviderWithHistory = ({ children }: {children : React.ReactNode}) => {
   const domain = process.env.REACT_APP_AUTH0_DOMAIN
   const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID
 
-  const history = useHistory()
+  if (!domain || !clientId)
+    throw new Error("couldn't find auth0 configuration")
 
-  const onRedirectCallback = (appState) => {
-    history.push(appState?.returnTo || window.location.pathname)
+  const navigate = useNavigate()
+
+  const onRedirectCallback = (appState?: AppState) => {
+    navigate(appState?.returnTo || window.location.pathname)
   }
 
   return (

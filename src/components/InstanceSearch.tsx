@@ -1,18 +1,21 @@
-import TextField from "@material-ui/core/TextField"
-import Button from "@material-ui/core/Button"
 import React from "react"
+import { TextField, Button, CircularProgress } from "@mui/material"
 import { useTranslation } from "react-i18next"
-import CircularProgress from "@material-ui/core/CircularProgress"
 import MuiAlert from "@material-ui/lab/Alert"
-import { isNil } from "ramda"
 import { useAuth0 } from "@auth0/auth0-react"
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom"
 
-const InstanceSearch = (props: { isFetching: any; forVolume?: any; fetchErr: any }) => {
+const InstanceSearch = (props: { isFetching: any; forVolume: string | null; fetchErr: string | null }) => {
   const { t } = useTranslation()
   const [volume, setVolume] = React.useState("")
-  const { loading } = useAuth0()
+  const { isLoading } = useAuth0()
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  return props.isFetching || loading ? (
+  return props.isFetching || isLoading ? (
     <CircularProgress />
   ) : (
     <div className="container mx-auto flex items-center justify-center flex-wrap" style={{ paddingTop: 60 }}>
@@ -38,14 +41,14 @@ const InstanceSearch = (props: { isFetching: any; forVolume?: any; fetchErr: any
           color="primary"
           style={{ marginLeft: "1em" }}
           onClick={() => {
-            if (props.history?.location.pathname.startsWith("/bvmt"))
-              props.history.push({ pathname: "/bvmt/" + volume })
+            if (location.pathname.startsWith("/bvmt"))
+              navigate({ pathname: "/bvmt/" + volume })
             else window.location.search = `?instance=${volume}`
           }}
         >
           {t("submit")}
         </Button>
-        {!isNil(props.fetchErr) && (
+        {props.fetchErr && (
           <MuiAlert style={{ marginTop: "2em" }} severity="error">
             {t("submitErrorMsg")}
           </MuiAlert>

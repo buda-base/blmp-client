@@ -22,7 +22,6 @@ import config from "../config"
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import { NavBarContainer } from "../components/NavBar"
 import { EntityEditContainerMayUpdate, enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus, RDEConfig, BUDAResourceSelector } from "rdf-document-editor"
-import OutlineEditorContainer from "../containers/OutlineEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
 import ScanRequestContainer from "../containers/ScanRequestContainer"
 import Home from "../routes/home"
@@ -72,60 +71,39 @@ function HomeContainer() {
 
   const [userId, setUserId] = useRecoilState(userIdState)
 
-  if (userId === demoUserId)
-    return (
-      <><div className="centered-ctn">
-        <div>
-          <h1>Welcome to RDF document editor demo!</h1>
-          <span><>{i18n.t("home.title")}</></span>
-          <p>
-            You can click the <em>New / Load</em> button on the left, or the link to an example entity below.
-          </p>
-          {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
-          <p className="menu">
-            <Link className="menu-link" to="/edit/bdr:P1583">
-              <img src="/icons/person.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
-              Open example entity
-            </Link>
-          </p>
-        </div>
-      </div></>
-    )
-  else
-    return (
-      <><div className="centered-ctn">
-        <div>
-          <h1>Welcome!</h1>
-          <span><>{i18n.t("home.title")}</></span>
-          <p>
-            To start the editor, you must first set up the RID prefix in your user profile (ex: <em>3KG</em>), and then
-            click on the <em>New / Load</em> button.
-          </p>
-          {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
-          <p className="menu">
-            <Link className="menu-link" to="/scanrequest">
-              <img src="/icons/images.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
-              Scan Request
-            </Link>
-            <Link className="menu-link iiif" to="/bvmt">
-              <img src="/icons/iiif.png" />
-              BUDA Volume Manifest Tool
-            </Link>
-            <Link className="menu-link" to="/outline">
-              <img src="/icons/outline.svg" width="64" />
-              Outline Editor
-            </Link>
-            <Link className="menu-link" to="/withdraw">
-              <span style={{ width: "44px", marginRight: "15px", display: "inline-flex", justifyContent: "center" }}>
-                <ShuffleIcon style={{ fontSize: "44px", color: "black" }} />
-              </span>
-              Withdrawing Editor
-            </Link>
-          </p>
-        </div>
-      </div></>
-    )
-  //}
+  return (
+    <><div className="centered-ctn">
+      <div>
+        <h1>Welcome!</h1>
+        <span><>{i18n.t("home.title")}</></span>
+        <p>
+          To start the editor, you must first set up the RID prefix in your user profile (ex: <em>3KG</em>), and then
+          click on the <em>New / Load</em> button.
+        </p>
+        {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
+        <p className="menu">
+          <Link className="menu-link" to="/scanrequest">
+            <img src="/icons/images.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
+            Scan Request
+          </Link>
+          <Link className="menu-link iiif" to="/bvmt">
+            <img src="/icons/iiif.png" />
+            BUDA Volume Manifest Tool
+          </Link>
+          <Link className="menu-link" to="/outline">
+            <img src="/icons/outline.svg" width="64" />
+            Outline Editor
+          </Link>
+          <Link className="menu-link" to="/withdraw">
+            <span style={{ width: "44px", marginRight: "15px", display: "inline-flex", justifyContent: "center" }}>
+              <ShuffleIcon style={{ fontSize: "44px", color: "black" }} />
+            </span>
+            Withdrawing Editor
+          </Link>
+        </p>
+      </div>
+    </div></>
+  )
 }
 
 let undoTimer = 0,
@@ -139,7 +117,6 @@ function App(props: RouteProps) {
   const [uiTab, setTab] = useRecoilState(atoms.uiTabState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
-  const [profileId, setProfileId] = useRecoilState(profileIdState)
   const undo = undos[entityUri]
   const setUndo = (s: atoms.undoPN) => setUndos({ ...undos, [entityUri]: s })
   const [disabled, setDisabled] = useRecoilState(atoms.uiDisabledTabsState)
@@ -170,7 +147,7 @@ function App(props: RouteProps) {
     clearInterval(undoTimer)
     const delay = 150
     undoTimer = window.setInterval(() => {
-      //debug("timer", undoTimer, entity, entityUri, profileId, history[entityUri], history)
+      //debug("timer", undoTimer, entity, entityUri, history[entityUri], history)
       if (!history[entityUri]) return
       const { top, first, current }:HistoryStatus = getHistoryStatus(entityUri)
       //debug("disable:",disabled,first)
@@ -231,10 +208,10 @@ function App(props: RouteProps) {
     return () => {
       clearInterval(undoTimer)
     }
-  }, [disabled, entities, undos, profileId, uiTab])
+  }, [disabled, entities, undos, uiTab])
 
   if (isLoading || !idToken) return <div>Loading...</div>
-  if (config.requireAuth && !isAuthenticated && location.pathname !== "/demo" && userId != demoUserId)
+  if (config.requireAuth && !isAuthenticated)
     return <AuthRequest />
 
   debug("App:", entities)
@@ -327,7 +304,6 @@ function App(props: RouteProps) {
                 element={<BVMT auth={auth} history={location} />}
               />
               <Route path="/bvmt" element={<BVMT auth={auth} history={location} />} />
-              <Route path="/outline" element={<OutlineEditorContainer />} />
               <Route path="/withdraw" element={<WithdrawingEditorContainer />} />
               <Route path="/scanrequest" element={<ScanRequestContainer />} />
             </Routes>
