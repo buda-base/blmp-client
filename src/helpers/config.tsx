@@ -1,19 +1,15 @@
-import React, { useState, useEffect } from "react"
+import React from "react"
 import * as rdf from "rdflib"
 import config from "../config"
 import {
   NodeShape,
-  RDEConfig,
   LocalEntityInfo,
   fetchTtl,
-  IFetchState,
   RDFResource,
   Subject,
   EntityGraph,
   ExtRDFResourceWithLabel,
   Entity,
-  BUDAResourceSelector,
-  ValueByLangToStrPrefLang,
   ns,
   HttpError
 } from "rdf-document-editor"
@@ -153,7 +149,7 @@ export const reserveLname = async (
     },
   })
   // eslint-disable-next-line no-magic-numbers
-  if (response.status == 422) throw "422"
+  if (response.status == 422) throw new HttpError("422 error while reserving lname", 422)
   const body = await response.text()
   return body
 }
@@ -251,7 +247,7 @@ const typeToURIPrefix = (type: RDFResource): string | null => {
 
 export const entityToType = (entity: rdf.NamedNode): rdf.NamedNode | null => {
   const lname = prefixMap.lnameFromUri(entity.uri)
-  let entityPrefix = getEntityPrefix(lname)
+  const entityPrefix = getEntityPrefix(lname)
   if (!(entityPrefix in entityPrefixToType))
     return null
   return entityPrefixToType[entityPrefix]
@@ -308,7 +304,7 @@ export const getShapesDocument = async (entity: rdf.NamedNode): Promise<NodeShap
     throw new Error("cannot find fetch url for shape "+shaperef.uri)
   // this should be cached
   const loadRes = fetchTtl(shapeUriToFetchUri[shaperef.uri])
-  const { store, etag } = await loadRes
+  const { store } = await loadRes
   const shape = new NodeShape(shaperef.node, new EntityGraph(store, shaperef.uri, prefixMap))
   return shape
 }
@@ -323,7 +319,7 @@ export const getDocumentGraphFactory = (idToken: string) => async (entity: rdf.N
   const loadRes = fetchTtl(uri, true, headers)
   const { store, etag } = await loadRes
   const subject = new Subject(entity, new EntityGraph(store, entity.uri, prefixMap))
-  return {subject, etag}
+  return { subject, etag }
 }
 
 export const getConnexGraph = async (entity: rdf.NamedNode): Promise<rdf.Store> => {
@@ -338,7 +334,12 @@ const defaultRef = rdf.sym(rdf.Store.defaultGraphURI)
 
 export let latestcurl = ""
 
-export const putDocumentFactory = (idToken: string) => async (entity: rdf.NamedNode, document: rdf.Store, etag: string | null, message: string | undefined): Promise<string> => {
+export const putDocumentFactory = (idToken: string) => async (
+    entity: rdf.NamedNode,
+    document: rdf.Store,
+    etag: string | null,
+    message: string | undefined
+  ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
     rdf.serialize(defaultRef, document, undefined, "text/turtle", async function (err, str) {
@@ -401,10 +402,15 @@ export const putDocumentFactory = (idToken: string) => async (entity: rdf.NamedN
       resolve(newetag)
 
       try {
-        let clear = await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+        const ccach_ldspdi = fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
         if (url.match(/[/]bdr:((MW)|(W[^A]))[^/]+[/]focusgraph$/)) {
-          clear = await fetch("http://iiif.bdrc.io/cache/clear", { method: "POST" })
-          clear = await fetch("http://iiifpres.bdrc.io/clearcache", { method: "POST" })
+          const ccache_iiif = fetch("http://iiif.bdrc.io/cache/clear", { method: "POST" })
+          const ccache_iiifpres = fetch("http://iiifpres.bdrc.io/clearcache", { method: "POST" })
+          await ccach_ldspdi
+          await ccache_iiifpres
+          await ccache_iiif
+        } else {
+          await ccach_ldspdi
         }
       } catch (e) {
         debug("error when cleaning cache:", e)
@@ -434,12 +440,12 @@ export const iconFromEntity = (entity: Entity | null): string => {
   return icon as string
 }
 
-export const getUserMenuStateFactory = (userId: string) => async (): Promise<Record<string, Entity>> => {
+export const getUserMenuStateFactory = (userId: string | null) => async (): Promise<Record<string, Entity>> => {
   const datastr = localStorage.getItem("rde_menu_state_"+userId)
   return datastr ? await JSON.parse(datastr) : {}
 }
 
-export const setUserMenuStateFactory = (userId: string) => async (
+export const setUserMenuStateFactory = (userId: string | null) => async (
   subjectQname: string,
   shapeQname: string | null,
   labels: string | undefined,
@@ -454,12 +460,12 @@ export const setUserMenuStateFactory = (userId: string) => async (
   localStorage.setItem("rde_menu_state_"+userId, dataNewStr)
 }
 
-export const getUserLocalEntitiesFactory = (userId: string) => async (): Promise<Record<string, LocalEntityInfo>> => {
+export const getUserLocalEntitiesFactory = (userId: string | null) => async (): Promise<Record<string, LocalEntityInfo>> => {
   const datastr = localStorage.getItem("rde_entities_"+userId)
   return datastr ? await JSON.parse(datastr) : {}
 }
 
-export const setUserLocalEntityFactory = (userId: string) => async (
+export const setUserLocalEntityFactory = (userId: string | null) => async (
   subjectQname: string,
   shapeQname: string | null,
   ttl: string | undefined,
@@ -475,7 +481,6 @@ export const setUserLocalEntityFactory = (userId: string) => async (
   localStorage.setItem("rde_entities_"+userId, dataNewStr)
 }
 
-const EDTF_DT_uri = "http://id.loc.gov/datatypes/edtf/EDTF"
 const EDTF_DT = rdf.sym("http://id.loc.gov/datatypes/edtf/EDTF")
 
 export const humanizeEDTF = (obj: Record<string, any>, str = "", locale = "en-US", dbg = false): string => {
@@ -525,9 +530,7 @@ export const humanizeEDTF = (obj: Record<string, any>, str = "", locale = "en-US
   }
 }
 
-const locales: Record<string, string> = { en: "en-US", "zh-hans": "zh-Hans-CN", bo: "bo-CN" }
-
-export const previewLiteral = (lit: rdf.Literal, uiLangs: string[]) => {
+export const previewLiteral = (lit: rdf.Literal, uiLang: string) => {
   if (lit.datatype.value == EDTF_DT.value) {
     try {
       const obj = parse(lit.value)
@@ -535,7 +538,7 @@ export const previewLiteral = (lit: rdf.Literal, uiLangs: string[]) => {
       const edtfMin = edtf(edtfObj.min)?.values[0]
       const edtfMax = edtf(edtfObj.max)?.values[0]
       if (edtfMin <= -4000 || edtfMax >= 2100) throw Error(i18n.t("error.year", { min: -4000, max: 2100 })) // eslint-disable-line no-magic-numbers
-      return { value: humanizeEDTF(obj, lit.value, uiLangs[0]), error: null }
+      return { value: humanizeEDTF(obj, lit.value, uiLang), error: null }
     } catch (e: any) {
       return {
         value: null,

@@ -1,10 +1,10 @@
-import React, { useEffect, useState, Context } from "react"
+import React, { useEffect, useState } from "react"
 import { useAuth0 } from "@auth0/auth0-react"
 import { useRecoilState } from "recoil"
 import axios from "axios"
 
 import config from "../config"
-import { reloadProfileState, userIdState, RIDprefixState, demoAtom } from "../atoms/common"
+import { reloadProfileState, userIdState, RIDprefixState } from "../atoms/common"
 import { fetchTtl, atoms, ns, RDFResource, EntityGraph } from "rdf-document-editor"
 import * as rdf from "rdflib"
 import * as rde_config from "../helpers/config"
@@ -16,12 +16,11 @@ type AuthContextType = {
   userUri: string | null
 }
 
-export const AuthContext = React.createContext<AuthContextType>({idToken: null, userUri: null})
+export const AuthContext = React.createContext<AuthContextType>({ idToken: null, userUri: null })
 
 export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) => {
   const { isAuthenticated, getIdTokenClaims, getAccessTokenSilently, user, logout } = useAuth0()
   const [idToken, setIdToken] = useState<string|null>(null)
-  const [profile, setProfile] = useState(null)
   const [loadingState, setLoadingState] = useState({ status: "idle", error: null })
   const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(atoms.uiLitLangState)
@@ -35,7 +34,7 @@ export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) =
       if (idToken) {
         setIdToken(idToken.__raw)
         localStorage.setItem("BLMPidToken", idToken?.__raw)
-        const cookie = await axios.get("https://iiif.bdrc.io/setcookie", {
+        await axios.get("https://iiif.bdrc.io/setcookie", {
           headers: {
             Authorization: `Bearer ${idToken?.__raw}`,
           },
@@ -92,9 +91,9 @@ export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) =
       localStorage.setItem("blmp_user_uri", userNode.uri)
       const userRes = new RDFResource(userNode, new EntityGraph(store, userNode.uri, rde_config.prefixMap))
       const uiLang = store.any(userNode, rde_config.preferredUiLang, null) as rdf.Literal | null
-      setUiLang(uiLang ? uiLang.value : "en"))
+      setUiLang(uiLang ? uiLang.value : "en")
       const ridPrefix = store.any(userNode, rde_config.localNameDefaultPrefix, null) as rdf.Literal | null
-      setRIDprefix(ridPrefix ? ridPrefix.value : ""))
+      setRIDprefix(ridPrefix ? ridPrefix.value : "")
       const uiLitLangs = userRes.getPropLitValuesFromList(rde_config.preferredUiLiteralLangs)
       if (uiLitLangs) {
         const uiLitLangsStr = uiLitLangs.map((lit: rdf.Literal): string => {

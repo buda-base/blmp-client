@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import {
-  BrowserRouter as Router,
   Route,
-  useParams,
   Routes,
   RouteProps,
   useLocation,
@@ -12,7 +10,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import * as rde_config from "../helpers/config"
 import { EntityCreator } from "../helpers/EntityCreator"
 import i18n from "i18next"
-import { useTranslation, initReactI18next } from "react-i18next"
+import { initReactI18next } from "react-i18next"
 import { useRecoilState } from "recoil"
 import ShuffleIcon from "@material-ui/icons/Shuffle"
 import { ClearCacheProvider } from "react-clear-cache"
@@ -21,15 +19,12 @@ import config from "../config"
 
 import { AuthRequest } from "../routes/account/components/AuthRequest"
 import { NavBarContainer } from "../components/NavBar"
-import { EntityEditContainerMayUpdate, enTranslations, atoms, RDEProps, getHistoryStatus, history, IdTypeParams, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus, RDEConfig, BUDAResourceSelector } from "rdf-document-editor"
+import { EntityEditContainerMayUpdate, enTranslations, atoms, getHistoryStatus, history, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus, RDEConfig, BUDAResourceSelector } from "rdf-document-editor"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
 import ScanRequestContainer from "../containers/ScanRequestContainer"
-import Home from "../routes/home"
 import {
-  profileIdState,
   userIdState,
   RIDprefixState,
-  demoAtom,
 } from "../atoms/common"
 
 import {
@@ -69,8 +64,6 @@ i18n
 
 function HomeContainer() {
 
-  const [userId, setUserId] = useRecoilState(userIdState)
-
   return (
     <><div className="centered-ctn">
       <div>
@@ -106,8 +99,7 @@ function HomeContainer() {
   )
 }
 
-let undoTimer = 0,
-  undoEntity = "tmp:uri"
+let undoTimer = 0
 
 function App(props: RouteProps) {
   const auth = useAuth0()
@@ -124,7 +116,7 @@ function App(props: RouteProps) {
   const [userId, setUserId] = useRecoilState(userIdState)
   const [RIDPrefix, setRIDPrefix] = useRecoilState(RIDprefixState)
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
-  let location = useLocation()
+  const location = useLocation()
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {
@@ -162,7 +154,6 @@ function App(props: RouteProps) {
       } else {
         if (first !== -1) {
           if (current < 0 && first < top) {
-            const histo = history[entityUri][top]
             if (history[entityUri][top][entityUri]) {
               // we can undo a modification of simple property value
               const prop = Object.keys(history[entityUri][top][entityUri])

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react"
+import React, { useEffect, useState, useCallback } from "react"
 import { TextField, Button, CircularProgress, Checkbox, FormGroup, FormControlLabel } from "@material-ui/core"
 import { useRecoilState } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
@@ -24,7 +24,6 @@ function ScanRequestContainer() {
   const [RIDfrom, setRIDfrom] = useState<string|null>(null)
   const [errors, setErrors] = useState<Errors>({ })
   const [spinner, setSpinner] = useState(false)
-  const [message, setMessage] = useState(false)
   const [onlyNSync, setOnlyNSync] = useState(false)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
@@ -41,8 +40,8 @@ function ScanRequestContainer() {
   }, [isAuthenticated])
 
   const checkFormat = (str: string) => {
-    if (!str || str.match(/^([w])(\d|eap)[^ ]*$/i)) setErrors({ ...errors, io: {error: false}, from: {error: false} })
-    else setErrors({ ...errors, io: {error: false}, from: { error: true, helperText: <i>Check RID format</i> } })
+    if (!str || str.match(/^([w])(\d|eap)[^ ]*$/i)) setErrors({ ...errors, io: { error: false }, from: { error: false } })
+    else setErrors({ ...errors, io: { error: false }, from: { error: true, helperText: <i>Check RID format</i> } })
   }
 
   const disabled = !RIDfrom || errors["from"]?.error || errors.io
@@ -88,11 +87,11 @@ function ScanRequestContainer() {
           link.click()
           window.URL.revokeObjectURL(temp)
 
-          setErrors({ ...errors, io: {error: false} })
+          setErrors({ ...errors, io: { error: false } })
         })
         .catch(function (error) {
           debug("error:", error.message)
-          setErrors({ ...errors, io: {error: true, helperText: <i>error.message</i> })
+          setErrors({ ...errors, io: { error: true, helperText: <i>error.message</i> } })
           setSpinner(false)
         })
 

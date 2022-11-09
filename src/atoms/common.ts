@@ -1,4 +1,4 @@
-import { atom, atomFamily, selectorFamily } from "recoil"
+import { atom } from "recoil"
 
 export const sessionLoadedState = atom<boolean>({
   key: "sessionLoadedState",

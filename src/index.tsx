@@ -21,14 +21,13 @@ const target = document.querySelector("#root")
 let ctrlDown = false
 const ctrl1 = 17,
   ctrl2 = 91,
-  ctrlKey = [ctrl1, ctrl2],
   yKey = 89,
   zKey = 90
 
 document.onkeydown = (e: KeyboardEvent) => {
   ctrlDown = e.metaKey || e.ctrlKey
   //debug("kD", e)
-  if (ctrlDown && e.keyCode == zKey || ctrlDown && e.keyCode == yKey) {
+  if (ctrlDown && (e.keyCode == zKey || e.keyCode == yKey)) {
     //debug("UNDO/REDO", undoRef, redoRef)
 
     if (!e.shiftKey) {

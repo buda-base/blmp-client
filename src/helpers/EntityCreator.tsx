@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react"
 import * as rdf from "rdflib"
-import config from "../config"
 import * as rde_config from "./config"
 import { debug as debugfactory } from "debug"
 import { useRecoilState } from "recoil"
@@ -22,9 +21,7 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
   const [entity, setEntity] = useState<Subject | null>(null)
   const [shape, setShape] = useState<NodeShape | null>(null)
   const [entities, setEntities] = useRecoilState(atoms.entitiesAtom)
-  const { getAccessTokenSilently, isAuthenticated, getIdTokenClaims } = useAuth0()
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
-  const auth0 = useAuth0()
   const [tab, setTab] = useRecoilState(atoms.uiTabState)
   const [userId, setUserId] = useRecoilState(userIdState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)

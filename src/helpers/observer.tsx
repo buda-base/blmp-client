@@ -1,20 +1,11 @@
-import React, { useState, FC, useRef, createRef, RefObject } from "react"
+import React, { FC, createRef, RefObject } from "react"
 import {
-  useGotoRecoilSnapshot,
-  useRecoilTransactionObserver_UNSTABLE,
   useRecoilState,
-  Snapshot,
-  RecoilValue,
 } from "recoil"
 import {
-  LiteralWithId,
-  RDFResourceWithLabel,
-  ExtRDFResourceWithLabel,
-  Value,
   atoms,
   Subject,
-  history,
-  Entity
+  history
 } from "rdf-document-editor"
 
 const debug = require("debug")("bdrc:observer")
@@ -53,10 +44,6 @@ const GotoButton: FC<{
   setUndo: (s: atoms.undoPN) => void
   propFromParentPath?: string
 }> = ({ label, subject, undo, setUndo, propFromParentPath }) => {
-  const [uiReady] = useRecoilState(atoms.uiReadyState)
-  const [current, setCurrent] = useState(subject.qname)
-
-  //const [current, setCurrent] = useRecoilState(uiCurrentState)
   const entityUri = subject.uri
 
   //debug("goto?", current, subject, subject.qname)

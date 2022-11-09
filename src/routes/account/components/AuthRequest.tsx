@@ -1,6 +1,5 @@
 import React from "react"
 import { Link, useLocation, useParams } from "react-router-dom"
-import qs from "query-string"
 
 const debug = require("debug")("bdrc:auth:request")
 

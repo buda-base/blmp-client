@@ -1,6 +1,5 @@
 import React, { FC, MouseEventHandler } from "react"
 import { Link } from "react-router-dom"
-import PropTypes from "prop-types"
 
 export const Alert: FC<{ type: string; text: string }> = ({ type, text }) => {
   const name = `alert ${type} alert-dismissible fade show`

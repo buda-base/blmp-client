@@ -8,7 +8,7 @@ import {
   useNavigate,
 } from "react-router-dom"
 
-const InstanceSearch = (props: { isFetching: any; forVolume: string | null; fetchErr: string | null }) => {
+const InstanceSearch = (props: { isFetching: boolean; forVolume: string | null; fetchErr: string | null }) => {
   const { t } = useTranslation()
   const [volume, setVolume] = React.useState("")
   const { isLoading } = useAuth0()

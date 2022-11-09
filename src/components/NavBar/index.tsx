@@ -1,70 +1,39 @@
 /* eslint-disable no-extra-parens */
-import React, { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import React from "react"
+import { Link, useNavigate } from "react-router-dom"
 import { FiPower as LogoutIcon } from "react-icons/fi"
 import {
-  InputLabel,
   Select,
   MenuItem,
-  Checkbox,
-  FormGroup,
-  FormControlLabel,
-  CircularProgress,
-  FormHelperText, FormControl, TextField , Button
+  FormHelperText, FormControl
 } from "@material-ui/core"
 import i18n from "i18next"
-import { useRecoilState, useRecoilValue, selectorFamily } from "recoil"
+import { useRecoilState } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
-import * as rdf from "rdflib"
 import { useClearCache } from "react-clear-cache"
 
-import { AppProps } from "../../containers/AppContainer"
 import {
-  reloadEntityState,
-  reloadProfileState,
-  uiLangState,
-  uiLitLangState,
-  uiTabState,
   userIdState,
-  RIDprefixState,
-  savePopupState,
-  demoAtom,
 } from "../../atoms/common"
-import { entitiesAtom, EditedEntityState } from "../../containers/EntitySelectorContainer"
-import * as ns from "../../helpers/rdf/ns"
-import { langs } from "../../helpers/lang"
-import { debugStore, setUserLocalEntities, putTtl } from "../../helpers/rdf/io"
-import { history, errors } from "../../helpers/rdf/types"
-import config from "../../config"
-import { ErrorIcon, InfoIcon } from "../../routes/layout/icons"
-import { demoUserId } from "../../containers/DemoContainer"
+import { atoms, RDEProps } from "rdf-document-editor"
+import { debug as debugfactory } from "debug"
 
-const debug = require("debug")("bdrc:NavBar")
+const debug = debugfactory("bdrc:NavBar")
 
-function NavBar(props: AppProps) {
+export const NavBarContainer = (props: RDEProps) => {
   const { user, isAuthenticated, isLoading, logout } = useAuth0()
-
-  const [uiLang, setUiLang] = useRecoilState(uiLangState)
-  const [uiLitLang, setUiLitLang] = useRecoilState(uiLitLangState)
-  // https://github.com/mui-org/material-ui/issues/15400
+  const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
+  const [entities] = useRecoilState(atoms.entitiesAtom)
+  const [uiTab, setUiTab] = useRecoilState(atoms.uiTabState)
+  const [userId, setUserId] = useRecoilState(userIdState)
+  const { latestVersion, isLatestVersion, emptyCacheStorage } = useClearCache()
+  const navigate = useNavigate()
   const uiLangOnChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setUiLang([event.target.value as string, uiLang.slice(1)])
-    setUiLitLang([event.target.value as string, uiLitLang.slice(1)])
+    setUiLang(event.target.value as string)
   }
 
-  //debug("uiL:",uiLang,uiLitLang)
-
-  const [entities] = useRecoilState(entitiesAtom)
-  const [uiTab, setUiTab] = useRecoilState(uiTabState)
-
-  const [userId, setUserId] = useRecoilState(userIdState)
-
-  const { latestVersion, isLatestVersion, emptyCacheStorage } = useClearCache()
-
-  const [demo, setDemo] = useRecoilState(demoAtom)
-
   return (
-    <nav className={"navbar navbar-dark navbar-expand-md " + (demo ? "demo" : "")}>
+    <nav className={"navbar navbar-dark navbar-expand-md "}>
       <a href="https://bdrc.io">
         <img className="" src="/images/BDRC.svg" alt="bdrc" height="50" />
         <span>BDRC</span>
@@ -90,16 +59,16 @@ function NavBar(props: AppProps) {
           </a>
         )}
         <FormControl style={{ marginLeft: "30px" }}>
-          <Select labelId="uilanglabel" id="select" value={uiLang[0].toLowerCase()} onChange={uiLangOnChange}>
+          <Select labelId="uilanglabel" id="select" value={uiLang.toLowerCase()} onChange={uiLangOnChange}>
             <MenuItem value="en">English</MenuItem>
             <MenuItem value="bo">བོད་ཡིག</MenuItem>
             <MenuItem value="zh-hans">中文</MenuItem>
           </Select>
-          <FormHelperText>{i18n.t("home.uilang")}</FormHelperText>
+          <FormHelperText><>{i18n.t("home.uilang")}</></FormHelperText>
         </FormControl>
       </div>
 
-      {isAuthenticated || (demo && userId == demoUserId) ? (
+      {isAuthenticated ? (
         <div className="btn-group ml-1" role="group">
           <button
             id="userDropDown"
@@ -116,7 +85,8 @@ function NavBar(props: AppProps) {
               className="btn btn-sm dropdown-item py-0"
               to="/profile"
               onClick={() => {
-                entities.map((e, i) => {
+                entities.map((e, i): void => {
+                  // TODO: userId is now the URI
                   if (e.subjectQname === userId) {
                     debug("found:", i, e)
                     if (uiTab != i) {
@@ -140,7 +110,7 @@ function NavBar(props: AppProps) {
                 e.preventDefault()
                 logout({ returnTo: window.location.origin })
                 if (localStorage.getItem("BLMPidToken")) localStorage.removeItem("BLMPidToken")
-                props.history.push("/")
+                navigate("/")
               }}
             >
               {user ? <LogoutIcon size={16} className="icon-left mr-1" /> : null}
@@ -158,4 +128,3 @@ function NavBar(props: AppProps) {
     </nav>
   )
 }
-export const NavBarContainer = withRouter(NavBar)
