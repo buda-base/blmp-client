@@ -1,20 +1,20 @@
 import React from "react"
 import { render } from "react-dom"
-import { BrowserRouter, Switch, Route } from "react-router-dom"
+import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { RecoilRoot } from "recoil"
 import Auth0ProviderWithHistory from "./contexts/AuthProvider"
 
 import App from "./containers/AppContainer"
 import LoginContainer from "./routes/account/containers/Login"
 import { AuthContextWrapper } from "./contexts/AuthContext"
-
-import { undoRef, redoRef } from "./routes/helpers/observer"
+import { undoRef, redoRef } from "./helpers/observer"
 
 import { Provider } from "react-redux"
 
 import store from "./libs/bvmt/src/store"
+import { debug as debugfactory } from "debug"
 
-const debug = require("debug")("bdrc:root")
+const debug = debugfactory("bdrc:index")
 
 const target = document.querySelector("#root")
 
@@ -25,7 +25,7 @@ const ctrl1 = 17,
   yKey = 89,
   zKey = 90
 
-document.onkeydown = (e: React.KeyboardEvent) => {
+document.onkeydown = (e: KeyboardEvent) => {
   ctrlDown = e.metaKey || e.ctrlKey
   //debug("kD", e)
   if (ctrlDown && e.keyCode == zKey || ctrlDown && e.keyCode == yKey) {
@@ -37,7 +37,7 @@ document.onkeydown = (e: React.KeyboardEvent) => {
     } else if (e.keyCode === zKey && redoRef && redoRef.current) redoRef.current.click()
 
     // DONE: fix conflict with chrome undo inside text input
-    const elem = document.activeElement //as HTMLElement
+    const elem = document.activeElement as HTMLElement
     if (elem) elem.blur()
     e.preventDefault()
     e.stopPropagation()
@@ -47,8 +47,8 @@ document.onkeydown = (e: React.KeyboardEvent) => {
 
 // to fix hot reloading
 // (which was only happening on compilation error not text modification etc.)
-if (module.hot) {
-  module.hot.accept()
+if ((module as any).hot) {
+  (module as any).hot.accept()
 }
 
 render(
@@ -57,10 +57,10 @@ render(
       <Auth0ProviderWithHistory>
         <RecoilRoot>
           <AuthContextWrapper>
-            <Route exact path="/login" component={LoginContainer} />
-            <Switch>
-              <Route component={App} />
-            </Switch>
+            <Route path="/login" element={<LoginContainer />} />
+            <Routes>
+              <Route element={<App />} />
+            </Routes>
           </AuthContextWrapper>
         </RecoilRoot>
       </Auth0ProviderWithHistory>
