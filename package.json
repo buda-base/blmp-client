@@ -68,7 +68,8 @@
     "postinstall": "if [ ! -r src/libs/bvmt/yarn.lock ] ; then git submodule update --init ; fi",
     "prebuild": "git submodule update --remote && yarn run generate-build-meta",
     "generate-build-meta": "./node_modules/react-clear-cache/bin/cli.js",
-    "refresh-rde": "cd ../rdf-document-editor/ && yarn build && cd ../blmp-client/node_modules/rdf-document-editor/ && rm -rf dist && cp -rf ../../../rdf-document-editor/dist . && cd ../.. && rm node_modules/.cache -rf"
+    "refresh-rde": "cd ../rdf-document-editor/ && yarn build && cd ../blmp-client/node_modules/rdf-document-editor/ && rm -rf dist && cp -rf ../../../rdf-document-editor/dist . && cd ../.. && rm node_modules/.cache -rf",
+    "prepare": "husky install"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json,css,tsx,ts}": [
@@ -100,7 +101,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.31.10",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "husky": "^8.0.1",
+    "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.18",
