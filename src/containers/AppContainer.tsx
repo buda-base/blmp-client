@@ -25,6 +25,7 @@ import ScanRequestContainer from "../containers/ScanRequestContainer"
 import {
   userQnameState,
   RIDprefixState,
+  reloadProfileState,
 } from "../atoms/common"
 
 import {
@@ -115,7 +116,10 @@ function App(props: RouteProps) {
   const appEl = useRef<HTMLDivElement>(null)
   const [userQname, setUserQname] = useRecoilState(userQnameState)
   const [RIDPrefix, setRIDPrefix] = useRecoilState(RIDprefixState)
+  const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
+  const [uiLitLang, setUiLitLang] = useRecoilState(atoms.uiLitLangState)
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
+  const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
   const location = useLocation()
   let undoEntity: string | null = null
 
@@ -234,7 +238,7 @@ function App(props: RouteProps) {
     libraryUrl: "https://library.bdrc.io",
     resourceSelector: BUDAResourceSelector,
     previewLiteral: rde_config.previewLiteral,
-    putDocument: rde_config.putDocumentFactory(idToken),
+    putDocument: rde_config.putDocumentFactory(idToken, userQname, setUiLang, setUiLitLang, setRIDPrefix, setReloadProfile),
     getPreviewLink: rde_config.getPreviewLink,
   }
 

@@ -14,7 +14,7 @@ import {
 } from "rdf-document-editor"
 import i18n from "i18next"
 import "./jsewts.d.ts"
-
+import { SetterOrUpdater } from "recoil"
 import { fromWylie } from "jsewts"
 
 import { customAlphabet } from "nanoid"
@@ -343,14 +343,20 @@ const defaultRef = rdf.sym(rdf.Store.defaultGraphURI)
 
 export let latestcurl = ""
 
-export const putDocumentFactory = (idToken: string) => async (
+export const putDocumentFactory = (
+    idToken: string,
+    userQname: string | null,
+    setUiLang: SetterOrUpdater<string>,
+    setUiLitLang: SetterOrUpdater<string[]>,
+    setRIDprefix: SetterOrUpdater<string|null>,
+    setReloadProfile: SetterOrUpdater<boolean>
+    ) => async (
     entity: rdf.NamedNode,
     document: rdf.Store,
     etag: string | null,
     message: string | undefined
   ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
-    const defaultRef = new rdf.NamedNode(rdf.Store.defaultGraphURI)
     rdf.serialize(defaultRef, document, undefined, "text/turtle", async function (err, str) {
       const headers = new Headers()
       headers.set("Content-Type", "text/turtle")
@@ -363,9 +369,9 @@ export const putDocumentFactory = (idToken: string) => async (
         headers.set("If-Match", etag)
       }
 
-      let url = config.API_BASEURL + prefixMap.qnameFromUri(entity.uri) + "/focusgraph"
-      if (entity.uri == TMP_uri+"user")
-        url = config.API_BASEURL + "me/focusgraph"
+      const entityQname = prefixMap.qnameFromUri(entity.uri)
+      const qnameForAPI = entityQname == userQname ? "me" : entityQname
+      const url = config.API_BASEURL + qnameForAPI + "/focusgraph"
 
       const response = await fetch(url, { headers, method, body: str })
 
@@ -406,6 +412,25 @@ export const putDocumentFactory = (idToken: string) => async (
       if (!newetag) {
         reject(new Error("no etag returned from " + url))
         return
+      }
+
+      if (entityQname == userQname) {
+        // TODO: not sure about the setReloadProfile
+        setReloadProfile(true)
+        const uiLang = document.any(entity, preferredUiLang, null) as rdf.Literal | null
+        setUiLang(uiLang ? uiLang.value : "en")
+        const ridPrefix = document.any(entity, localNameDefaultPrefix, null) as rdf.Literal | null
+        setRIDprefix(ridPrefix ? ridPrefix.value : "")
+        // TODO: this could be made more efficient by not using the whole EntityGraph thing
+        const userRes = new RDFResource(entity, new EntityGraph(document, entity.uri, prefixMap))
+        const uiLitLangs = userRes.getPropLitValuesFromList(preferredUiLiteralLangs)
+        if (uiLitLangs) {
+          const uiLitLangsStr = uiLitLangs.map((lit: rdf.Literal): string => {
+            return lit.value
+          })
+          setUiLitLang(uiLitLangsStr)
+        }
+        setReloadProfile(false)
       }
 
       resolve(newetag)
