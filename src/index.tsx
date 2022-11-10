@@ -1,5 +1,5 @@
-import React from "react"
-import { render } from "react-dom"
+import React, { ErrorInfo } from "react"
+import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { RecoilRoot } from "recoil"
 import Auth0ProviderWithHistory from "./contexts/AuthProvider"
@@ -16,7 +16,7 @@ import { debug as debugfactory } from "debug"
 
 const debug = debugfactory("bdrc:index")
 
-const target = document.querySelector("#root")
+const container = document.querySelector("#root")
 
 let ctrlDown = false
 const ctrl1 = 17,
@@ -50,20 +50,50 @@ if ((module as any).hot) {
   (module as any).hot.accept()
 }
 
-render(
+// see https://reactjs.org/docs/error-boundaries.html
+class BVMTErrorBoundary extends React.Component<{ children?: React.ReactNode }, { hasError: boolean }> {
+
+   constructor(props: { children?: React.ReactNode }) {
+      super(props);
+      this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error: any) {
+      return { hasError: true }
+    }
+
+    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+      debug(error)
+      debug(errorInfo)
+    }
+
+    render() {
+      if (this.state.hasError) {
+        return <><h1>We are sorry but the editor encountered an unexpected error.<br/>Go to <a href="/">homepage</a></h1></>
+      }
+
+      return this.props.children;
+    }
+
+}
+
+const root = createRoot(container!)
+
+root.render(
   <BrowserRouter>
-    <Provider store={store}>
-      <Auth0ProviderWithHistory>
-        <RecoilRoot>
-          <AuthContextWrapper>
-            <Route path="/login" element={<LoginContainer />} />
-            <Routes>
-              <Route element={<App />} />
-            </Routes>
-          </AuthContextWrapper>
-        </RecoilRoot>
-      </Auth0ProviderWithHistory>
-    </Provider>
-  </BrowserRouter>,
-  target
+    <BVMTErrorBoundary>
+      <Provider store={store}>
+        <Auth0ProviderWithHistory>
+          <RecoilRoot>
+            <AuthContextWrapper>
+              <Routes>
+                <Route path="/login" element={<LoginContainer />} />
+                <Route element={<App />} />
+              </Routes>
+            </AuthContextWrapper>
+          </RecoilRoot>
+        </Auth0ProviderWithHistory>
+      </Provider>
+    </BVMTErrorBoundary>
+  </BrowserRouter>
 )
