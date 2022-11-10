@@ -1,7 +1,6 @@
 {
   "name": "blmp-client",
   "version": "0.23.1-0",
-  "homepage": "https://github.com/buda-base/blmp-client/",
   "description": "BUDA Editor",
   "author": "BDRC and Ashveen Bucktowar",
   "license": "MIT",

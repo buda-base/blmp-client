@@ -87,9 +87,9 @@ root.render(
           <RecoilRoot>
             <AuthContextWrapper>
               <Routes>
-                <Route path="/login" element={<LoginContainer />} />
-                <Route element={<App />} />
+                <Route path="/login" element={<LoginContainer />} />                
               </Routes>
+              <App />                
             </AuthContextWrapper>
           </RecoilRoot>
         </Auth0ProviderWithHistory>
