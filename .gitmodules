@@ -1,4 +1,4 @@
 [submodule "src/libs/bvmt"]
 	path = src/libs/bvmt
-	url = https://github.com/buda-base/buda-volume-manifest-tool
-	branch = blmp-client
+	url = git@github.com:buda-base/buda-volume-manifest-tool
+	branch = rde
