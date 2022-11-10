@@ -1,22 +1,12 @@
 import { atom } from "recoil"
 
-export const sessionLoadedState = atom<boolean>({
-  key: "sessionLoadedState",
-  default: false,
-})
-
 export const reloadProfileState = atom<boolean>({
   key: "reloadProfileState",
   default: true,
 })
 
-export const profileIdState = atom<string|null>({
-  key: "profileIdState",
-  default: null,
-})
-
-export const userIdState = atom<string|null>({
-  key: "userIdState",
+export const userQnameState = atom<string|null>({
+  key: "userQnameState",
   default: null,
 })
 

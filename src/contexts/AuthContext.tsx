@@ -4,7 +4,7 @@ import { useRecoilState } from "recoil"
 import axios from "axios"
 
 import config from "../config"
-import { reloadProfileState, userIdState, RIDprefixState } from "../atoms/common"
+import { reloadProfileState, userQnameState, RIDprefixState } from "../atoms/common"
 import { fetchTtl, atoms, ns, RDFResource, EntityGraph } from "rdf-document-editor"
 import * as rdf from "rdflib"
 import * as rde_config from "../helpers/config"
@@ -13,10 +13,10 @@ const debug = require("debug")("bdrc:auth")
 
 type AuthContextType = {
   idToken: string | null,
-  userUri: string | null
+  userQname: string | null
 }
 
-export const AuthContext = React.createContext<AuthContextType>({ idToken: null, userUri: null })
+export const AuthContext = React.createContext<AuthContextType>({ idToken: null, userQname: null })
 
 export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) => {
   const { isAuthenticated, getIdTokenClaims, getAccessTokenSilently, user, logout } = useAuth0()
@@ -24,7 +24,7 @@ export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) =
   const [loadingState, setLoadingState] = useState({ status: "idle", error: null })
   const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(atoms.uiLitLangState)
-  const [userUri, setUserUri] = useRecoilState(userIdState)
+  const [userQname, setUserQname] = useRecoilState(userQnameState)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
@@ -87,7 +87,7 @@ export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) =
       const userNode = store.any(null, ns.rdfType, rde_config.userProfile) as rdf.NamedNode | null
       if (userNode == null)
         throw "cannot find user in profile"
-      setUserUri(userNode.uri)
+      setUserQname(rde_config.prefixMap.qnameFromUri(userNode.uri))
       localStorage.setItem("blmp_user_uri", userNode.uri)
       const userRes = new RDFResource(userNode, new EntityGraph(store, userNode.uri, rde_config.prefixMap))
       const uiLang = store.any(userNode, rde_config.preferredUiLang, null) as rdf.Literal | null
@@ -107,7 +107,7 @@ export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) =
   }
 
   const defaultContext = {
-    userUri,
+    userQname,
     idToken
   }
 

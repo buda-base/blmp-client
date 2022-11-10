@@ -13,7 +13,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { useClearCache } from "react-clear-cache"
 
 import {
-  userIdState,
+  userQnameState,
 } from "../../atoms/common"
 import { atoms } from "rdf-document-editor"
 import { debug as debugfactory } from "debug"
@@ -25,7 +25,7 @@ export const NavBarContainer = () => {
   const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
   const [entities] = useRecoilState(atoms.entitiesAtom)
   const [uiTab, setUiTab] = useRecoilState(atoms.uiTabState)
-  const [userId, setUserId] = useRecoilState(userIdState)
+  const [userQname, setUserQname] = useRecoilState(userQnameState)
   const { latestVersion, isLatestVersion, emptyCacheStorage } = useClearCache()
   const navigate = useNavigate()
   const uiLangOnChange = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -78,7 +78,7 @@ export const NavBarContainer = () => {
             aria-haspopup="false"
             aria-expanded="false"
           >
-            {user?.email ? user.email : userId}
+            {user?.email ? user.email : userQname}
           </button>
           <div className="dropdown-menu" aria-labelledby="userDropDown">
             <Link
@@ -86,15 +86,14 @@ export const NavBarContainer = () => {
               to="/profile"
               onClick={() => {
                 entities.map((e, i): void => {
-                  // TODO: userId is now the URI
-                  if (e.subjectQname === userId) {
+                  if (e.subjectQname === userQname) {
                     debug("found:", i, e)
                     if (uiTab != i) {
                       setUiTab(i)
                       return
                     }
                   }
-                  debug("not found:", entities, userId)
+                  debug("not found:", entities, userQname)
                 })
               }}
             >

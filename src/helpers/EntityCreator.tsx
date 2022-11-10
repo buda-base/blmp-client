@@ -3,7 +3,7 @@ import * as rdf from "rdflib"
 import * as rde_config from "./config"
 import { debug as debugfactory } from "debug"
 import { useRecoilState } from "recoil"
-import { userIdState, RIDprefixState } from "../atoms/common"
+import { userQnameState, RIDprefixState } from "../atoms/common"
 import { useAuth0 } from "@auth0/auth0-react"
 import {
   Subject,
@@ -23,7 +23,7 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
   const [entities, setEntities] = useRecoilState(atoms.entitiesAtom)
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
   const [tab, setTab] = useRecoilState(atoms.uiTabState)
-  const [userId, setUserId] = useRecoilState(userIdState)
+  const [userQname, setUserQname] = useRecoilState(userQnameState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
   useEffect(() => {
@@ -98,7 +98,7 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
       if (!unmounting.val) setEntityLoadingState({ status: "created", error: undefined })
 
       // save to localStorage
-      rde_config.setUserLocalEntityFactory(userId)(newSubject.qname, shape.qname, "", false, null, true)
+      rde_config.setUserLocalEntityFactory(userQname)(newSubject.qname, shape.qname, "", false, null, true)
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }

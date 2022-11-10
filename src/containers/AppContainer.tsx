@@ -23,7 +23,7 @@ import { EntityEditContainerMayUpdate, enTranslations, atoms, getHistoryStatus, 
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
 import ScanRequestContainer from "../containers/ScanRequestContainer"
 import {
-  userIdState,
+  userQnameState,
   RIDprefixState,
 } from "../atoms/common"
 
@@ -113,7 +113,7 @@ function App(props: RouteProps) {
   const setUndo = (s: atoms.undoPN) => setUndos({ ...undos, [entityUri]: s })
   const [disabled, setDisabled] = useRecoilState(atoms.uiDisabledTabsState)
   const appEl = useRef<HTMLDivElement>(null)
-  const [userId, setUserId] = useRecoilState(userIdState)
+  const [userQname, setUserQname] = useRecoilState(userQnameState)
   const [RIDPrefix, setRIDPrefix] = useRecoilState(RIDprefixState)
   const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
   const location = useLocation()
@@ -224,10 +224,10 @@ function App(props: RouteProps) {
     getDocument: rde_config.getDocumentGraphFactory(idToken),
     entityCreator: EntityCreator,
     iconFromEntity: rde_config.iconFromEntity,
-    getUserMenuState: rde_config.getUserMenuStateFactory(userId),
-    setUserMenuState: rde_config.setUserMenuStateFactory(userId),
-    getUserLocalEntities: rde_config.getUserLocalEntitiesFactory(userId),
-    setUserLocalEntity: rde_config.setUserLocalEntityFactory(userId),
+    getUserMenuState: rde_config.getUserMenuStateFactory(userQname),
+    setUserMenuState: rde_config.setUserMenuStateFactory(userQname),
+    getUserLocalEntities: rde_config.getUserLocalEntitiesFactory(userQname),
+    setUserLocalEntity: rde_config.setUserLocalEntityFactory(userQname),
     possibleShapeRefs: rde_config.possibleShapeRefs,
     possibleShapeRefsForEntity: rde_config.possibleShapeRefsForEntity,
     possibleShapeRefsForType: rde_config.possibleShapeRefsForEntity,
@@ -257,7 +257,7 @@ function App(props: RouteProps) {
                 path="/profile"
                 element={
                   <EntityEditContainer
-                    entityQname={"tmp:user"}
+                    entityQname={userQname ? userQname : undefined}
                     shapeQname="bds:UserProfileShape"
                     config={config_rde}
                   />
