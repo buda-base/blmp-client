@@ -77,7 +77,7 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
         return
       }
       const uri = namespace + lname
-      const graph = new EntityGraph(rdf.graph(), uri)
+      const graph = new EntityGraph(rdf.graph(), uri, rde_config.prefixMap)
       const node = new rdf.NamedNode(uri)
       const newSubject = new Subject(node, graph)
 

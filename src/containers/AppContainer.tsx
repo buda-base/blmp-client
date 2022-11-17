@@ -34,6 +34,8 @@ import {
   langs,
 } from "../helpers/lang"
 
+import { default as blmpEnTranslations } from "../translations/en"
+
 import { default as BVMT } from "../libs/bvmt/src/App"
 import { debug as debugfactory } from "debug"
 
@@ -42,9 +44,10 @@ const debug = debugfactory("blmp:app")
 i18n
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
+    debug:true,
     resources: {
       en: {
-        translation: enTranslations,
+        translation: { ...enTranslations, ...blmpEnTranslations }
       },
     },
     lng: "en",

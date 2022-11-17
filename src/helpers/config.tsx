@@ -90,24 +90,24 @@ export const prefixMap = new ns.PrefixMap({
 })
 
 export const shapeRefsMap: Record<string, ExtRDFResourceWithLabel> = {
-  "bds:PersonShapeTest": new ExtRDFResourceWithLabel(BDS("PersonShapeTest").value, { en: "Test (Person)" }),
-  "bds:PersonShape": new ExtRDFResourceWithLabel(BDS("PersonShape").value, { en: "Person" }),
-  "bds:CorporationShape": new ExtRDFResourceWithLabel(BDS("CorporationShape").value, { en: "Corporation" }),
-  "bds:CollectionShape": new ExtRDFResourceWithLabel(BDS("CollectionShape").value, { en: "Collection" }),
-  "bds:RoleShape": new ExtRDFResourceWithLabel(BDS("RoleShape").value, { en: "Role" }),
-  "bds:TopicShape": new ExtRDFResourceWithLabel(BDS("TopicShape").value, { en: "Topic" }),
-  "bds:PlaceShape": new ExtRDFResourceWithLabel(BDS("PlaceShape").value, { en: "Place" }),
-  "bds:WorkShape": new ExtRDFResourceWithLabel(BDS("WorkShape").value, { en: "Work" }),
-  "bds:SerialWorkShape": new ExtRDFResourceWithLabel(BDS("SerialWorkShape").value, { en: "Serial Work" }),
-  "bds:InstanceShape": new ExtRDFResourceWithLabel(BDS("InstanceShape").value, { en: "Instance (Version)" }),
+  "bds:PersonShapeTest": new ExtRDFResourceWithLabel(BDS("PersonShapeTest").value, { en: "Test (Person)" },{},null,prefixMap),
+  "bds:PersonShape": new ExtRDFResourceWithLabel(BDS("PersonShape").value, { en: "Person" },{},null,prefixMap),
+  "bds:CorporationShape": new ExtRDFResourceWithLabel(BDS("CorporationShape").value, { en: "Corporation" },{},null,prefixMap),
+  "bds:CollectionShape": new ExtRDFResourceWithLabel(BDS("CollectionShape").value, { en: "Collection" },{},null,prefixMap),
+  "bds:RoleShape": new ExtRDFResourceWithLabel(BDS("RoleShape").value, { en: "Role" },{},null,prefixMap),
+  "bds:TopicShape": new ExtRDFResourceWithLabel(BDS("TopicShape").value, { en: "Topic" },{},null,prefixMap),
+  "bds:PlaceShape": new ExtRDFResourceWithLabel(BDS("PlaceShape").value, { en: "Place" },{},null,prefixMap),
+  "bds:WorkShape": new ExtRDFResourceWithLabel(BDS("WorkShape").value, { en: "Work" },{},null,prefixMap),
+  "bds:SerialWorkShape": new ExtRDFResourceWithLabel(BDS("SerialWorkShape").value, { en: "Serial Work" },{},null,prefixMap),
+  "bds:InstanceShape": new ExtRDFResourceWithLabel(BDS("InstanceShape").value, { en: "Instance (Version)" },{},null,prefixMap),
   "bds:ImageInstanceShape": new ExtRDFResourceWithLabel(BDS("ImageInstanceShape").value, {
     en: "Image instance (Scans)",
-  }),
+  },{},null,prefixMap),
   "bds:EtextInstanceShape": new ExtRDFResourceWithLabel(BDS("EtextInstanceShape").value, {
     en: "Etext instance",
-  }),
-  "bds:ImagegroupShape": new ExtRDFResourceWithLabel(BDS("ImagegroupShape").value, { en: "Image group" }),
-  "bds:UserProfileShape": new ExtRDFResourceWithLabel(BDS("UserProfileShape").value, { en: "User profile" }),
+  },{},null,prefixMap),
+  "bds:ImagegroupShape": new ExtRDFResourceWithLabel(BDS("ImagegroupShape").value, { en: "Image group" },{},null,prefixMap),
+  "bds:UserProfileShape": new ExtRDFResourceWithLabel(BDS("UserProfileShape").value, { en: "User profile" },{},null,prefixMap),
 }
 
 export const possibleShapeRefs: Array<ExtRDFResourceWithLabel> = [
