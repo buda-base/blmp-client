@@ -65,7 +65,7 @@ export const FOAF = rdf.Namespace(FOAF_uri)
 export const preferredUiLang = BDOU("preferredUiLang") as rdf.NamedNode
 export const preferredUiLiteralLangs = BDOU("preferredUiLiteralLangs") as rdf.NamedNode
 export const localNameDefaultPrefix = BDOU("localNameDefaultPrefix") as rdf.NamedNode
-export const userProfile = BDOU("UserProfile") as rdf.NamedNode
+export const userProfile = BDOU("User") as rdf.NamedNode
 
 export const prefixMap = new ns.PrefixMap({
   rdfs: ns.RDFS_uri,

@@ -7,7 +7,8 @@ export function AuthRequest() {
   const location = useLocation()
   const params = useParams()
   const notAdmin = params["notAdmin"] === "true"
-  //debug("urlP:",urlParams)
+  
+  //debug("urlP:",params)
 
   return (
     <React.Fragment>

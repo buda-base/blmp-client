@@ -85,8 +85,9 @@ export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) =
       const store_etag = await fetchProfile
       const store = store_etag.store
       const userNode = store.any(null, ns.rdfType, rde_config.userProfile) as rdf.NamedNode | null
-      if (userNode == null)
+      if (userNode == null) {
         throw "cannot find user in profile"
+      }
       setUserQname(rde_config.prefixMap.qnameFromUri(userNode.uri))
       localStorage.setItem("blmp_user_uri", userNode.uri)
       const userRes = new RDFResource(userNode, new EntityGraph(store, userNode.uri, rde_config.prefixMap))

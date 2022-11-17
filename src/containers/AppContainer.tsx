@@ -209,9 +209,8 @@ function App(props: RouteProps) {
     }
   }, [disabled, entities, undos, uiTab])
 
-  if (isLoading || !idToken) return <div>Loading...</div>
-  if (config.requireAuth && !isAuthenticated)
-    return <AuthRequest />
+  if (isLoading) return <div>Loading...</div>
+  if (config.requireAuth && !isAuthenticated) return <AuthRequest />  
 
   debug("App:", entities)
 
@@ -228,7 +227,7 @@ function App(props: RouteProps) {
     getConnexGraph: rde_config.getConnexGraph,
     generateConnectedID: rde_config.generateConnectedID,
     getShapesDocument: rde_config.getShapesDocument,
-    getDocument: rde_config.getDocumentGraphFactory(idToken),
+    getDocument: rde_config.getDocumentGraphFactory(idToken||""),
     entityCreator: EntityCreator,
     iconFromEntity: rde_config.iconFromEntity,
     getUserMenuState: rde_config.getUserMenuStateFactory(userQname),
@@ -241,7 +240,7 @@ function App(props: RouteProps) {
     libraryUrl: "https://library.bdrc.io",
     resourceSelector: BUDAResourceSelector,
     previewLiteral: rde_config.previewLiteral,
-    putDocument: rde_config.putDocumentFactory(idToken, userQname, setUiLang, setUiLitLang, setRIDPrefix, setReloadProfile),
+    putDocument: rde_config.putDocumentFactory(idToken||"", userQname, setUiLang, setUiLitLang, setRIDPrefix, setReloadProfile),
     getPreviewLink: rde_config.getPreviewLink,
   }
 
