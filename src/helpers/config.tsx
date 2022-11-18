@@ -141,6 +141,20 @@ typeUriToShape[BDO_uri + "Corporation"] = [shapeRefsMap["bds:CorporationShape"]]
 typeUriToShape[BDO_uri + "Work"] = [shapeRefsMap["bds:WorkShape"]]
 typeUriToShape[BDO_uri + "SerialWork"] = [shapeRefsMap["bds:SerialWorkShape"]]
 typeUriToShape[BDOU_uri + "UserProfile"] = [shapeRefsMap["bds:UserProfileShape"]]
+// for getShapesDocument to work:
+typeUriToShape[BDS_uri + "PersonShape"] = [shapeRefsMap["bds:PersonShape"]]
+typeUriToShape[BDS_uri + "TopicShape"] = [shapeRefsMap["bds:TopicShape"]]
+typeUriToShape[BDS_uri + "PlaceShape"] = [shapeRefsMap["bds:PlaceShape"]]
+typeUriToShape[BDS_uri + "InstanceShape"] = [shapeRefsMap["bds:InstanceShape"]]
+typeUriToShape[BDS_uri + "ImageInstanceShape"] = [shapeRefsMap["bds:ImageInstanceShape"]]
+typeUriToShape[BDS_uri + "EtextInstanceShape"] = [shapeRefsMap["bds:EtextInstanceShape"]]
+typeUriToShape[BDS_uri + "RoleShape"] = [shapeRefsMap["bds:RoleShape"]]
+typeUriToShape[BDS_uri + "CollectionShape"] = [shapeRefsMap["bds:CollectionShape"]]
+typeUriToShape[BDS_uri + "ImagegroupShape"] = [shapeRefsMap["bds:ImagegroupShape"]]
+typeUriToShape[BDS_uri + "CorporationShape"] = [shapeRefsMap["bds:CorporationShape"]]
+typeUriToShape[BDS_uri + "WorkShape"] = [shapeRefsMap["bds:WorkShape"]]
+typeUriToShape[BDS_uri + "SerialWorkShape"] = [shapeRefsMap["bds:SerialWorkShape"]]
+typeUriToShape[BDS_uri + "UserProfile"] = [shapeRefsMap["bds:UserProfileShape"]] // not sure about BDS_uri prefix for this one?
 
 export const reserveLname = async (
   prefix: string,
@@ -307,9 +321,12 @@ export const possibleShapeRefsForEntity = (entity: rdf.NamedNode) => {
 }
 
 export const getShapesDocument = async (entity: rdf.NamedNode): Promise<NodeShape> => {
-  if (! (entity.uri in typeUriToShape))
-    throw new Error("cannot find appropriate shape for "+entity.uri)
-  const shaperef = typeUriToShape[entity.uri][0]
+  debug("gSd:",entity,typeUriToShape)
+  let key = entity.uri
+  if(!key) key = entity.value
+  if (! (key in typeUriToShape))
+    throw new Error("cannot find appropriate shape for "+key)
+  const shaperef = typeUriToShape[key][0]
   if (! (shaperef.uri in shapeUriToFetchUri))
     throw new Error("cannot find fetch url for shape "+shaperef.uri)
   // this should be cached
@@ -477,6 +494,7 @@ export const iconFromEntity = (entity: Entity | null): string => {
 
 export const getUserMenuStateFactory = (userId: string | null) => async (): Promise<Record<string, Entity>> => {
   const datastr = localStorage.getItem("rde_menu_state_"+userId)
+  debug("datastr:",datastr)
   return datastr ? await JSON.parse(datastr) : {}
 }
 

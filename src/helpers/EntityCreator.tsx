@@ -102,6 +102,9 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
 
       if (!unmounting.val && tab !== 0) setTab(0)
     }
+
+    debug("creator?",idToken,RIDprefix)
+    
     if (idToken && RIDprefix !== null) createResource(shapeNode, entityNode)
   }, [shapeNode, entityNode, RIDprefix])
 
