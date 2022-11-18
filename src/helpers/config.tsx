@@ -255,6 +255,7 @@ const typeToURIPrefix = (type: RDFResource): string | null => {
 }
 
 export const entityToType = (entity: rdf.NamedNode): rdf.NamedNode | null => {
+  if(entity.uri === "tmp:uri") return null
   const lname = prefixMap.lnameFromUri(entity.uri)
   const entityPrefix = getEntityPrefix(lname)
   if (!(entityPrefix in entityPrefixToType))

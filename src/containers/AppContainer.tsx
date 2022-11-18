@@ -38,8 +38,12 @@ import { default as blmpEnTranslations } from "../translations/en"
 
 import { default as BVMT } from "../libs/bvmt/src/App"
 import { debug as debugfactory } from "debug"
+import _ from "lodash"
 
 const debug = debugfactory("blmp:app")
+
+const i18nSrc = { ...enTranslations }
+_.merge(i18nSrc, blmpEnTranslations ) 
 
 i18n
   .use(initReactI18next) // passes i18n down to react-i18next
@@ -47,7 +51,7 @@ i18n
     debug:true,
     resources: {
       en: {
-        translation: { ...enTranslations, ...blmpEnTranslations }
+        translation: i18nSrc
       },
     },
     lng: "en",
