@@ -1256,7 +1256,7 @@ const EditString: FC<{
 
   const dt = property.datatype
   const pattern = property.pattern ? new RegExp(property.pattern) : undefined
-  const useEdtf = property.specialPattern?.value === ns.BDS("PatternEDTF").value
+  const useEdtf = property.specialPattern?.value === ns.RDE("PatternEDTF").value
 
   const [error, setError] = useState("") //getIntError(lit.value))
 

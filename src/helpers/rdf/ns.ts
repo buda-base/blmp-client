@@ -1,5 +1,7 @@
 import * as rdf from "rdflib"
 
+export const RDE_uri = "https://github.com/buda-base/rdf-document-editor/"
+export const RDE = rdf.Namespace(RDE_uri)
 export const BDR_uri = "http://purl.bdrc.io/resource/"
 export const BDR = rdf.Namespace(BDR_uri)
 export const BDS_uri = "http://purl.bdrc.io/ontology/shapes/core/"
@@ -43,6 +45,7 @@ const debug = require("debug")("bdrc:rdf:ns")
 
 export const prefixToURI: { [key: string]: string } = {
   bdr: BDR_uri,
+  rde: RDE_uri,
   bdo: BDO_uri,
   bds: BDS_uri,
   bdsh: BDSH_uri,
