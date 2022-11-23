@@ -3,17 +3,23 @@ import { TextField, Button, CircularProgress, Checkbox, FormGroup, FormControlLa
 import { useRecoilState } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import axios from "axios"
+import ErrorIcon from '@material-ui/icons/Error'
 
 import * as ns from "../helpers/rdf/ns"
 import { RIDprefixState } from "../atoms/common"
 import { entitiesAtom } from "./EntitySelectorContainer"
+import { LangSelect } from "../routes/entity/containers/ValueList"
 import config from "../config"
 
 const debug = require("debug")("bdrc:NavBar")
 
 function ScanRequestContainer() {
   const [RIDfrom, setRIDfrom] = useState("")
-  const [errors, setErrors] = useState({ from: {} })
+  const [reproductionOf, setReproductionOf] = useState("")
+  const [nbVol, setNbVol] = useState(1)
+  const [scanInfo, setScanInfo] = useState("")
+  const [scanInfoLang, setScanInfoLang] = useState("en")
+  const [errors, setErrors] = useState({ from: {}, repro: {} })
   const [spinner, setSpinner] = useState(false)
   const [message, setMessage] = useState(false)
   const [onlyNSync, setOnlyNSync] = useState(false)
@@ -30,9 +36,12 @@ function ScanRequestContainer() {
     if (isAuthenticated) checkSession()
   }, [isAuthenticated])
 
-  const checkFormat = (id, str) => {
-    if (!str || str.match(/^([w])(\d|eap)[^ ]*$/i)) setErrors({ ...errors, io: false, [id]: {} })
-    else setErrors({ ...errors, io: false, [id]: { error: true, helperText: <i>Check RID format</i> } })
+  const checkFormat = (id, str, prefix = "w") => {
+    const expr = new RegExp("^"+prefix+"(\\d|eap)[^ ]*$","i")
+    if (!str || str.match(expr)) setErrors({ ...errors, io: false, [id]: {} })
+    else setErrors({ ...errors, io: false, [id]: { error: true, 
+      helperText: <><ErrorIcon style={{ fontSize: "20px" }} /> <i>Check RID format</i></> 
+    } })
   }
 
   const disabled = !RIDfrom || errors["from"].error || errors.io
@@ -50,7 +59,12 @@ function ScanRequestContainer() {
           responseType: "blob",
           timeout: 4000,
           baseURL: config.API_BASEURL,
-          url: entityQname + "/scanrequest?IDPrefix=" + RIDprefix + (onlyNSync ? "&onlynonsync=true" : ""),
+          url: entityQname + "/scanrequest?IDPrefix=" + RIDprefix 
+          + (onlyNSync ? "&onlynonsync=true" : "")
+          + "&nbvols="+nbVol
+          + (scanInfo ? "&scaninfo="+encodeURIComponent(scanInfo)+"&scaninfo_lang="+scanInfoLang : "")
+          + "&instance=bdr:"+(reproductionOf?reproductionOf:"M"+RIDfrom)
+          ,
           //url: "resource-nc/user/me", // to test file download
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -86,7 +100,7 @@ function ScanRequestContainer() {
 
       setSpinner(false)
     },
-    [RIDprefix, RIDfrom, onlyNSync]
+    [RIDfrom, RIDprefix, onlyNSync, nbVol, scanInfo, reproductionOf, idToken, errors]
   )
 
   const onOnlyNSyncChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -124,6 +138,45 @@ function ScanRequestContainer() {
             }
           />
         </FormGroup>
+        <label className="propLabel">Total number of volumes</label>
+        <TextField
+          type="number"
+          InputLabelProps={{ shrink: true }}
+          style={{ width: "35%", marginBottom: "10px" }}
+          value={nbVol}
+          InputProps={{ inputProps: { min: 1, max: 999 } }}
+          onChange={(ev) => {
+            setNbVol(ev.target.value)
+          }}
+        />
+        <label className="propLabel">Reproduction of</label>
+        <TextField
+          InputLabelProps={{ shrink: true }}
+          style={{ width: "50%", marginBottom: "10px" }}
+          value={reproductionOf}
+          placeholder={"Optional"}
+          onChange={(ev) => {
+            setReproductionOf(ev.target.value)
+            checkFormat("repro", ev.target.value, "mw")
+          }}
+          {...errors["repro"]}
+        />        
+        <label className="propLabel">Scan info</label>
+        <div style={{ display:"flex", alignItems:"flex-end" }}>
+          <TextField
+            InputLabelProps={{ shrink: true }}
+            style={{ width: "100%", marginBottom: "0px" }}
+            value={scanInfo}
+            placeholder={"Optional"}
+            onChange={(ev) => {
+              setScanInfo(ev.target.value)
+            }}
+          />
+          <LangSelect value={scanInfoLang} editable={true} onChange={(v) => {
+              setScanInfoLang(v)
+          }}/>
+        </div>
+        <br/>
         <Button
           {...(disabled ? { disabled: true } : {})}
           className={"btn-rouge outlined " + (disabled ? "disabled" : "")}
