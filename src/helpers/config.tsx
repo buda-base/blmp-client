@@ -489,6 +489,9 @@ export const iconFromEntity = (entity: Entity | null): string => {
     // TODO: might be something better than that...
     icon = shapeQname.replace(/^[^:]+:([^:]+?)Shape[^/]*$/, "$1")
   }
+  if(icon) {
+    icon = "/icons/"+icon.toLowerCase()+".svg"
+  }
   return icon as string
 }
 
