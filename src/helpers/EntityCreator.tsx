@@ -16,6 +16,8 @@ import {
 
 const debug = debugfactory("blmp:app")
 
+let creating = false
+
 export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNode | null, unmounting = { val: false }) {
   const [entityLoadingState, setEntityLoadingState] = useState<IFetchState>({ status: "idle", error: undefined })
   const [entity, setEntity] = useState<Subject | null>(null)
@@ -39,25 +41,28 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
   }
 
   useEffect(() => {
-    async function createResource(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNode | null) {
+    async function createResource(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNode | null) {      
+      creating = true
       if (!idToken) {
+        creating = false
         setEntityLoadingState({ status: "error", error: "no token when reserving id" })
         return
       }
       if (!unmounting.val) setEntityLoadingState({ status: "fetching shape", error: undefined })
       let shape: NodeShape
       try {
-        shape = await rde_config.getShapesDocument(shapeNode)
-        if (!unmounting.val) setShape(shape)
+        shape = await rde_config.getShapesDocument(shapeNode)        
       } catch (e) {
         debug(e)
         if (!unmounting.val) setEntityLoadingState({ status: "error", error: "error fetching shape" })
+        creating = false
         return
       }
 
       const shapePrefix = shape.getPropStringValue(ns.rdeIdentifierPrefix)
       if (!shapePrefix) {
         setEntityLoadingState({ status: "error", error: "cannot find prefix in shape" })
+        creating = false
         return
       }
       let namespace = shape.getPropStringValue(ns.shNamespace)
@@ -74,6 +79,7 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
         debug(e)
         // TODO: handle 422?
         if (!unmounting.val) setEntityLoadingState({ status: "error", error: e as string })
+        creating = false
         return
       }
       const uri = namespace + lname
@@ -96,17 +102,23 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
       }
       if (!unmounting.val) setEntity(newSubject)
       if (!unmounting.val) setEntityLoadingState({ status: "created", error: undefined })
+      if (!unmounting.val) setShape(shape)
 
       // save to localStorage
       rde_config.setUserLocalEntityFactory(userQname)(newSubject.qname, shape.qname, "", false, null, true)
 
       if (!unmounting.val && tab !== 0) setTab(0)
+      creating = false
     }
 
-    debug("creator?",idToken,RIDprefix)
+    if(creating || entityLoadingState.status === "creating" || entityLoadingState.status === "created") return
+
+    //debug("creator?",idToken,RIDprefix,creating,entityLoadingState.status )
     
-    if (idToken && RIDprefix !== null) createResource(shapeNode, entityNode)
-  }, [shapeNode, entityNode, RIDprefix])
+    if (idToken && RIDprefix !== null) { 
+      createResource(shapeNode, entityNode)
+    }
+  }, [shapeNode, entityNode, RIDprefix, idToken, entityLoadingState.status, unmounting.val, userQname, tab, entities])
 
   return { entityLoadingState, entity, reset }
 }
