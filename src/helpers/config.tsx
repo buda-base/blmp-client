@@ -321,7 +321,6 @@ export const possibleShapeRefsForEntity = (entity: rdf.NamedNode) => {
 }
 
 export const getShapesDocument = async (entity: rdf.NamedNode): Promise<NodeShape> => {
-  debug("gSd:",entity,typeUriToShape)
   let key = entity.uri
   if(!key) key = entity.value
   if (! (key in typeUriToShape))
@@ -345,7 +344,8 @@ export const getDocumentGraphFactory = (idToken: string) => async (entity: rdf.N
   headers.set("Authorization", "Bearer " + idToken)
   const loadRes = fetchTtl(uri, true, headers)
   const { store, etag } = await loadRes
-  const subject = new Subject(entity, new EntityGraph(store, entity.uri, prefixMap))
+  const connexGraph: rdf.Store = await getConnexGraph(entity)
+  const subject = new Subject(entity, new EntityGraph(store, entity.uri, prefixMap, connexGraph))
   return { subject, etag }
 }
 
