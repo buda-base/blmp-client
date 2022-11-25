@@ -331,7 +331,7 @@ export const getShapesDocument = async (entity: rdf.NamedNode): Promise<NodeShap
   // this should be cached
   const loadRes = fetchTtl(shapeUriToFetchUri[shaperef.uri])
   const { store } = await loadRes
-  const shape = new NodeShape(shaperef.node, new EntityGraph(store, shaperef.uri, prefixMap))
+  const shape = new NodeShape(shaperef.node, new EntityGraph(store, shaperef.uri, prefixMap, undefined, undefined, descriptionProperties))
   return shape
 }
 
@@ -345,7 +345,7 @@ export const getDocumentGraphFactory = (idToken: string) => async (entity: rdf.N
   const loadRes = fetchTtl(uri, true, headers)
   const { store, etag } = await loadRes
   const connexGraph: rdf.Store = await getConnexGraph(entity)
-  const subject = new Subject(entity, new EntityGraph(store, entity.uri, prefixMap, connexGraph))
+  const subject = new Subject(entity, new EntityGraph(store, entity.uri, prefixMap, connexGraph, undefined, config.descriptionProperties))
   return { subject, etag }
 }
 
@@ -639,7 +639,7 @@ export const descriptionProperties: Array<rdf.NamedNode> = [
   ns.shDescription,
   ns.skosDefinition,
   ADM('CatalogingConvention') as rdf.NamedNode,
-  ADM('admUserTooltip') as rdf.NamedNode,
+  ADM('userTooltip') as rdf.NamedNode,
   ns.rdfsComment,
 ]
 
