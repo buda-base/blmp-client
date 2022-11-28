@@ -1283,7 +1283,8 @@ const EditString: FC<{
     let err = ""
     if (pattern !== undefined && val !== "" && !val.match(pattern)) {
       err = ValueByLangToStrPrefLang(property.errorMessage, uiLang)
-      debug("err:", property.errorMessage)
+      if(!err) err = "pattern error"
+      debug("err:", err, property.errorMessage)
     }
     return err
   }

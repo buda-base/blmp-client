@@ -138,6 +138,7 @@ function ScanRequestContainer() {
             }
           />
         </FormGroup>
+        {/*
         <label className="propLabel">Total number of volumes</label>
         <TextField
           type="number"
@@ -176,6 +177,7 @@ function ScanRequestContainer() {
               setScanInfoLang(v)
           }}/>
         </div>
+        */}
         <br/>
         <Button
           {...(disabled ? { disabled: true } : {})}

@@ -156,7 +156,8 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
     zoom = "5",
     unset
   //debug("coords:", coords, lat, lon)
-  if (lat.length && lon.length && lat[0].value != "" && lat[0].value != "") coords = [lat[0].value, lon[0].value]
+  if (lat.length && lon.length && lat[0].value != "" && lon[0].value != "" && !isNaN(lat[0].value) && !isNaN(lon[0].value)) 
+    coords = [lat[0].value, lon[0].value]
   else {
     unset = true
     coords = ["30", 0]
