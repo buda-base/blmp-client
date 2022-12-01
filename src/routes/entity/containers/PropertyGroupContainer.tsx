@@ -172,8 +172,8 @@ const PropertyGroupContainer: FC<{ group: PropertyGroup; subject: Subject; onGro
   const setCoords = (val) => {
     //debug("val:",val)
     setRedraw(false)
-    if (!isNaN(val.lat)) setLat([lat[0].copyWithUpdatedValue("" + val.lat)])
-    if (!isNaN(val.lng)) setLon([lon[0].copyWithUpdatedValue("" + val.lng)])
+    if (!isNaN(val.lat)) setLat([lat[0].copyWithUpdatedValue("" + val.lat.toFixed(6))]) // eslint-disable-line no-magic-numbers
+    if (!isNaN(val.lng)) setLon([lon[0].copyWithUpdatedValue("" + val.lng.toFixed(6))]) // eslint-disable-line no-magic-numbers
   }
 
   //const [nav, setNav] = useRecoilState(uiNavState)

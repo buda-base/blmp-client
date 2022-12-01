@@ -1292,7 +1292,7 @@ const EditString: FC<{
   const locales = { en: "en-US", "zh-hans": "zh-Hans-CN", bo: "bo-CN" }
 
   let timerEdtf = 0,
-    changeCallback = () => false
+    changeCallback = (val:string) => null ;
   useEffect(() => {
     //debug("cCb?",uiLang,locales[uiLang])
     changeCallback = (val: string) => {
@@ -1369,6 +1369,10 @@ const EditString: FC<{
       updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
     }
   })
+
+  useEffect(() => {
+    changeCallback(lit.value)
+  }, [ lit.value ] )
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
