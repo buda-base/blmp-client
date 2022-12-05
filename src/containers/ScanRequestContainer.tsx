@@ -46,10 +46,10 @@ function ScanRequestContainer() {
 
   const disabled = !RIDfrom || errors["from"].error || errors.io
 
-  const accessValues = [ "AccessFairUse","AccessMixed","AccessOpen","AccessRestrictedByQuality", 
+  const accessValues = [ "AccessOpen","AccessFairUse","AccessMixed","AccessRestrictedByQuality", 
     "AccessRestrictedByTbrc", "AccessRestrictedSealed", "AccessRestrictedTemporarily" ]
 
-  const [access, setAccess ] = useState(accessValues[accessValues.length - 1])
+  const [access, setAccess ] = useState(accessValues[0])
 
   const [ric, setRIC ] = useState("true")
 
