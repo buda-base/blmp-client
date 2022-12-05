@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
-import { TextField, Button, CircularProgress, Checkbox, FormGroup, FormControlLabel } from "@material-ui/core"
+import { TextField, Button, CircularProgress, Checkbox, FormGroup, FormControlLabel, MenuItem } from "@material-ui/core"
 import { useRecoilState } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import axios from "axios"
@@ -19,7 +19,7 @@ function ScanRequestContainer() {
   const [nbVol, setNbVol] = useState(1)
   const [scanInfo, setScanInfo] = useState("")
   const [scanInfoLang, setScanInfoLang] = useState("en")
-  const [errors, setErrors] = useState({ from: {}, repro: {} })
+  const [errors, setErrors] = useState({ from: {}, repro: {}, io:false })
   const [spinner, setSpinner] = useState(false)
   const [message, setMessage] = useState(false)
   const [onlyNSync, setOnlyNSync] = useState(false)
@@ -46,6 +46,13 @@ function ScanRequestContainer() {
 
   const disabled = !RIDfrom || errors["from"].error || errors.io
 
+  const accessValues = [ "AccessFairUse","AccessMixed","AccessOpen","AccessRestrictedByQuality", 
+    "AccessRestrictedByTbrc", "AccessRestrictedSealed", "AccessRestrictedTemporarily" ]
+
+  const [access, setAccess ] = useState(accessValues[accessValues.length - 1])
+
+  const [ric, setRIC ] = useState("true")
+
   const handleClick = useCallback(
     async (ev) => {
       const entityLname = RIDfrom.replace(/^[^:]+:/, "").toUpperCase()
@@ -59,11 +66,14 @@ function ScanRequestContainer() {
           responseType: "blob",
           timeout: 4000,
           baseURL: config.API_BASEURL,
-          url: entityQname + "/scanrequest?IDPrefix=" + RIDprefix 
+          url: "/scanrequest?IDPrefix=" + RIDprefix 
           + (onlyNSync ? "&onlynonsync=true" : "")
           + "&nbvols="+nbVol
           + (scanInfo ? "&scaninfo="+encodeURIComponent(scanInfo)+"&scaninfo_lang="+scanInfoLang : "")
           + "&instance=bdr:"+(reproductionOf?reproductionOf:"M"+RIDfrom)
+          + "&iinstance=" + entityQname
+          + "&ric="+ric
+          + "&access=bda:"+access
           ,
           //url: "resource-nc/user/me", // to test file download
           headers: {
@@ -100,7 +110,7 @@ function ScanRequestContainer() {
 
       setSpinner(false)
     },
-    [RIDfrom, RIDprefix, onlyNSync, nbVol, scanInfo, reproductionOf, idToken, errors]
+    [RIDfrom, RIDprefix, onlyNSync, nbVol, scanInfo, scanInfoLang, reproductionOf, ric, access, idToken, errors]
   )
 
   const onOnlyNSyncChangeHandler = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -137,8 +147,7 @@ function ScanRequestContainer() {
               />
             }
           />
-        </FormGroup>
-        {/*
+        </FormGroup>        
         <label className="propLabel">Total number of volumes</label>
         <TextField
           type="number"
@@ -163,10 +172,10 @@ function ScanRequestContainer() {
           {...errors["repro"]}
         />        
         <label className="propLabel">Scan info</label>
-        <div style={{ display:"flex", alignItems:"flex-end" }}>
+        <div style={{ display:"flex", alignItems:"flex-end", marginBottom: "10px" }}>
           <TextField
             InputLabelProps={{ shrink: true }}
-            style={{ width: "100%", marginBottom: "0px" }}
+            style={{ width: "100%" }}
             value={scanInfo}
             placeholder={"Optional"}
             onChange={(ev) => {
@@ -177,7 +186,27 @@ function ScanRequestContainer() {
               setScanInfoLang(v)
           }}/>
         </div>
-        */}
+        <label className="propLabel">Access</label>
+        <TextField
+          select
+          className={"selector mr-2"}
+          value={access}
+          style={{ width: "35%", marginBottom: "10px" }}
+          onChange={(ev) => setAccess(ev.target.value)}
+          >
+          {accessValues.map(a => <MenuItem key={a} value={a}>{a}</MenuItem>)}
+        </TextField>
+        <label className="propLabel">Restricted in China</label>
+        <TextField
+          select
+          className={"selector mr-2"}
+          value={ric}
+          style={{ width: "35%", marginBottom: "10px" }}
+          onChange={(ev) => setRIC(ev.target.value)}
+          >
+          {["true", "false"].map(a => <MenuItem key={a} value={a}>{a}</MenuItem>)}
+        </TextField>
+        <br/>
         <br/>
         <Button
           {...(disabled ? { disabled: true } : {})}
@@ -186,7 +215,7 @@ function ScanRequestContainer() {
         >
           {spinner ? <CircularProgress size="14px" color="white" /> : "scan request"}
         </Button>
-        {errors.io && <p style={{ color: "red", fontStyle: "italic", fontWeight: 500 }}>{errors.io}</p>}
+        {errors.io != false && <p style={{ color: "red", fontStyle: "italic", fontWeight: 500 }}>{errors.io}</p>}
       </div>
     </div>
   )
