@@ -127,7 +127,7 @@ function ScanRequestContainer() {
           InputLabelProps={{ shrink: true }}
           style={{ width: "50%", marginBottom: "10px" }}
           value={RIDfrom}
-          placeholder={"Type here the RID of Image Instance"}
+          placeholder={"RID of the image instance"}
           onChange={(ev) => {
             setRIDfrom(ev.target.value)
             checkFormat("from", ev.target.value)
