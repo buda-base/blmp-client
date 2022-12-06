@@ -64,7 +64,7 @@ function ScanRequestContainer() {
         .request({
           method: "get",
           responseType: "blob",
-          timeout: 4000,
+          timeout: 15000,
           baseURL: config.API_BASEURL,
           url: "/scanrequest?IDPrefix=" + RIDprefix 
           + (onlyNSync ? "&onlynonsync=true" : "")
@@ -81,7 +81,7 @@ function ScanRequestContainer() {
             //Accept: "application/zip", // not sure we need this here?
           },
         })
-        .then(function (response) {
+        .then(async function (response) {
           debug("loaded:", response.data)
 
           // download file
@@ -101,6 +101,12 @@ function ScanRequestContainer() {
           window.URL.revokeObjectURL(link)
 
           setErrors({ ...errors, io: false })
+
+          try {
+            await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+          } catch (e) {
+            debug("error when cleaning cache:", e)
+          }
         })
         .catch(function (error) {
           debug("error:", error.message)
