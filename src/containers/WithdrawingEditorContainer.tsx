@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from "react"
 import { TextField, Button, CircularProgress } from "@material-ui/core"
+import { Warning } from "@material-ui/icons"
+
+import config from "../config"
+
+const debug = require("debug")("bdrc:NavBar")
 
 function WithdrawingEditorContainer() {
   const [RIDfrom, setRIDfrom] = useState("")
@@ -18,17 +23,61 @@ function WithdrawingEditorContainer() {
   const handleClick = async (ev) => {
     setSpinner(true)
 
+    /*
     setTimeout(() => {
       setMessage("not implemented yet")
       setSpinner(false)
     }, 650) // eslint-disable-line no-magic-numbers
+    */
+
+    try {
+      const url = config.API_BASEURL + "withdraw?from=bdr:"+RIDfrom+"&to=bdr:"+RIDto
+      const idToken = localStorage.getItem("BLMPidToken")
+      const response = await fetch(url, { 
+        method: "POST",
+        headers: {
+          Accept:"application/json",
+          Authorization: `Bearer ${idToken}`
+        }
+      })
+      let json
+      if(response.status != 200) throw new Error(""+response.status) // eslint-disable-line no-magic-numbers
+      setMessage(<>
+        Done! The following records were modified:
+        <br/>
+        <pre>{
+          JSON.stringify(json = await response.json(),null,3) // eslint-disable-line no-magic-numbers
+        }</pre>
+      </>) 
+      setSpinner(false)
+      debug("withdraw log:",json)
+
+      try {
+        await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+      } catch(e) {
+        setMessage("error when clearing cache")  
+      }
+
+    } catch (e) {
+      setMessage("error when withdrawing: "+e.message)
+      debug("error when withdrawing:", e,RIDfrom,RIDto)
+      setSpinner(false)
+    }
   }
 
   return (
     <div>
       <div>
         <h1>Withdrawing Editor</h1>
-        <p>(Work in progress)</p>
+        <p>
+          <Warning/>
+          &nbsp;<b><u>Please proceed with caution!</u></b>&nbsp;
+          <Warning/> 
+          <br/>
+          <br/>
+          It also modifies all the references to the original record in all the records in the database. 
+          Once the operation has been done, it cannot be undone automatically.
+        </p>
         <br />
         <label className="propLabel">RID to withdraw</label>
         <TextField

@@ -481,7 +481,7 @@ const ResourceSelector: FC<{
   const chooseEntity = (ent: Entity, prefLabels: Record<string, string>) => () => {
     //debug("choose",ent)
     togglePopup()
-    const newRes = new ExtRDFResourceWithLabel(ent.subjectQname, prefLabels, {})
+    const newRes = new ExtRDFResourceWithLabel(ns.uriFromQname(ent.subjectQname), prefLabels, {})
     onChange(newRes, idx, false)
   }
 
