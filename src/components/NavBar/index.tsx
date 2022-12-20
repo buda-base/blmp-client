@@ -255,7 +255,7 @@ function BottomBar(props: AppProps) {
             responseType: "blob",
             timeout: 4000,
             baseURL: config.API_BASEURL,
-            url: entityQname + "/scanrequest?IDPrefix=" + RIDprefix + (onlyNSync ? "&onlynonsync=true" : ""),
+            url: "/scanrequest?IDPrefix=" + RIDprefix + "&iinstance=" + entityQname + (onlyNSync ? "&onlynonsync=true" : ""),
             //url: "resource-nc/user/me", // to test file download
             headers: {
               Authorization: `Bearer ${idToken}`,
