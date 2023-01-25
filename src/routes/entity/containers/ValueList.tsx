@@ -728,6 +728,7 @@ const Create: FC<{
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
   const { getIdTokenClaims } = useAuth0()
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
+  const [demo, setDemo] = useRecoilState(demoAtom)
 
   let nextVal = useRecoilValue(
     orderedNewValSelector({
