@@ -60,7 +60,7 @@ export const reserveLname = async (
   n = 1
 ): Promise<string> => {
   let url = config.API_BASEURL + "ID/" + prefix
-  if (proposedLname) url += "/" + proposedLname
+  if (proposedLname) url = config.API_BASEURL + "ID/full/" + proposedLname
   else if (n > 1) url += "?n=" + n
   const response = await fetch(url, {
     method: "PUT",
