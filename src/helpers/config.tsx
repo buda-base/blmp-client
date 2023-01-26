@@ -154,7 +154,7 @@ typeUriToShape[BDS_uri + "ImagegroupShape"] = [shapeRefsMap["bds:ImagegroupShape
 typeUriToShape[BDS_uri + "CorporationShape"] = [shapeRefsMap["bds:CorporationShape"]]
 typeUriToShape[BDS_uri + "WorkShape"] = [shapeRefsMap["bds:WorkShape"]]
 typeUriToShape[BDS_uri + "SerialWorkShape"] = [shapeRefsMap["bds:SerialWorkShape"]]
-typeUriToShape[BDS_uri + "UserProfile"] = [shapeRefsMap["bds:UserProfileShape"]] // not sure about BDS_uri prefix for this one?
+typeUriToShape[BDS_uri + "UserProfileShape"] = [shapeRefsMap["bds:UserProfileShape"]] // not sure about BDS_uri prefix for this one?
 
 export const reserveLname = async (
   prefix: string,
@@ -323,6 +323,7 @@ export const possibleShapeRefsForEntity = (entity: rdf.NamedNode) => {
 export const getShapesDocument = async (entity: rdf.NamedNode): Promise<NodeShape> => {
   let key = entity.uri
   if(!key) key = entity.value
+  debug(typeUriToShape)
   if (! (key in typeUriToShape))
     throw new Error("cannot find appropriate shape for "+key)
   const shaperef = typeUriToShape[key][0]
@@ -443,7 +444,7 @@ export const putDocumentFactory = (
         const userRes = new RDFResource(entity, new EntityGraph(document, entity.uri, prefixMap))
         const uiLitLangs = userRes.getPropLitValuesFromList(preferredUiLiteralLangs)
         if (uiLitLangs) {
-          const uiLitLangsStr = uiLitLangs.map((lit: rdf.Literal): string => {
+            const uiLitLangsStr = uiLitLangs.map((lit: rdf.Literal): string => {
             return lit.value
           })
           setUiLitLang(uiLitLangsStr)

@@ -216,7 +216,7 @@ function App(props: RouteProps) {
   if (isLoading) return <div>Loading...</div>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />  
 
-  debug("App:", entities)
+  debug("App:", entities, userQname)
 
   // check if latest version every 5 min
   const checkVersionInterval = 5 * 60 * 1000 // eslint-disable-line no-magic-numbers
@@ -267,7 +267,7 @@ function App(props: RouteProps) {
                 path="/profile"
                 element={
                   <EntityEditContainer
-                    entityQname={userQname ? userQname : undefined}
+                    entityQname={userQname ? userQname : "tmp:uri"}
                     shapeQname="bds:UserProfileShape"
                     config={config_rde}
                   />

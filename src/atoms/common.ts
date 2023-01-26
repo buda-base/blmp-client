@@ -7,7 +7,7 @@ export const reloadProfileState = atom<boolean>({
 
 export const userQnameState = atom<string|null>({
   key: "userQnameState",
-  default: null,
+  default: "tmp:uri",
 })
 
 export const RIDprefixState = atom<string|null>({
