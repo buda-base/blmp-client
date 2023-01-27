@@ -570,12 +570,16 @@ export class LiteralWithId extends rdf.Literal {
     return new LiteralWithId(this.value, this.language, this.datatype, this.id)
   }
 
-  public copyWithUpdatedValue(value: string) {
+  public copyWithUpdatedValue(value: string): LiteralWithId {
     return new LiteralWithId(value, this.language, this.datatype, this.id)
   }
 
-  public copyWithUpdatedLanguage(language: string) {
+  public copyWithUpdatedLanguage(language: string): LiteralWithId {
     return new LiteralWithId(this.value, language, this.datatype, this.id)
+  }
+
+  public copyWithUpdatedDatatype(datatype: rdf.NamedNode): LiteralWithId {
+    return new LiteralWithId(this.value, this.language, new rdf.NamedNode(datatype.value), this.id)
   }
 }
 

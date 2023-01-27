@@ -1611,6 +1611,12 @@ const LiteralComponent: FC<{
   }
 
   useEffect(() => {
+    if(lit.datatype.value !== property.datatype.value) {
+      onChange(lit.copyWithUpdatedDatatype(property.datatype))
+    }
+  }, [lit] )
+
+  useEffect(() => {
     let error = false
     const entityQname = topEntity ? topEntity.qname : subject.qname
     const n = entities.findIndex((e) => e.subjectQname === entityQname)
