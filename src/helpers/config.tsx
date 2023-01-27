@@ -182,7 +182,7 @@ export const generateSubnodesFactory = (idToken: string | null, RIDprefix: strin
   parent: RDFResource,
   n = 1
 ): Promise<Subject[]> => {
-  if (subshape.node.uri.startsWith("http://purl.bdrc.io/ontology/shapes/adm/AdmEntityShape")) {
+  if (subshape.node.value.startsWith("http://purl.bdrc.io/ontology/shapes/adm/AdmEntityShape")) {
     // special case for admin entities
     // in that case n can never be 1
     const res = new Subject(new rdf.NamedNode(BDA_uri + parent.lname), parent.graph)
@@ -332,7 +332,8 @@ export const getShapesDocument = async (entity: rdf.NamedNode): Promise<NodeShap
   // this should be cached
   const loadRes = fetchTtl(shapeUriToFetchUri[shaperef.uri])
   const { store } = await loadRes
-  const shape = new NodeShape(shaperef.node, new EntityGraph(store, shaperef.uri, prefixMap, undefined, undefined, descriptionProperties))
+  const shape = new NodeShape(shaperef.node as rdf.NamedNode, 
+      new EntityGraph(store, shaperef.uri, prefixMap, undefined, undefined, descriptionProperties))
   return shape
 }
 
@@ -491,7 +492,8 @@ export const iconFromEntity = (entity: Entity | null): string => {
     icon = shapeQname.replace(/^[^:]+:([^:]+?)Shape[^/]*$/, "$1")
   }
   if(icon) {
-    icon = "/icons/"+icon.toLowerCase()+".svg"
+    if(icon.match(/^user/i)) icon = "/icons/userprofile.png" 
+    else icon = "/icons/"+icon.toLowerCase()+".svg"
   }
   return icon as string
 }
@@ -651,5 +653,6 @@ export const labelProperties: Array<rdf.NamedNode> = [
 
 export const getPreviewLink = (entity: rdf.NamedNode) => {
   const qname = prefixMap.qnameFromUri(entity.uri)
-  return config.LIBRARY_URL+"/show/"+qname
+  if(!qname.startsWith("bdu:")) return config.LIBRARY_URL+"/show/"+qname
+  return ""
 }
