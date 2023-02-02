@@ -24,3 +24,8 @@ export const demoAtom = atom<boolean>({
   key: "demoAtom",
   default: false,
 })
+
+export const idTokenAtom = atom<string|null>({
+  key: "idTokenAtom",
+  default: localStorage.getItem("BLMPidToken")
+})

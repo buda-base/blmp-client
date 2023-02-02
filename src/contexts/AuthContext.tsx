@@ -4,7 +4,7 @@ import { useRecoilState } from "recoil"
 import axios from "axios"
 
 import config from "../config"
-import { reloadProfileState, userQnameState, RIDprefixState } from "../atoms/common"
+import { reloadProfileState, userQnameState, RIDprefixState, idTokenAtom } from "../atoms/common"
 import { fetchTtl, atoms, ns, RDFResource, EntityGraph } from "rdf-document-editor"
 import * as rdf from "rdflib"
 import * as rde_config from "../helpers/config"
@@ -20,7 +20,7 @@ export const AuthContext = React.createContext<AuthContextType>({ idToken: null,
 
 export const AuthContextWrapper = ({ children }: {children : React.ReactNode}) => {
   const { isAuthenticated, getIdTokenClaims, getAccessTokenSilently, user, logout } = useAuth0()
-  const [idToken, setIdToken] = useState<string|null>(null)
+  const [idToken, setIdToken] = useRecoilState(idTokenAtom)
   const [loadingState, setLoadingState] = useState({ status: "idle", error: null })
   const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(atoms.uiLitLangState)

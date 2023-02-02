@@ -3,10 +3,9 @@ import { TextField, Button, CircularProgress, Checkbox, FormGroup, FormControlLa
 import { useRecoilState } from "recoil"
 import { useAuth0 } from "@auth0/auth0-react"
 import axios from "axios"
-import { RIDprefixState } from "../atoms/common"
+import { RIDprefixState, idTokenAtom } from "../atoms/common"
 import config from "../config"
 import { debug as debugfactory } from "debug"
-import { atoms } from "rdf-document-editor"
 
 const debug = debugfactory("bdrc:ScanRequestContainer")
 
@@ -29,7 +28,7 @@ function ScanRequestContainer() {
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
   const { isAuthenticated, getIdTokenClaims } = useAuth0()
-  const [idToken, setIdToken] = useRecoilState(atoms.idTokenAtom)
+  const [idToken, setIdToken] = useRecoilState(idTokenAtom)
 
   useEffect(() => {
     async function checkSession() {

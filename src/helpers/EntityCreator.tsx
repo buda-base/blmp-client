@@ -3,7 +3,7 @@ import * as rdf from "rdflib"
 import * as rde_config from "./config"
 import { debug as debugfactory } from "debug"
 import { useRecoilState } from "recoil"
-import { userQnameState, RIDprefixState } from "../atoms/common"
+import { userQnameState, RIDprefixState, idTokenAtom } from "../atoms/common"
 import { useAuth0 } from "@auth0/auth0-react"
 import {
   Subject,
@@ -23,7 +23,7 @@ export function EntityCreator(shapeNode: rdf.NamedNode, entityNode: rdf.NamedNod
   const [entity, setEntity] = useState<Subject | null>(null)
   const [shape, setShape] = useState<NodeShape | null>(null)
   const [entities, setEntities] = useRecoilState(atoms.entitiesAtom)
-  const [idToken, setIdToken] = useState(localStorage.getItem("BLMPidToken"))
+  const [idToken, setIdToken] = useRecoilState(idTokenAtom)
   const [tab, setTab] = useRecoilState(atoms.uiTabState)
   const [userQname, setUserQname] = useRecoilState(userQnameState)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)

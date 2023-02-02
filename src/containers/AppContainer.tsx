@@ -26,6 +26,7 @@ import {
   userQnameState,
   RIDprefixState,
   reloadProfileState,
+  idTokenAtom
 } from "../atoms/common"
 
 import {
@@ -125,7 +126,7 @@ function App(props: RouteProps) {
   const [RIDPrefix, setRIDPrefix] = useRecoilState(RIDprefixState)
   const [uiLang, setUiLang] = useRecoilState(atoms.uiLangState)
   const [uiLitLang, setUiLitLang] = useRecoilState(atoms.uiLitLangState)
-  const [idToken, setIdToken] = useRecoilState(atoms.idTokenAtom)
+  const [idToken, setIdToken] = useRecoilState(idTokenAtom)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
   const location = useLocation()
   let undoEntity: string | null = null
