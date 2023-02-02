@@ -390,7 +390,7 @@ export const putDocumentFactory = (
       }
 
       const entityQname = prefixMap.qnameFromUri(entity.uri)
-      const qnameForAPI = entityQname == userQname ? "me" : entityQname
+      const qnameForAPI = entityQname
       const url = config.API_BASEURL + qnameForAPI + "/focusgraph"
 
       const response = await fetch(url, { headers, method, body: str })
