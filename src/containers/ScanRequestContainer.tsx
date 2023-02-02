@@ -6,6 +6,7 @@ import axios from "axios"
 import { RIDprefixState } from "../atoms/common"
 import config from "../config"
 import { debug as debugfactory } from "debug"
+import { atoms } from "rdf-document-editor"
 
 const debug = debugfactory("bdrc:ScanRequestContainer")
 
@@ -28,7 +29,7 @@ function ScanRequestContainer() {
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
 
   const { isAuthenticated, getIdTokenClaims } = useAuth0()
-  const [idToken, setIdToken] = useState("")
+  const [idToken, setIdToken] = useRecoilState(atoms.idTokenAtom)
 
   useEffect(() => {
     async function checkSession() {
