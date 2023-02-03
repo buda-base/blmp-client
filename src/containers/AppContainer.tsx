@@ -40,6 +40,7 @@ import { default as blmpEnTranslations } from "../translations/en"
 import { default as BVMT } from "../libs/bvmt/src/App"
 import { debug as debugfactory } from "debug"
 import _ from "lodash"
+import { HistoryHandler } from "../helpers/observer"
 
 const debug = debugfactory("blmp:app")
 
@@ -312,7 +313,7 @@ function App(props: RouteProps) {
             </Routes>
           </div>
         </main>
-        {!location.pathname.startsWith("/new") && <BottomBarContainer config={config_rde} />}
+        {!location.pathname.startsWith("/new") && <BottomBarContainer config={config_rde} extraElement={<HistoryHandler entityUri={entityUri}/>} />}
       </div>
     </ClearCacheProvider>
   )

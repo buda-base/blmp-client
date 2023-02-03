@@ -19,21 +19,18 @@ const debug = debugfactory("bdrc:index")
 const container = document.querySelector("#root")
 
 let ctrlDown = false
-const ctrl1 = 17,
-  ctrl2 = 91,
-  yKey = 89,
-  zKey = 90
 
 document.onkeydown = (e: KeyboardEvent) => {
   ctrlDown = e.metaKey || e.ctrlKey
+  const key = e.key.toLowerCase()
   //debug("kD", e)
-  if (ctrlDown && (e.keyCode == zKey || e.keyCode == yKey)) {
+  if (ctrlDown && (key === "z" || key === "y")) {
     //debug("UNDO/REDO", undoRef, redoRef)
 
     if (!e.shiftKey) {
-      if (e.keyCode === zKey && undoRef && undoRef.current) undoRef.current.click()
-      else if (e.keyCode === yKey && redoRef && redoRef.current) redoRef.current.click()
-    } else if (e.keyCode === zKey && redoRef && redoRef.current) redoRef.current.click()
+      if (key === "z" && undoRef && undoRef.current) undoRef.current.click()
+      else if (key === "y" && redoRef && redoRef.current) redoRef.current.click()
+    } else if (key === "z" && redoRef && redoRef.current) redoRef.current.click()
 
     // DONE: fix conflict with chrome undo inside text input
     const elem = document.activeElement as HTMLElement
