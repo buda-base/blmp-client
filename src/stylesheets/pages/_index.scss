@@ -342,6 +342,7 @@ input[type="checkbox"].dmcheck {
       &.serialwork > .shape-icon:before,
       &.work > .shape-icon:before { background-image:url(/icons/work.svg);  background-size:55px auto; background-position: 55% 50%; }
       &.corporation > .shape-icon:before { background-image:url(/icons/corporation.svg);  }
+      &.collection > .shape-icon:before { background-image:url(/icons/collection.svg);  }
       &.topic > .shape-icon:before { background-image:url(/icons/topic.svg);  }
       &.place > .shape-icon:before { background-image:url(/icons/place.svg);  }
       &.userprofile, &.user, &[data-shape="bds:UserProfileShape"] { 
