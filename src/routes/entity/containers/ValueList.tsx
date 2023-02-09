@@ -1382,6 +1382,7 @@ const EditString: FC<{
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <TextField
         //className={/*classes.root +*/ " mt-2"}
+        {...property.datatype.value === xsdanyURI ? { inputProps:{ type:"url" } }:{}}
         label={label}
         style={{ width: "100%" }}
         value={lit.value}
