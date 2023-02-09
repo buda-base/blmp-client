@@ -454,6 +454,7 @@ section,
 .hoverPart { visibility: hidden; display:flex; width:68px; flex-shrink:0; align-items: flex-end; 
   .minimalAdd button { padding:0; }
 }
+.urlString:hover .hoverPart,
 .resSelect:hover .hoverPart,
 .langString:hover .hoverPart { visibility: visible; }
 .langString+.langString { padding-top:10px;}
@@ -595,6 +596,7 @@ label .help.literal,
 .card > [role="main"]:first-child [role="main"] { margin-top:0 !important;  }
 */
 
+.card [role="main"] + [role="main"] .propLabel[data-prop="bds:CommonShape-rdfsSeeAlso"] + .overFauto > div ~ div,
 .card [role="main"] + [role="main"] .propLabel { margin-top:8px; }
 
 // .propLabel+div, .facet, .card { background:white; }

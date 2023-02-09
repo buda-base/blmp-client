@@ -1251,13 +1251,16 @@ const EditString: FC<{
   updateEntityState: (es: EditedEntityState) => void
   entity: Subject
   index: number
-}> = ({ property, lit, onChange, label, editable, updateEntityState, entity, index }) => {
+  anyPattern?: string
+  anyPatternError?: string
+}> = ({ property, lit, onChange, label, editable, updateEntityState, entity, index, anyPattern, anyPatternError }) => {
   const classes = useStyles()
   const [uiLang] = useRecoilState(uiLangState)
 
   const dt = property.datatype
-  const pattern = property.pattern ? new RegExp(property.pattern) : undefined
+  const pattern = anyPattern || property.pattern ? new RegExp(anyPattern || property.pattern) : undefined
   const useEdtf = property.specialPattern?.value === ns.RDE("PatternEDTF").value
+  const patternError = anyPatternError || ValueByLangToStrPrefLang(property.errorMessage, uiLang) 
 
   const [error, setError] = useState("") //getIntError(lit.value))
 
@@ -1283,9 +1286,9 @@ const EditString: FC<{
   const getPatternError = (val: string) => {
     let err = ""
     if (pattern !== undefined && val !== "" && !val.match(pattern)) {
-      err = ValueByLangToStrPrefLang(property.errorMessage, uiLang)
+      err = patternError
       if(!err) err = "pattern error"
-      debug("err:", err, property.errorMessage)
+      debug("err:", err, patternError)
     }
     return err
   }
@@ -1558,6 +1561,7 @@ const xsdinteger = ns.XSD("integer").value
 const xsddecimal = ns.XSD("decimal").value
 const xsdint = ns.XSD("int").value
 const xsdboolean = ns.XSD("boolean").value
+const xsdanyURI = ns.XSD("anyURI").value
 
 const intishTypeList = [xsdinteger, xsddecimal, xsdint]
 
@@ -1697,8 +1701,10 @@ const LiteralComponent: FC<{
       />
     )
   } else {
+    if (t?.value === xsdanyURI) classN = "urlString " 
     edit = (
       <EditString
+        {...t?.value === xsdanyURI?{ anyPattern:"https?:[/][/].*", anyPatternError:i18n.t("error.url") }:{}}
         property={property}
         lit={lit}
         onChange={onChange}
