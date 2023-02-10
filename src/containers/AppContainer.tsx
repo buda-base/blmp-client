@@ -42,6 +42,8 @@ import { debug as debugfactory } from "debug"
 import _ from "lodash"
 import { HistoryHandler } from "../helpers/observer"
 
+import "../stylesheets/app.scss"
+
 const debug = debugfactory("blmp:app")
 
 const i18nSrc = { ...enTranslations }
