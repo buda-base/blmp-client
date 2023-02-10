@@ -309,7 +309,7 @@ function App(props: RouteProps) {
               />
               <Route path="/bvmt" element={<BVMT auth={auth} history={location} />} />
               <Route path="/withdraw" element={<WithdrawingEditorContainer />} />
-              <Route path="/scanrequest" element={<ScanRequestContainer />} />
+              <Route path="/scanrequest" element={<ScanRequestContainer  config={config_rde}  />} />
             </Routes>
           </div>
         </main>

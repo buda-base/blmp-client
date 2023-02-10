@@ -97,7 +97,7 @@ export const shapeRefsMap: Record<string, ExtRDFResourceWithLabel> = {
   "bds:RoleShape": new ExtRDFResourceWithLabel(BDS("RoleShape").value, { en: "Role" },{},null,prefixMap),
   "bds:TopicShape": new ExtRDFResourceWithLabel(BDS("TopicShape").value, { en: "Topic" },{},null,prefixMap),
   "bds:PlaceShape": new ExtRDFResourceWithLabel(BDS("PlaceShape").value, { en: "Place" },{},null,prefixMap),
-  "bds:WorkShape": new ExtRDFResourceWithLabel(BDS("WorkShape").value, { en: "Work" },{},null,prefixMap),
+  "bds:WorkShape": new ExtRDFResourceWithLabel(BDS("WorkShape").value, { en: "Work (Conceptual)" },{},null,prefixMap),
   "bds:SerialWorkShape": new ExtRDFResourceWithLabel(BDS("SerialWorkShape").value, { en: "Serial Work" },{},null,prefixMap),
   "bds:InstanceShape": new ExtRDFResourceWithLabel(BDS("InstanceShape").value, { en: "Instance (Version)" },{},null,prefixMap),
   "bds:ImageInstanceShape": new ExtRDFResourceWithLabel(BDS("ImageInstanceShape").value, {
@@ -119,8 +119,8 @@ export const possibleShapeRefs: Array<ExtRDFResourceWithLabel> = [
   shapeRefsMap["bds:CorporationShape"],
   shapeRefsMap["bds:RoleShape"],
   shapeRefsMap["bds:CollectionShape"],
+  shapeRefsMap["bds:WorkShape"],
   // removed from the UI
-  //shapeRefsMap["bds:WorkShape"],
   //shapeRefsMap["bds:ImageInstanceShape"],
   //shapeRefsMap["bds:UserProfileShape"],
   //shapeRefsMap["bds:ImagegroupShape"],
