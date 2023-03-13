@@ -194,8 +194,8 @@ export const putTtl = async (
       try {
         let clear = await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
         if (url.match(/[/]bdr:((MW)|(W[^A]))[^/]+[/]focusgraph$/)) {
-          clear = await fetch("http://iiif.bdrc.io/cache/clear", { method: "POST" })
-          clear = await fetch("http://iiifpres.bdrc.io/clearcache", { method: "POST" })
+          clear = await fetch("https://iiif.bdrc.io/cache/clear", { method: "POST" })
+          clear = await fetch("https://iiifpres.bdrc.io/clearcache", { method: "POST" })
         }
       } catch (e) {
         debug("error when cleaning cache:", e)

@@ -392,6 +392,11 @@ function App(props: AppProps) {
                 path="/new/:shapeQname/:subjectQname/:propertyQname/:index/:subnodeQname/named/:entityQname"
                 component={EntityCreationContainerRoute}
               />
+              <Route // #45
+                exact
+                path="/new/:shapeQname/named/:entityQname"
+                component={EntityCreationContainerRoute}
+              />
               <Route
                 exact
                 path="/edit/:entityQname/:shapeQname/:subjectQname/:propertyQname/:index"

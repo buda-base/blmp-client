@@ -98,7 +98,11 @@ export function EntityCreationContainer(props: AppProps) {
           }
         />
       )
-    else return <Redirect to={"/edit/" + (entityQname ? entityQname : entity.qname) + "/" + shapeQname} />
+    else if(routerHistory.location.pathname.includes("/named/")) {
+      return <Redirect to={"/edit/" + entityQname + "/" + shapeQname} />
+    } else {
+      return <Redirect to={"/edit/" + (entityQname ? entityQname : entity.qname) + "/" + shapeQname} />
+    }
   }
   if (entityLoadingState.status === "error") {
     return (
@@ -130,6 +134,8 @@ export function EntityCreationContainerAlreadyOpen(props: AppProps) {
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
   const [uiTab, setUiTab] = useRecoilState(uiTabState)
 
+  const routerHistory = useHistory()
+
   const unmounting = { val: false }
   useEffect(() => {
     return () => {
@@ -157,6 +163,9 @@ export function EntityCreationContainerAlreadyOpen(props: AppProps) {
         }
       />
     )
+  else if(routerHistory.location.pathname.includes("/named/")) {
+    return <Redirect to={"/edit/" + entityQname + "/" + shapeQname} />
+  } 
   else return <Redirect to={"/edit/" + entity.qname + "/" + shapeQname} />
 
   return (
