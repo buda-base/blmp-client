@@ -80,6 +80,7 @@ export const langs: Array<Lang> = [
     ],
   },
   { value: "sa-x-iast", keyboard: "ā Ā ī Ī ū Ū ṛ Ṛ ṝ Ṝ ḷ Ḷ ḹ Ḹ ṃ Ṃ ḥ Ḥ ṭ Ṭ ḍ Ḍ ṅ Ṅ ṅ Ṅ ṇ Ṇ ś Ś ṣ Ṣ".split(/ +/) },
+  { value: "sa-deva" },
 ]
 
 // a little memoization
