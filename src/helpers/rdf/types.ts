@@ -566,7 +566,7 @@ export class LiteralWithId extends rdf.Literal {
     }
   }
 
-  public copy() {
+  public copy(): LiteralWithId {
     return new LiteralWithId(this.value, this.language, this.datatype, this.id)
   }
 
@@ -579,7 +579,14 @@ export class LiteralWithId extends rdf.Literal {
   }
 
   public copyWithUpdatedDatatype(datatype: rdf.NamedNode): LiteralWithId {
-    return new LiteralWithId(this.value, this.language, new rdf.NamedNode(datatype.value), this.id)
+    return new LiteralWithId(
+      this.value, 
+      // need language to be "" or xsd:string datatype will be ignored and set to xsd:langString instead (bdr:MW1ER138/bdo:extentStatement)
+      // (see https://github.com/linkeddata/rdflib.js/blob/c5bcd953f9fc8f8e18ad47ef531144eee0d7f834/src/literal.ts#L45)
+      datatype.value !== ns.XSD("string").value ? this.language : "", 
+      new rdf.NamedNode(""+datatype.value), 
+      this.id
+    )
   }
 }
 
