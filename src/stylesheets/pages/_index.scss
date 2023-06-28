@@ -1029,6 +1029,7 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 .propLabel[data-prop^="bds:BdouPreferred"],
 .propLabel[data-type="0"], // literal
 .propLabel[data-type="2"], // select
+.propLabel[data-type="5"], // select/number (Scan/DigitizationQuality)
 .propLabel[data-prop$="hasMember"],
 .propLabel[data-prop$="placeLong"],
 .propLabel[data-prop$="placeLat"],
