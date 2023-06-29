@@ -1260,7 +1260,7 @@ const EditString: FC<{
   const dt = property.datatype
   const pattern = anyPattern || property.pattern ? new RegExp(anyPattern || property.pattern) : undefined
   const useEdtf = property.specialPattern?.value === ns.RDE("PatternEDTF").value
-  const patternError = anyPatternError || ValueByLangToStrPrefLang(property.errorMessage, uiLang) 
+  const patternError = anyPatternError || ValueByLangToStrPrefLang(property.errorMessage, uiLang)
 
   const [error, setError] = useState("") //getIntError(lit.value))
 
@@ -1287,7 +1287,7 @@ const EditString: FC<{
     let err = ""
     if (pattern !== undefined && val !== "" && !val.match(pattern)) {
       err = patternError
-      if(!err) err = "pattern error"
+      if (!err) err = "pattern error"
       debug("err:", err, patternError)
     }
     return err
@@ -1296,7 +1296,7 @@ const EditString: FC<{
   const locales = { en: "en-US", "zh-hans": "zh-Hans-CN", bo: "bo-CN" }
 
   let timerEdtf = 0,
-    changeCallback = (val:string) => null ;
+    changeCallback = (val: string) => null
   useEffect(() => {
     //debug("cCb?",uiLang,locales[uiLang])
     changeCallback = (val: string) => {
@@ -1376,13 +1376,13 @@ const EditString: FC<{
 
   useEffect(() => {
     changeCallback(lit.value)
-  }, [ lit.value ] )
+  }, [lit.value])
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <TextField
         //className={/*classes.root +*/ " mt-2"}
-        {...property.datatype.value === xsdanyURI ? { inputProps:{ type:"url" } }:{}}
+        {...(property.datatype.value === xsdanyURI ? { inputProps: { type: "url" } } : {})}
         label={label}
         style={{ width: "100%" }}
         value={lit.value}
@@ -1616,10 +1616,10 @@ const LiteralComponent: FC<{
   }
 
   useEffect(() => {
-    if(lit.datatype.value !== property.datatype.value) {
+    if (lit.datatype.value !== property.datatype.value) {
       onChange(lit.copyWithUpdatedDatatype(property.datatype))
     }
-  }, [lit] )
+  }, [lit])
 
   useEffect(() => {
     let error = false
@@ -1702,10 +1702,10 @@ const LiteralComponent: FC<{
       />
     )
   } else {
-    if (t?.value === xsdanyURI) classN = "urlString " 
+    if (t?.value === xsdanyURI) classN = "urlString "
     edit = (
       <EditString
-        {...t?.value === xsdanyURI?{ anyPattern:"https?:[/][/].*", anyPatternError:i18n.t("error.url") }:{}}
+        {...(t?.value === xsdanyURI ? { anyPattern: "https?:[/][/].*", anyPatternError: i18n.t("error.url") } : {})}
         property={property}
         lit={lit}
         onChange={onChange}
@@ -2038,6 +2038,8 @@ const SelectComponent: FC<{
       }
     }
     debug("error cannot get element from value " + value)
+    // case when sh:in and no default value
+    if (!property.defaultValue) return noneSelected
     return null
   }
 
@@ -2070,9 +2072,11 @@ const SelectComponent: FC<{
   const valueNotInList = !possibleValues.some((pv) => pv.id === val?.id)
   useEffect(() => {
     if (valueNotInList) {
-      //debug("not in list:",property.path.sparqlString+"_"+selectIdx,res,val,possibleValues)
-      setError(i18n.t("error.select", { val: val?.uri.includes("purl.bdrc.io") ? val?.qname : val?.uri }))
-      updateEntityState(EditedEntityState.Error, property.path.sparqlString + "_" + selectIdx)
+      debug("not in list:", property.path.sparqlString + "_" + selectIdx, res, val, possibleValues)
+      if (property.defaultValue) {
+        setError(i18n.t("error.select", { val: val?.uri.includes("purl.bdrc.io") ? val?.qname : val?.uri }))
+        updateEntityState(EditedEntityState.Error, property.path.sparqlString + "_" + selectIdx)
+      }
     } else {
       updateEntityState(EditedEntityState.Saved, property.path.sparqlString + "_" + selectIdx)
     }
@@ -2145,7 +2149,7 @@ const SelectComponent: FC<{
               )
             }
           })}
-          {valueNotInList && (
+          {valueNotInList && val?.value !== "" && (
             <MenuItem
               key={"extra-val-id"}
               value={val?.id}

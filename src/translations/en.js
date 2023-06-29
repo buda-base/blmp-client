@@ -19,7 +19,7 @@ const enTranslations = {
     boolean: "Boolean",
     true: "True",
     false: "False",
-    unset: "-",
+    unset: "–",
   },
   search: {
     help: {
@@ -59,7 +59,7 @@ const enTranslations = {
     select: "'{{val}}' is not in list of allowed values",
     newer: "There is a new version of this record in the database.",
     lost: "Please reload the record, apply your changes again and save.",
-    url: "URL must begin with http:// or https://"
+    url: "URL must begin with http:// or https://",
   },
   general: {
     add_another: "Add {{val}}",
