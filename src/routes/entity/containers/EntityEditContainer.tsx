@@ -392,7 +392,8 @@ function EntityEditContainer(props: AppProps) {
       const headers = new Headers()
       headers.set("Authorization", "Bearer " + idToken)
       const response = await fetch(url, { method: "HEAD", headers })
-      const onlineEtag = response.headers.get("etag")
+      let onlineEtag = response.headers.get("etag")
+      onlineEtag = onlineEtag?.replace(/^W\//,"")
       if (onlineEtag && onlineEtag !== localEtag && !unmounting) {
         //debug("etag?",onlineEtag, localEtag)
         newEtag = true

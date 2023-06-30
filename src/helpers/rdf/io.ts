@@ -101,7 +101,8 @@ export const loadTtl = async (
       acceptTtlWithToken.delete("Authorization")
     }
     const response = await fetch(url, { headers: idToken ? acceptTtlWithToken : acceptTtl })
-    const etag = response.headers.get("etag")
+    let etag = response.headers.get("etag")
+    etag = etag?.replace(/^W\//,"")
 
     // eslint-disable-next-line no-magic-numbers
     if (allow404 && response.status == 404) {
@@ -158,7 +159,8 @@ export const putTtl = async (
       //debug("curl:",curl.copy)
       //alert();
 
-      const etag = response.headers.get("etag")
+      let etag = response.headers.get("etag")
+      etag = etag?.replace(/^W\//,"")
 
       // eslint-disable-next-line no-magic-numbers
       if (response.status == 403) {
