@@ -372,6 +372,16 @@ function EntityEditContainer(props: AppProps) {
   }, [warning])
   //debug("warning:",warning)
 
+  const { isAuthenticated, getIdTokenClaims } = useAuth0()
+  const [idToken, setIdToken] = useState("")
+  useEffect(() => {
+    async function checkSession() {
+      const idToken = await getIdTokenClaims()
+      setIdToken(idToken?.__raw)
+    }
+    if (isAuthenticated) checkSession()
+  }, [isAuthenticated])
+
   const [reloadEntity, setReloadEntity] = useRecoilState(reloadEntityState)
   const [etagChanged, setEtagChanged] = useState(false)
   const localEtag = entityObj?.length ? entityObj[0].alreadySaved : ""
@@ -379,7 +389,9 @@ function EntityEditContainer(props: AppProps) {
     let newEtag = false
     if (localEtag) {
       const url = fetchUrlFromEntityQname(entityQname)
-      const response = await fetch(url, { method: "HEAD" })
+      const headers = new Headers()
+      headers.set("Authorization", "Bearer " + idToken)
+      const response = await fetch(url, { method: "HEAD", headers })
       const onlineEtag = response.headers.get("etag")
       if (onlineEtag && onlineEtag !== localEtag && !unmounting) {
         //debug("etag?",onlineEtag, localEtag)
