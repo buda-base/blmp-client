@@ -2073,7 +2073,7 @@ const SelectComponent: FC<{
   useEffect(() => {
     if (valueNotInList) {
       debug("not in list:", property.path.sparqlString + "_" + selectIdx, res, val, possibleValues)
-      if (property.defaultValue) {
+      if (property.minCount > 0 || val.value != "") {
         setError(i18n.t("error.select", { val: val?.uri.includes("purl.bdrc.io") ? val?.qname : val?.uri }))
         updateEntityState(EditedEntityState.Error, property.path.sparqlString + "_" + selectIdx)
       }
