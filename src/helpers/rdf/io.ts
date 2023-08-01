@@ -35,6 +35,7 @@ export const shapeQnameToUri: Record<string, string> = {
   "bds:SerialWorkShape": shapesbase + "SerialWorkUIShapes",
   "bds:InstanceShape": shapesbase + "InstanceUIShapes",
   "bds:ImageInstanceShape": shapesbase + "ImageInstanceUIShapes",
+  "bds:EtextInstanceShape": shapesbase + "EtextInstanceUIShapes",
   "bds:RoleShape": shapesbase + "RoleUIShapes",
   "bds:CollectionShape": shapesbase + "CollectionUIShapes",
   "bds:ImagegroupShape": shapesbase + "ImagegroupUIShapes",

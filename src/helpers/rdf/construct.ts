@@ -108,6 +108,7 @@ export function EntityCreator(shapeQname: string, entityQname: string | null, un
     async function createResource(shapeQname: string, entityQname: string | null) {
       if (!unmounting.val) setEntityLoadingState({ status: "fetching shape", error: undefined })
       const url = fetchUrlFromshapeQname(shapeQname)
+      //qdebug("url?",url,shapeQname)
       const loadShape = loadTtl(url)
       const loadOnto = loadOntology()
       let shape: NodeShape

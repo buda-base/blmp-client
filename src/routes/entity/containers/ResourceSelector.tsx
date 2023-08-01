@@ -776,7 +776,7 @@ const ResourceSelector: FC<{
               const label = lang.ValueByLangToStrPrefLang(r.prefLabels, uiLang)
               return (
                 <MenuItem
-                  {...(r.qname === "bdo:EtextInstance" ? { disabled: true } : {})}
+                  //{...(r.qname === "bdo:EtextInstance" ? { disabled: true } : {})}
                   key={r.qname}
                   value={r.qname}
                   onClick={() => {

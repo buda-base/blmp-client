@@ -737,11 +737,16 @@ const Create: FC<{
       //order: "desc" // default is "asc"
     })
   )
-  let sortProp = property.targetShape?.properties.filter((p) => p.path.sparqlString === property.sortOnProperty?.value)
+  
+  //debug("create:",shape,nextVal,newVal,property.qname,property) //,subject.getAtomForProperty(property.path.sparqlString))
+  
+  let sortProp = property.targetShape?.properties.filter((p) => { 
+    //debug("p?",p.qname,p.path)
+    return p.path.sparqlString === property.sortOnProperty?.value 
+  })
   if (sortProp?.length) sortProp = sortProp[0]
   if (sortProp?.minInclusive != null && nextVal < sortProp.minInclusive) nextVal = sortProp.minInclusive
   if (sortProp?.maxInclusive != null && nextVal > sortProp.maxInclusive) nextVal = sortProp.maxInclusive
-  //debug("create:",shape,nextVal,newVal,property.qname,property) //,subject.getAtomForProperty(property.path.sparqlString))
 
   let waitForNoHisto = false
 
