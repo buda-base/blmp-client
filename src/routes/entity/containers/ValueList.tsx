@@ -196,7 +196,9 @@ const generateDefault = async (
   idToken: string | null,
   val = ""
 ): Value | Value[] => {
+  
   //debug("genD:", property, parent)
+
   switch (property.objectType) {
     case ObjectType.ResExt:
       /*
@@ -768,14 +770,22 @@ const Create: FC<{
         let reservedId = await reserveLname(prefix, null, idToken, n)
         if (reservedId) reservedId = reservedId.split(/[ \n]+/).map((id) => "bdr:" + id)
         else throw "error reserving ids"
+
+        let instType = "Image" ;
+        if(property.targetShape?.qname === "bds:EtextVolumeShape") instType = "Etext" ;
+
         if (str.match(/bdo:instanceHasVolume/))
           str = str.replace(/(bdo:instanceHasVolume([\n\r]|[^;.])+)([;.])/m, "$1," + reservedId.join(",") + "$3")
         else
-          str = str.replace(/(a bdo:ImageInstance)([;.])/m, "$1; bdo:instanceHasVolume " + reservedId.join(",") + " $2")
+          str = str.replace(new RegExp("(a bdo:"+instType+"Instance)([;.])","m"), "$1; bdo:instanceHasVolume " + reservedId.join(",") + " $2")
         str = str.replace(
           new RegExp("(" + subject.qname + "[\n\r +]*a )"),
           reservedId
-            .map((id) => id + " a bdo:ImageGroup ; bdo:volumeNumber " + nextVal++ + " ; bdo:volumePagesTbrcIntro 0 .")
+            .map((id) => 
+              instType === "Image" 
+              ? id + " a bdo:ImageGroup ; bdo:volumeNumber " + nextVal++ + " ; bdo:volumePagesTbrcIntro 0 ."
+              : id + " a bdo:EtextVolume ; bdo:volumeNumber " + nextVal++ + " ."
+            )
             .join("\n") + "\n$1"
         )
 
@@ -1382,6 +1392,8 @@ const EditString: FC<{
   useEffect(() => {
     changeCallback(lit.value)
   }, [lit.value])
+
+  //debug("editstr:", lit, property, property.datatype)
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
