@@ -1263,6 +1263,7 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
 
 .leaflet-control-geosearch form input { height:30px !important; }
 
+[data-route^='/etextrequest'],
 [data-route^='/scanrequest'],
 [data-route^='/withdraw'] {
   

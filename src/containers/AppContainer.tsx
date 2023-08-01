@@ -198,19 +198,23 @@ function HomeContainer() {
           {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
           <p className="menu">
             <Link className="menu-link" to="/scanrequest">
-              <img src="/icons/images.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
+              <img src="/icons/images.svg" style={{ height: "31px", marginRight: "13px", marginLeft: "7px" }} />
               Scan Request
             </Link>
             <Link className="menu-link iiif" to="/bvmt">
-              <img src="/icons/iiif.png" />
+              <img src="/icons/iiif.png" style={{ marginRight: "15px", marginLeft: "4px" }} />
               BUDA Volume Manifest Tool
+            </Link>
+            <Link className="menu-link" to="/etextrequest">
+              <img src="/icons/etext.svg" style={{ height: "31px", marginRight: "10px", marginLeft: "5px" }} />
+              Etext Request
             </Link>
             <Link className="menu-link" to="/outline">
               <img src="/icons/outline.svg" width="64" />
               Outline Editor
             </Link>
             <Link className="menu-link" to="/withdraw">
-              <span style={{ width: "44px", marginRight: "15px", display: "inline-flex", justifyContent: "center" }}>
+              <span style={{ width: "44px", marginLeft: "5px", marginRight: "12px", display: "inline-flex", justifyContent: "center" }}>
                 <ShuffleIcon style={{ fontSize: "44px", color: "black" }} />
               </span>
               Withdrawing Editor
@@ -420,6 +424,7 @@ function App(props: AppProps) {
               <Route exact path="/outline" component={OutlineEditorContainer} />
               <Route exact path="/withdraw" component={WithdrawingEditorContainer} />
               <Route exact path="/scanrequest" component={ScanRequestContainer} />
+              <Route exact path="/etextrequest" render={(rprops) => <ScanRequestContainer {...rprops} isEtext={true}/>} />
               <Route exact path="/demo" component={DemoContainer} />
             </Switch>
           </div>

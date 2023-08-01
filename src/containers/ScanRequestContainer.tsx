@@ -13,7 +13,7 @@ import config from "../config"
 
 const debug = require("debug")("bdrc:NavBar")
 
-function ScanRequestContainer() {
+function ScanRequestContainer(props) {
   const [RIDfrom, setRIDfrom] = useState("")
   const [reproductionOf, setReproductionOf] = useState("")
   const [nbVol, setNbVol] = useState(1)
@@ -24,6 +24,8 @@ function ScanRequestContainer() {
   const [message, setMessage] = useState(false)
   const [onlyNSync, setOnlyNSync] = useState(false)
   const [RIDprefix, setRIDprefix] = useRecoilState(RIDprefixState)
+
+  const { isEtext } = props
 
   const { isAuthenticated, getIdTokenClaims } = useAuth0()
   const [idToken, setIdToken] = useState("")
@@ -36,7 +38,7 @@ function ScanRequestContainer() {
     if (isAuthenticated) checkSession()
   }, [isAuthenticated])
 
-  const checkFormat = (id, str, prefix = "w") => {
+  const checkFormat = (id, str, prefix = isEtext?"ie":"w") => {
     const expr = new RegExp("^"+prefix+"(\\d|eap)[^ ]*$","i")
     if (!str || str.match(expr)) setErrors({ ...errors, io: false, [id]: {} })
     else setErrors({ ...errors, io: false, [id]: { error: true, 
@@ -60,18 +62,22 @@ function ScanRequestContainer() {
 
       setSpinner(true)
 
+      let info = "scanInfo"
+      if(isEtext) info = "etextInfo"
+      const info_lang = info + "_lang"
+
       await axios
         .request({
           method: "get",
           responseType: "blob",
           timeout: 15000,
           baseURL: config.API_BASEURL,
-          url: "/scanrequest?IDPrefix=" + RIDprefix 
+          url: "/"+(isEtext?"etext":"scan")+"request?IDPrefix=" + RIDprefix 
+          + (scanInfo ? "&"+info+"="+encodeURIComponent(scanInfo)+"&"+info_lang+"="+scanInfoLang : "")
+          + "&"+(isEtext?"e":"i")+"instance=" + entityQname
           + (onlyNSync ? "&onlynonsync=true" : "")
           + "&nbvols="+nbVol
-          + (scanInfo ? "&scaninfo="+encodeURIComponent(scanInfo)+"&scaninfo_lang="+scanInfoLang : "")
           + "&instance=bdr:"+(reproductionOf?reproductionOf:"M"+RIDfrom)
-          + "&iinstance=" + entityQname
           + "&ric="+ric
           + "&access=bda:"+access
           ,
@@ -88,7 +94,7 @@ function ScanRequestContainer() {
           const temp = window.URL.createObjectURL(new Blob([response.data]))
           const link = document.createElement("a")
           link.href = temp
-          let filename = "scan-dirs-" + entityLname + ".zip"
+          let filename = (isEtext?"etext":"scan") + "-dirs-" + entityLname + ".zip"
           const header = response.headers["content-disposition"]
           if (header) {
             const parts = header!.split(";")
@@ -126,14 +132,14 @@ function ScanRequestContainer() {
   return (
     <div>
       <div>
-        <h1>Scan Request</h1>
+        <h1>{isEtext?"Etext":"Scan"} Request</h1>
         <br />
-        <label className="propLabel">Image Instance</label>
+        <label className="propLabel">{isEtext?"Etext":"Image"} Instance</label>
         <TextField
           InputLabelProps={{ shrink: true }}
           style={{ width: "50%", marginBottom: "10px" }}
           value={RIDfrom}
-          placeholder={"RID of the image instance"}
+          placeholder={"RID of the "+(isEtext?"etext":"image")+" instance"}
           onChange={(ev) => {
             setRIDfrom(ev.target.value)
             checkFormat("from", ev.target.value)
@@ -177,7 +183,7 @@ function ScanRequestContainer() {
           }}
           {...errors["repro"]}
         />        
-        <label className="propLabel">Scan info</label>
+        <label className="propLabel">{isEtext?"Etext":"Scan"} info</label>
         <div style={{ display:"flex", alignItems:"flex-end", marginBottom: "10px" }}>
           <TextField
             InputLabelProps={{ shrink: true }}
@@ -219,7 +225,7 @@ function ScanRequestContainer() {
           className={"btn-rouge outlined " + (disabled ? "disabled" : "")}
           onClick={handleClick}
         >
-          {spinner ? <CircularProgress size="14px" color="white" /> : "scan request"}
+          {spinner ? <CircularProgress size="14px" color="white" /> : (isEtext?"etext":"scan")+" request"}
         </Button>
         {errors.io != false && <p style={{ color: "red", fontStyle: "italic", fontWeight: 500 }}>{errors.io}</p>}
       </div>
