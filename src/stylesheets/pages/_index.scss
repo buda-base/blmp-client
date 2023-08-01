@@ -350,6 +350,7 @@ input[type="checkbox"].dmcheck {
       }
       &.instance > .shape-icon:before { background-image:url(/icons/instance.svg); background-size:55px auto;  }
       &.imageinstance > .shape-icon:before { background-image:url(/icons/imageinstance.svg); background-size:55px auto;  }
+      &.etextinstance > .shape-icon:before { background-image:url(/icons/etext.svg); background-size:55px auto;  }
       
       
       h1 { font-size:25px; line-height:35px; font-weight:700; text-align: left; color:#343434; padding-left:0px; padding-top:10px;}
