@@ -111,7 +111,7 @@ function HomeContainer() {
   )
 }
 
-let undoTimer = 0
+const undoTimer = 0
 
 function App(props: RouteProps) {
   const auth = useAuth0()
@@ -132,7 +132,6 @@ function App(props: RouteProps) {
   const [idToken, setIdToken] = useRecoilState(idTokenAtom)
   const [reloadProfile, setReloadProfile] = useRecoilState(reloadProfileState)
   const location = useLocation()
-  let undoEntity: string | null = null
 
   // DONE: update undo buttons status after selecting entity in iframe
   useEffect(() => {
@@ -145,77 +144,6 @@ function App(props: RouteProps) {
       window.removeEventListener("message", updateUndoOnMsg)
     }
   }, [])
-
-  // this is needed to initialize undo/redo without any button being clicked
-  // (link between recoil/react states and data updates automatically stored in EntityGraphValues)
-  useEffect(() => {
-    //if (undoTimer === 0 || entityUri !== undoEntity) {
-    //debug("clear:",entities[entity]?.subject,undoTimer, entity, entityUri,entities)
-    undoEntity = entityUri
-    clearInterval(undoTimer)
-    const delay = 150
-    undoTimer = window.setInterval(() => {
-      //debug("timer", undoTimer, entity, entityUri, history[entityUri], history)
-      if (!history[entityUri]) return
-      const { top, first, current }:HistoryStatus = getHistoryStatus(entityUri)
-      //debug("disable:",disabled,first)
-      if (first === -1) return
-      if (disabled) setDisabled(false)
-      // check if flag is on top => nothing modified
-      if (history[entityUri][history[entityUri].length - 1]["tmp:allValuesLoaded"]) {
-        if (!atoms.sameUndo(undo, atoms.noUndoRedo)) { //
-          //debug("no undo:",undo)
-          setUndo(atoms.noUndoRedo)
-        }
-      } else {
-        if (first !== -1) {
-          if (current < 0 && first < top) {
-            if (history[entityUri][top][entityUri]) {
-              // we can undo a modification of simple property value
-              const prop = Object.keys(history[entityUri][top][entityUri])
-              if (prop && prop.length && entities[entity].subject !== null) {
-                const newUndo = {
-                  prev: { enabled: true, subjectUri: entityUri, propertyPath: prop[0], parentPath: [] },
-                  next: atoms.noUndo,
-                }
-                if (!atoms.sameUndo(undo, newUndo)) {
-                  //debug("has undo1:", undo, newUndo, first, top, history, current, entities[entity])
-                  setUndo(newUndo)
-                }
-              }
-            } else {
-              // TODO: enable undo when change in subnode
-              const parentPath = history[entityUri][top]["tmp:parentPath"]
-              if (parentPath && parentPath[0] === entityUri) {
-                const sub = Object.keys(history[entityUri][top]).filter(
-                  (k) => !["tmp:parentPath", "tmp:undone"].includes(k)
-                )
-                if (sub && sub.length) {
-                  // we can undo a modification of simple value of subproperty of a property
-                  const prop = Object.keys(history[entityUri][top][sub[0]])
-                  if (prop && prop.length && entities[entity].subject !== null) {
-                    const newUndo = {
-                      next: atoms.noUndo,
-                      prev: { enabled: true, subjectUri: sub[0], propertyPath: prop[0], parentPath },
-                    }
-                    if (!atoms.sameUndo(undo, newUndo)) {
-                      //debug("has undo2:", undo, newUndo, first, top, history, current, entities[entity])
-                      setUndo(newUndo)
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }, delay)
-    //}
-
-    return () => {
-      clearInterval(undoTimer)
-    }
-  }, [disabled, entities, undos, uiTab])
 
   if (isLoading) return <div>Loading...</div>
   if (config.requireAuth && !isAuthenticated) return <AuthRequest />  
@@ -315,7 +243,8 @@ function App(props: RouteProps) {
             </Routes>
           </div>
         </main>
-        {!location.pathname.startsWith("/new") && <BottomBarContainer config={config_rde} extraElement={<HistoryHandler entityUri={entityUri}/>} />}
+        {!location.pathname.startsWith("/new") && 
+          <BottomBarContainer config={config_rde} /*extraElement={<HistoryHandler entityUri={entityUri}/>}*/ />}
       </div>
     </ClearCacheProvider>
   )
