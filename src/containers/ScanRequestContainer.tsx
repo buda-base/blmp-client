@@ -77,7 +77,7 @@ function ScanRequestContainer(props) {
           + "&"+(isEtext?"e":"i")+"instance=" + entityQname
           + (onlyNSync ? "&onlynonsync=true" : "")
           + "&nbvols="+nbVol
-          + "&instance=bdr:"+(reproductionOf?reproductionOf:"MW"+RIDfrom.replace(/^[WIE]+/,""))
+          + "&instance=bdr:"+(reproductionOf?reproductionOf:"MW"+RIDfrom.replace(/^(W|IE)/,""))
           + "&ric="+ric
           + "&access=bda:"+access
           ,
