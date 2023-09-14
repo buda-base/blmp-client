@@ -13,6 +13,8 @@ import config from "../config"
 
 const debug = require("debug")("bdrc:NavBar")
 
+// TODO: "add OCR input info"
+
 function ScanRequestContainer(props) {
   const [RIDfrom, setRIDfrom] = useState("")
   const [reproductionOf, setReproductionOf] = useState("")

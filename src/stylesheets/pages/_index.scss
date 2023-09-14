@@ -456,9 +456,10 @@ section,
 .hoverPart { visibility: hidden; display:flex; width:68px; flex-shrink:0; align-items: flex-end; 
   .minimalAdd button { padding:0; }
 }
-.urlString:hover .hoverPart,
-.resSelect:hover .hoverPart,
-.langString:hover .hoverPart { visibility: visible; }
+.urlString:not(.fixedCount):hover .hoverPart,
+.resSelect:not(.fixedCount):hover .hoverPart,
+.langString:not(.fixedCount):hover .hoverPart { visibility: visible; }
+s
 .langString+.langString { padding-top:10px;}
 
 .langString .withPreview + .hoverPart > * { margin-bottom:40px; }
@@ -466,6 +467,21 @@ section,
 .langString .hoverPart > button:first-child { margin-top:2px!important; }
 .resSelect .hoverPart > button:first-child { margin-right:0 !important; }
 
+:not(.canPush) > div > .resSelect.withPossibleValues:not(.fixedCount):hover,
+:not(.canPush) > div > .anyString:not(.fixedCount):hover,
+:not(.canPush) > div > .urlString:not(.fixedCount):hover,
+:not(.canPush) > div > .langString:not(.fixedCount):hover {
+  background-color:rgba(0,0,0,0.05);
+  box-shadow:-2px -2px 3px -1px rgba(0, 0, 0, 0.5);
+}
+
+
+:not(.canPush) > div > .resSelect.withPossibleValues:not(.fixedCount) .hoverPart,
+:not(.canPush) > div > .anyString:not(.fixedCount) .hoverPart,
+:not(.canPush) > div > .urlString:not(.fixedCount) .hoverPart,
+:not(.canPush) > div > .langString:not(.fixedCount) .hoverPart {
+  align-self:center;
+}
 
 .canPushPrefLabel {
   visibility: hidden;

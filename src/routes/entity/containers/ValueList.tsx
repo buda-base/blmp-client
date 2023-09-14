@@ -593,9 +593,7 @@ const ValueList: FC<{
             canDel={canDel && val != noneSelected}
             editable={editable}
             create={
-              canAdd && (
-                <Create subject={subject} property={property} embedded={embedded} newVal={newVal} shape={shape} />
-              )
+              <Create subject={subject} property={property} embedded={embedded} newVal={newVal} shape={shape} disable={!canAdd}/>
             }
             updateEntityState={updateEntityState}
           />
@@ -1742,6 +1740,8 @@ const LiteralComponent: FC<{
     )
   }
 
+  if(property.minCount === 1 && property.maxCount === 1) classN += " fixedCount"
+
   return (
     <div className={classN} style={{ display: "flex", alignItems: "flex-end" /*, width: "100%"*/ }}>
       {edit}
@@ -1749,7 +1749,7 @@ const LiteralComponent: FC<{
         <button
           className="btn btn-link ml-2 px-0 py-0 close-facet-btn"
           onClick={deleteItem}
-          {...(!canDel ? { disabled: true } : {})}
+          {...!canDel || !lit.value && index===0 && list.length===1 ? { disabled: true } : {}}
         >
           <RemoveIcon className="my-0 close-facet-btn" />
         </button>
@@ -2105,11 +2105,12 @@ const SelectComponent: FC<{
       if (!inOtherEntity)
         updateEntityState(EditedEntityState.Saved, property.path.sparqlString + "_" + selectIdx, false, !inOtherEntity)
     }
-  }, [])
+  }, [])  
 
   return (
     (possibleValues.length > 1 || error) && (
-      <div className="resSelect" style={{ display: "inline-flex", alignItems: "flex-end" }}>
+      <div className={"resSelect withPossibleValues" + (property.minCount === 1 && property.maxCount === 1 ? " fixedCount":"")} 
+          style={{ display: "inline-flex", alignItems: "flex-end" }}>
         <TextField
           select
           className={"selector mr-2"}
@@ -2178,12 +2179,10 @@ const SelectComponent: FC<{
             </MenuItem>
           )}
         </TextField>
-        <div className="hoverPart">
-          {canDel && (
-            <button className="btn btn-link mx-0 px-0 py-0" onClick={deleteItem}>
-              <RemoveIcon />
-            </button>
-          )}
+        <div className="hoverPart">          
+          <button className="btn btn-link mx-0 px-0 py-0" onClick={deleteItem} disabled={!canDel || val.id === "tmp:none"}>
+            <RemoveIcon />
+          </button>
           {create}
         </div>
       </div>
