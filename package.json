@@ -61,6 +61,7 @@
     "recoil": "^0.5.0",
     "redux": "^4.1.2",
     "throttle-debounce": "^3.0.1",
+    "traditional-or-simplified": "^1.0.3",
     "typescript": "^4.2.2",
     "typescript-memoize": "^1.0.0"
   },

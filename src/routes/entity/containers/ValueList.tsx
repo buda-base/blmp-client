@@ -59,6 +59,7 @@ import { entitiesAtom, Entity, EditedEntityState } from "../../../containers/Ent
 
 import { fromWylie } from "jsewts"
 import MDEditor, { commands } from "@uiw/react-md-editor"
+import TradOrSimp  from "traditional-or-simplified"
 
 //import edtf, { parse } from "edtf/dist/../index.js" // finally got it to work!! not in prod...
 import edtf, { parse } from "edtf" // see https://github.com/inukshuk/edtf.js/issues/36#issuecomment-1073778277
@@ -1009,6 +1010,42 @@ const EditLangString: FC<{
     if (newPrefLabels.length) setPrefLabels(newPrefLabels)
   }
 
+  const detectInputLanguage = useCallback((val:string) => {
+
+    const nativeranges = [
+      { "range": [0x0900, 0x097F], "lt": "sa-deva" },
+      { "range": [0x0F00, 0x0FFF], "lt": "bo" },
+      { "range": [0x1780, 0x17FF], "lt": "km" },
+      { "range": [0x19E0, 0x19FF], "lt": "km" },  // https://en.wikipedia.org/wiki/Khmer_Symbols      
+      { "range": [0x2E80, 0x2EFF], "lt": "zh-hani" },
+      { "range": [0x3000, 0x303F], "lt": "zh-hani" },
+      { "range": [0x3200, 0x9FFF], "lt": "zh-hani" },
+      { "range": [0xF900, 0xFAFF], "lt": "zh-hani" },
+      { "range": [0x20000, 0x2CEAF], "lt": "zh-hani" },
+    ];
+
+    let lang = ""
+	  for(let i = 0 ; i < val.length && !lang; i++) {
+      const cp = val.codePointAt(i);
+      for (const nl of nativeranges) {
+        if (cp >= nl['range'][0] && cp <= nl['range'][1]) {
+          lang = nl['lt'];
+          break;          
+        }
+      }
+    }
+    if(lang) {
+      // handle chinese using https://github.com/nickdrewe/traditional-or-simplified
+      if(lang === "zh-hani") {
+        if(TradOrSimp.isSimplified(val)) lang = "zh-hans" 
+        else if(TradOrSimp.isTraditional(val)) lang = "zh-hant"
+      }
+      return lang
+    }
+    return ""
+
+  }, [lit, onChange])
+
   return (
     <div
       className={"mb-0" + (withPreview ? " withPreview" : "")}
@@ -1041,10 +1078,12 @@ const EditLangString: FC<{
             InputLabelProps={{ shrink: true }}
             inputProps={{ spellCheck: "true", lang: lit.language === "en" ? "en_US" : lit.language }}
             onChange={(e) => {
+              const lang = detectInputLanguage(e.target.value)
               const newError = getLangStringError(lit.value)
               if (newError && error != newError) setError(newError)
               else updateEntityState(newError ? EditedEntityState.Error : EditedEntityState.Saved, lit.id)
-              onChange(lit.copyWithUpdatedValue(e.target.value))
+              if(!lang || lang === lit.language) onChange(lit.copyWithUpdatedValue(e.target.value))
+              else onChange(lit.copyWithUpdatedValueAndLanguage(e.target.value, lang))
             }}
             {...(error ? errorData : {})}
             {...(!editable ? { disabled: true } : {})}
@@ -1115,7 +1154,11 @@ const EditLangString: FC<{
             value={lit.value}
             preview="edit"
             onChange={(e) => {
-              if (e) onChange(lit.copyWithUpdatedValue(e))
+              if (e) { 
+                const lang = detectInputLanguage(e)
+                if(!lang || lang === lit.language) onChange(lit.copyWithUpdatedValue(e))
+                else onChange(lit.copyWithUpdatedValueAndLanguage(e, lang))
+              }
             }}
             commands={[
               commands.bold,
