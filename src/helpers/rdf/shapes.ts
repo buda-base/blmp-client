@@ -119,6 +119,7 @@ typeUriToShape[ns.BDO_uri + "Imagegroup"] = [shapeRefsMap["bds:ImagegroupShape"]
 typeUriToShape[ns.BDO_uri + "Corporation"] = [shapeRefsMap["bds:CorporationShape"]]
 typeUriToShape[ns.BDO_uri + "Work"] = [shapeRefsMap["bds:WorkShape"]]
 typeUriToShape[ns.BDO_uri + "SerialWork"] = [shapeRefsMap["bds:SerialWorkShape"]]
+typeUriToShape[ns.BDOU_uri + "User"] = [shapeRefsMap["bds:UserProfileShape"]]
 
 export const shapeRefsForEntity = (subject: Subject): Array<RDFResourceWithLabel> | null => {
   const type = subject.getPropResValue(rdfType)

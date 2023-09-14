@@ -38,7 +38,11 @@ function NewEntityContainer(props: AppProps) {
   */
 
   // otherwise we want the user to select the appropriate shape
-
+  
+  const expr = RID?.match(/^(.*:)?(.*)$/);
+  const loadRID = expr && expr[2] ? (expr[1] || "bdr:") + expr[2]?.toUpperCase() : RID // eslint-disable-line no-magic-numbers
+  //debug("loadRID:",expr,loadRID)
+  
   // "here is a list of all possible shapes" "to choose from in order to create a new entity":
   return (
     <div className="new-fix">
@@ -83,13 +87,13 @@ function NewEntityContainer(props: AppProps) {
             onChange={(e) => setRID(e.target.value)}
             helperText={"select an entity to load here by its RID"}
             onKeyDown={(event) => {
-              if (event.key === "Enter") props.history.push("/edit/bdr:" + RID.replace(/^bdr:/, "").toUpperCase())
+              if (event.key === "Enter") props.history.push("/edit/" +loadRID)
             }}
           />
         </div>
         <div>
           <Link
-            to={"/edit/bdr:" + RID.replace(/^bdr:/, "").toUpperCase()}
+            to={"/edit/"+loadRID}
             className={"btn btn-sm btn-outline-primary py-3 ml-2 lookup btn-rouge " + (!RID ? "disabled" : "")}
             style={{ boxShadow: "none", alignSelf: "center", marginBottom: "15px" }}
           >
