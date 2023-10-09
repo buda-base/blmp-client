@@ -25,7 +25,7 @@ import EntitySelector, {
   defaultEntityLabelAtom,
 } from "../containers/EntitySelectorContainer"
 import DemoContainer from "../containers/DemoContainer"
-import OutlineEditorContainer from "../containers/OutlineEditorContainer"
+import OutlineCSVEditorContainer from "../containers/OutlineCSVEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
 import ScanRequestContainer from "../containers/ScanRequestContainer"
 import Home from "../routes/home"
@@ -214,7 +214,15 @@ function HomeContainer() {
               Outline Editor
             </Link>
             <Link className="menu-link" to="/withdraw">
-              <span style={{ width: "44px", marginLeft: "5px", marginRight: "12px", display: "inline-flex", justifyContent: "center" }}>
+              <span
+                style={{
+                  width: "44px",
+                  marginLeft: "5px",
+                  marginRight: "12px",
+                  display: "inline-flex",
+                  justifyContent: "center",
+                }}
+              >
                 <ShuffleIcon style={{ fontSize: "44px", color: "black" }} />
               </span>
               Withdrawing Editor
@@ -421,10 +429,15 @@ function App(props: AppProps) {
                 )}
               />
               <Route exact path="/bvmt" render={(rprops) => <BVMT {...rprops} auth={auth} history={routerHistory} />} />
-              <Route exact path="/outline" component={OutlineEditorContainer} />
+              <Route exact path="/outline" component={OutlineCSVEditorContainer} />
+              <Route exact path="/outline/:rid" component={OutlineCSVEditorContainer} />
               <Route exact path="/withdraw" component={WithdrawingEditorContainer} />
               <Route exact path="/scanrequest" component={ScanRequestContainer} />
-              <Route exact path="/etextrequest" render={(rprops) => <ScanRequestContainer {...rprops} isEtext={true}/>} />
+              <Route
+                exact
+                path="/etextrequest"
+                render={(rprops) => <ScanRequestContainer {...rprops} isEtext={true} />}
+              />
               <Route exact path="/demo" component={DemoContainer} />
             </Switch>
           </div>

@@ -837,6 +837,10 @@ input.MuiInputBase-input,
   box-shadow:none !important;
 
   &:hover { text-decoration: none; }
+
+  &:focus { outline-color:#d7344199; }
+
+  &:disabled { opacity:0.5;  }
 }
 
 
@@ -1258,7 +1262,7 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
     }
   }
 
-  main .tabs-select { display:none; }
+  //main .tabs-select { display:none; }
   
   .navbar.bottom {
     .buttons {
@@ -1266,13 +1270,19 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
     }
   }
 
-  main .tabs-select + div { display:flex; justify-content: center; padding-left:0; 
+  main .tabs-select + div { 
   
-    & > div { width:1300px; background:white;
+    & > div {  background:white; padding-bottom:32px;
     
+      /*
       h1+p,
       h1 { text-align: center;}
+      */
     }
+  }
+
+  .container > div {
+    display: flex; align-items: end;
   }
 }
 

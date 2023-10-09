@@ -73,6 +73,11 @@ const enTranslations = {
     preview: "View on BUDA",
     reload: "reload the record",
   },
+  outline: {
+    dlCSV: "Download CSV",
+    ulCSV: "Upload CSV",
+    editCSV: "Edit CSV",
+  },
 }
 
 export default enTranslations
