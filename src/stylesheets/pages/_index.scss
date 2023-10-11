@@ -1278,13 +1278,30 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
       h1+p,
       h1 { text-align: center;}
       */
+
+      &.reactgrid {
+        padding:0;
+      }
     }
   }
 
   .container > div {
     display: flex; align-items: end;
   }
+
+  
+  .reactgrid-content { 
+
+    .rg-pane { 
+      .rg-cell { color: #434343; }
+    }
+    .rg-celleditor {
+      input { color: #434343; }
+    }
+    
+  }
 }
+
 
 
 .leaflet-control-geosearch form input { height:30px !important; }
