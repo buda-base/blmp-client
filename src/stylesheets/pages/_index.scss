@@ -936,7 +936,7 @@ body { overflow-y:scroll !important; padding-right:0 !important; }
 .innerNav + div > .group-edit-BG + .group.hasError > section.album > * > div > p svg { display:none; }
 
 
-.centered-ctn { width:1225px; margin:auto; padding-left:125px; text-align:left;
+.centered-ctn { width:1225px; margin:auto; padding-left:125px; text-align:left; 
   & > div { width:810px; max-width:100%; }
 }
 
@@ -1290,6 +1290,50 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
   }
 
   
+  .fullscreen:not(#a) {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    margin: 0;
+    max-width: none;
+    max-height: none;
+    width:calc(100vw);
+    height: 100vh !important;
+    z-index: 100;
+    padding: 80px 0;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    overflow:auto;
+  }
+  
+  .csv-container:not(#a) {
+    padding-bottom:16px ;
+  }
+
+  .csv-container:not(#a).fullscreen {
+    padding-bottom:80px ;
+  }
+
+  .fs-btn:not(.fs-true) { 
+    position: absolute; 
+    top:-75px;
+    right:15px;
+  }
+
+  .csv-container:not(.fullscreen) {
+    overflow: auto; 
+    height: calc(100vh - 66px - 70px - 20px - 240px - 48px);
+  }
+
+  .fs-btn.fs-true {
+    position: fixed;
+    top:12px;
+    right:15px;
+    z-index:10000;
+  }
+
+
   .reactgrid-content { 
 
     .rg-pane { 

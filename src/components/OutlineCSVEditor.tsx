@@ -3,6 +3,9 @@ import { useRecoilState } from "recoil"
 import Papa from 'papaparse';
 import { ReactGrid, Column, Row } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
+import FullscreenIcon from '@material-ui/icons/Fullscreen';
+import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
+import IconButton from '@material-ui/core/IconButton';
 
 import { uiTabState } from "../atoms/common"
 import config from "../config"
@@ -25,7 +28,9 @@ interface OutlineEntry {
 }
 
 // eslint-disable-next-line no-magic-numbers
-const colWidths = [ 335, 20, 20, 20, 20 ]
+const colWidths = { "RID":150, "Position": 20, "part type":90, "img start": 75, "img end": 75, "volume start":75, "volume end":75 }
+
+const colLabels = {  "img start":"im. start", "img end": "im. end", "volume start":"vol. start", "volume end": "vol. end" }
 
 export default function OutlineCSVEditor(props) {
   const { RID } = props
@@ -66,6 +71,10 @@ export default function OutlineCSVEditor(props) {
         }
       } else if (change.type === 'text') {
         prevEntry[entryIndex][fieldName] = change.newCell.text;
+      } else if (change.type === 'dropdown') {
+        //debug("dd:", change, fieldName)
+        prevEntry[entryIndex].isTypeOpen = change.newCell.isOpen;
+        prevEntry[entryIndex][fieldName] = change.newCell.value;
       }
     });
     return [...prevEntry];
@@ -88,7 +97,7 @@ export default function OutlineCSVEditor(props) {
             let n_pos = 1
             const head = {
               rowId: "header",
-              cells: results.data[0].map( d => ({ type: "header", text: d === "Position" ? "pos. " + n_pos++:d })).slice(0,1+1+1+1+1)
+              cells: results.data[0].map( d => ({ type: "header", text: d === "Position" ? "pos. " + n_pos++ : colLabels[d] || d }))
             }
             setHeaderRow(head)
 
@@ -98,11 +107,14 @@ export default function OutlineCSVEditor(props) {
                 head.cells.map( (c,j) => {
                   if(c.text.startsWith("pos.")) position.push(d[j] === "X")
                 });
+                const idx = position.length + 1
                 return {
                   //eslint-disable-next-line no-magic-numbers
-                  RID:d[0], position, partType:d[5], label:d[6], titles:d[7], work:d[8], notes:d[9], colophon:d[10], imgStart:Number(d[11]), 
+                  RID:d[0], position, partType:d[idx], label:d[idx+1], titles:d[idx+2], work:d[idx+3], notes:d[idx+4], colophon:d[idx+5], 
                   //eslint-disable-next-line no-magic-numbers
-                  imgEnd:Number(d[12]), volumeStart:Number(d[13]), volumeEnd:Number(d[14])
+                  imgStart:Number(d[idx+6]), imgEnd:Number(d[idx+7]), volumeStart:Number(d[idx+8]), volumeEnd:Number(d[idx+9]),
+                  
+                  isTypeOpen: false
                 }
               }
             }).filter(d => d && d.RID)
@@ -110,12 +122,13 @@ export default function OutlineCSVEditor(props) {
             setOutlineData(data)
 
             n_pos = 0
-            setColumns(head.cells.map( ({ text }, i) => ({ 
+            setColumns(head.cells.map( ({ text }, i) => { 
+              debug("w:", text, i, colWidths)
+              return { 
               columnId: results.data[0][i].replace(/ (.)/,(m,g1) => g1.toUpperCase()).replace(/Position/,"position" + n_pos++),
               resizable:true,
-              width: colWidths[i] // eslint-disable-line no-magic-numbers
-            })).slice(0,1+1+1+1+1) || [])
-
+              width: colWidths[results.data[0][i]] || 150 // eslint-disable-line no-magic-numbers
+            }}) || []) 
           } } )
         } catch(e) {
           // TODO: error fetching csv (401/403)
@@ -130,36 +143,45 @@ export default function OutlineCSVEditor(props) {
     if (tab != -1) setTab(-1)
   }, [tab])
 
-  if(!headerRow || ! outlineData.length || !columns.length) return <div>no data yet</div>
+  const [fullscreen, setFullscreen] = useState(false)
+
+  if(!headerRow || ! outlineData.length || !columns.length) return <div>loading...</div>
 
   const rows = [
     headerRow,
     ...outlineData.map<Row>( (d,i) => ({
       rowId: i,
       cells: [{
-        type: "text", text:d.RID
+          type: "text", text:d.RID
         },
         ...d.position.map(p => ({
           type: "checkbox", checked: p
+        })),{
+          type: "dropdown", selectedValue:d.partType, values: "T,S,V,C,E,TOC".split(",").map(v => ({ value:v, label: v })),
+          isOpen: d.isTypeOpen
+        },        
+        ..."label,titles,work,notes,colophon".split(",").map(p => ({
+          type:"text", text: d[p]
+        })),        
+        ..."imgStart,imgEnd,volumeStart,volumeEnd".split(",").map(p => ({
+          type:"number", value: Number(d[p]) || ""
         }))
       ]
-        /*,
-        partType:string,
-        label:string,
-        titles:string,
-        work:string,
-        notes:string,
-        colophon:string,
-        imgStart:number,
-        imgEnd:number,
-        volumeStart:number,
-        volumeEnd:number
-        */
-
     }))
   ]
 
-  debug("data:", outlineData, headerRow, columns, rows)
+  //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])
   
-  return <ReactGrid rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />;
+  return <div style={{ paddingBottom: "16px" }}>
+    <IconButton className={"btn-rouge fs-btn "+( fullscreen ? "fs-true" : "" )} onClick={() => setFullscreen(!fullscreen)} >
+        { fullscreen 
+          ? <FullscreenExitIcon />
+          : <FullscreenIcon />
+        }
+    </IconButton>
+    <div style={{ position: "relative" }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}>
+      
+      <ReactGrid rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />
+    </div>
+  </div>
 }
