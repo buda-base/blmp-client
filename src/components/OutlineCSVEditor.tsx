@@ -11,10 +11,7 @@ const debug = require("debug")("bdrc:csved")
 
 interface OutlineEntry {
   RID:string,
-  position1:boolean,
-  position2:boolean,
-  position3:boolean,
-  position4:boolean,
+  position:boolean[],
   partType:string,
   label:string,
   titles:string,
@@ -27,12 +24,26 @@ interface OutlineEntry {
   volumeEnd:number
 }
 
+// eslint-disable-next-line no-magic-numbers
+const colWidths = [ 335, 20, 20, 20, 20 ]
+
 export default function OutlineCSVEditor(props) {
   const { RID } = props
   const [tab, setTab] = useRecoilState(uiTabState)
   const [csv, setCsv] = useState("")
   const [outlineData, setOutlineData] = useState<OutlineEntry[]>([])
   const [headerRow, setHeaderRow] = useState<Row>()
+  const [columns, setColumns] = useState<Column[]>([]);
+  
+  const handleColumnResize = (ci: Id, width: number) => {
+      setColumns((prevColumns) => {
+          const columnIndex = prevColumns.findIndex(el => el.columnId === ci);
+          const resizedColumn = prevColumns[columnIndex];
+          const updatedColumn = { ...resizedColumn, width };
+          prevColumns[columnIndex] = updatedColumn;
+          return [...prevColumns];
+      });
+  }
 
   const applyChangesToOutlineData = (
     changes: CellChange[],
@@ -42,7 +53,17 @@ export default function OutlineCSVEditor(props) {
       const entryIndex = change.rowId;
       const fieldName = change.columnId;
       if (change.type === 'checkbox') {
-        prevEntry[entryIndex][fieldName] = change.newCell.checked;
+        const numChecked = prevEntry[entryIndex].position.reduce((acc,e) => acc + (e ? 1 : 0), 0)
+        const n_pos = Number(fieldName.replace(/^[^0-9]+/g,""))
+        //debug("nC:", n_pos, numChecked, prevEntry[entryIndex])        
+        if(numChecked !== 1 || change.newCell.checked) { 
+          prevEntry[entryIndex].position[n_pos - 1] = change.newCell.checked;
+          if(change.newCell.checked) {
+            for(const i in prevEntry[entryIndex].position) {              
+              if(Number(i) !== Number(n_pos - 1)) prevEntry[entryIndex].position[i] = false 
+            }
+          }
+        }
       } else if (change.type === 'text') {
         prevEntry[entryIndex][fieldName] = change.newCell.text;
       }
@@ -63,23 +84,37 @@ export default function OutlineCSVEditor(props) {
           const text = await resp.text()
           setCsv(text)
           Papa.parse(text, { worker: true, delimiter:",", complete: (results) => {
+
+            let n_pos = 1
+            const head = {
+              rowId: "header",
+              cells: results.data[0].map( d => ({ type: "header", text: d === "Position" ? "pos. " + n_pos++:d })).slice(0,1+1+1+1+1)
+            }
+            setHeaderRow(head)
+
             const data = results.data.map((d,i) => {
-              if(i>0) return {
-                //eslint-disable-next-line no-magic-numbers
-                RID:d[0], position1:d[1]==="X", position2:d[2]==="X", position3:d[3]==="X", position4:d[4]==="X", partType:d[5], label:d[6], 
-                //eslint-disable-next-line no-magic-numbers
-                titles:d[7], work:d[8], notes:d[9], colophon:d[10], imgStart:Number(d[11]), imgEnd:Number(d[12]), volumeStart:Number(d[13]), 
-                //eslint-disable-next-line no-magic-numbers
-                volumeEnd:Number(d[14])
+              if(i>0) { 
+                const position = []
+                head.cells.map( (c,j) => {
+                  if(c.text.startsWith("pos.")) position.push(d[j] === "X")
+                });
+                return {
+                  //eslint-disable-next-line no-magic-numbers
+                  RID:d[0], position, partType:d[5], label:d[6], titles:d[7], work:d[8], notes:d[9], colophon:d[10], imgStart:Number(d[11]), 
+                  //eslint-disable-next-line no-magic-numbers
+                  imgEnd:Number(d[12]), volumeStart:Number(d[13]), volumeEnd:Number(d[14])
+                }
               }
             }).filter(d => d && d.RID)
-                        
-            setHeaderRow({
-              rowId: "header",
-              cells: results.data[0].map( d => ({ type: "header", text: d })).slice(0,1+1)
-            })
-
+            
             setOutlineData(data)
+
+            n_pos = 0
+            setColumns(head.cells.map( ({ text }, i) => ({ 
+              columnId: results.data[0][i].replace(/ (.)/,(m,g1) => g1.toUpperCase()).replace(/Position/,"position" + n_pos++),
+              resizable:true,
+              width: colWidths[i] // eslint-disable-line no-magic-numbers
+            })).slice(0,1+1+1+1+1) || [])
 
           } } )
         } catch(e) {
@@ -95,14 +130,7 @@ export default function OutlineCSVEditor(props) {
     if (tab != -1) setTab(-1)
   }, [tab])
 
-  if(!headerRow || ! outlineData.length) return <div>no data yet</div>
-
-  let n_pos = 0
-  const columns = headerRow?.cells.map( ({ text }) => ({ 
-    columnId: text.replace(/ (.)/,(m,g1) => g1.toUpperCase()).replace(/Position/,"position" + n_pos++),
-    resizable:true,
-    //width: d === "Position" ? "20px" : "150px"
-  } )).slice(0,1+1) || []
+  if(!headerRow || ! outlineData.length || !columns.length) return <div>no data yet</div>
 
   const rows = [
     headerRow,
@@ -110,9 +138,11 @@ export default function OutlineCSVEditor(props) {
       rowId: i,
       cells: [{
         type: "text", text:d.RID
-      },{
-        type: "checkbox", checked: d.position1 
-      }]
+        },
+        ...d.position.map(p => ({
+          type: "checkbox", checked: p
+        }))
+      ]
         /*,
         partType:string,
         label:string,
@@ -131,5 +161,5 @@ export default function OutlineCSVEditor(props) {
 
   debug("data:", outlineData, headerRow, columns, rows)
   
-  return <ReactGrid rows={rows} columns={columns} onCellsChanged={handleChanges}/>;
+  return <ReactGrid rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />;
 }

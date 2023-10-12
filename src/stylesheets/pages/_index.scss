@@ -1293,7 +1293,9 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
   .reactgrid-content { 
 
     .rg-pane { 
-      .rg-cell { color: #434343; }
+      .rg-cell { color: #434343; 
+        &.rg-checkbox-cell label input { left:0;  }
+      }
     }
     .rg-celleditor {
       input { color: #434343; }
