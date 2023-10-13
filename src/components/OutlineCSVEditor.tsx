@@ -28,7 +28,11 @@ interface OutlineEntry {
 }
 
 // eslint-disable-next-line no-magic-numbers
-const colWidths = { "RID":150, "Position": 20, "part type":90, "img start": 75, "img end": 75, "volume start":75, "volume end":75 }
+const colWidths = { 
+  "RID":40, "Position": 40, "part type":90, 
+  "label":200, "titles":500, "work": 200, "colophon": 500,
+  "img start": 75, "img end": 75, "volume start":75, "volume end":75 
+}
 
 const colLabels = {  "img start":"im. start", "img end": "im. end", "volume start":"vol. start", "volume end": "vol. end" }
 
@@ -54,6 +58,7 @@ export default function OutlineCSVEditor(props) {
     changes: CellChange[],
     prevEntry: OutlineEntry[]
   ): OutlineEntry[] => {
+    debug("changes")
     changes.forEach((change) => {
       const entryIndex = change.rowId;
       const fieldName = change.columnId;
@@ -72,9 +77,10 @@ export default function OutlineCSVEditor(props) {
       } else if (change.type === 'text') {
         prevEntry[entryIndex][fieldName] = change.newCell.text;
       } else if (change.type === 'dropdown') {
-        //debug("dd:", change, fieldName)
-        prevEntry[entryIndex].isTypeOpen = change.newCell.isOpen;
-        prevEntry[entryIndex][fieldName] = change.newCell.value;
+        debug("dd:", change, fieldName)
+        prevEntry[entryIndex].isTypeOpen = change.newCell.isOpen
+        if(change.newCell.selectedValue && change.newCell.selectedValue !== change.previousCell.selectedValue)       
+          prevEntry[entryIndex][fieldName] = change.newCell.selectedValue
       }
     });
     return [...prevEntry];
@@ -157,7 +163,9 @@ export default function OutlineCSVEditor(props) {
         ...d.position.map(p => ({
           type: "checkbox", checked: p
         })),{
-          type: "dropdown", selectedValue:d.partType, values: "T,S,V,C,E,TOC".split(",").map(v => ({ value:v, label: v })),
+          type: "dropdown", 
+          selectedValue:d.partType, 
+          values: "T,S,V,C,E,TOC".split(",").map(v => ({ value:v, label: v })),
           isOpen: d.isTypeOpen
         },        
         ..."label,titles,work,notes,colophon".split(",").map(p => ({
@@ -170,6 +178,8 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
+  debug("rerendering")
+
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])
   
   return <div style={{ paddingBottom: "16px" }}>
@@ -181,7 +191,7 @@ export default function OutlineCSVEditor(props) {
     </IconButton>
     <div style={{ position: "relative" }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}>
       
-      <ReactGrid rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />
+      <ReactGrid /*minColumnWidth={20}*/ rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />
     </div>
   </div>
 }

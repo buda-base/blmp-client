@@ -1293,17 +1293,17 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
   .fullscreen:not(#a) {
     position: fixed !important;
     left: 0;
-    top: 0;
+    top: 67px;
     margin: 0;
     max-width: none;
     max-height: none;
-    width:calc(100vw);
-    height: 100vh !important;
+    width:calc(100vw - 16px);
+    height: calc(100vh - 140px) !important;
     z-index: 100;
-    padding: 80px 0;
+    padding: 16px;
     background-color: white;
     display: flex;
-    justify-content: center;
+    justify-content: start;
     overflow:auto;
   }
   
