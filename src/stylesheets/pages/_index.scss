@@ -1309,6 +1309,17 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
   
   .csv-container:not(#a) {
     padding-bottom:16px ;
+
+    & + .navbar {
+      #sliders { 
+        position: absolute; width:100%; display: flex; align-items: center; justify-content: center; left:0; z-index:0;
+
+        & > div { width :100px; margin:10px; text-align: left;
+          & > span { font-size:12px; }
+        }
+      }
+      button { z-index:1 ; }
+    }
   }
 
   .csv-container:not(#a).fullscreen {
@@ -1337,12 +1348,15 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
   .reactgrid-content { 
 
     .rg-pane { 
-      .rg-cell { color: #434343; 
+      .rg-cell { color: #434343; border-color: rgba(0,0,0,0.3);
         &.rg-checkbox-cell label input { left:0;  }
+
+        // &:not(.bo-text) { font-size:65%; }
       }
     }
     .rg-celleditor {
       input { color: #434343; }
+      
     }
     
   }

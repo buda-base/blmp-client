@@ -5,7 +5,9 @@ import { ReactGrid, Column, Row } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
+import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import Slider from '@material-ui/core/Slider';
 
 import { uiTabState } from "../atoms/common"
 import config from "../config"
@@ -30,11 +32,18 @@ interface OutlineEntry {
 // eslint-disable-next-line no-magic-numbers
 const colWidths = { 
   "RID":40, "Position": 40, "part type":90, 
-  "label":200, "titles":500, "work": 200, "colophon": 500,
+  "label":250, "titles":500, "work": 250, "colophon": 500,
   "img start": 75, "img end": 75, "volume start":75, "volume end":75 
 }
 
 const colLabels = {  "img start":"im. start", "img end": "im. end", "volume start":"vol. start", "volume end": "vol. end" }
+
+interface BoTextCell extends Cell {
+  type: 'botext';
+  text: string;
+}
+
+let styleSheet
 
 export default function OutlineCSVEditor(props) {
   const { RID } = props
@@ -90,7 +99,28 @@ export default function OutlineCSVEditor(props) {
     setOutlineData((prevEntry) => applyChangesToOutlineData(changes, prevEntry)); 
   }; 
 
+  const [ fontSize, setFontSize ] = useState<number>(20) // eslint-disable-line no-magic-numbers
+  const [ rowHeight, setRowHeight ] = useState<number>(36) // eslint-disable-line no-magic-numbers
+
   useEffect(() => {
+    if(headerRow && headerRow?.height !== rowHeight) {
+      setHeaderRow({ ...headerRow, height:rowHeight })
+    }
+  }, [rowHeight, headerRow])
+
+  useEffect(() => {
+    if(!styleSheet) {
+      const styleEl = document.createElement("style");
+      document.head.appendChild(styleEl);
+      styleSheet = styleEl.sheet;
+    }
+    if(styleSheet.cssRules.length) styleSheet.removeRule(0)
+    styleSheet.insertRule(".rg-celleditor input:not([inputmode='decimal']) { font-size: "+fontSize
+      +"px; display:inline-block; margin-top: "+ fontSize/7   +"px}")  // eslint-disable-line no-magic-numbers
+  }, [fontSize])
+
+  useEffect(() => {
+
     const fetchCsv = async () => {
       if (RID && !csv) {
         setCsv(true)
@@ -103,6 +133,7 @@ export default function OutlineCSVEditor(props) {
             let n_pos = 1
             const head = {
               rowId: "header",
+              height: rowHeight,
               cells: results.data[0].map( d => ({ type: "header", text: d === "Position" ? "pos. " + n_pos++ : colLabels[d] || d }))
             }
             setHeaderRow(head)
@@ -157,8 +188,9 @@ export default function OutlineCSVEditor(props) {
     headerRow,
     ...outlineData.map<Row>( (d,i) => ({
       rowId: i,
+      height: rowHeight,
       cells: [{
-          type: "text", text:d.RID
+          type: "text", text:d.RID          
         },
         ...d.position.map(p => ({
           type: "checkbox", checked: p
@@ -169,7 +201,8 @@ export default function OutlineCSVEditor(props) {
           isOpen: d.isTypeOpen
         },        
         ..."label,titles,work,notes,colophon".split(",").map(p => ({
-          type:"text", text: d[p]
+          type:"text", text: d[p], renderer: p !== "work" ? (text:string) => <span style={{ fontSize }}>{text}</span> : undefined
+          //className: p !== "work" ? "bo-text" : ""
         })),        
         ..."imgStart,imgEnd,volumeStart,volumeEnd".split(",").map(p => ({
           type:"number", value: Number(d[p]) || ""
@@ -178,8 +211,7 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  debug("rerendering")
-
+  //debug("rerendering")
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])
   
   return <div style={{ paddingBottom: "16px" }}>
@@ -189,9 +221,25 @@ export default function OutlineCSVEditor(props) {
           : <FullscreenIcon />
         }
     </IconButton>
-    <div style={{ position: "relative" }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}>
+    <div style={{ position: "relative", /*fontSize: fontSize + "px"*/ }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}>
       
       <ReactGrid /*minColumnWidth={20}*/ rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />
     </div>
+    <nav className="navbar bottom" style={{ left:0, zIndex:100000 }}>
+      <div></div>
+      <div id="sliders">
+        <div>
+          <span className="font-size">Font size</span>
+          <Slider value={fontSize} onChange={(e, val) => setFontSize(val)} 
+              aria-labelledby="continuous-slider" step={1} min={12} max={36}/>
+        </div>
+        <div>
+          <span className="font-size">Row height</span>
+          <Slider value={rowHeight} onChange={(e, val) => setRowHeight(val)} 
+              aria-labelledby="continuous-slider" step={1} min={20} max={60}/>
+        </div>
+      </div>
+      <Button className="btn-rouge" disabled>Save</Button>      
+    </nav>
   </div>
 }
