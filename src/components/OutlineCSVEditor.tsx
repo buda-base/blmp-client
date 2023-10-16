@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { useRecoilState } from "recoil"
 import Papa from 'papaparse';
-import { ReactGrid, Column, Row } from "@silevis/reactgrid";
+import { ReactGrid, Column, Row, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
@@ -53,6 +53,10 @@ export default function OutlineCSVEditor(props) {
   const [headerRow, setHeaderRow] = useState<Row>()
   const [columns, setColumns] = useState<Column[]>([]);
   
+  const reactgridRef = useRef<ReactGrid>(null)
+
+  debug("ref:", reactgridRef)
+
   const handleColumnResize = (ci: Id, width: number) => {
       setColumns((prevColumns) => {
           const columnIndex = prevColumns.findIndex(el => el.columnId === ci);
@@ -62,12 +66,39 @@ export default function OutlineCSVEditor(props) {
           return [...prevColumns];
       });
   }
+  const simpleHandleContextMenu = (
+      selectedRowIds: Id[],
+      selectedColIds: Id[],
+      selectionMode: SelectionMode,
+      menuOptions: MenuOption[]
+    ): MenuOption[] => { 
+      if (selectionMode === "row") {
+        menuOptions = [
+          ...menuOptions, {
+            id: "removeRow",
+            label: "Remove row",
+            handler: () => { 
+              setOutlineData(outlineData.filter((row,i) => !selectedRowIds.includes(i)))
+              // TODO: possible to deselect all after deleting?
+              //reactgridRef.current.setState({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })              
+            }
+          }
+        ];
+      }
+      return menuOptions;
+  };
 
   const applyChangesToOutlineData = (
     changes: CellChange[],
     prevEntry: OutlineEntry[]
   ): OutlineEntry[] => {
-    debug("changes")
+    changes.map(c => debug(c))
+    
+    // more than 1 change ==> copy/paste
+    if(changes.length > 1) {
+      if(changes[0].columnId === "RID" && changes[0].newCell.text) changes.shift() // dont paste the RID
+    }
+
     changes.forEach((change) => {
       const entryIndex = change.rowId;
       const fieldName = change.columnId;
@@ -75,7 +106,7 @@ export default function OutlineCSVEditor(props) {
         const numChecked = prevEntry[entryIndex].position.reduce((acc,e) => acc + (e ? 1 : 0), 0)
         const n_pos = Number(fieldName.replace(/^[^0-9]+/g,""))
         //debug("nC:", n_pos, numChecked, prevEntry[entryIndex])        
-        if(numChecked !== 1 || change.newCell.checked) { 
+        if(numChecked !== 1 || change.newCell.checked || changes.length > 1 && !changes[0].newCell.text) { 
           prevEntry[entryIndex].position[n_pos - 1] = change.newCell.checked;
           if(change.newCell.checked) {
             for(const i in prevEntry[entryIndex].position) {              
@@ -223,7 +254,8 @@ export default function OutlineCSVEditor(props) {
     </IconButton>
     <div style={{ position: "relative", /*fontSize: fontSize + "px"*/ }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}>
       
-      <ReactGrid /*minColumnWidth={20}*/ rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />
+      <ReactGrid ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
+        rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />
     </div>
     <nav className="navbar bottom" style={{ left:0, zIndex:100000 }}>
       <div></div>
