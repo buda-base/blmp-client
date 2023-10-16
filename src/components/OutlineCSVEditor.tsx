@@ -79,8 +79,9 @@ export default function OutlineCSVEditor(props) {
             label: "Remove row",
             handler: () => { 
               setOutlineData(outlineData.filter((row,i) => !selectedRowIds.includes(i)))
-              // TODO: possible to deselect all after deleting?
-              //reactgridRef.current.setState({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })              
+              // DONE: possible to deselect all after deleting
+              // eslint-disable-next-line no-magic-numbers
+              setTimeout(() => reactgridRef.current.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
             }
           }
         ];
