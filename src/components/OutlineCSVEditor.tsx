@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef, useCallback } from "react"
 import { useRecoilState } from "recoil"
 import Papa from 'papaparse';
 import { ReactGrid, Column, Row, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
@@ -29,7 +29,6 @@ interface OutlineEntry {
   volumeEnd:number
 }
 
-// eslint-disable-next-line no-magic-numbers
 const colWidths = { 
   "RID":40, "Position": 40, "part type":90, 
   "label":250, "titles":500, "work": 250, "colophon": 500,
@@ -38,11 +37,6 @@ const colWidths = {
 
 const colLabels = {  "img start":"im. start", "img end": "im. end", "volume start":"vol. start", "volume end": "vol. end" }
 
-interface BoTextCell extends Cell {
-  type: 'botext';
-  text: string;
-}
-
 let styleSheet
 
 export default function OutlineCSVEditor(props) {
@@ -50,12 +44,13 @@ export default function OutlineCSVEditor(props) {
   const [tab, setTab] = useRecoilState(uiTabState)
   const [csv, setCsv] = useState("")
   const [outlineData, setOutlineData] = useState<OutlineEntry[]>([])
+  const [emptyData, setEmptyData] = useState<OutlineEntry>()
   const [headerRow, setHeaderRow] = useState<Row>()
   const [columns, setColumns] = useState<Column[]>([]);
   
   const reactgridRef = useRef<ReactGrid>(null)
 
-  debug("ref:", reactgridRef)
+  debug("ref:", reactgridRef, outlineData, headerRow)
 
   const handleColumnResize = (ci: Id, width: number) => {
       setColumns((prevColumns) => {
@@ -66,7 +61,7 @@ export default function OutlineCSVEditor(props) {
           return [...prevColumns];
       });
   }
-  const simpleHandleContextMenu = (
+  const simpleHandleContextMenu = useCallback((
       selectedRowIds: Id[],
       selectedColIds: Id[],
       selectionMode: SelectionMode,
@@ -75,8 +70,34 @@ export default function OutlineCSVEditor(props) {
       if (selectionMode === "row") {
         menuOptions = [
           ...menuOptions, {
+            id: "insertRowBefore",
+            label: "Insert row before",
+            handler: () => {
+              const newData = [ 
+                ...outlineData.slice(0, Math.min(...selectedRowIds)), 
+                { ...emptyData }, 
+                ...outlineData.slice(Math.min(...selectedRowIds))
+              ]
+              setOutlineData(newData)
+              // eslint-disable-next-line no-magic-numbers
+              setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
+            }
+          }, {
+            id: "insertRowAfter",
+            label: "Insert row after",
+            handler: () => {
+              const newData = [ 
+                ...outlineData.slice(0, Math.max(...selectedRowIds) + 1), 
+                { ...emptyData }, 
+                ...outlineData.slice(Math.max(...selectedRowIds) + 1)
+              ]
+              setOutlineData(newData)
+              // eslint-disable-next-line no-magic-numbers
+              setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
+            }
+          }, {
             id: "removeRow",
-            label: "Remove row",
+            label: "Remove row"+(selectedRowIds.length > 1 ? "s" :""),
             handler: () => { 
               setOutlineData(outlineData.filter((row,i) => !selectedRowIds.includes(i)))
               // DONE: possible to deselect all after deleting
@@ -87,7 +108,7 @@ export default function OutlineCSVEditor(props) {
         ];
       }
       return menuOptions;
-  };
+  }, [outlineData, emptyData])
 
   const applyChangesToOutlineData = (
     changes: CellChange[],
@@ -117,6 +138,10 @@ export default function OutlineCSVEditor(props) {
         }
       } else if (change.type === 'text') {
         prevEntry[entryIndex][fieldName] = change.newCell.text;
+      } else if (change.type === 'number') {
+        debug("num:", change, fieldName)
+        if(change.newCell.value !== "" && !isNaN(change.newCell.value)) prevEntry[entryIndex][fieldName] = change.newCell.value;
+        else if(change.newCell.text === '') prevEntry[entryIndex][fieldName] = '';
       } else if (change.type === 'dropdown') {
         debug("dd:", change, fieldName)
         prevEntry[entryIndex].isTypeOpen = change.newCell.isOpen
@@ -187,8 +212,24 @@ export default function OutlineCSVEditor(props) {
                 }
               }
             }).filter(d => d && d.RID)
-            
-            setOutlineData(data)
+
+            const position = []
+            head.cells.map( (c,j) => {
+              if(c.text.startsWith("pos.")) position.push(false)
+            });
+            const empty = {
+              RID:"", position, partType:"T", label:"", titles:"", work:"", notes:"", colophon:"", imgStart:"", imgEnd:"", 
+              volumeStart:"", volumeEnd:"",             
+              isTypeOpen: false
+            }
+            setEmptyData(empty)
+
+            if(!data?.length) { 
+              setOutlineData([empty])
+            }
+            else {
+              setOutlineData(data)
+            }
 
             n_pos = 0
             setColumns(head.cells.map( ({ text }, i) => { 

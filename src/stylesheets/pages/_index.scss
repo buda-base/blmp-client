@@ -1353,6 +1353,8 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
       .rg-context-menu-option {
         color:#434343;
         text-align: left;
+
+        &:nth-child(4) { border-top:1px solid rgba(0,0,0,0.2); }
       }
     }
 
