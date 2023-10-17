@@ -140,7 +140,12 @@ export default function OutlineCSVEditor(props) {
         prevEntry[entryIndex][fieldName] = change.newCell.text;
       } else if (change.type === 'number') {
         debug("num:", change, fieldName)
-        if(change.newCell.value !== "" && !isNaN(change.newCell.value)) prevEntry[entryIndex][fieldName] = change.newCell.value;
+        if(change.newCell.value !== "" && !isNaN(change.newCell.value)) { 
+          let v = change.newCell.value
+          if(v < 1) v = 1
+          if(v > 2000) v = 2000 // eslint-disable-line no-magic-numbers
+          prevEntry[entryIndex][fieldName] = v;
+        }
         else if(change.newCell.text === '') prevEntry[entryIndex][fieldName] = '';
       } else if (change.type === 'dropdown') {
         debug("dd:", change, fieldName)
@@ -252,6 +257,12 @@ export default function OutlineCSVEditor(props) {
   useEffect(() => {
     if (tab != -1) setTab(-1)
   }, [tab])
+
+  /*
+  useEffect(() => {
+
+  }, [outlineData])
+  */
 
   const [fullscreen, setFullscreen] = useState(false)
 
