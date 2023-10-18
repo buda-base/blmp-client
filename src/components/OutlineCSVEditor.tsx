@@ -68,8 +68,61 @@ export default function OutlineCSVEditor(props) {
       menuOptions: MenuOption[]
     ): MenuOption[] => { 
       if (selectionMode === "row") {
+        debug("opt:", menuOptions)
+
+        const copyMenu = menuOptions.find(m => m.id === "copy");
+        const cutMenu = menuOptions.find(m => m.id === "cut");
+        const pasteMenu = menuOptions.find(m => m.id === "paste");
+
+        const copyFunc = copyMenu.handler
+        copyMenu.handler = (...args) => {
+          //e.persist()
+          debug("copy!", args)
+          copyFunc(...args)
+        }
+
+        const cutFunc = cutMenu.handler
+        cutMenu.handler = (...args) => {
+          //e.persist()
+          debug("cut!", args)
+          cutFunc(...args)
+        }
+
+        const pasteFunc = pasteMenu.handler
+        pasteMenu.handler = async (...args) => {
+          const parts = "T,S,V,C,E,TOC".split(",")
+          const clipboardItems = await navigator.clipboard.read(), blobs = [], text;
+          for (const clipboardItem of clipboardItems) {
+            for (const type of clipboardItem.types) {
+              blobs.push(await clipboardItem.getType(type))
+              if(type === "text/plain") {
+                const b = await (await clipboardItem.getType(type)).text()
+                let patched = b.split(/\t/)
+                const numPosFrom = patched.findIndex(p => parts.includes(p)) - 1
+                const numPosTo = headerRow.cells.filter(c => c.text.startsWith("pos.")).length
+                //debug("b:", numPosFrom, numPosTo, patched)
+                if(numPosFrom > numPosTo) {
+                  for(let i = numPosFrom - numPosTo ; i > 0 ; i--) {
+                    patched = [ patched[0], ...patched.slice(2) ] // eslint-disable-line no-magic-numbers
+                  }
+                } else if(numPosFrom < numPosTo) {
+                  for(let i = numPosTo - numPosFrom ; i > 0 ; i--) {
+                    patched = [ patched[0], "", ...patched.slice(1) ] // eslint-disable-line no-magic-numbers
+                  }
+                }
+                //debug("patched:",patched)
+                await navigator.clipboard.writeText(patched.join("\t"))
+              }
+            }
+          }
+          debug("paste!", blobs, args, args[3][0]?.length, headerRow.cells.length) //eslint-disable-line no-magic-numbers
+          pasteFunc(args[0], args[1], args[2], args[3]) //eslint-disable-line no-magic-numbers
+        }
+
         menuOptions = [
-          ...menuOptions, {
+          copyMenu,
+          cutMenu,
+          pasteMenu, {
             id: "insertRowBefore",
             label: "Insert row before",
             handler: () => {
@@ -258,11 +311,21 @@ export default function OutlineCSVEditor(props) {
     if (tab != -1) setTab(-1)
   }, [tab])
 
-  /*
+  /* // check 
   useEffect(() => {
 
   }, [outlineData])
   */
+
+  const handleCopy = (e,f) => {
+    e.persist()
+    debug("copy:",e,f)
+  }
+
+  const handlePaste = (e) => {
+    e.persist()
+    debug("paste:",e)
+  }
 
   const [fullscreen, setFullscreen] = useState(false)
 
@@ -296,8 +359,8 @@ export default function OutlineCSVEditor(props) {
   ]
 
   //debug("rerendering")
-  //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])
-  
+  //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
+
   return <div style={{ paddingBottom: "16px" }}>
     <IconButton className={"btn-rouge fs-btn "+( fullscreen ? "fs-true" : "" )} onClick={() => setFullscreen(!fullscreen)} >
         { fullscreen 
@@ -305,9 +368,10 @@ export default function OutlineCSVEditor(props) {
           : <FullscreenIcon />
         }
     </IconButton>
-    <div style={{ position: "relative", /*fontSize: fontSize + "px"*/ }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}>
-      
-      <ReactGrid ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
+    <div onCopy={handleCopy} onPaste={handlePaste}  
+        style={{ position: "relative", /*fontSize: fontSize + "px"*/ }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}>      
+      <ReactGrid 
+        ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
         rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />
     </div>
     <nav className="navbar bottom" style={{ left:0, zIndex:100000 }}>
