@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react"
+import React, { useEffect, useState, useRef, useCallback, useLayoutEffect } from "react"
 import { useRecoilState } from "recoil"
 import Papa from 'papaparse';
 import { ReactGrid, Column, Row, Id, MenuOption, SelectionMode, EventHandlers, pasteData } from "@silevis/reactgrid";
@@ -39,41 +39,41 @@ const colLabels = {  "img start":"im. start", "img end": "im. end", "volume star
 
 const parts = "T,S,V,C,E,TOC".split(",")
 
-let styleSheet, globalHeaderRow
+let styleSheet, globalHeaderRow, mayAddEmptyData
 
-const myHandlePaste = (event: ClipboardEvent, state: State): State => {
+const patchLine = (line:string) => {
+  let patched = line.split(/\t/)
+  const numPosFrom = patched.findIndex(p => parts.includes(p)) - 1
+  const numPosTo = globalHeaderRow?.cells.filter(c => c.text.startsWith("pos.")).length 
+  debug("b:", numPosFrom, numPosTo, patched)
+  if(numPosFrom > numPosTo) {
+    for(let i = numPosFrom - numPosTo ; i > 0 ; i--) {
+      patched = [ patched[0], ...patched.slice(2) ] // eslint-disable-line no-magic-numbers
+      debug("patched:",patched)
+    }
+  } else if(numPosFrom < numPosTo) {
+    for(let i = numPosTo - numPosFrom ; i > 0 ; i--) {
+      patched = [ patched[0], "", ...patched.slice(1) ] // eslint-disable-line no-magic-numbers
+      debug("patched:",patched)
+    }
+  }
+  return patched.join("\t")
+}
+
+const myHandlePaste = (text:string, state: State): State => {
   const activeSelectedRange = state.selectedRanges[state.activeSelectedRangeIdx]
   if (!activeSelectedRange) {
     return state;
   }
   let pastedRows: Compatible<Cell>[][] = [];
-  pastedRows = event.clipboardData
-    .getData("text/plain")
+  pastedRows = text
     .split("\n")
-    .map(line => {
-      let patched = line.split(/\t/)
-      const numPosFrom = patched.findIndex(p => parts.includes(p)) - 1
-      const numPosTo = globalHeaderRow?.cells.filter(c => c.text.startsWith("pos.")).length 
-      debug("b:", numPosFrom, numPosTo, patched)
-      if(numPosFrom > numPosTo) {
-        for(let i = numPosFrom - numPosTo ; i > 0 ; i--) {
-          patched = [ patched[0], ...patched.slice(2) ] // eslint-disable-line no-magic-numbers
-          debug("patched:",patched)
-        }
-      } else if(numPosFrom < numPosTo) {
-        for(let i = numPosTo - numPosFrom ; i > 0 ; i--) {
-          patched = [ patched[0], "", ...patched.slice(1) ] // eslint-disable-line no-magic-numbers
-          debug("patched:",patched)
-        }
-      }
-      return patched.join("\t")
-    })
     .map((line: string) =>
-      line
+      patchLine(line)
         .split("\t")
         .map((t) => ({ type: "text", text: t, value: parseFloat(t) }))
     );
-  event.preventDefault();
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 10)  // eslint-disable-line 
   return { ...pasteData(state, pastedRows) };
 }
 
@@ -84,7 +84,10 @@ class MyEventHandlers extends EventHandlers {
   }
   pasteHandler = async (event: ClipboardEvent): void => { 
     debug("ctrl-v:", event)
-    this.updateState(state => myHandlePaste(event, state)) //estate.currentBehavior.handlePaste(event, state));    
+    const text = event.clipboardData.getData("text/plain")
+    const n = text.split("\n").length
+    mayAddEmptyData(n, text)
+    event.preventDefault();
   }
   cutHandler = (event: ClipboardEvent): void => { 
     debug("ctrl-x:", event)
@@ -122,6 +125,45 @@ export default function OutlineCSVEditor(props) {
           return [...prevColumns];
       });
   }
+
+  const makeRow = (d:[], head: Row, fromPaste = false) => { 
+    const position = []
+    head.cells.map( (c,j) => {
+      if(c.text.startsWith("pos.")) position.push(d[j] === "X" || fromPaste && d[j] === "1")
+    });
+    const idx = position.length + 1
+    return {
+      //eslint-disable-next-line no-magic-numbers
+      RID:d[0], position, partType:d[idx], label:d[idx+1], titles:d[idx+2], work:d[idx+3], notes:d[idx+4], colophon:d[idx+5], 
+      //eslint-disable-next-line no-magic-numbers
+      imgStart:Number(d[idx+6]), imgEnd:Number(d[idx+7]), volumeStart:Number(d[idx+8]), volumeEnd:Number(d[idx+9]),
+      
+      isTypeOpen: false
+    }
+  }
+
+  const addEmptyData = useCallback((numRows:number, text:string, insert = false) => {
+    const firstRowIdx = reactgridRef.current.state.selectedRanges[0].first.row.rowId
+    const numFrom = outlineData.length
+    const numTo = (insert ? numFrom : firstRowIdx) + numRows
+    debug("oD:", numFrom, numTo)
+    if(numTo > numFrom) {
+      let newData = insert ? [ ...outlineData.slice(0, firstRowIdx) ] : [ ...outlineData ]
+      for(let i = 0 ; i < numTo - numFrom ; i++) newData.push({ ...emptyData, position:[...emptyData.position] })
+      if(insert) newData = newData.concat([ ...outlineData.slice(firstRowIdx) ])
+      // now rewrite data using clipboard
+      const pasted = text.split("\n")
+      for(let i = 0 ; i < pasted.length ; i++) {
+        const rowIdx = reactgridRef.current.state.selectedRanges[0].first.row.rowId
+        newData[rowIdx + i] = makeRow([newData[rowIdx + i].RID].concat(patchLine(pasted[i]).split("\t").slice(1)), headerRow, true)
+      }
+      setOutlineData(newData)                  
+    } else {
+      reactgridRef.current.updateState(state => myHandlePaste(text, state)) 
+    }
+  }, [outlineData, emptyData, headerRow])
+  mayAddEmptyData = addEmptyData
+
   const simpleHandleContextMenu = useCallback((
       selectedRowIds: Id[],
       selectedColIds: Id[],
@@ -130,14 +172,11 @@ export default function OutlineCSVEditor(props) {
     ): MenuOption[] => { 
       if (selectionMode === "row") {
         debug("opt:", menuOptions)        
+        
         const pasteMenu = menuOptions.find(m => m.id === "paste");        
         const pasteFunc = pasteMenu.handler
-        pasteMenu.handler = async (...args) => {
-          //e.persist()
-          debug("paste!", args)
-          
-          //pasteFunc(...args) // waiting for https://github.com/silevis/reactgrid/issues/250 to be fixed... using ctrl-v function instead
-
+        
+        const createPasteEventFromClipboard = async () => {
           let clipboardData = null;
           try{ clipboardData = new DataTransfer();} catch(e){ debug("data!",e)}
           const event = new ClipboardEvent("paste", { clipboardData }), clipboardItems = await navigator.clipboard.read();
@@ -149,12 +188,26 @@ export default function OutlineCSVEditor(props) {
               }
             }
           }
+          return event
+        }
 
+        pasteMenu.handler = async (...args) => {
+          debug("paste!", args)
+          const event = await createPasteEventFromClipboard()
           reactgridRef.current.eventHandlers.pasteHandler(event)
         }        
 
         menuOptions = [
           ...menuOptions, {
+            id: "pasteNewRows",
+            label: "Paste as new rows",
+            handler:async  () => {
+              const event = await createPasteEventFromClipboard()
+              const text = event.clipboardData.getData("text/plain")
+              const n = text.split("\n").length
+              addEmptyData(n, text, true) 
+            }
+          }, {
             id: "insertRowBefore",
             label: "Insert row before",
             handler: () => {
@@ -193,7 +246,7 @@ export default function OutlineCSVEditor(props) {
         ];
       }
       return menuOptions;
-  }, [outlineData, emptyData])
+  }, [outlineData, emptyData, addEmptyData])
 
   const applyChangesToOutlineData = (
     changes: CellChange[],
@@ -285,21 +338,7 @@ export default function OutlineCSVEditor(props) {
             setHeaderRow(head)
 
             const data = results.data.map((d,i) => {
-              if(i>0) { 
-                const position = []
-                head.cells.map( (c,j) => {
-                  if(c.text.startsWith("pos.")) position.push(d[j] === "X")
-                });
-                const idx = position.length + 1
-                return {
-                  //eslint-disable-next-line no-magic-numbers
-                  RID:d[0], position, partType:d[idx], label:d[idx+1], titles:d[idx+2], work:d[idx+3], notes:d[idx+4], colophon:d[idx+5], 
-                  //eslint-disable-next-line no-magic-numbers
-                  imgStart:Number(d[idx+6]), imgEnd:Number(d[idx+7]), volumeStart:Number(d[idx+8]), volumeEnd:Number(d[idx+9]),
-                  
-                  isTypeOpen: false
-                }
-              }
+              if(i>0) return makeRow(d, head)
             }).filter(d => d && d.RID)
 
             const position = []
@@ -351,10 +390,13 @@ export default function OutlineCSVEditor(props) {
   const handlePaste = (e) => {
     e.persist()
     debug("paste:",e)
-    globalHeaderRow = headerRow
   }
 
   const [fullscreen, setFullscreen] = useState(false)
+
+  useLayoutEffect(() => {
+    if(reactgridRef.current?.state.reactGridElement) window.dispatchEvent(new Event('resize'))    
+  }, [fullscreen])  
 
   if(!headerRow || ! outlineData.length || !columns.length) return <div>loading...</div>
 
