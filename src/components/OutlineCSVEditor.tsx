@@ -65,6 +65,7 @@ const myHandlePaste = (text:string, state: State): State => {
   if (!activeSelectedRange) {
     return state;
   }
+  debug("mHp:", state)
   let pastedRows: Compatible<Cell>[][] = [];
   pastedRows = text
     .split("\n")
@@ -86,7 +87,7 @@ class MyEventHandlers extends EventHandlers {
     debug("ctrl-v:", event)
     const text = event.clipboardData.getData("text/plain")
     const n = text.split("\n").length
-    mayAddEmptyData(n, text)
+    mayAddEmptyData(n, text, false, event)
     event.preventDefault();
   }
   cutHandler = (event: ClipboardEvent): void => { 
@@ -100,6 +101,18 @@ class MyReactGrid extends ReactGrid {
     this.stateUpdater,
     this.pointerEventsController
   );
+  componentDidUpdate(prevProps: ReactGridProps, prevState: State): void {
+    super.componentDidUpdate(prevProps, prevState, this.state);
+    if(this.state.contextMenuPosition.top !== -1) { 
+      const menu = document.querySelector(".rg-context-menu")
+      if(!menu) return
+      const bbox = menu.getBoundingClientRect()
+      const maxPos = window.innerHeight - 60 - bbox.height - 15; // eslint-disable-line
+      if(this.state.contextMenuPosition.top > maxPos) {
+        this.updateState({ contextMenuPosition: { top: maxPos, left: this.state.contextMenuPosition.left } })
+      }
+    }
+  }
 }
 
 export default function OutlineCSVEditor(props) {
@@ -142,11 +155,18 @@ export default function OutlineCSVEditor(props) {
     }
   }
 
-  const addEmptyData = useCallback((numRows:number, text:string, insert = false) => {
+  const addEmptyData = useCallback((numRows:number, text:string, insert = false, event?: ClipboardEvent) => {
     const firstRowIdx = reactgridRef.current.state.selectedRanges[0].first.row.rowId
     const numFrom = outlineData.length
     const numTo = (insert ? numFrom : firstRowIdx) + numRows
-    debug("oD:", numFrom, numTo)
+    debug("oD:", numFrom, numTo, event, reactgridRef.current.state)
+    // keep default behavior if not pasting full line (first cell of row)
+    if(!text.includes("\t")
+        || event && reactgridRef.current.state.selectedRanges.length && reactgridRef.current.state.selectedRanges[0].first.column.idx !== 0 
+      ) {
+      reactgridRef.current.updateState(state => state.currentBehavior.handlePaste(event, state)) 
+      return
+    }
     if(numTo > numFrom) {
       let newData = insert ? [ ...outlineData.slice(0, firstRowIdx) ] : [ ...outlineData ]
       for(let i = 0 ; i < numTo - numFrom ; i++) newData.push({ ...emptyData, position:[...emptyData.position] })
@@ -160,7 +180,7 @@ export default function OutlineCSVEditor(props) {
       setOutlineData(newData)                  
     } else {
       reactgridRef.current.updateState(state => myHandlePaste(text, state)) 
-    }
+    } 
   }, [outlineData, emptyData, headerRow])
   mayAddEmptyData = addEmptyData
 
@@ -173,8 +193,7 @@ export default function OutlineCSVEditor(props) {
       if (selectionMode === "row") {
         debug("opt:", menuOptions)        
         
-        const pasteMenu = menuOptions.find(m => m.id === "paste");        
-        const pasteFunc = pasteMenu.handler
+        const pasteMenu = menuOptions.find(m => m.id === "paste");     
         
         const createPasteEventFromClipboard = async () => {
           let clipboardData = null;
@@ -252,14 +271,18 @@ export default function OutlineCSVEditor(props) {
     changes: CellChange[],
     prevEntry: OutlineEntry[]
   ): OutlineEntry[] => {
-    //debug(changes)
-        
+    
+    debug("changes:",changes)
+
     changes.forEach((change, n) => {      
       const entryIndex = change.rowId;
       const fieldName = change.columnId;
       
-      // more than 1 change ==> copy/paste + don't paste RID in first column
-      if(changes.length > 1 && fieldName === "RID") return
+      // more than 2 change (duplicate when editing RID in a loaded csv) ==> copy/paste = don't paste RID in first column
+      if(changes.length > 2 && fieldName === "RID") { // eslint-disable-line
+        debug("changes:RID")
+        return
+      }
 
       if (change.type === 'checkbox') {
         const numChecked = prevEntry[entryIndex].position.reduce((acc,e) => acc + (e ? 1 : 0), 0)
@@ -427,7 +450,7 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  //debug("rerendering")
+  //debug("rerendering", reactgridRef?.current)
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
   return <div style={{ paddingBottom: "16px" }}>
