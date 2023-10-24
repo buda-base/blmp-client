@@ -65,7 +65,6 @@ const myHandlePaste = (text:string, state: State): State => {
   if (!activeSelectedRange) {
     return state;
   }
-  debug("mHp:", state)
   let pastedRows: Compatible<Cell>[][] = [];
   pastedRows = text
     .split("\n")
@@ -103,6 +102,7 @@ class MyReactGrid extends ReactGrid {
   );
   componentDidUpdate(prevProps: ReactGridProps, prevState: State): void {
     super.componentDidUpdate(prevProps, prevState, this.state);
+    debug("cDu:", this.state, this.props)
     if(this.state.contextMenuPosition.top !== -1) { 
       const menu = document.querySelector(".rg-context-menu")
       if(!menu) return
@@ -111,6 +111,13 @@ class MyReactGrid extends ReactGrid {
       if(this.state.contextMenuPosition.top > maxPos) {
         this.updateState({ contextMenuPosition: { top: maxPos, left: this.state.contextMenuPosition.left } })
       }
+    }
+    if(this.state.focusedLocation && !this.props.focusedLocation
+      || !this.state.focusedLocation && this.props.focusedLocation
+      || this.state.focusedLocation?.row?.idx !== this.props.focusedLocation?.row?.idx 
+      || this.state.focusedLocation?.row?.rowId !== this.props.focusedLocation?.row?.rowId) {
+      debug("focus:", this.state.focusedLocation?.row)
+      this.props.setFocusedLocation({ ...this.state.focusedLocation })
     }
   }
 }
@@ -417,6 +424,8 @@ export default function OutlineCSVEditor(props) {
 
   const [fullscreen, setFullscreen] = useState(false)
 
+  const [focusedLocation, setFocusedLocation] = useState<Location>()
+
   useLayoutEffect(() => {
     if(reactgridRef.current?.state.reactGridElement) window.dispatchEvent(new Event('resize'))    
   }, [fullscreen])  
@@ -450,10 +459,15 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  //debug("rerendering", reactgridRef?.current)
+  debug("rerendering", focusedLocation,focusedLocation?.row?.cells[focusedLocation?.row?.idx])
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
-  return <div style={{ paddingBottom: "16px" }}>
+  return <div style={{ paddingBottom: "16px", paddingTop: "32px" }}>
+    <textarea type="text" id="top-input" 
+      style={{ border:"1px solid gray", width:"calc(100% - 32px)", height:"30px", position: "absolute", left:0, top:-32, margin:"16px", 
+        padding:"2px", resize:"none" }}>
+          {!focusedLocation?.row?.cells?.length ? "" : focusedLocation.row.cells[focusedLocation.row.idx].text}
+    </textarea>
     <IconButton className={"btn-rouge fs-btn "+( fullscreen ? "fs-true" : "" )} onClick={() => setFullscreen(!fullscreen)} >
         { fullscreen 
           ? <FullscreenExitIcon />
@@ -464,7 +478,8 @@ export default function OutlineCSVEditor(props) {
         style={{ position: "relative", /*fontSize: fontSize + "px"*/ }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}>      
       <MyReactGrid 
         ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
-        rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} />
+        rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} 
+        {...{ focusedLocation, setFocusedLocation }}/>
     </div>
     <nav className="navbar bottom" style={{ left:0, zIndex:100000 }}>
       <div></div>
