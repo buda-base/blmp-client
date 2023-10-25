@@ -1,13 +1,16 @@
-import React, { useEffect, useState, useRef, useCallback, useLayoutEffect } from "react"
+import React, { useEffect, useState, useRef, useCallback, useLayoutEffect, useMemo } from "react"
 import { useRecoilState } from "recoil"
 import Papa from 'papaparse';
 import { ReactGrid, Column, Row, Id, MenuOption, SelectionMode, EventHandlers, pasteData } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Slider from '@material-ui/core/Slider';
+import TextField from '@material-ui/core/TextField';
 
 import { uiTabState } from "../atoms/common"
 import config from "../config"
@@ -102,7 +105,7 @@ class MyReactGrid extends ReactGrid {
   );
   componentDidUpdate(prevProps: ReactGridProps, prevState: State): void {
     super.componentDidUpdate(prevProps, prevState, this.state);
-    debug("cDu:", this.state, this.props)
+    //debug("cDu:", this.state, this.props,  this.state.focusedLocation?.row, this.props.focusedLocation?.row)
     if(this.state.contextMenuPosition.top !== -1) { 
       const menu = document.querySelector(".rg-context-menu")
       if(!menu) return
@@ -113,10 +116,12 @@ class MyReactGrid extends ReactGrid {
       }
     }
     if(this.state.focusedLocation && !this.props.focusedLocation
-      || !this.state.focusedLocation && this.props.focusedLocation
-      || this.state.focusedLocation?.row?.idx !== this.props.focusedLocation?.row?.idx 
-      || this.state.focusedLocation?.row?.rowId !== this.props.focusedLocation?.row?.rowId) {
-      debug("focus:", this.state.focusedLocation?.row)
+      || !this.state.focusedLocation && this.props.focusedLocation && Object.keys(this.props.focusedLocation).length
+      || this.state.focusedLocation && this.props.focusedLocation 
+          && ( this.state.focusedLocation?.column?.idx != this.props.focusedLocation?.column?.idx 
+            || this.state.focusedLocation?.row?.rowId != this.props.focusedLocation?.row?.rowId)
+     ) {
+      //debug("focus:", this.state.focusedLocation, this.props.focusedLocation)
       this.props.setFocusedLocation({ ...this.state.focusedLocation })
     }
   }
@@ -134,7 +139,7 @@ export default function OutlineCSVEditor(props) {
 
   const reactgridRef = useRef<MyReactGrid>(null)
 
-  debug("ref:", reactgridRef, outlineData, headerRow)
+  //debug("ref:", reactgridRef, outlineData, headerRow)
 
   const handleColumnResize = (ci: Id, width: number) => {
       setColumns((prevColumns) => {
@@ -429,7 +434,17 @@ export default function OutlineCSVEditor(props) {
   useLayoutEffect(() => {
     if(reactgridRef.current?.state.reactGridElement) window.dispatchEvent(new Event('resize'))    
   }, [fullscreen])  
+  
+  const [multiline, setMultiline] = useState(false)
 
+  const focus = useMemo(() => 
+    focusedLocation?.row && focusedLocation?.column && outlineData?.length > focusedLocation.row.rowId 
+      && !["RID", "work"].includes(focusedLocation?.column?.columnId)
+        ? outlineData[focusedLocation.row.rowId][focusedLocation.column.columnId] 
+        : undefined, 
+    [focusedLocation, outlineData]
+  )
+  
   if(!headerRow || ! outlineData.length || !columns.length) return <div>loading...</div>
 
   const rows = [
@@ -459,15 +474,21 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  debug("rerendering", focusedLocation,focusedLocation?.row?.cells[focusedLocation?.row?.idx])
-  //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
+  debug("rerendering", focusedLocation, focus)
+  debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
   return <div style={{ paddingBottom: "16px", paddingTop: "32px" }}>
-    <textarea type="text" id="top-input" 
-      style={{ border:"1px solid gray", width:"calc(100% - 32px)", height:"30px", position: "absolute", left:0, top:-32, margin:"16px", 
-        padding:"2px", resize:"none" }}>
-          {!focusedLocation?.row?.cells?.length ? "" : focusedLocation.row.cells[focusedLocation.row.idx].text}
-    </textarea>
+    {focus !== undefined && focus.includes && <div id="focus" 
+        className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
+      <TextField multiline={multiline && focus.includes && focus.includes(";")} value={multiline ? focus.split(/ *;+ */).join("\n") : focus} 
+          variant="outlined" inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
+            ...multiline && focus.includes && focus.includes(";")?{ padding:0, height:(focus.split(/ *;+ */).length+1)*(fontSize*1.25)+"px", lineHeight: (fontSize*1.35)+"px" }:{} //eslint-disable-line
+          } }} 
+      /> 
+      <IconButton disabled={focus.includes && !focus.includes(";;")} onClick={() => setMultiline(!multiline)}>
+        { multiline ? <ExpandLessIcon/> : <ExpandMoreIcon /> }
+      </IconButton>
+    </div>}
     <IconButton className={"btn-rouge fs-btn "+( fullscreen ? "fs-true" : "" )} onClick={() => setFullscreen(!fullscreen)} >
         { fullscreen 
           ? <FullscreenExitIcon />

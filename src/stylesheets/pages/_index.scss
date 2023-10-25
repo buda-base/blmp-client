@@ -1283,6 +1283,30 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
         padding:0;
       }
     }
+
+    #focus { position: absolute; left:16px; width:calc(100% - 22px); margin-top:-58px; background:white; display:flex; align-items: center; 
+      justify-content: space-between; 
+
+      & > div { width:calc(100% - 32px); }
+
+      &.multiline { padding-bottom:4px; z-index:1; 
+
+        .MuiOutlinedInput-multiline { padding: 5px 10px; }
+      }
+
+      &.fs-true {
+        position: fixed;
+        z-index: 1000;
+        top: 140px;
+        padding:4px;
+        width:calc(100% - 36px);
+        box-shadow:0 0 5px rgba(0,0,0,0.3);
+      }
+
+      button { padding:4px;
+        &:focus { outline:none; }
+      }
+    }
   }
 
   .container > div {
@@ -1305,6 +1329,7 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
     display: flex;
     justify-content: start;
     overflow:auto;
+    padding-top:80px;
   }
   
   .csv-container:not(#a) {
