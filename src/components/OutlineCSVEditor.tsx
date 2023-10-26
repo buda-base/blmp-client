@@ -482,10 +482,10 @@ export default function OutlineCSVEditor(props) {
         className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
       <TextField multiline={multiline && focus.includes && focus.includes(";")} value={multiline ? focus.split(/ *;+ */).join("\n") : focus} 
           variant="outlined" inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
-            ...multiline && focus.includes && focus.includes(";")?{ padding:0, height:(focus.split(/ *;+ */).length+1)*(fontSize*1.25)+"px", lineHeight: (fontSize*1.35)+"px" }:{} //eslint-disable-line
+            ...multiline && focus.includes && focus.includes(";")?{ padding:0, height:(focus.split(/ *;+ */).length)*(fontSize*1.4)+"px", lineHeight: (fontSize*1.4)+"px" }:{} //eslint-disable-line
           } }} 
       /> 
-      <IconButton disabled={focus.includes && !focus.includes(";;")} onClick={() => setMultiline(!multiline)}>
+      <IconButton disabled={focus.includes && !focus.includes(";")} onClick={() => setMultiline(!multiline)}>
         { multiline ? <ExpandLessIcon/> : <ExpandMoreIcon /> }
       </IconButton>
     </div>}
