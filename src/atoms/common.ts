@@ -379,3 +379,8 @@ export const demoAtom = atom<boolean>({
   key: "demoAtom",
   default: false,
 })
+
+export const localCSVAtom = atom<string>({
+  key: "localCSVAtom",
+  default: "",
+})

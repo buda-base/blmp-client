@@ -12,7 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Slider from '@material-ui/core/Slider';
 import TextField from '@material-ui/core/TextField';
 
-import { uiTabState } from "../atoms/common"
+import { uiTabState, localCSVAtom } from "../atoms/common"
 import config from "../config"
 
 const debug = require("debug")("bdrc:csved")
@@ -136,6 +136,8 @@ export default function OutlineCSVEditor(props) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [headerRow, setHeaderRow] = useState<Row>()
   globalHeaderRow = headerRow  
+
+  const [localCSV, setLocalCSV] = useRecoilState(localCSVAtom)
 
   const reactgridRef = useRef<MyReactGrid>(null)
 
@@ -359,8 +361,13 @@ export default function OutlineCSVEditor(props) {
       if (RID && !csv) {
         setCsv(true)
         try {
-          const resp = await fetch(config.API_BASEURL + "outline/csv/" + RID)
-          const text = await resp.text()
+          let text
+          if(!localCSV) {
+            const resp = await fetch(config.API_BASEURL + "outline/csv/" + RID)
+            text = await resp.text()
+          } else {
+            text = localCSV
+          }
           setCsv(text)
           Papa.parse(text, { worker: true, delimiter:",", complete: (results) => {
 
@@ -409,7 +416,7 @@ export default function OutlineCSVEditor(props) {
       }
     }
     fetchCsv()
-  }, [RID, csv])
+  }, [RID, csv, localCSV])
 
   // TODO: add outline in left bar
   useEffect(() => {

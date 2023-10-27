@@ -6,9 +6,14 @@ import CircularProgress from "@material-ui/core/CircularProgress"
 import MuiAlert from "@material-ui/lab/Alert"
 import { isNil } from "ramda"
 import { useAuth0 } from "@auth0/auth0-react"
-import { Link } from "react-router-dom"
+import { Link, useHistory } from "react-router-dom"
+import { useRecoilState } from "recoil"
+
+import { localCSVAtom } from "../atoms/common"
 
 import config from "../config"
+
+const debug = require("debug")("bdrc:menu")
 
 const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: any }) => {
   const { t } = useTranslation()
@@ -17,6 +22,22 @@ const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: 
 
   const isRID = useMemo(() => volume.match(/^(bdr:)?w(\d|eap)/i), [volume])
   const RID = useMemo(() => volume.replace(/^bdr:/i, "").toUpperCase(), [volume])
+
+  const [localCSV, setLocalCSV] = useRecoilState(localCSVAtom)
+  
+  const history = useHistory()
+
+  const uploadCSV = (event) => {
+    //debug("ev:", event, event.target.files)
+    if(!event.target.files.length) return
+    const reader = new FileReader()
+    reader.onloadend = (data) => {
+      //debug("read:",data,data.currentTarget.result)
+      setLocalCSV(data.currentTarget.result)
+      setTimeout(() => history.push("/outline/bdr:"+RID), 150) // eslint-disable-line
+    }
+    reader.readAsText(event.target.files[0])
+  }
 
   return props.isFetching || loading ? (
     <CircularProgress />
@@ -71,15 +92,26 @@ const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: 
             {t("outline.editCSV")}
           </Button>
         </Link>
-        <Button
-          disabled //={!isRID}
-          className="btn-rouge"
-          variant="contained"
-          color="primary"
-          style={{ marginLeft: "1em" }}
-        >
+        <label htmlFor="upload-csv" style={{ margin:0 }}>
+          <input
+            style={{ display: 'none' }}
+            id="upload-csv"
+            name="upload-csv"
+            type="file"
+            accept=".csv"
+            onChange={uploadCSV}
+          />
+          <Button
+            component="span"
+            disabled={!isRID}
+            className="btn-rouge"
+            variant="contained"
+            color="primary"
+            style={{ marginLeft: "1em" }}
+          >
           {t("outline.ulCSV")}
-        </Button>
+          </Button>
+        </label>
         {!isNil(props.fetchErr) && (
           <MuiAlert style={{ marginTop: "2em" }} severity="error">
             {t("submitErrorMsg")}

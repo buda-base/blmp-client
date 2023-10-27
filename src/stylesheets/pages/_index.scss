@@ -840,6 +840,7 @@ input.MuiInputBase-input,
 
   &:focus { outline-color:#d7344199; }
 
+  &[aria-disabled='true'],
   &:disabled { opacity:0.5;  }
 }
 
