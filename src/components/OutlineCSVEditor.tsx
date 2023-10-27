@@ -451,7 +451,35 @@ export default function OutlineCSVEditor(props) {
         : undefined, 
     [focusedLocation, outlineData]
   )
-  
+
+  const [saving, setSaving] = useState(false)
+
+  const save = useCallback(async () => {
+    
+    setSaving(false)
+
+    const idToken = localStorage.getItem("BLMPidToken")
+
+    const headers = new Headers()
+    headers.set("Content-Type", "text/turtle")
+    headers.set("Authorization", "Bearer " + idToken)
+    //if (message) headers.set("X-Change-Message", encodeURIComponent(message))
+    //if (previousEtag) headers.set("If-Match", previousEtag)
+
+    const method = "PUT"
+
+    const body = headerRow.cells.map(c => '"'+c.text.replace(/pos\..*/, "Position").replace(/im./,"img").replace(/vol./,"volume")+'"').join(",")
+              + "\n" + outlineData.map(o => columns.map(c => JSON.stringify(""+(o[c.columnId]??""))).join(",")).join("\n")
+    debug("body:", body)
+
+    const url = config.API_BASEURL + "outline/csv/" + RID
+    
+    const response = await fetch(url, { headers, method, body  })
+
+    setSaving(true)
+    
+  }, [outlineData, headerRow, columns])
+   
   if(!headerRow || ! outlineData.length || !columns.length) return <div>loading...</div>
 
   const rows = [
@@ -523,7 +551,7 @@ export default function OutlineCSVEditor(props) {
               aria-labelledby="continuous-slider" step={1} min={20} max={60}/>
         </div>
       </div>
-      <Button className="btn-rouge" disabled>Save</Button>      
+      <Button onClick={save} className="btn-rouge" disabled={!outlineData.length && !saving}>Save</Button>      
     </nav>
   </div>
 }
