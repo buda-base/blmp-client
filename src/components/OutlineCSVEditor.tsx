@@ -457,6 +457,30 @@ export default function OutlineCSVEditor(props) {
 
   const [saving, setSaving] = useState(false)
 
+  const rowToCsv = useCallback((o) => {
+    debug("o:",o,columns)
+    let res = [], c = 0
+    // RID
+    res.push(o[columns[c].columnId])
+    // position
+    do {
+      c++
+    } while(columns[c].columnId.startsWith("pos"))    
+    res = res.concat(o.position.map(p => p ? "X" : ""))
+    // all other fields
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    // img. / vol.
+    do {
+      res.push(o[columns[c++].columnId] || "")
+    } while(columns.length > c)
+    return res.map(r => JSON.stringify(r)).join(",") 
+  }, [columns])
+
   const save = useCallback(async () => {
     
     setSaving(false)
@@ -472,15 +496,21 @@ export default function OutlineCSVEditor(props) {
     const method = "PUT"
 
     const body = headerRow.cells.map(c => '"'+c.text.replace(/pos\..*/, "Position").replace(/im./,"img").replace(/vol./,"volume")+'"').join(",")
-              + "\n" + outlineData.map(o => columns.map(c => JSON.stringify(""+(o[c.columnId]??""))).join(",")).join("\n")+"\n"
+              + "\n" + outlineData.map(rowToCsv).join("\n")+"\n"
     debug("body:", body)
 
     const url = config.API_BASEURL + "outline/csv/" + RID
     
     const response = await fetch(url, { headers, method, body  })
-
-    setSaving(true)
     
+    setSaving(true)
+
+    try {
+      await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+    } catch(e) {
+      setMessage("error when clearing cache")  
+    }
+        
   }, [outlineData, headerRow, columns])
    
   if(!headerRow || ! outlineData.length || !columns.length) return <div>loading...</div>
