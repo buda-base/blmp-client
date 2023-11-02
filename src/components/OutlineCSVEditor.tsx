@@ -156,7 +156,7 @@ export default function OutlineCSVEditor(props) {
   const makeRow = (d:[], head: Row, fromPaste = false) => { 
     const position = []
     head.cells.map( (c,j) => {
-      if(c.text.startsWith("pos.")) position.push(d[j] === "X" || fromPaste && d[j] === "1")
+      if(c.text.startsWith("pos.")) position.push((d[j] || "").toUpperCase() === "X" || fromPaste && d[j] === "1")
     });
     const idx = position.length + 1
     return {
@@ -368,9 +368,10 @@ export default function OutlineCSVEditor(props) {
           } else {
             text = localCSV
           }
+          if(text) text = text.replace(/\n$/m,"")
+
           setCsv(text)
           Papa.parse(text, { worker: true, delimiter:",", complete: (results) => {
-
             let n_pos = 1
             const head = {
               rowId: "header",
@@ -379,9 +380,11 @@ export default function OutlineCSVEditor(props) {
             }
             setHeaderRow(head)
 
+            debug("results:", results)
+
             const data = results.data.map((d,i) => {
-              if(i>0) return makeRow(d, head)
-            }).filter(d => d && d.RID)
+              if(i>0 && d) return makeRow(d, head)
+            }).filter(d => d) /* && d.RID) // RID can be empty */
 
             const position = []
             head.cells.map( (c,j) => {
@@ -461,7 +464,7 @@ export default function OutlineCSVEditor(props) {
     const idToken = localStorage.getItem("BLMPidToken")
 
     const headers = new Headers()
-    headers.set("Content-Type", "text/turtle")
+    headers.set("Content-Type", "text/csv")
     headers.set("Authorization", "Bearer " + idToken)
     //if (message) headers.set("X-Change-Message", encodeURIComponent(message))
     //if (previousEtag) headers.set("If-Match", previousEtag)
@@ -469,7 +472,7 @@ export default function OutlineCSVEditor(props) {
     const method = "PUT"
 
     const body = headerRow.cells.map(c => '"'+c.text.replace(/pos\..*/, "Position").replace(/im./,"img").replace(/vol./,"volume")+'"').join(",")
-              + "\n" + outlineData.map(o => columns.map(c => JSON.stringify(""+(o[c.columnId]??""))).join(",")).join("\n")
+              + "\n" + outlineData.map(o => columns.map(c => JSON.stringify(""+(o[c.columnId]??""))).join(",")).join("\n")+"\n"
     debug("body:", body)
 
     const url = config.API_BASEURL + "outline/csv/" + RID
