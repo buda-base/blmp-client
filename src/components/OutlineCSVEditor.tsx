@@ -11,7 +11,7 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Slider from '@material-ui/core/Slider';
 import TextField from '@material-ui/core/TextField';
-
+import { CircularProgress } from "@material-ui/core"
 import { uiTabState, localCSVAtom } from "../atoms/common"
 import config from "../config"
 
@@ -123,6 +123,11 @@ class MyReactGrid extends ReactGrid {
      ) {
       //debug("focus:", this.state.focusedLocation, this.props.focusedLocation)
       this.props.setFocusedLocation({ ...this.state.focusedLocation })
+    }
+    if(this.state.currentlyEditedCell) {
+      this.props.onEditing(true)
+    } else {
+      this.props.onEditing(false)
     }
   }
 }
@@ -447,13 +452,44 @@ export default function OutlineCSVEditor(props) {
   
   const [multiline, setMultiline] = useState(false)
 
-  const focus = useMemo(() => 
+  const focusPre = useMemo(() => 
     focusedLocation?.row && focusedLocation?.column && outlineData?.length > focusedLocation.row.rowId 
       && !["RID", "work"].includes(focusedLocation?.column?.columnId)
         ? outlineData[focusedLocation.row.rowId][focusedLocation.column.columnId] 
         : undefined, 
     [focusedLocation, outlineData]
   )
+
+  const [editing, setEditing] = useState(false)
+  const onEditing = (val:boolean) => setEditing(val)
+  const [focusVal, setFocusVal] = useState("")
+
+  useEffect(() => {
+    setFocusVal("")
+  }, [focusedLocation])  
+
+  useEffect(() => {
+    if(editing) {
+      const input = document.querySelector(".rg-celleditor input")
+      if(input) {
+        input.addEventListener("keyup", (ev) => { 
+          setFocusVal(input.value)
+        })
+      }
+    } else {
+      setFocusVal("")
+    }
+  }, [editing])
+
+  const focus = focusVal || focusPre
+
+  const handleInputChange = useCallback((ev) => {
+    //debug("change:", ev.currentTarget.value)
+    const newData = [ ...outlineData ]
+    newData[focusedLocation.row.rowId][focusedLocation.column.columnId] = ev.currentTarget.value
+    setOutlineData(newData)
+    setFocusVal(ev.currentTarget.value)
+  }, [focusedLocation, outlineData])
 
   const [saving, setSaving] = useState(false)
 
@@ -483,7 +519,7 @@ export default function OutlineCSVEditor(props) {
 
   const save = useCallback(async () => {
     
-    setSaving(false)
+    setSaving(true)
 
     const idToken = localStorage.getItem("BLMPidToken")
 
@@ -502,14 +538,14 @@ export default function OutlineCSVEditor(props) {
     const url = config.API_BASEURL + "outline/csv/" + RID
     
     const response = await fetch(url, { headers, method, body  })
-    
-    setSaving(true)
-
+        
     try {
       await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
     } catch(e) {
       setMessage("error when clearing cache")  
     }
+
+    setSaving(false)
         
   }, [outlineData, headerRow, columns])
    
@@ -542,14 +578,14 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  debug("rerendering", focusedLocation, focus)
-  debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
+  //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
+  //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
   return <div style={{ paddingBottom: "16px", paddingTop: "32px" }}>
     {focus !== undefined && focus.includes && <div id="focus" 
         className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
-      <TextField multiline={multiline && focus.includes && focus.includes(";")} value={multiline ? focus.split(/ *;+ */).join("\n") : focus} 
-          variant="outlined" inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
+      <TextField multiline={multiline && focus.includes && focus.includes(";")} value={multiline ? focus.split(/ *;+ */).join("\n") : focus}
+          variant="outlined" onChange={handleInputChange} inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
             ...multiline && focus.includes && focus.includes(";")?{ padding:0, height:(focus.split(/ *;+ */).length)*(fontSize*1.4)+"px", lineHeight: (fontSize*1.4)+"px" }:{} //eslint-disable-line
           } }} 
       /> 
@@ -568,7 +604,7 @@ export default function OutlineCSVEditor(props) {
       <MyReactGrid 
         ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
         rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} 
-        {...{ focusedLocation, setFocusedLocation }}/>
+        {...{ focusedLocation, setFocusedLocation, onEditing }}/>
     </div>
     <nav className="navbar bottom" style={{ left:0, zIndex:100000 }}>
       <div></div>
@@ -584,7 +620,11 @@ export default function OutlineCSVEditor(props) {
               aria-labelledby="continuous-slider" step={1} min={20} max={60}/>
         </div>
       </div>
-      <Button onClick={save} className="btn-rouge" disabled={!outlineData.length && !saving}>Save</Button>      
+      <Button onClick={save} className="btn-rouge" disabled={!outlineData.length || saving}>{
+        saving 
+        ? <CircularProgress size="14px" color="white" />
+        : <>Save</>
+      }</Button>      
     </nav>
   </div>
 }
