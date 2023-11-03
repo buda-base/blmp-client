@@ -483,13 +483,16 @@ export default function OutlineCSVEditor(props) {
 
   const focus = focusVal || focusPre
 
+  const topInputRef = useRef(null)
+
   const handleInputChange = useCallback((ev) => {
-    //debug("change:", ev.currentTarget.value)
+    debug("change:", ev.currentTarget.value, focusVal)
+    const newVal = ev.currentTarget.value.split(/\n|;+/).join(";;")
     const newData = [ ...outlineData ]
-    newData[focusedLocation.row.rowId][focusedLocation.column.columnId] = ev.currentTarget.value
+    newData[focusedLocation.row.rowId][focusedLocation.column.columnId] = newVal
     setOutlineData(newData)
-    setFocusVal(ev.currentTarget.value)
-  }, [focusedLocation, outlineData])
+    setFocusVal(newVal)
+  }, [focusedLocation, outlineData, focusVal])
 
   const [saving, setSaving] = useState(false)
 
@@ -584,10 +587,13 @@ export default function OutlineCSVEditor(props) {
   return <div style={{ paddingBottom: "16px", paddingTop: "32px" }}>
     {focus !== undefined && focus.includes && <div id="focus" 
         className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
-      <TextField multiline={multiline && focus.includes && focus.includes(";")} value={multiline ? focus.split(/ *;+ */).join("\n") : focus}
-          variant="outlined" onChange={handleInputChange} inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
-            ...multiline && focus.includes && focus.includes(";")?{ padding:0, height:(focus.split(/ *;+ */).length)*(fontSize*1.4)+"px", lineHeight: (fontSize*1.4)+"px" }:{} //eslint-disable-line
-          } }} 
+      <TextField inputRef={topInputRef} multiline={multiline && focus.includes && focus.includes(";")} 
+          value={multiline ? focus.split(/ *;+ */).join("\n") : focus} variant="outlined" onChange={handleInputChange} 
+          inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
+            ...multiline && focus.includes && focus.includes(";")?{ 
+                padding:0, height:(focus.split(/ *;+ */).length)*(fontSize*1.4)+"px", lineHeight: (fontSize*1.4)+"px" }:{} //eslint-disable-line
+            } 
+          }} 
       /> 
       <IconButton disabled={focus.includes && !focus.includes(";")} onClick={() => setMultiline(!multiline)}>
         { multiline ? <ExpandLessIcon/> : <ExpandMoreIcon /> }
