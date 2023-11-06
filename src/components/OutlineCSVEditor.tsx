@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback, useLayoutEffect, useMemo } from "react"
 import { useRecoilState } from "recoil"
 import Papa from 'papaparse';
-import { ReactGrid, Column, Row, Id, MenuOption, SelectionMode, EventHandlers, pasteData } from "@silevis/reactgrid";
+import { ReactGrid, Column, Row, Id, MenuOption, SelectionMode, EventHandlers, pasteData, isMacOs } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
@@ -285,10 +285,11 @@ export default function OutlineCSVEditor(props) {
       }
       return menuOptions;
   }, [outlineData, emptyData, addEmptyData])
-
-  const applyChangesToOutlineData = (
+  
+  const applyNewValue = (
     changes: CellChange[],
-    prevEntry: OutlineEntry[]
+    prevEntry: OutlineEntry[],
+    usePrevValue = false
   ): OutlineEntry[] => {
     
     debug("changes:",changes)
@@ -296,7 +297,26 @@ export default function OutlineCSVEditor(props) {
     changes.forEach((change, n) => {      
       const entryIndex = change.rowId;
       const fieldName = change.columnId;
+      const nextCell = usePrevValue ? change.previousCell : change.newCell;
+      const prevCell = usePrevValue ? change.newCell : change.previousCell;
       
+      if(usePrevValue) {
+        debug("undo",change.type)
+        if (change.type === 'checkbox') {
+          const n_pos = Number(fieldName.replace(/^[^0-9]+/g,""))  
+          prevEntry[entryIndex].position[n_pos - 1] = nextCell.checked;
+          if(!nextCell.checked && nextCell.n_pos) prevEntry[entryIndex].position[nextCell.n_pos - 1] = true
+        } else if (change.type === 'text') {
+          prevEntry[entryIndex][fieldName] = nextCell.text;
+        } else if (change.type === 'number') {
+          prevEntry[entryIndex][fieldName] = nextCell.value;
+        } else if (change.type === 'dropdown') {
+          prevEntry[entryIndex].isTypeOpen = false
+          prevEntry[entryIndex][fieldName] = nextCell.selectedValue
+        }
+        return
+      }
+
       // more than 2 change (duplicate when editing RID in a loaded csv) ==> copy/paste = don't paste RID in first column
       if(changes.length > 2 && fieldName === "RID") { // eslint-disable-line
         debug("changes:RID")
@@ -307,38 +327,103 @@ export default function OutlineCSVEditor(props) {
         const numChecked = prevEntry[entryIndex].position.reduce((acc,e) => acc + (e ? 1 : 0), 0)
         const n_pos = Number(fieldName.replace(/^[^0-9]+/g,""))
         //debug("nC:", n_pos, numChecked, prevEntry[entryIndex])        
-        if(numChecked !== 1 || change.newCell.checked || changes.length > 1) { // && !changes[0].newCell.text) { 
-          prevEntry[entryIndex].position[n_pos - 1] = change.newCell.checked;
-          if(change.newCell.checked) {
+        if(numChecked !== 1 || nextCell.checked || changes.length > 1) { // && !changes[0].newCell.text) { 
+          prevEntry[entryIndex].position[n_pos - 1] = nextCell.checked;
+          if(nextCell.checked) {
             for(const i in prevEntry[entryIndex].position) {              
-              if(Number(i) !== Number(n_pos - 1)) prevEntry[entryIndex].position[i] = false 
+              if(Number(i) !== Number(n_pos - 1)) { 
+                if(prevEntry[entryIndex].position[i]) prevCell.n_pos = 1+Number(i)
+                prevEntry[entryIndex].position[i] = false 
+              }
             }
           }
         }
       } else if (change.type === 'text') {
-        prevEntry[entryIndex][fieldName] = change.newCell.text;
+        prevEntry[entryIndex][fieldName] = nextCell.text;
       } else if (change.type === 'number') {
         debug("num:", change, fieldName)
-        if(change.newCell.value !== "" && !isNaN(change.newCell.value)) { 
-          let v = change.newCell.value
+        if(nextCell.value !== "" && !isNaN(nextCell.value)) { 
+          let v = nextCell.value
           if(v < 1) v = 1
           if(v > 2000) v = 2000 // eslint-disable-line no-magic-numbers
           prevEntry[entryIndex][fieldName] = v;
         }
-        else if(change.newCell.text === '') prevEntry[entryIndex][fieldName] = '';
+        else if(nextCell.text === '') prevEntry[entryIndex][fieldName] = '';
       } else if (change.type === 'dropdown') {
         debug("dd:", change, fieldName)
-        prevEntry[entryIndex].isTypeOpen = change.newCell.isOpen
-        if(change.newCell.selectedValue && change.newCell.selectedValue !== change.previousCell.selectedValue)       
-          prevEntry[entryIndex][fieldName] = change.newCell.selectedValue
+        prevEntry[entryIndex].isTypeOpen = nextCell.isOpen
+        if(nextCell.selectedValue && nextCell.selectedValue !== prevCell.selectedValue)       
+          prevEntry[entryIndex][fieldName] = nextCell.selectedValue
       }
     });
     return [...prevEntry];
+  };
+  
+  const [cellChangesIndex, setCellChangesIndex] = useState(() => -1);
+  const [cellChanges, setCellChanges] = useState<CellChange[][]>(() => []);
+
+  useEffect(() => {
+    debug("index:", cellChanges, cellChangesIndex)
+  }, [cellChanges, cellChangesIndex])
+
+  const applyChangesToOutlineData = (
+    changes: CellChange<TextCell>[],
+    prevOutlineData: Person[]
+  ): Person[] => {
+    const updated = applyNewValue(changes, prevOutlineData);
+
+    /*
+    setCellChanges([...cellChanges.slice(0, cellChangesIndex + 1), changes]);
+    setCellChangesIndex(cellChangesIndex + 1);
+    */
+   
+    const newChanges = changes.filter((c,i) => c.type !== "dropdown" || c.previousCell.selectedValue !== c.newCell.selectedValue) 
+    if(newChanges.length) {      
+      const previousChanges = [ ...cellChanges.slice(0, cellChangesIndex + 1) ]
+      setCellChanges(previousChanges.concat([ newChanges ]));
+      setCellChangesIndex(cellChangesIndex + 1);
+    }
+
+    return updated;
+  };
+  
+  const redoChanges = (
+    changes: CellChange<TextCell>[],
+    prevOutlineData: Person[]
+  ): Person[] => {
+    const updated = applyNewValue(changes, prevOutlineData);
+    setCellChangesIndex(cellChangesIndex + 1);
+    return updated;
+  };
+
+  const undoChanges = (
+    changes: CellChange<TextCell>[],
+    prevOutlineData: Person[]
+  ): Person[] => {
+    const updated = applyNewValue(changes, prevOutlineData, true);
+    setCellChangesIndex(cellChangesIndex - 1);
+    return updated;
   };
 
   const handleChanges = (changes: CellChange<TextCell>[]) => { 
     setOutlineData((prevEntry) => applyChangesToOutlineData(changes, prevEntry)); 
   }; 
+
+  const handleUndoChanges = useCallback(() => {
+    if (cellChangesIndex >= 0) {
+      setOutlineData((prevOutlineData) =>
+      undoChanges(cellChanges[cellChangesIndex], prevOutlineData)
+      );
+    }
+  }, [cellChanges, cellChangesIndex]);
+
+  const handleRedoChanges =  useCallback(() => {
+    if (cellChangesIndex + 1 <= cellChanges.length - 1) {
+      setOutlineData((prevOutlineData) =>
+      redoChanges(cellChanges[cellChangesIndex + 1], prevOutlineData)
+      );
+    }
+  }, [cellChanges, cellChangesIndex]);
 
   const [ fontSize, setFontSize ] = useState<number>(20) // eslint-disable-line no-magic-numbers
   const [ rowHeight, setRowHeight ] = useState<number>(36) // eslint-disable-line no-magic-numbers
@@ -606,7 +691,20 @@ export default function OutlineCSVEditor(props) {
         }
     </IconButton>
     <div onPaste={handlePaste}  
-        style={{ position: "relative", /*fontSize: fontSize + "px"*/ }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}>      
+        style={{ position: "relative", /*fontSize: fontSize + "px"*/ }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}        
+        onKeyDown={(e) => {
+          if (!isMacOs() && e.ctrlKey || e.metaKey) {
+            switch (e.key) {
+              case "z":
+                handleUndoChanges();
+                return;
+              case "y":
+                handleRedoChanges();
+                return;
+            }
+          }
+        }}
+      >
       <MyReactGrid 
         ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
         rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} 
