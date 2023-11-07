@@ -368,8 +368,8 @@ export default function OutlineCSVEditor(props) {
 
   const applyChangesToOutlineData = (
     changes: CellChange<TextCell>[],
-    prevOutlineData: Person[]
-  ): Person[] => {
+    prevOutlineData: OutlineData[]
+  ): OutlineData[] => {
     const updated = applyNewValue(changes, prevOutlineData);
 
     /*
@@ -389,8 +389,8 @@ export default function OutlineCSVEditor(props) {
   
   const redoChanges = (
     changes: CellChange<TextCell>[],
-    prevOutlineData: Person[]
-  ): Person[] => {
+    prevOutlineData: OutlineData[]
+  ): OutlineData[] => {
     const updated = applyNewValue(changes, prevOutlineData);
     setCellChangesIndex(cellChangesIndex + 1);
     return updated;
@@ -398,8 +398,8 @@ export default function OutlineCSVEditor(props) {
 
   const undoChanges = (
     changes: CellChange<TextCell>[],
-    prevOutlineData: Person[]
-  ): Person[] => {
+    prevOutlineData: OutlineData[]
+  ): OutlineData[] => {
     const updated = applyNewValue(changes, prevOutlineData, true);
     setCellChangesIndex(cellChangesIndex - 1);
     return updated;
@@ -539,7 +539,7 @@ export default function OutlineCSVEditor(props) {
 
   const focusPre = useMemo(() => 
     focusedLocation?.row && focusedLocation?.column && outlineData?.length > focusedLocation.row.rowId 
-      && !["RID", "work"].includes(focusedLocation?.column?.columnId)
+      //&& !["RID", "work"].includes(focusedLocation?.column?.columnId) // why not edit RID in top field??
         ? outlineData[focusedLocation.row.rowId][focusedLocation.column.columnId] 
         : undefined, 
     [focusedLocation, outlineData]
@@ -553,17 +553,32 @@ export default function OutlineCSVEditor(props) {
     setFocusVal("")
   }, [focusedLocation])  
 
-  useEffect(() => {
+  const updateCellFromInput = useCallback(() => {
     if(editing) {
       const input = document.querySelector(".rg-celleditor input")
+      let timer = 0
       if(input) {
-        input.addEventListener("keyup", (ev) => { 
-          setFocusVal(input.value)
+        input.addEventListener("keyup", (ev) => {           
+          const cursor = input.selectionStart
+          //debug("ev:", ev, focusVal, input.value, cursor) //, timer)
+          if(timer) clearTimeout(timer)           
+          timer = setTimeout(() => {
+            if(focusVal !== input.value) { 
+              setFocusVal(input.value)        
+              if((!ev.key.startsWith("Arrow") || !focusVal) && ev.key !== "Shift"){ 
+                setTimeout(() => { input.selectionStart = input.selectionEnd = cursor }, 10)  // eslint-disable-line
+              }
+            }
+          }, 650) // eslint-disable-line
         })
       }
     } else {
       setFocusVal("")
     }
+  }, [editing, focusVal])
+
+  useEffect(() => {
+    updateCellFromInput()
   }, [editing])
 
   const focus = focusVal || focusPre
@@ -571,11 +586,16 @@ export default function OutlineCSVEditor(props) {
   const topInputRef = useRef(null)
 
   const handleInputChange = useCallback((ev) => {
-    debug("change:", ev.currentTarget.value, focusVal)
     const newVal = ev.currentTarget.value.split(/\n|;+/).join(";;")
-    const newData = [ ...outlineData ]
-    newData[focusedLocation.row.rowId][focusedLocation.column.columnId] = newVal
-    setOutlineData(newData)
+    const changes = [{ 
+      type:"text", 
+      rowId: focusedLocation.row.rowId, 
+      columnId: focusedLocation.column.columnId, 
+      previousCell: { type: "text", text: focus },
+      newCell: { type: "text", text: newVal },
+    }]
+    //debug("change!", ev.currentTarget.value, focus, changes)
+    setOutlineData(applyChangesToOutlineData(changes, outlineData))
     setFocusVal(newVal)
   }, [focusedLocation, outlineData, focusVal])
 
@@ -669,7 +689,19 @@ export default function OutlineCSVEditor(props) {
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
-  return <div style={{ paddingBottom: "16px", paddingTop: "32px" }}>
+  return <div style={{ paddingBottom: "16px", paddingTop: "32px" }} onKeyDown={(e) => {
+      if (!isMacOs() && e.ctrlKey || e.metaKey) {
+        debug("sc:",e)
+        switch (e.key) {
+          case "z":
+            handleUndoChanges();
+            return;
+          case "y":
+            handleRedoChanges();
+            return;
+        }
+      }
+    }}>
     {focus !== undefined && focus.includes && <div id="focus" 
         className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
       <TextField inputRef={topInputRef} multiline={multiline && focus.includes && focus.includes(";")} 
@@ -692,18 +724,6 @@ export default function OutlineCSVEditor(props) {
     </IconButton>
     <div onPaste={handlePaste}  
         style={{ position: "relative", /*fontSize: fontSize + "px"*/ }}  className={"csv-container " + ( fullscreen ? "fullscreen" : "" )}        
-        onKeyDown={(e) => {
-          if (!isMacOs() && e.ctrlKey || e.metaKey) {
-            switch (e.key) {
-              case "z":
-                handleUndoChanges();
-                return;
-              case "y":
-                handleRedoChanges();
-                return;
-            }
-          }
-        }}
       >
       <MyReactGrid 
         ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
@@ -711,7 +731,18 @@ export default function OutlineCSVEditor(props) {
         {...{ focusedLocation, setFocusedLocation, onEditing }}/>
     </div>
     <nav className="navbar bottom" style={{ left:0, zIndex:100000 }}>
-      <div></div>
+      <div>
+        <Button onClick={handleUndoChanges} 
+          className="btn-blanc" disabled={cellChangesIndex < 0 /* || cellChangesIndex >= cellChanges.length*/ }
+          >
+          Undo
+        </Button>      
+        <Button onClick={handleRedoChanges} 
+          className="btn-blanc ml-2" disabled={!cellChanges.length || cellChangesIndex === cellChanges.length - 1}
+          >
+          Redo
+        </Button>      
+      </div>
       <div id="sliders">
         <div>
           <span className="font-size">Font size</span>
