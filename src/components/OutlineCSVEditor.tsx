@@ -148,6 +148,23 @@ export default function OutlineCSVEditor(props) {
 
   //debug("ref:", reactgridRef, outlineData, headerRow)
 
+  useEffect(() => {
+    const updateBodyFocus = (event) => {
+      debug("focusout", event)
+      if(document.activeElement?.tagName === "BODY") {
+        const elem = reactgridRef.current?.state?.reactGridElement?.parentElement?.parentElement
+        if(elem) {
+          elem.setAttribute("tabIndex", -1)
+          elem.focus()        
+        }
+      }
+    }    
+    document.addEventListener('focusout', updateBodyFocus)    
+    return () => {
+      document.removeEventListener("focusout", updateBodyFocus)
+    }    
+  }, [])
+
   const handleColumnResize = (ci: Id, width: number) => {
       setColumns((prevColumns) => {
           const columnIndex = prevColumns.findIndex(el => el.columnId === ci);
@@ -377,11 +394,37 @@ export default function OutlineCSVEditor(props) {
     setCellChangesIndex(cellChangesIndex + 1);
     */
    
-    const newChanges = changes.filter((c,i) => c.type !== "dropdown" || c.previousCell.selectedValue !== c.newCell.selectedValue) 
+    const newChanges = changes.filter( // undo/redo dropdown change in one step
+      (c, i) => c.type !== "dropdown" || c.previousCell.selectedValue !== c.newCell.selectedValue
+    ) 
     if(newChanges.length) {      
-      const previousChanges = [ ...cellChanges.slice(0, cellChangesIndex + 1) ]
-      setCellChanges(previousChanges.concat([ newChanges ]));
-      setCellChangesIndex(cellChangesIndex + 1);
+      
+      let firstToMerge
+      const previousChanges = [ ...cellChanges.slice(0, cellChangesIndex + 1), newChanges ]
+        .reduce((acc, c, i) => { // merge all changes to top input since it has focus
+          if(c.length === 1 && c[0].merged !== undefined 
+              && (!firstToMerge || firstToMerge[0].rowId === c[0].rowId && firstToMerge[0].columnId === c[0].columnId)
+            ) {
+            if(!firstToMerge) firstToMerge = c 
+            else firstToMerge[0].newCell = c[0].newCell 
+          } else {
+            if(firstToMerge) {
+              firstToMerge[0].merged = true
+              acc.push(firstToMerge)
+              firstToMerge = undefined
+            }
+            acc.push(c)            
+          }
+          return acc
+        },[]) 
+      if(firstToMerge) {
+        firstToMerge[0].merged = true
+        previousChanges.push(firstToMerge)
+      }
+      //debug("pc:", previousChanges)
+
+      setCellChanges(previousChanges);
+      setCellChangesIndex(previousChanges.length - 1);
     }
 
     return updated;
@@ -410,20 +453,22 @@ export default function OutlineCSVEditor(props) {
   }; 
 
   const handleUndoChanges = useCallback(() => {
+    if(focusVal) setFocusVal("")
     if (cellChangesIndex >= 0) {
       setOutlineData((prevOutlineData) =>
-      undoChanges(cellChanges[cellChangesIndex], prevOutlineData)
+        undoChanges(cellChanges[cellChangesIndex], prevOutlineData)
       );
     }
-  }, [cellChanges, cellChangesIndex]);
+  }, [cellChanges, cellChangesIndex, focusVal]);
 
   const handleRedoChanges =  useCallback(() => {
+    if(focusVal) setFocusVal("")
     if (cellChangesIndex + 1 <= cellChanges.length - 1) {
       setOutlineData((prevOutlineData) =>
-      redoChanges(cellChanges[cellChangesIndex + 1], prevOutlineData)
+        redoChanges(cellChanges[cellChangesIndex + 1], prevOutlineData)
       );
     }
-  }, [cellChanges, cellChangesIndex]);
+  }, [cellChanges, cellChangesIndex, focusVal]);
 
   const [ fontSize, setFontSize ] = useState<number>(20) // eslint-disable-line no-magic-numbers
   const [ rowHeight, setRowHeight ] = useState<number>(36) // eslint-disable-line no-magic-numbers
@@ -525,7 +570,7 @@ export default function OutlineCSVEditor(props) {
   const handlePaste = (e) => {
     e.persist()
     debug("paste:",e)
-  }
+  }    
 
   const [fullscreen, setFullscreen] = useState(false)
 
@@ -539,7 +584,7 @@ export default function OutlineCSVEditor(props) {
 
   const focusPre = useMemo(() => 
     focusedLocation?.row && focusedLocation?.column && outlineData?.length > focusedLocation.row.rowId 
-      //&& !["RID", "work"].includes(focusedLocation?.column?.columnId) // why not edit RID in top field??
+      && ![ /*"RID", "work"*/ "partType"].includes(focusedLocation?.column?.columnId) // why not edit RID in top field??
         ? outlineData[focusedLocation.row.rowId][focusedLocation.column.columnId] 
         : undefined, 
     [focusedLocation, outlineData]
@@ -553,12 +598,12 @@ export default function OutlineCSVEditor(props) {
     setFocusVal("")
   }, [focusedLocation])  
 
-  const updateCellFromInput = useCallback(() => {
+  const updateInputFromCell = useCallback(() => {
     if(editing) {
       const input = document.querySelector(".rg-celleditor input")
       let timer = 0
       if(input) {
-        input.addEventListener("keyup", (ev) => {           
+        input.addEventListener("keyup", (ev) => {                     
           const cursor = input.selectionStart
           //debug("ev:", ev, focusVal, input.value, cursor) //, timer)
           if(timer) clearTimeout(timer)           
@@ -566,7 +611,7 @@ export default function OutlineCSVEditor(props) {
             if(focusVal !== input.value) { 
               setFocusVal(input.value)        
               if((!ev.key.startsWith("Arrow") || !focusVal) && ev.key !== "Shift"){ 
-                setTimeout(() => { input.selectionStart = input.selectionEnd = cursor }, 10)  // eslint-disable-line
+                input.selectionStart = input.selectionEnd = cursor 
               }
             }
           }, 650) // eslint-disable-line
@@ -578,7 +623,7 @@ export default function OutlineCSVEditor(props) {
   }, [editing, focusVal])
 
   useEffect(() => {
-    updateCellFromInput()
+    updateInputFromCell()
   }, [editing])
 
   const focus = focusVal || focusPre
@@ -593,11 +638,22 @@ export default function OutlineCSVEditor(props) {
       columnId: focusedLocation.column.columnId, 
       previousCell: { type: "text", text: focus },
       newCell: { type: "text", text: newVal },
+      merged: false      
     }]
     //debug("change!", ev.currentTarget.value, focus, changes)
     setOutlineData(applyChangesToOutlineData(changes, outlineData))
     setFocusVal(newVal)
   }, [focusedLocation, outlineData, focusVal])
+
+  const handleInputBlur = () => {
+    debug("blur")
+    const previousChanges = [ ...cellChanges ]
+    if(previousChanges.length && previousChanges[previousChanges.length - 1].length 
+        && previousChanges[previousChanges.length - 1][0].merged !== undefined) {
+      delete previousChanges[previousChanges.length - 1][0].merged
+      setCellChanges(previousChanges)
+    }
+  }
 
   const [saving, setSaving] = useState(false)
 
@@ -689,7 +745,7 @@ export default function OutlineCSVEditor(props) {
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
-  return <div style={{ paddingBottom: "16px", paddingTop: "32px" }} onKeyDown={(e) => {
+  return <div style={{ paddingBottom: "16px", paddingTop: "32px", outline: "none" }} onKeyDown={(e) => {
       if (!isMacOs() && e.ctrlKey || e.metaKey) {
         debug("sc:",e)
         switch (e.key) {
@@ -706,6 +762,7 @@ export default function OutlineCSVEditor(props) {
         className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
       <TextField inputRef={topInputRef} multiline={multiline && focus.includes && focus.includes(";")} 
           value={multiline ? focus.split(/ *;+ */).join("\n") : focus} variant="outlined" onChange={handleInputChange} 
+          onBlur={handleInputBlur}
           inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
             ...multiline && focus.includes && focus.includes(";")?{ 
                 padding:0, height:(focus.split(/ *;+ */).length)*(fontSize*1.4)+"px", lineHeight: (fontSize*1.4)+"px" }:{} //eslint-disable-line
