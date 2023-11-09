@@ -748,7 +748,7 @@ export default function OutlineCSVEditor(props) {
 
     setSaving(false)
         
-  }, [status, attrib, headerRow.cells, outlineData, rowToCsv, RID])
+  }, [status, attrib, headerRow, outlineData, rowToCsv, RID])
    
   if(!headerRow || ! outlineData.length || !columns.length) return <div>loading...</div>
 
@@ -765,7 +765,7 @@ export default function OutlineCSVEditor(props) {
         })),{
           type: "dropdown", 
           selectedValue:d.partType, 
-          values: "T,S,V,C,E,TOC".split(",").map(v => ({ value:v, label: v })),
+          values: "T,S,V,C,E".split(",").map(v => ({ value:v, label: v })), // removed TOC
           isOpen: d.isTypeOpen
         },        
         ..."label,titles,work,notes,colophon".split(",").map(p => ({
