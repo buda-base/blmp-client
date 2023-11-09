@@ -11,9 +11,12 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Slider from '@material-ui/core/Slider';
 import TextField from '@material-ui/core/TextField';
+import MenuItem from '@material-ui/core/MenuItem';
 import { CircularProgress } from "@material-ui/core"
+
 import { uiTabState, localCSVAtom } from "../atoms/common"
 import config from "../config"
+import * as ns from "../helpers/rdf/ns" 
 
 const debug = require("debug")("bdrc:csved")
 
@@ -132,6 +135,8 @@ class MyReactGrid extends ReactGrid {
   }
 }
 
+let unmount
+
 export default function OutlineCSVEditor(props) {
   const { RID } = props
   const [tab, setTab] = useRecoilState(uiTabState)
@@ -148,19 +153,48 @@ export default function OutlineCSVEditor(props) {
 
   //debug("ref:", reactgridRef, outlineData, headerRow)
 
+  const [statusValues, setStatusValues] = useState()
+  const [status, setStatus] = useState(ns.BDA("StatusEditing").value)
+  const [attrib, setAttrib] = useState("")
+
   useEffect(() => {
+    unmount = false 
+
+    const getOntology = async() => {
+      try {
+        const obj = await (await fetch("https://purl.bdrc.io/ontology/data/json")).json()
+        const status = Object.keys(obj)
+          .filter(v => obj[v][ns.RDF("type").value]?.some(t => t.value === ns.ADM("Status").value))
+          .reduce((acc,s) => ({ ...acc, [s]:obj[s] }),{})          
+        debug("status:", status)
+        setStatusValues(status)
+      } catch(e) {
+        debug("error:",e)
+        throw new Error("couldn't fetch ontology")
+      }
+    } 
+
     const updateBodyFocus = (event) => {
-      debug("focusout", event)
-      if(document.activeElement?.tagName === "BODY") {
+
+      // TODO: fix conflict with TextField/Select
+      return
+
+      if(document.activeElement?.tagName === "BODY" 
+          && !event.relatedTarget?.id?.includes("select") // fix for part type select behavior
+        ) {
         const elem = reactgridRef.current?.state?.reactGridElement?.parentElement?.parentElement
+        debug("focusout", event, elem, event.relatedTarget?.id)
         if(elem) {
           elem.setAttribute("tabIndex", -1)
           elem.focus()        
         }
       }
-    }    
+    }
+    
+    getOntology()
     document.addEventListener('focusout', updateBodyFocus)    
     return () => {
+      unmount = true
       document.removeEventListener("focusout", updateBodyFocus)
     }    
   }, [])
@@ -396,7 +430,7 @@ export default function OutlineCSVEditor(props) {
    
     const newChanges = changes.filter( // undo/redo dropdown change in one step
       (c, i) => c.type !== "dropdown" || c.previousCell.selectedValue !== c.newCell.selectedValue
-    ) 
+    )
     if(newChanges.length) {      
       
       let firstToMerge
@@ -692,6 +726,8 @@ export default function OutlineCSVEditor(props) {
     headers.set("Authorization", "Bearer " + idToken)
     //if (message) headers.set("X-Change-Message", encodeURIComponent(message))
     //if (previousEtag) headers.set("If-Match", previousEtag)
+    if(status) headers.set("X-Status", ns.qnameFromUri(status))
+    if(attrib) headers.set("X-Outline-Attribution", attrib)
 
     const method = "PUT"
 
@@ -701,17 +737,18 @@ export default function OutlineCSVEditor(props) {
 
     const url = config.API_BASEURL + "outline/csv/" + RID
     
-    const response = await fetch(url, { headers, method, body  })
-        
     try {
+      const response = await fetch(url, { headers, method, body  })        
       await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
     } catch(e) {
-      setMessage("error when clearing cache")  
+      debug(e)
+      // TODO: popup with commit/error message
+      alert("error when saving/clearing cache")
     }
 
     setSaving(false)
         
-  }, [outlineData, headerRow, columns])
+  }, [status, attrib, headerRow.cells, outlineData, rowToCsv, RID])
    
   if(!headerRow || ! outlineData.length || !columns.length) return <div>loading...</div>
 
@@ -745,7 +782,31 @@ export default function OutlineCSVEditor(props) {
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
-  return <div style={{ paddingBottom: "16px", paddingTop: "32px", outline: "none" }} onKeyDown={(e) => {
+  return <>
+    <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex" }} >
+      <TextField
+        select
+        style={{ padding: "1px", width: "200px", flexShrink: 0 }}
+        label={"Status"}
+        value={status}
+        InputLabelProps={{ shrink: true }}
+        onChange={(e) => setStatus(e.target.value)}
+      >
+        { statusValues && Object.keys(statusValues).map(s => // TODO: use locale
+            <MenuItem key={s} value={s}>{statusValues[s][ns.SKOS("prefLabel").value].find(v => v.lang === "en")?.value}</MenuItem>
+          )}
+      </TextField>
+      &nbsp;
+      &nbsp;
+      <TextField
+        style={{ padding: "1px", width: "100%" }}
+        label={"Attribution"}
+        value={attrib}
+        InputLabelProps={{ shrink: true }}
+        onChange={(e) => setAttrib(e.target.value)}
+      />
+    </div>
+    <div style={{ paddingBottom: "16px", paddingTop: "32px", outline: "none" }} onKeyDown={(e) => {
       if (!isMacOs() && e.ctrlKey || e.metaKey) {
         debug("sc:",e)
         switch (e.key) {
@@ -758,7 +819,9 @@ export default function OutlineCSVEditor(props) {
         }
       }
     }}>
-    {focus !== undefined && focus.includes && <div id="focus" 
+    {
+      <div id="focus" 
+        disabled={focus === undefined || !focus.includes}
         className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
       <TextField inputRef={topInputRef} multiline={multiline && focus.includes && focus.includes(";")} 
           value={multiline ? focus.split(/ *;+ */).join("\n") : focus} variant="outlined" onChange={handleInputChange} 
@@ -769,7 +832,7 @@ export default function OutlineCSVEditor(props) {
             } 
           }} 
       /> 
-      <IconButton disabled={focus.includes && !focus.includes(";")} onClick={() => setMultiline(!multiline)}>
+      <IconButton disabled={focus?.includes && !focus?.includes(";")} onClick={() => setMultiline(!multiline)}>
         { multiline ? <ExpandLessIcon/> : <ExpandMoreIcon /> }
       </IconButton>
     </div>}
@@ -819,4 +882,5 @@ export default function OutlineCSVEditor(props) {
       }</Button>      
     </nav>
   </div>
+</>
 }

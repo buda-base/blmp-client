@@ -1288,6 +1288,8 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
     #focus { position: absolute; left:16px; width:calc(100% - 22px); margin-top:-58px; background:white; display:flex; align-items: center; 
       justify-content: space-between; 
 
+      &[disabled] { opacity:0.35; pointer-events: none; }
+
       & > div { width:calc(100% - 32px); }
 
       &.multiline { padding-bottom:4px; z-index:1; 
@@ -1354,13 +1356,13 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
 
   .fs-btn:not(.fs-true) { 
     position: absolute; 
-    top:-75px;
+    top:-180px; // -75px
     right:15px;
   }
 
   .csv-container:not(.fullscreen) {
     overflow: auto; 
-    height: calc(100vh - 66px - 70px - 20px - 240px - 48px);
+    height: calc(100vh - 66px - 70px - 85px); // - 20px - 240px - 48px);
   }
 
   .fs-btn.fs-true {
