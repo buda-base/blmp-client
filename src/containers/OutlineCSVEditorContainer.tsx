@@ -25,7 +25,6 @@ function OutlineCSVApp(props: any) {
   return (
     <ThemeProvider theme={theme}>
       <InstanceCSVSearch
-        history={props.history}
         isFetching={isFetching}
         fetchErr={fetchErr}
         //{...(manifest && manifest["imggroup"] ? { forVolume: manifest["imggroup"] } : {})}

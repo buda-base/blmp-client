@@ -7,6 +7,7 @@ import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import NotFoundIcon from "@material-ui/icons/BrokenImage"
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Slider from '@material-ui/core/Slider';
@@ -14,6 +15,7 @@ import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import { CircularProgress } from "@material-ui/core"
 
+import InstanceCSVSearch from "../components/InstanceCSVSearch"
 import { uiTabState, localCSVAtom } from "../atoms/common"
 import config from "../config"
 import * as ns from "../helpers/rdf/ns" 
@@ -524,69 +526,84 @@ export default function OutlineCSVEditor(props) {
       +"px; display:inline-block; margin-top: "+ fontSize/7   +"px}")  // eslint-disable-line no-magic-numbers
   }, [fontSize])
 
-  useEffect(() => {
+  const [error, setError] = useState("")
 
-    const fetchCsv = async () => {
-      if (RID && !csv) {
-        setCsv(true)
-        try {
-          let text
-          if(!localCSV) {
-            const resp = await fetch(config.API_BASEURL + "outline/csv/" + RID)
-            text = await resp.text()
-          } else {
-            text = localCSV
-          }
-          if(text) text = text.replace(/\n$/m,"")
-
-          setCsv(text)
-          Papa.parse(text, { worker: true, delimiter:",", complete: (results) => {
-            let n_pos = 1
-            const head = {
-              rowId: "header",
-              height: rowHeight,
-              cells: results.data[0].map( d => ({ type: "header", text: d === "Position" ? "pos. " + n_pos++ : colLabels[d] || d }))
-            }
-            setHeaderRow(head)
-
-            debug("results:", results)
-
-            const data = results.data.map((d,i) => {
-              if(i>0 && d) return makeRow(d, head)
-            }).filter(d => d) /* && d.RID) // RID can be empty */
-
-            const position = []
-            head.cells.map( (c,j) => {
-              if(c.text.startsWith("pos.")) position.push(false)
-            });
-            const empty = {
-              RID:"", position, partType:"T", label:"", titles:"", work:"", notes:"", colophon:"", imgStart:"", imgEnd:"", 
-              volumeStart:"", volumeEnd:"",             
-              isTypeOpen: false
-            }
-            setEmptyData(empty)
-
-            if(!data?.length) { 
-              setOutlineData([empty])
-            }
-            else {
-              setOutlineData(data)
-            }
-
-            n_pos = 0
-            setColumns(head.cells.map( ({ text }, i) => { 
-              debug("w:", text, i, colWidths)
-              return { 
-              columnId: results.data[0][i].replace(/ (.)/,(m,g1) => g1.toUpperCase()).replace(/Position/,"position" + n_pos++),
-              resizable:true,
-              width: colWidths[results.data[0][i]] || 150 // eslint-disable-line no-magic-numbers
-            }}) || []) 
-          } } )
-        } catch(e) {
-          // TODO: error fetching csv (401/403)
+  const fetchCsv = useCallback(async () => {
+    if (RID && !csv) {
+      setCsv(true)
+      let resp
+      try {
+        let text
+        if(!localCSV) {
+          resp = await fetch(config.API_BASEURL + "outline/csv/" + RID)
+          if(resp.status === 404) throw new Error(await resp.text()) //eslint-disable-line
+          text = await resp.text()
+          const attr = resp.headers.get('x-outline-attribution')
+          if(attr) setAttrib(attr.replace(/^"|"$/g, ""))
+          const stat = resp.headers.get('x-status')
+          if(stat) setStatus(stat.replace(/^<|>$/g, ""))
+        } else {
+          text = localCSV
         }
+        if(text) text = text.replace(/\n$/m,"")
+
+        setCsv(text)
+        Papa.parse(text, { worker: true, delimiter:",", complete: (results) => {
+          let n_pos = 1
+          const head = {
+            rowId: "header",
+            height: rowHeight,
+            cells: results.data[0].map( d => ({ type: "header", text: d === "Position" ? "pos. " + n_pos++ : colLabels[d] || d }))
+          }
+          setHeaderRow(head)
+
+          debug("results:", results)
+
+          const data = results.data.map((d,i) => {
+            if(i>0 && d) return makeRow(d, head)
+          }).filter(d => d) /* && d.RID) // RID can be empty */
+
+          const position = []
+          head.cells.map( (c,j) => {
+            if(c.text.startsWith("pos.")) position.push(false)
+          });
+          const empty = {
+            RID:"", position, partType:"T", label:"", titles:"", work:"", notes:"", colophon:"", imgStart:"", imgEnd:"", 
+            volumeStart:"", volumeEnd:"",             
+            isTypeOpen: false
+          }
+          setEmptyData(empty)
+
+          if(!data?.length) { 
+            setOutlineData([empty])
+          }
+          else {
+            setOutlineData(data)
+          }
+
+          setCellChangesIndex(-1);
+          setCellChanges([]);
+          setFocusVal("")
+
+          n_pos = 0
+          setColumns(head.cells.map( ({ text }, i) => { 
+            debug("w:", text, i, colWidths)
+            return { 
+            columnId: results.data[0][i].replace(/ (.)/,(m,g1) => g1.toUpperCase()).replace(/Position/,"position" + n_pos++),
+            resizable:true,
+            width: colWidths[results.data[0][i]] || 150 // eslint-disable-line no-magic-numbers
+          }}) || []) 
+        } } )
+      } catch(e) {
+        // TODO: error fetching csv (401/403, 404)          
+        debug("ERROR", resp, e)
+        setError(e.message)
       }
     }
+  }, [RID, csv, localCSV, rowHeight])
+
+  useEffect(() => {
+    debug("localCSV?", RID, csv||"--", localCSV)
     fetchCsv()
   }, [RID, csv, localCSV])
 
@@ -692,7 +709,7 @@ export default function OutlineCSVEditor(props) {
   const [saving, setSaving] = useState(false)
 
   const rowToCsv = useCallback((o) => {
-    debug("o:",o,columns)
+    //debug("o:",o,columns)
     let res = [], c = 0
     // RID
     res.push(o[columns[c].columnId])
@@ -715,6 +732,11 @@ export default function OutlineCSVEditor(props) {
     return res.map(r => JSON.stringify(r)).join(",") 
   }, [columns])
 
+  const toCSV = useCallback(() => {
+    return headerRow.cells.map(c => '"'+c.text.replace(/pos\..*/, "Position").replace(/im./,"img").replace(/vol./,"volume")+'"').join(",")
+              + "\n" + outlineData.map(rowToCsv).join("\n")+"\n"
+  }, [headerRow, outlineData, rowToCsv])
+
   const save = useCallback(async () => {
     
     setSaving(true)
@@ -724,15 +746,15 @@ export default function OutlineCSVEditor(props) {
     const headers = new Headers()
     headers.set("Content-Type", "text/csv")
     headers.set("Authorization", "Bearer " + idToken)
+    headers.set("Accept","application/json")
     //if (message) headers.set("X-Change-Message", encodeURIComponent(message))
     //if (previousEtag) headers.set("If-Match", previousEtag)
-    if(status) headers.set("X-Status", ns.qnameFromUri(status))
+    if(status) headers.set("X-Status", "<"+status+">") //.split(":")[1]) // returns 415 "status must be (...)"
     if(attrib) headers.set("X-Outline-Attribution", attrib)
 
     const method = "PUT"
 
-    const body = headerRow.cells.map(c => '"'+c.text.replace(/pos\..*/, "Position").replace(/im./,"img").replace(/vol./,"volume")+'"').join(",")
-              + "\n" + outlineData.map(rowToCsv).join("\n")+"\n"
+    const body = toCSV()
     debug("body:", body)
 
     const url = config.API_BASEURL + "outline/csv/" + RID
@@ -750,7 +772,25 @@ export default function OutlineCSVEditor(props) {
         
   }, [status, attrib, headerRow, outlineData, rowToCsv, RID])
    
-  if(!headerRow || ! outlineData.length || !columns.length) return <div>loading...</div>
+  const handleDownloadCSV = useCallback(() => {
+    const link = document.createElement("a");
+    const file = new Blob([toCSV()], { type: 'text/plain' });
+    link.href = URL.createObjectURL(file);
+    link.download = RID.replace(/^[^:]+:/, "") + ".csv";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }, [toCSV, RID])
+
+  const [isFetching, setIsFetching] = useState(false)
+  const [fetchErr, setFetchErr] = useState(null)
+
+  if(error) return <div>
+      <p className="text-center text-muted">
+        <NotFoundIcon className="icon mr-2" />
+        {error}
+      </p>
+    </div>
+  else if(!headerRow || ! outlineData.length || !columns.length) return <div>loading...</div>
 
   const rows = [
     headerRow,
@@ -792,9 +832,10 @@ export default function OutlineCSVEditor(props) {
         InputLabelProps={{ shrink: true }}
         onChange={(e) => setStatus(e.target.value)}
       >
-        { statusValues && Object.keys(statusValues).map(s => // TODO: use locale
-            <MenuItem key={s} value={s}>{statusValues[s][ns.SKOS("prefLabel").value].find(v => v.lang === "en")?.value}</MenuItem>
-          )}
+        { statusValues && Object.keys(statusValues).filter(k => ["StatusReleased","StatusWithdrawn","StatusEditing"].some(s => k.endsWith(s)))
+            .map(s => // TODO: use locale
+              <MenuItem key={s} value={s}>{statusValues[s][ns.SKOS("prefLabel").value].find(v => v.lang === "en")?.value}</MenuItem>
+            )}
       </TextField>
       &nbsp;
       &nbsp;
@@ -824,7 +865,8 @@ export default function OutlineCSVEditor(props) {
         disabled={focus === undefined || !focus.includes}
         className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
       <TextField inputRef={topInputRef} multiline={multiline && focus.includes && focus.includes(";")} 
-          value={multiline ? focus.split(/ *;+ */).join("\n") : focus} variant="outlined" onChange={handleInputChange} 
+          value={focus === undefined || !focus.includes ? "" : multiline ? focus.split(/ *;+ */).join("\n") : focus} 
+          variant="outlined" onChange={handleInputChange} 
           onBlur={handleInputBlur}
           inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
             ...multiline && focus.includes && focus.includes(";")?{ 
@@ -875,11 +917,20 @@ export default function OutlineCSVEditor(props) {
               aria-labelledby="continuous-slider" step={1} min={20} max={60}/>
         </div>
       </div>
-      <Button onClick={save} className="btn-rouge" disabled={!outlineData.length || saving}>{
-        saving 
-        ? <CircularProgress size="14px" color="white" />
-        : <>Save</>
-      }</Button>      
+      <div className="flex">
+        <InstanceCSVSearch
+          isFetching={isFetching}
+          fetchErr={fetchErr}
+          inNavBar={RID}
+          resetCSV={() => setCsv("")}
+          downloadCSV={handleDownloadCSV}
+        />
+        <Button onClick={save} className="btn-rouge" disabled={!outlineData.length || saving} style={{ marginLeft: "1em" }}>{
+          saving 
+          ? <CircularProgress size="14px" color="white" />
+          : <>Save</>
+        }</Button>      
+      </div>
     </nav>
   </div>
 </>

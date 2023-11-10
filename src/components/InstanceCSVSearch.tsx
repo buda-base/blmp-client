@@ -15,7 +15,8 @@ import config from "../config"
 
 const debug = require("debug")("bdrc:menu")
 
-const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: any }) => {
+const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: any; inNavBar: false; 
+    resetCSV:()=>void; downloadCSV:()=>void }) => {
   const { t } = useTranslation()
   const [volume, setVolume] = React.useState("")
   const { loading } = useAuth0()
@@ -34,7 +35,8 @@ const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: 
     reader.onloadend = (data) => {
       //debug("read:",data,data.currentTarget.result)
       setLocalCSV(data.currentTarget.result)
-      setTimeout(() => history.push("/outline/bdr:"+RID), 150) // eslint-disable-line
+      if(!props.inNavBar) setTimeout(() => history.push("/outline/bdr:"+RID), 150) // eslint-disable-line
+      else props.resetCSV()
     }
     reader.readAsText(event.target.files[0])
   }
@@ -43,11 +45,11 @@ const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: 
     <CircularProgress />
   ) : (
     <div
-      className="container mx-auto flex items-center justify-start flex-wrap"
+      className="container mx-auto flex items-center justify-start flex-wrap pr-0"
       style={{ paddingLeft: 0, paddingTop: 0 }}
     >
-      <div className="mt-10">
-        <TextField
+      <div className={props.inNavBar?"":"mt-10"}>
+        { !props.inNavBar && <TextField
           //{...!user?{disabled:true}:{}}
           placeholder={t("instance RID")}
           margin="normal"
@@ -61,27 +63,31 @@ const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: 
             width: 250,
             margin: "0 8px 0 0px",
           }}
-        />
-        <a download href={config.API_BASEURL + "outline/csv/bdr:" + RID} target="_blank" rel="noreferrer noopener">
+        /> }
+        { !props.inNavBar &&<a download href={config.API_BASEURL + "outline/csv/bdr:" + RID} target="_blank" rel="noreferrer noopener">
           <Button
-            //{...!user?{disabled:true}:{}}
             disabled={!isRID}
             className="btn-rouge"
             variant="contained"
             color="primary"
             style={{ marginLeft: "1em" }}
-            /*
-            onClick={() => {
-              if (props.history?.location.pathname.startsWith("/bvmt"))
-                props.history.push({ pathname: "/bvmt/" + volume })
-              else window.location.search = `?instance=${volume}`
-            }}
-            */
           >
             {t("outline.dlCSV")}
           </Button>
-        </a>
-        <Link to={"/outline/bdr:" + RID}>
+        </a> }
+        { props.downloadCSV && 
+            <Button
+              disabled={!isRID && !props.inNavBar}
+              className="btn-rouge"
+              variant="contained"
+              color="primary"
+              style={{ marginLeft: "1em" }}
+              onClick={props.downloadCSV}
+            >
+            {t("outline.dlCSV")}
+          </Button>
+        }
+        { !props.inNavBar && <Link to={"/outline/bdr:" + RID}>
           <Button
             disabled={!isRID}
             className="btn-rouge"
@@ -91,7 +97,7 @@ const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: 
           >
             {t("outline.editCSV")}
           </Button>
-        </Link>
+        </Link> }
         <label htmlFor="upload-csv" style={{ margin:0 }}>
           <input
             style={{ display: 'none' }}
@@ -103,7 +109,7 @@ const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: 
           />
           <Button
             component="span"
-            disabled={!isRID}
+            disabled={!isRID  && !props.inNavBar}
             className="btn-rouge"
             variant="contained"
             color="primary"
