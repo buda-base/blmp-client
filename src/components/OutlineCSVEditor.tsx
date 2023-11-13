@@ -8,17 +8,20 @@ import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import NotFoundIcon from "@material-ui/icons/BrokenImage"
+import ErrorIcon from "@material-ui/icons/Error"
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Slider from '@material-ui/core/Slider';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import { CircularProgress } from "@material-ui/core"
+import { fetchToCurl } from "fetch-to-curl"
 
 import InstanceCSVSearch from "../components/InstanceCSVSearch"
-import { uiTabState, localCSVAtom } from "../atoms/common"
+import { uiTabState, localCSVAtom, uiLangState } from "../atoms/common"
 import config from "../config"
 import * as ns from "../helpers/rdf/ns" 
+import { langs } from "../helpers/lang"
 
 const debug = require("debug")("bdrc:csved")
 
@@ -110,7 +113,7 @@ class MyReactGrid extends ReactGrid {
   );
   componentDidUpdate(prevProps: ReactGridProps, prevState: State): void {
     super.componentDidUpdate(prevProps, prevState, this.state);
-    //debug("cDu:", this.state, this.props,  this.state.focusedLocation?.row, this.props.focusedLocation?.row)
+    debug("cDu:", this.state, this.props,  this.state.focusedLocation?.row, this.props.focusedLocation?.row)
     if(this.state.contextMenuPosition.top !== -1) { 
       const menu = document.querySelector(".rg-context-menu")
       if(!menu) return
@@ -707,6 +710,15 @@ export default function OutlineCSVEditor(props) {
   }
 
   const [saving, setSaving] = useState(false)
+  const [popupOn, setPopupOn] = useState(true)
+  const [curl, setCurl] = useState("")
+  const [errorCode, setErrorCode] = useState(0)
+  const wrongEtagCode = 412
+  const [message, setMessage] = useState("")
+  const [uiLang, setUiLang] = useRecoilState(uiLangState)
+  const [lang, setLang] = useState(uiLang)
+  const [errorData, setErrorData] = useState()
+  const [highlights, setHighlights] = useState<Highlight[]>([])
 
   const rowToCsv = useCallback((o) => {
     //debug("o:",o,columns)
@@ -737,6 +749,36 @@ export default function OutlineCSVEditor(props) {
               + "\n" + outlineData.map(rowToCsv).join("\n")+"\n"
   }, [headerRow, outlineData, rowToCsv])
 
+  const resetPopup = () => {
+    setPopupOn(false)
+    setMessage("")
+    setErrorCode(0)
+    setError("")
+    setHighlights([])
+    setErrorData([])
+  }
+
+  const updateHighlights = useCallback(() => {
+    if(!errorData?.length) return
+    const data = []
+    for(const d of errorData) {
+      const e = {}
+      e.rowId = d.row - 1
+      e.borderColor = "#ff0000"
+      if(!d.col && d.msg === "missing position") {
+        columns.filter(c => c.columnId.startsWith("position")).map(c => data.push({ ...e, columnId:c.columnId }))
+      } else { 
+        e.columnId = columns[d.col - 1].columnId
+        data.push(e)
+      }
+    }
+    setHighlights(data)
+  }, [ errorData, columns ])
+
+  useEffect(() => {
+    updateHighlights()
+  }, [ errorData ])
+
   const save = useCallback(async () => {
     
     setSaving(true)
@@ -758,14 +800,30 @@ export default function OutlineCSVEditor(props) {
     debug("body:", body)
 
     const url = config.API_BASEURL + "outline/csv/" + RID
+    let code = 1, curl, err
     
     try {
-      const response = await fetch(url, { headers, method, body  })        
+      curl =
+        fetchToCurl(url, { headers, method, body }).replace(
+          /--data-binary '((.|[\n\r])+)'$/gm,
+          (m, g1) => "--data-raw $'" + g1.replace(/(['"])/g, "\\$1") + "'"
+        ) + " --verbose"
+
+      const resp = await fetch(url, { headers, method, body  })        
+      if(![200, 201].includes(resp.status)) {  //eslint-disable-line
+        code = resp.status
+        err = await resp.json()
+        throw new Error(err.map(e => e.msg+(e.row?" row "+e.row:"")+(e.col?" col "+e.col:"")).join("; ")) 
+      } 
       await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+      resetPopup()
     } catch(e) {
       debug(e)
       // TODO: popup with commit/error message
-      alert("error when saving/clearing cache")
+      setError(e.message || "error when saving/clearing cache")
+      setErrorCode(code)
+      setErrorData(err)
+      setCurl(curl)
     }
 
     setSaving(false)
@@ -784,7 +842,7 @@ export default function OutlineCSVEditor(props) {
   const [isFetching, setIsFetching] = useState(false)
   const [fetchErr, setFetchErr] = useState(null)
 
-  if(error) return <div>
+  if(error && !errorCode) return <div>
       <p className="text-center text-muted">
         <NotFoundIcon className="icon mr-2" />
         {error}
@@ -818,6 +876,8 @@ export default function OutlineCSVEditor(props) {
       ]
     }))
   ]
+
+  debug("hi:", highlights)
 
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
@@ -890,7 +950,7 @@ export default function OutlineCSVEditor(props) {
       <MyReactGrid 
         ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
         rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} 
-        {...{ focusedLocation, setFocusedLocation, onEditing }}/>
+        {...{ highlights, focusedLocation, setFocusedLocation, onEditing }}/>
     </div>
     <nav className="navbar bottom" style={{ left:0, zIndex:100000 }}>
       <div>
@@ -924,12 +984,78 @@ export default function OutlineCSVEditor(props) {
           inNavBar={RID}
           resetCSV={() => setCsv("")}
           downloadCSV={handleDownloadCSV}
+          disabled={popupOn}
         />
-        <Button onClick={save} className="btn-rouge" disabled={!outlineData.length || saving} style={{ marginLeft: "1em" }}>{
+        <Button onClick={popupOn?save:() => setPopupOn(true)} className="btn-rouge" disabled={!outlineData.length || saving || popupOn && !message} 
+            {...!popupOn?{ style:{ marginLeft: "1em" } }:{}}
+            >{
           saving 
           ? <CircularProgress size="14px" color="white" />
           : <>Save</>
         }</Button>      
+        {popupOn && (
+          <Button
+              variant="outlined"
+              onClick={resetPopup}
+              className="btn-blanc ml-2"
+              disabled={saving}
+              //style={{ position: "absolute", left: "calc(100% - (100% - 1225px)/2)" }}
+              >
+              Cancel
+            </Button>
+          )}
+      </div>
+      <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "")}>
+        <div>
+          <TextField
+            label={"commit message"}
+            value={message}
+            onChange={(ev) => setMessage(ev.target.value)}
+            InputLabelProps={{ shrink: true }}
+            style={{ minWidth: 300 }}
+            {...(error
+              ? {
+                  helperText: (
+                    <span style={{ display: "flex", alignItems: "center" }}>
+                      <ErrorIcon style={{ fontSize: "20px" }} />
+                      <i style={{ paddingLeft: "5px", lineHeight: "14px", display: "inline-block" }}>{error}</i>
+                      &nbsp;&nbsp;
+                      {errorCode === wrongEtagCode && (
+                        <Button className="btn-blanc" onClick={handleReload}>
+                          {i18n.t("general.reload")}
+                        </Button>
+                      )}
+                      {curl && (
+                        <Button
+                          className="btn-blanc"
+                          onClick={() => {
+                            navigator.clipboard.writeText(curl)
+                          }}
+                        >
+                          copy trace
+                        </Button>
+                      )}
+                    </span>
+                  ),
+                  error: true,
+                }
+              : {})}
+          />
+
+          <TextField
+            select
+            value={lang}
+            onChange={(ev) => setLang(ev.target.value)}
+            InputLabelProps={{ shrink: true }}
+            style={{ minWidth: 100, marginTop: "16px", marginLeft: "15px", marginRight: "15px" }}
+          >
+            {langs.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.value}
+              </MenuItem>
+            ))}
+          </TextField>
+        </div>      
       </div>
     </nav>
   </div>

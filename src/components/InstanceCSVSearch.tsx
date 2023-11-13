@@ -15,7 +15,7 @@ import config from "../config"
 
 const debug = require("debug")("bdrc:menu")
 
-const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: any; inNavBar: false; 
+const InstanceCSVSearch = (props: { isFetching: any, forVolume?: any; fetchErr: any; inNavBar: boolean; disabled:boolean; 
     resetCSV:()=>void; downloadCSV:()=>void }) => {
   const { t } = useTranslation()
   const [volume, setVolume] = React.useState("")
@@ -77,7 +77,7 @@ const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: 
         </a> }
         { props.downloadCSV && 
             <Button
-              disabled={!isRID && !props.inNavBar}
+              disabled={!isRID && !props.inNavBar || props.disabled}
               className="btn-rouge"
               variant="contained"
               color="primary"
@@ -109,7 +109,7 @@ const InstanceCSVSearch = (props: { isFetching: any; forVolume?: any; fetchErr: 
           />
           <Button
             component="span"
-            disabled={!isRID  && !props.inNavBar}
+            disabled={!isRID  && !props.inNavBar || props.disabled}
             className="btn-rouge"
             variant="contained"
             color="primary"
