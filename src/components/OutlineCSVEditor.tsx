@@ -258,89 +258,6 @@ export default function OutlineCSVEditor(props) {
     } 
   }, [outlineData, emptyData, headerRow])
   mayAddEmptyData = addEmptyData
-
-  const simpleHandleContextMenu = useCallback((
-      selectedRowIds: Id[],
-      selectedColIds: Id[],
-      selectionMode: SelectionMode,
-      menuOptions: MenuOption[]
-    ): MenuOption[] => { 
-      if (selectionMode === "row") {
-        debug("opt:", menuOptions)        
-        
-        const pasteMenu = menuOptions.find(m => m.id === "paste");     
-        
-        const createPasteEventFromClipboard = async () => {
-          let clipboardData = null;
-          try{ clipboardData = new DataTransfer();} catch(e){ debug("data!",e)}
-          const event = new ClipboardEvent("paste", { clipboardData }), clipboardItems = await navigator.clipboard.read();
-          for (const clipboardItem of clipboardItems) {
-            for (const type of clipboardItem.types) {
-              if(type === "text/plain") {
-                const text = await (await clipboardItem.getType(type)).text()
-                event.clipboardData?.setData('text/plain', text);      
-              }
-            }
-          }
-          return event
-        }
-
-        pasteMenu.handler = async (...args) => {
-          debug("paste!", args)
-          const event = await createPasteEventFromClipboard()
-          reactgridRef.current.eventHandlers.pasteHandler(event)
-        }        
-
-        menuOptions = [
-          ...menuOptions, {
-            id: "pasteNewRows",
-            label: "Paste as new rows",
-            handler:async  () => {
-              const event = await createPasteEventFromClipboard()
-              const text = event.clipboardData.getData("text/plain")
-              const n = text.split("\n").length
-              addEmptyData(n, text, true) 
-            }
-          }, {
-            id: "insertRowBefore",
-            label: "Insert row before",
-            handler: () => {
-              const newData = [ 
-                ...outlineData.slice(0, Math.min(...selectedRowIds)), 
-                { ...emptyData }, 
-                ...outlineData.slice(Math.min(...selectedRowIds))
-              ]
-              setOutlineData(newData)
-              // eslint-disable-next-line no-magic-numbers
-              setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
-            }
-          }, {
-            id: "insertRowAfter",
-            label: "Insert row after",
-            handler: () => {
-              const newData = [ 
-                ...outlineData.slice(0, Math.max(...selectedRowIds) + 1), 
-                { ...emptyData }, 
-                ...outlineData.slice(Math.max(...selectedRowIds) + 1)
-              ]
-              setOutlineData(newData)
-              // eslint-disable-next-line no-magic-numbers
-              setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
-            }
-          }, {
-            id: "removeRow",
-            label: "Remove row"+(selectedRowIds.length > 1 ? "s" :""),
-            handler: () => { 
-              setOutlineData(outlineData.filter((row,i) => !selectedRowIds.includes(i)))
-              // DONE: possible to deselect all after deleting
-              // eslint-disable-next-line no-magic-numbers
-              setTimeout(() => reactgridRef.current.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
-            }
-          }
-        ];
-      }
-      return menuOptions;
-  }, [outlineData, emptyData, addEmptyData])
   
   const applyNewValue = (
     changes: CellChange[],
@@ -710,7 +627,7 @@ export default function OutlineCSVEditor(props) {
   }
 
   const [saving, setSaving] = useState(false)
-  const [popupOn, setPopupOn] = useState(true)
+  const [popupOn, setPopupOn] = useState(false)
   const [curl, setCurl] = useState("")
   const [errorCode, setErrorCode] = useState(0)
   const wrongEtagCode = 412
@@ -752,14 +669,23 @@ export default function OutlineCSVEditor(props) {
   const resetPopup = () => {
     setPopupOn(false)
     setMessage("")
-    setErrorCode(0)
-    setError("")
-    setHighlights([])
-    setErrorData([])
   }
 
-  const updateHighlights = useCallback(() => {
-    if(!errorData?.length) return
+  const resetError = () => {
+    setErrorCode(0)
+    setError("")
+    setErrorData([])
+    setHighlights([])
+  }
+  const updateHighlights = useCallback((oD = outlineData) => {
+    debug("uH:", errorData, highlights, oD)
+    if(highlights.some(h => h.rowId >= oD.length)) { 
+      setHighlights([])
+      return
+    }
+    if(!errorData?.length) {      
+      return
+    }
     const data = []
     for(const d of errorData) {
       const e = {}
@@ -768,12 +694,12 @@ export default function OutlineCSVEditor(props) {
       if(!d.col && d.msg === "missing position") {
         columns.filter(c => c.columnId.startsWith("position")).map(c => data.push({ ...e, columnId:c.columnId }))
       } else { 
-        e.columnId = columns[d.col - 1].columnId
+        e.columnId = columns[d.col].columnId
         data.push(e)
       }
     }
     setHighlights(data)
-  }, [ errorData, columns ])
+  }, [ errorData, columns, outlineData, highlights ])
 
   useEffect(() => {
     updateHighlights()
@@ -782,17 +708,18 @@ export default function OutlineCSVEditor(props) {
   const save = useCallback(async () => {
     
     setSaving(true)
-
+    resetError()
+    
     const idToken = localStorage.getItem("BLMPidToken")
 
     const headers = new Headers()
     headers.set("Content-Type", "text/csv")
     headers.set("Authorization", "Bearer " + idToken)
     headers.set("Accept","application/json")
-    //if (message) headers.set("X-Change-Message", encodeURIComponent(message))
     //if (previousEtag) headers.set("If-Match", previousEtag)
     if(status) headers.set("X-Status", "<"+status+">") //.split(":")[1]) // returns 415 "status must be (...)"
     if(attrib) headers.set("X-Outline-Attribution", attrib)
+    if(message) headers.set("X-Change-Message", encodeURIComponent('"'+message+'"@'+lang))
 
     const method = "PUT"
 
@@ -820,7 +747,7 @@ export default function OutlineCSVEditor(props) {
     } catch(e) {
       debug(e)
       // TODO: popup with commit/error message
-      setError(e.message || "error when saving/clearing cache")
+      setError(e.message.split("; ").map((m,i) => <div key={i}>{m}</div>) || "error when saving/clearing cache")
       setErrorCode(code)
       setErrorData(err)
       setCurl(curl)
@@ -841,6 +768,91 @@ export default function OutlineCSVEditor(props) {
 
   const [isFetching, setIsFetching] = useState(false)
   const [fetchErr, setFetchErr] = useState(null)
+
+  const simpleHandleContextMenu = useCallback((
+    selectedRowIds: Id[],
+    selectedColIds: Id[],
+    selectionMode: SelectionMode,
+    menuOptions: MenuOption[]
+  ): MenuOption[] => { 
+    if (selectionMode === "row") {
+      debug("opt:", menuOptions)        
+      
+      const pasteMenu = menuOptions.find(m => m.id === "paste");     
+      
+      const createPasteEventFromClipboard = async () => {
+        let clipboardData = null;
+        try{ clipboardData = new DataTransfer();} catch(e){ debug("data!",e)}
+        const event = new ClipboardEvent("paste", { clipboardData }), clipboardItems = await navigator.clipboard.read();
+        for (const clipboardItem of clipboardItems) {
+          for (const type of clipboardItem.types) {
+            if(type === "text/plain") {
+              const text = await (await clipboardItem.getType(type)).text()
+              event.clipboardData?.setData('text/plain', text);      
+            }
+          }
+        }
+        return event
+      }
+
+      pasteMenu.handler = async (...args) => {
+        debug("paste!", args)
+        const event = await createPasteEventFromClipboard()
+        reactgridRef.current.eventHandlers.pasteHandler(event)
+      }        
+
+      menuOptions = [
+        ...menuOptions, {
+          id: "pasteNewRows",
+          label: "Paste as new rows",
+          handler:async  () => {
+            const event = await createPasteEventFromClipboard()
+            const text = event.clipboardData.getData("text/plain")
+            const n = text.split("\n").length
+            addEmptyData(n, text, true) 
+          }
+        }, {
+          id: "insertRowBefore",
+          label: "Insert row before",
+          handler: () => {
+            const newData = [ 
+              ...outlineData.slice(0, Math.min(...selectedRowIds)), 
+              { ...emptyData, position:[...emptyData.position] }, 
+              ...outlineData.slice(Math.min(...selectedRowIds))
+            ]
+            setOutlineData(newData)
+            // eslint-disable-next-line no-magic-numbers
+            setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
+          }
+        }, {
+          id: "insertRowAfter",
+          label: "Insert row after",
+          handler: () => {
+            const newData = [ 
+              ...outlineData.slice(0, Math.max(...selectedRowIds) + 1), 
+              { ...emptyData, position:[...emptyData.position] }, 
+              ...outlineData.slice(Math.max(...selectedRowIds) + 1)
+            ]
+            setOutlineData(newData)
+            // eslint-disable-next-line no-magic-numbers
+            setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
+          }
+        }, {
+          id: "removeRow",
+          label: "Remove row"+(selectedRowIds.length > 1 ? "s" :""),
+          handler: () => { 
+            const newData = outlineData.filter((row,i) => !selectedRowIds.includes(i))
+            setOutlineData(newData)
+            updateHighlights(newData)
+            // DONE: possible to deselect all after deleting
+            // eslint-disable-next-line no-magic-numbers
+            setTimeout(() => reactgridRef.current.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
+          }
+        }
+      ];
+    }
+    return menuOptions;
+  }, [outlineData, emptyData, addEmptyData, errorData, highlights, updateHighlights])
 
   if(error && !errorCode) return <div>
       <p className="text-center text-muted">
@@ -1005,7 +1017,8 @@ export default function OutlineCSVEditor(props) {
             </Button>
           )}
       </div>
-      <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "")}>
+      <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "")} 
+        style={{ marginTop:(popupOn&&Array.isArray(error)?-(error.length - 2)*14:0)+"px" /* eslint-disable-line */ }}> 
         <div>
           <TextField
             label={"commit message"}
