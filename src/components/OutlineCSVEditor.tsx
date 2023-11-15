@@ -106,6 +106,7 @@ class MyEventHandlers extends EventHandlers {
   }
 }
 
+let timeout = 0
 class MyReactGrid extends ReactGrid {
   eventHandlers = new MyEventHandlers(
     this.stateUpdater,
@@ -113,7 +114,7 @@ class MyReactGrid extends ReactGrid {
   );
   componentDidUpdate(prevProps: ReactGridProps, prevState: State): void {
     super.componentDidUpdate(prevProps, prevState, this.state);
-    debug("cDu:", this.state, this.props,  this.state.focusedLocation?.row, this.props.focusedLocation?.row)
+    //debug("cDu:", this.state, this.props,  this.state.focusedLocation?.row, this.props.focusedLocation?.row)
     if(this.state.contextMenuPosition.top !== -1) { 
       const menu = document.querySelector(".rg-context-menu")
       if(!menu) return
@@ -136,6 +137,45 @@ class MyReactGrid extends ReactGrid {
       this.props.onEditing(true)
     } else {
       this.props.onEditing(false)
+    }
+    if(this.state.highlightLocations?.length) {
+      if(timeout) clearTimeout(timeout)
+      timeout = setTimeout(() => {
+        const hiCells = document.querySelectorAll(".rg-cell-highlight") //.map(h => h.style)
+        if(!hiCells?.length) return
+    
+        // build a "map" of currently displayed cells
+        const headerMap = {}, rowsMap = {}
+        let elem = document.querySelector(".rg-pane > .rg-cell:first-child"), nCol = 0, top, firstRow, firstCol
+        do {
+          nCol = Number(elem.getAttribute("data-cell-colidx"))
+          headerMap[parseInt(elem.style.left, 10)] = nCol
+          if(!top) { 
+            top = elem.style.top
+            if(!(firstRow = Number(elem.getAttribute("data-cell-rowidx")))) firstRow = 0
+            else firstRow = firstRow + 1
+            firstCol = nCol
+          }
+          elem = elem.nextElementSibling
+        } while(elem.style.top === top)
+        document.querySelectorAll(".rg-cell:not(.rg-header-cell)[data-cell-colidx='"+firstCol+"']")
+          .forEach( (e,i) => rowsMap[parseInt(e.style.top, 10)] = i)
+        
+        // identify coordinates of each highlighted cell using html attributes of given cell
+        hiCells.forEach((c,i) => {
+          const row = firstRow + rowsMap[parseInt(c.style.top,10)+1] + 1
+          let col = headerMap[parseInt(c.style.left, 10)] 
+          if(col === undefined) col = headerMap[parseInt(c.style.left, 10)+1]
+          col = firstCol + col
+          const htmlCell = document.querySelector(".rg-cell[data-cell-colidx='"+col+"'][data-cell-rowidx='"+row+"']")
+          const msg = this.props.errorData.find(m => row === m.row && col === m.col-1)?.msg
+          if(htmlCell) htmlCell.setAttribute("title", msg)
+          //debug("c?", i, c.style.top, c.style.left, row+","+col, htmlCell, msg)              
+        })
+        
+        //debug("hC?",this.state.highlightLocations, headerMap, rowsMap, hiCells)
+
+      }, 150) // eslint-disable-line
     }
   }
 }
@@ -678,7 +718,7 @@ export default function OutlineCSVEditor(props) {
     setHighlights([])
   }
   const updateHighlights = useCallback((oD = outlineData) => {
-    debug("uH:", errorData, highlights, oD)
+    //debug("uH:", errorData, highlights, oD)
     if(highlights.some(h => h.rowId >= oD.length)) { 
       setHighlights([])
       return
@@ -694,7 +734,7 @@ export default function OutlineCSVEditor(props) {
       if(!d.col && d.msg === "missing position") {
         columns.filter(c => c.columnId.startsWith("position")).map(c => data.push({ ...e, columnId:c.columnId }))
       } else { 
-        e.columnId = columns[d.col].columnId
+        e.columnId = columns[d.col - 1].columnId
         data.push(e)
       }
     }
@@ -709,6 +749,7 @@ export default function OutlineCSVEditor(props) {
     
     setSaving(true)
     resetError()
+    await new Promise(r => setTimeout(r, 10)); // eslint-disable-line
     
     const idToken = localStorage.getItem("BLMPidToken")
 
@@ -747,7 +788,8 @@ export default function OutlineCSVEditor(props) {
     } catch(e) {
       debug(e)
       // TODO: popup with commit/error message
-      setError(e.message.split("; ").map((m,i) => <div key={i}>{m}</div>) || "error when saving/clearing cache")
+      //setError(e.message.split("; ").map((m,i) => <div key={i}>{m}</div>) || "error when saving/clearing cache")
+      setError(e.message.split("; ").length + " errors were encountered, please check the cells highlighted in red") 
       setErrorCode(code)
       setErrorData(err)
       setCurl(curl)
@@ -871,7 +913,7 @@ export default function OutlineCSVEditor(props) {
           type: "text", text:d.RID          
         },
         ...d.position.map(p => ({
-          type: "checkbox", checked: p
+          type: "checkbox", checked: p,
         })),{
           type: "dropdown", 
           selectedValue:d.partType, 
@@ -879,8 +921,9 @@ export default function OutlineCSVEditor(props) {
           isOpen: d.isTypeOpen
         },        
         ..."label,titles,work,notes,colophon".split(",").map(p => ({
-          type:"text", text: d[p], renderer: p !== "work" ? (text:string) => <span style={{ fontSize }}>{text}</span> : undefined
+          type:"text", text: d[p], renderer: p !== "work" ? (text:string) => <span style={{ fontSize }}>{text}</span> : undefined,
           //className: p !== "work" ? "bo-text" : ""
+          //renderer:(val) => <span title={"test"}>{val}</span>
         })),        
         ..."imgStart,imgEnd,volumeStart,volumeEnd".split(",").map(p => ({
           type:"number", value: Number(d[p]) || ""
@@ -889,8 +932,7 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  debug("hi:", highlights)
-
+  //debug("hi:", highlights)
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
@@ -962,7 +1004,7 @@ export default function OutlineCSVEditor(props) {
       <MyReactGrid 
         ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
         rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} 
-        {...{ highlights, focusedLocation, setFocusedLocation, onEditing }}/>
+        {...{ errorData, highlights, focusedLocation, setFocusedLocation, onEditing }}/>
     </div>
     <nav className="navbar bottom" style={{ left:0, zIndex:100000 }}>
       <div>
