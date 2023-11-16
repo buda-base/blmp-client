@@ -299,13 +299,19 @@ export default function OutlineCSVEditor(props) {
   }, [outlineData, emptyData, headerRow])
   mayAddEmptyData = addEmptyData
   
-  const applyNewValue = (
+  const [highlights, setHighlights] = useState<Highlight[]>([])
+  
+  const applyNewValue = useCallback((
     changes: CellChange[],
     prevEntry: OutlineEntry[],
     usePrevValue = false
   ): OutlineEntry[] => {
     
-    debug("changes:",changes)
+    debug("changes:", changes, highlights)
+
+    let modified = false
+    const hiMap = {}
+    for(const h of highlights) hiMap[h.rowId+","+h.columnId] = h
 
     changes.forEach((change, n) => {      
       const entryIndex = change.rowId;
@@ -313,6 +319,11 @@ export default function OutlineCSVEditor(props) {
       const nextCell = usePrevValue ? change.previousCell : change.newCell;
       const prevCell = usePrevValue ? change.newCell : change.previousCell;
       
+      if(hiMap[entryIndex+","+fieldName]) {
+        hiMap[entryIndex+","+fieldName].modified = true
+        modified = true
+      }
+
       if(usePrevValue) {
         debug("undo",change.type)
         if (change.type === 'checkbox') {
@@ -369,8 +380,11 @@ export default function OutlineCSVEditor(props) {
           prevEntry[entryIndex][fieldName] = nextCell.selectedValue
       }
     });
+
+    if(modified) setHighlights(Object.values(hiMap))
+
     return [...prevEntry];
-  };
+  }, [ highlights ]);
   
   const [cellChangesIndex, setCellChangesIndex] = useState(() => -1);
   const [cellChanges, setCellChanges] = useState<CellChange[][]>(() => []);
@@ -675,7 +689,6 @@ export default function OutlineCSVEditor(props) {
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [lang, setLang] = useState(uiLang)
   const [errorData, setErrorData] = useState()
-  const [highlights, setHighlights] = useState<Highlight[]>([])
 
   const rowToCsv = useCallback((o) => {
     //debug("o:",o,columns)
@@ -789,7 +802,8 @@ export default function OutlineCSVEditor(props) {
       debug(e)
       // TODO: popup with commit/error message
       //setError(e.message.split("; ").map((m,i) => <div key={i}>{m}</div>) || "error when saving/clearing cache")
-      setError(e.message.split("; ").length + " errors were encountered, please check the cells highlighted in red") 
+      if(code === 500) setError("error "+err.status+" when saving "+url) // eslint-disable-line
+      else setError(e.message.split("; ").length + " errors were encountered, please check the cells highlighted in red") 
       setErrorCode(code)
       setErrorData(err)
       setCurl(curl)
@@ -1004,7 +1018,8 @@ export default function OutlineCSVEditor(props) {
       <MyReactGrid 
         ref={reactgridRef} /*minColumnWidth={20}*/ enableRowSelection enableRangeSelection onContextMenu={simpleHandleContextMenu}
         rows={rows} columns={columns} onCellsChanged={handleChanges} onColumnResized={handleColumnResize} 
-        {...{ errorData, highlights, focusedLocation, setFocusedLocation, onEditing }}/>
+        highlights={highlights.filter(h => !h.modified)}
+        {...{ errorData, focusedLocation, setFocusedLocation, onEditing }}/>
     </div>
     <nav className="navbar bottom" style={{ left:0, zIndex:100000 }}>
       <div>

@@ -1304,6 +1304,7 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
         padding:4px;
         width:calc(100% - 36px);
         box-shadow:0 0 5px rgba(0,0,0,0.3);
+        &[disabled] { opacity:0; }
       }
 
       button { padding:4px;
