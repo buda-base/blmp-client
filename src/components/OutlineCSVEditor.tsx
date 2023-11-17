@@ -154,7 +154,7 @@ class MyReactGrid extends ReactGrid {
           if(!top) { 
             top = elem.style.top
             if(!(firstRow = Number(elem.getAttribute("data-cell-rowidx")))) firstRow = 0
-            else firstRow = firstRow + 1
+            else firstRow = firstRow - 1
             firstCol = nCol
           }
           elem = elem.nextElementSibling
@@ -169,7 +169,8 @@ class MyReactGrid extends ReactGrid {
           if(col === undefined) col = headerMap[parseInt(c.style.left, 10)+1]
           col = firstCol + col
           const htmlCell = document.querySelector(".rg-cell[data-cell-colidx='"+col+"'][data-cell-rowidx='"+row+"']")
-          const msg = this.props.errorData.find(m => row === m.row && col === m.col-1)?.msg
+          const msg = this.props.errorData.find(m => row === m.row && 
+              (col === m.col-1 || !m.col && this.state.cellMatrix.columns[col]?.columnId?.startsWith("position")))?.msg
           if(htmlCell) htmlCell.setAttribute("title", msg)
           //debug("c?", i, c.style.top, c.style.left, row+","+col, htmlCell, msg)              
         })
@@ -321,8 +322,13 @@ export default function OutlineCSVEditor(props) {
       const prevCell = usePrevValue ? change.newCell : change.previousCell;
       
       if(hiMap[entryIndex+","+fieldName]) {
-        hiMap[entryIndex+","+fieldName].modified = true
+        hiMap[entryIndex+","+fieldName].modified = !hiMap[entryIndex+","+fieldName].modified
         modified = true
+        if(fieldName.startsWith("position")) Object.keys(hiMap).map(h => {
+          if(hiMap[h].rowId === entryIndex && hiMap[h].columnId.startsWith("position")) {            
+            hiMap[h].modified = hiMap[entryIndex+","+fieldName].modified
+          }
+        })
       }
 
       if(usePrevValue) {
@@ -723,6 +729,8 @@ export default function OutlineCSVEditor(props) {
   const resetPopup = () => {
     setPopupOn(false)
     setMessage("")
+    setErrorCode(0)
+    setError("")
   }
 
   const resetError = () => {
