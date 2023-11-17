@@ -34,19 +34,20 @@ interface OutlineEntry {
   work:string,
   notes:string,
   colophon:string,
+  identifiers:string,
   imgStart:number,
   imgEnd:number,
-  volumeStart:number,
-  volumeEnd:number
+  imgGrpStart:number,
+  imgGrpEnd:number
 }
 
 const colWidths = { 
   "RID":40, "Position": 40, "part type":90, 
-  "label":250, "titles":500, "work": 250, "colophon": 500,
-  "img start": 75, "img end": 75, "volume start":75, "volume end":75 
+  "label":250, "titles":500, "work": 250, "colophon": 500, "identifiers": 250,
+  "img start": 110, "img end": 110, "img grp start":110, "img grp end":110 
 }
 
-const colLabels = {  "img start":"im. start", "img end": "im. end", "volume start":"vol. start", "volume end": "vol. end" }
+const colLabels = { }  // "img start":"im. start", "img end": "im. end", "img grp start":"im.grp start", "img grp end": "im.grp end" }
 
 const parts = "T,S,V,C,E,TOC".split(",")
 
@@ -262,9 +263,9 @@ export default function OutlineCSVEditor(props) {
     const idx = position.length + 1
     return {
       //eslint-disable-next-line no-magic-numbers
-      RID:d[0], position, partType:d[idx], label:d[idx+1], titles:d[idx+2], work:d[idx+3], notes:d[idx+4], colophon:d[idx+5], 
+      RID:d[0], position, partType:d[idx], label:d[idx+1], titles:d[idx+2], work:d[idx+3], notes:d[idx+4], colophon:d[idx+5], identifiers:d[idx+6],
       //eslint-disable-next-line no-magic-numbers
-      imgStart:Number(d[idx+6]), imgEnd:Number(d[idx+7]), volumeStart:Number(d[idx+8]), volumeEnd:Number(d[idx+9]),
+      imgStart:Number(d[idx+7]), imgEnd:Number(d[idx+8]), imgGrpStart:Number(d[idx+9]), imgGrpEnd:Number(d[idx+10]),
       
       isTypeOpen: false
     }
@@ -542,8 +543,8 @@ export default function OutlineCSVEditor(props) {
             if(c.text.startsWith("pos.")) position.push(false)
           });
           const empty = {
-            RID:"", position, partType:"T", label:"", titles:"", work:"", notes:"", colophon:"", imgStart:"", imgEnd:"", 
-            volumeStart:"", volumeEnd:"",             
+            RID:"", position, partType:"T", label:"", titles:"", work:"", notes:"", colophon:"", identifiers:"",
+            imgStart:"", imgEnd:"", imgGrpStart:"", imgGrpEnd:"",             
             isTypeOpen: false
           }
           setEmptyData(empty)
@@ -563,7 +564,7 @@ export default function OutlineCSVEditor(props) {
           setColumns(head.cells.map( ({ text }, i) => { 
             debug("w:", text, i, colWidths)
             return { 
-            columnId: results.data[0][i].replace(/ (.)/,(m,g1) => g1.toUpperCase()).replace(/Position/,"position" + n_pos++),
+            columnId: results.data[0][i].replace(/ (.)/g,(m,g1) => g1.toUpperCase()).replace(/Position/,"position" + n_pos++),
             resizable:true,
             width: colWidths[results.data[0][i]] || 150 // eslint-disable-line no-magic-numbers
           }}) || []) 
@@ -715,7 +716,7 @@ export default function OutlineCSVEditor(props) {
   }, [columns])
 
   const toCSV = useCallback(() => {
-    return headerRow.cells.map(c => '"'+c.text.replace(/pos\..*/, "Position").replace(/im./,"img").replace(/vol./,"volume")+'"').join(",")
+    return headerRow.cells.map(c => '"'+c.text.replace(/pos\..*/, "Position")/*.replace(/im./,"img").replace(/vol./,"volume")*/+'"').join(",")
               + "\n" + outlineData.map(rowToCsv).join("\n")+"\n"
   }, [headerRow, outlineData, rowToCsv])
 
@@ -934,12 +935,12 @@ export default function OutlineCSVEditor(props) {
           values: "T,S,V,C,E".split(",").map(v => ({ value:v, label: v })), // removed TOC
           isOpen: d.isTypeOpen
         },        
-        ..."label,titles,work,notes,colophon".split(",").map(p => ({
+        ..."label,titles,work,notes,colophon,identifiers".split(",").map(p => ({
           type:"text", text: d[p], renderer: p !== "work" ? (text:string) => <span style={{ fontSize }}>{text}</span> : undefined,
           //className: p !== "work" ? "bo-text" : ""
           //renderer:(val) => <span title={"test"}>{val}</span>
         })),        
-        ..."imgStart,imgEnd,volumeStart,volumeEnd".split(",").map(p => ({
+        ..."imgStart,imgEnd,imgGrpStart,imgGrpEnd".split(",").map(p => ({
           type:"number", value: Number(d[p]) || ""
         }))
       ]
