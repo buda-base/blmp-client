@@ -739,9 +739,11 @@ export default function OutlineCSVEditor(props) {
     setErrorData([])
     setHighlights([])
   }
-  const updateHighlights = useCallback((oD = outlineData) => {
+  const updateHighlights = useCallback((oD = outlineData, n = 0, at = -1) => {
     //debug("uH:", errorData, highlights, oD)
-    if(highlights.some(h => h.rowId >= oD.length)) { 
+
+    // TODO: better than nothing (removes possibly inconsistent highlighting) but can do better! --> updateErrorData or something
+    if(n || highlights.some(h => h.rowId >= oD.length)) { 
       setHighlights([])
       return
     }
@@ -751,7 +753,7 @@ export default function OutlineCSVEditor(props) {
     const data = []
     for(const d of errorData) {
       const e = {}
-      e.rowId = d.row - 1
+      e.rowId = d.row - 1      
       e.borderColor = "#ff0000"
       if(!d.col && d.msg === "missing position") {
         columns.filter(c => c.columnId.startsWith("position")).map(c => data.push({ ...e, columnId:c.columnId }))
@@ -871,19 +873,22 @@ export default function OutlineCSVEditor(props) {
           id: "pasteNewRows",
           label: "Paste as new rows",
           handler:async  () => {
+            const m = Math.min(...selectedRowIds)
             const event = await createPasteEventFromClipboard()
             const text = event.clipboardData.getData("text/plain")
             const n = text.split("\n").length
             addEmptyData(n, text, true) 
+            updateHighlights(newData, +n, m)
           }
         }, {
           id: "insertRowBefore",
           label: "Insert row before",
           handler: () => {
+            const m = Math.min(...selectedRowIds)
             const newData = [ 
-              ...outlineData.slice(0, Math.min(...selectedRowIds)), 
+              ...outlineData.slice(0, m), 
               { ...emptyData, position:[...emptyData.position] }, 
-              ...outlineData.slice(Math.min(...selectedRowIds))
+              ...outlineData.slice(m)
             ]
             setOutlineData(newData)
             // eslint-disable-next-line no-magic-numbers
@@ -893,11 +898,13 @@ export default function OutlineCSVEditor(props) {
           id: "insertRowAfter",
           label: "Insert row after",
           handler: () => {
+            const m = Math.max(...selectedRowIds) + 1
             const newData = [ 
-              ...outlineData.slice(0, Math.max(...selectedRowIds) + 1), 
+              ...outlineData.slice(0, m), 
               { ...emptyData, position:[...emptyData.position] }, 
-              ...outlineData.slice(Math.max(...selectedRowIds) + 1)
+              ...outlineData.slice(m)
             ]
+            updateHighlights(newData, +1, m)
             setOutlineData(newData)
             // eslint-disable-next-line no-magic-numbers
             setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
@@ -906,9 +913,10 @@ export default function OutlineCSVEditor(props) {
           id: "removeRow",
           label: "Remove row"+(selectedRowIds.length > 1 ? "s" :""),
           handler: () => { 
+            const m = Math.min(...selectedRowIds)
             const newData = outlineData.filter((row,i) => !selectedRowIds.includes(i))
             setOutlineData(newData)
-            updateHighlights(newData)
+            updateHighlights(newData, -selectedRowIds.length, m)
             // DONE: possible to deselect all after deleting
             // eslint-disable-next-line no-magic-numbers
             setTimeout(() => reactgridRef.current.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
