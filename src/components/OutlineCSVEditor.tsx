@@ -322,7 +322,7 @@ export default function OutlineCSVEditor(props) {
       const prevCell = usePrevValue ? change.newCell : change.previousCell;
       
       if(hiMap[entryIndex+","+fieldName]) {
-        hiMap[entryIndex+","+fieldName].modified = !hiMap[entryIndex+","+fieldName].modified
+        hiMap[entryIndex+","+fieldName].modified = !usePrevValue
         modified = true
         if(fieldName.startsWith("position")) Object.keys(hiMap).map(h => {
           if(hiMap[h].rowId === entryIndex && hiMap[h].columnId.startsWith("position")) {            
