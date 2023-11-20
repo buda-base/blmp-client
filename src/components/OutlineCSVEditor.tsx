@@ -22,6 +22,7 @@ import { uiTabState, localCSVAtom, uiLangState } from "../atoms/common"
 import config from "../config"
 import * as ns from "../helpers/rdf/ns" 
 import { langs } from "../helpers/lang"
+import ResourceSelector from "../routes/entity/containers/ResourceSelector"
 
 const debug = require("debug")("bdrc:csved")
 
@@ -943,6 +944,23 @@ export default function OutlineCSVEditor(props) {
     return menuOptions;
   }, [outlineData, emptyData, addEmptyData, errorData, highlights, updateErrorData])
 
+  const handleResSelectChange = useCallback((e) => { 
+    debug("change:", e)
+    const newVal = e.qname
+    const changes = [{ 
+      type:"text", 
+      rowId: focusedLocation.row.rowId, 
+      columnId: focusedLocation.column.columnId, 
+      previousCell: { type: "text", text: focus },
+      newCell: { type: "text", text: newVal },
+      merged: false      
+    }]
+    //debug("change!", ev.currentTarget.value, focus, changes)
+    setOutlineData(applyChangesToOutlineData(changes, outlineData))
+    setFocusVal(newVal)
+    //document.querySelector(".iframe-BG").click()
+  }, [focus, focusedLocation, outlineData])
+
   if(error && !errorCode) return <div>
       <p className="text-center text-muted">
         <NotFoundIcon className="icon mr-2" />
@@ -979,12 +997,12 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  debug("hi:", highlights)
-  //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
+  //debug("hi:", highlights)
+  debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
   return <>
-    <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex" }} >
+    <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex" }} >      
       <TextField
         select
         style={{ padding: "1px", width: "200px", flexShrink: 0 }}
@@ -1023,21 +1041,29 @@ export default function OutlineCSVEditor(props) {
     }}>
     {
       <div id="focus" 
-        disabled={focus === undefined || !focus.includes}
-        className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
-      <TextField inputRef={topInputRef} multiline={multiline && focus.includes && focus.includes(";")} 
-          value={focus === undefined || !focus.includes ? "" : multiline ? focus.split(/ *;+ */).join("\n") : focus} 
-          variant="outlined" onChange={handleInputChange} 
-          onBlur={handleInputBlur}
-          inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
+          disabled={focus === undefined || !focus.includes}
+          className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
+      { focusedLocation?.column?.columnId === "work" ? <div style={{ border:"1px solid #bbb", padding: "6px", borderRadius: "5px", 
+          background: "white", width:"calc(100% - 8px)", zIndex:1 }}>
+        <ResourceSelector value={{ otherData: {}, uri:"tmp:uri" }} editable={true} exists={() => false}
+          subject={{ qname: "tmp:uri" }} property={{ expectedObjectTypes:[{ qname:"bdo:Work" }] }}
+          onChange={handleResSelectChange}
+          />
+      </div> : <>
+        <TextField inputRef={topInputRef} multiline={multiline && focus.includes && focus.includes(";")} 
+            value={focus === undefined || !focus.includes ? "" : multiline ? focus.split(/ *;+ */).join("\n") : focus} 
+            variant="outlined" onChange={handleInputChange} 
+            onBlur={handleInputBlur}
+            inputProps={{ style: { padding:"0 10px", fontSize, height:48, lineHeight:48, 
             ...multiline && focus.includes && focus.includes(";")?{ 
-                padding:0, height:(focus.split(/ *;+ */).length)*(fontSize*1.4)+"px", lineHeight: (fontSize*1.4)+"px" }:{} //eslint-disable-line
-            } 
-          }} 
-      /> 
-      <IconButton disabled={focus?.includes && !focus?.includes(";")} onClick={() => setMultiline(!multiline)}>
-        { multiline ? <ExpandLessIcon/> : <ExpandMoreIcon /> }
-      </IconButton>
+              padding:0, height:(focus.split(/ *;+ */).length)*(fontSize*1.4)+"px", lineHeight: (fontSize*1.4)+"px" }:{} //eslint-disable-line
+              } 
+            }} 
+        /> 
+        <IconButton disabled={focus?.includes && !focus?.includes(";")} onClick={() => setMultiline(!multiline)}>
+          { multiline ? <ExpandLessIcon/> : <ExpandMoreIcon /> }
+        </IconButton>
+      </> }
     </div>}
     <IconButton className={"btn-rouge fs-btn "+( fullscreen ? "fs-true" : "" )} onClick={() => setFullscreen(!fullscreen)} >
         { fullscreen 

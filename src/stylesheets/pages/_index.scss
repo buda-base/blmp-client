@@ -1310,6 +1310,8 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
       button { padding:4px;
         &:focus { outline:none; }
       }
+
+      .resSelect button + button { display: none; }
     }
   }
 
