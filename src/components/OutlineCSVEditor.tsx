@@ -739,11 +739,11 @@ export default function OutlineCSVEditor(props) {
     setErrorData([])
     setHighlights([])
   }
-  const updateHighlights = useCallback((oD = outlineData, n = 0, at = -1) => {
-    //debug("uH:", errorData, highlights, oD)
+  const updateHighlights = useCallback((oD = outlineData) => {
+    debug("uH:", errorData, highlights, oD)
 
-    // TODO: better than nothing (removes possibly inconsistent highlighting) but can do better! --> updateErrorData or something
-    if(n || highlights.some(h => h.rowId >= oD.length)) { 
+    // TODO: better than nothing (removes inconsistent highlighting) but can do better! --> updateErrorData or something
+    if(highlights.some(h => h.rowId >= oD.length)) { 
       setHighlights([])
       return
     }
@@ -768,6 +768,21 @@ export default function OutlineCSVEditor(props) {
   useEffect(() => {
     updateHighlights()
   }, [ errorData ])
+
+  const updateErrorData = useCallback((n = 0, at = -1) => {
+    debug("uEd:",n,at)
+    let modified = false
+    const data = []
+    for(const d of errorData) {
+      const e = { ...d }
+      if(e.row - 1 >= at) { 
+        e.row += n
+        modified = true
+      }
+      data.push(e)
+    }
+    if(modified) setErrorData(data)
+  }, [errorData])
 
   const save = useCallback(async () => {
     
@@ -878,7 +893,7 @@ export default function OutlineCSVEditor(props) {
             const text = event.clipboardData.getData("text/plain")
             const n = text.split("\n").length
             addEmptyData(n, text, true) 
-            updateHighlights(newData, +n, m)
+            updateErrorData(+n, m)
           }
         }, {
           id: "insertRowBefore",
@@ -890,6 +905,7 @@ export default function OutlineCSVEditor(props) {
               { ...emptyData, position:[...emptyData.position] }, 
               ...outlineData.slice(m)
             ]
+            updateErrorData(+1, m)
             setOutlineData(newData)
             // eslint-disable-next-line no-magic-numbers
             setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
@@ -904,7 +920,7 @@ export default function OutlineCSVEditor(props) {
               { ...emptyData, position:[...emptyData.position] }, 
               ...outlineData.slice(m)
             ]
-            updateHighlights(newData, +1, m)
+            updateErrorData(+1, m)
             setOutlineData(newData)
             // eslint-disable-next-line no-magic-numbers
             setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
@@ -915,8 +931,8 @@ export default function OutlineCSVEditor(props) {
           handler: () => { 
             const m = Math.min(...selectedRowIds)
             const newData = outlineData.filter((row,i) => !selectedRowIds.includes(i))
+            updateErrorData(-selectedRowIds.length, m)
             setOutlineData(newData)
-            updateHighlights(newData, -selectedRowIds.length, m)
             // DONE: possible to deselect all after deleting
             // eslint-disable-next-line no-magic-numbers
             setTimeout(() => reactgridRef.current.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
@@ -925,7 +941,7 @@ export default function OutlineCSVEditor(props) {
       ];
     }
     return menuOptions;
-  }, [outlineData, emptyData, addEmptyData, errorData, highlights, updateHighlights])
+  }, [outlineData, emptyData, addEmptyData, errorData, highlights, updateErrorData])
 
   if(error && !errorCode) return <div>
       <p className="text-center text-muted">
@@ -963,7 +979,7 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  //debug("hi:", highlights)
+  debug("hi:", highlights)
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, colWidths, colWidths["Position"])    
 
