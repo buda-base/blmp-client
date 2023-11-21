@@ -955,7 +955,7 @@ export default function OutlineCSVEditor(props) {
       newCell: { type: "text", text: newVal },
       merged: false      
     }]
-    //debug("change!", ev.currentTarget.value, focus, changes)
+    //debug("change!", e.currentTarget?.value, focus, focusVal, changes)
     setOutlineData(applyChangesToOutlineData(changes, outlineData))
     setFocusVal(newVal)
     //document.querySelector(".iframe-BG").click()
@@ -1045,9 +1045,9 @@ export default function OutlineCSVEditor(props) {
           className={(fullscreen ? "fs-true" : "") + (multiline  && focus.includes && focus.includes(";")? " multiline" : "")}>
       { focusedLocation?.column?.columnId === "work" ? <div style={{ border:"1px solid #bbb", padding: "6px", borderRadius: "5px", 
           background: "white", width:"calc(100% - 8px)", zIndex:1 }}>
-        <ResourceSelector value={{ otherData: {}, uri:"tmp:uri" }} editable={true} exists={() => false}
-          subject={{ qname: "tmp:uri" }} property={{ expectedObjectTypes:[{ qname:"bdo:Work" }] }}
-          onChange={handleResSelectChange}
+        <ResourceSelector value={{ otherData: {}, uri:"tmp:uri", qname:"tmp:uri" }} editable={true} placeholder={focus}
+          exists={() => false} subject={{ qname: "tmp:uri" }} title="Work" property={{ qname:"tmp:work", 
+            expectedObjectTypes:[{ qname:"bdo:Work" }] }} onChange={handleResSelectChange} idx={0}
           />
       </div> : <>
         <TextField inputRef={topInputRef} multiline={multiline && focus.includes && focus.includes(";")} 

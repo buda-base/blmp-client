@@ -1311,7 +1311,18 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
         &:focus { outline:none; }
       }
 
-      .resSelect button + button { display: none; }
+      .resSelect { 
+        button + button { display: none; }
+
+        & + .card { bottom:auto !important; right:23px !important; top:calc(100% - 1px); }
+      }
+
+
+      &.fs-true {
+
+        .resSelect + .card { right:27px !important; top:calc(100% - 5px); }
+      }
+
     }
   }
 

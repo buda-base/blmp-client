@@ -84,6 +84,7 @@ const ResourceSelector: FC<{
   globalError: string
   updateEntityState: (es: EditedEntityState) => void
   shape: Shape
+  placeholder?:string
 }> = ({
   value,
   onChange,
@@ -97,9 +98,10 @@ const ResourceSelector: FC<{
   globalError,
   updateEntityState,
   shape,
+  placeholder
 }) => {
   const classes = useStyles()
-  const [keyword, setKeyword] = useState("")
+  const [keyword, setKeyword] = useState(placeholder||"")
   const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
   const [type, setType] = useState(property.expectedObjectTypes ? property.expectedObjectTypes[0].qname : "")
   const [libraryURL, setLibraryURL] = useState("")
@@ -115,6 +117,10 @@ const ResourceSelector: FC<{
   const [canCopy, setCanCopy] = useState([])
 
   const isRid = keyword.startsWith("bdr:") || keyword.match(/^([cpgwrti]|mw|wa|was|ut|ie|pr)(\d|eap)[^ ]*$/i)
+
+  useEffect(() => {
+    setKeyword(placeholder)
+  }, [placeholder])
 
   //debug("lit:",value.value,value.id,value)
 
@@ -234,6 +240,7 @@ const ResourceSelector: FC<{
           )
           onChange(newRes, idx, false)
           //debug("url?",libraryURL)
+          setLibraryURL("")
         } else if (isTypeOk) {
           // TODO translation with i18n
           if (data["@id"]) setError(data["@id"] + " already selected")
@@ -490,6 +497,8 @@ const ResourceSelector: FC<{
   }
 
   const label = lang.ValueByLangToStrPrefLang(property.prefLabels, uiLitLang)
+
+  debug("label:", label, property.prefLabels)
 
   const textOnChange: React.ChangeEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
     const newValue = e.currentTarget.value
