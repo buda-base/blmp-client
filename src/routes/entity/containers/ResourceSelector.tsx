@@ -119,7 +119,7 @@ const ResourceSelector: FC<{
   const isRid = keyword.startsWith("bdr:") || keyword.match(/^([cpgwrti]|mw|wa|was|ut|ie|pr)(\d|eap)[^ ]*$/i)
 
   useEffect(() => {
-    setKeyword(placeholder)
+    setKeyword(placeholder || "")
   }, [placeholder])
 
   //debug("lit:",value.value,value.id,value)
