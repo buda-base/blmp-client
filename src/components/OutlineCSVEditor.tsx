@@ -799,7 +799,7 @@ export default function OutlineCSVEditor(props) {
     headers.set("Accept","application/json")
     //if (previousEtag) headers.set("If-Match", previousEtag)
     if(status) headers.set("X-Status", "<"+status+">") //.split(":")[1]) // returns 415 "status must be (...)"
-    if(attrib) headers.set("X-Outline-Attribution", attrib)
+    if(attrib) headers.set("X-Outline-Attribution", encodeURIComponent('"'+attrib+'"@en'))
     if(message) headers.set("X-Change-Message", encodeURIComponent('"'+message+'"@'+lang))
 
     const method = "PUT"
@@ -838,7 +838,7 @@ export default function OutlineCSVEditor(props) {
 
     setSaving(false)
         
-  }, [status, attrib, headerRow, outlineData, rowToCsv, RID])
+  }, [status, attrib, message, lang, toCSV, RID])
    
   const handleDownloadCSV = useCallback(() => {
     const link = document.createElement("a");
