@@ -520,8 +520,8 @@ export default function OutlineCSVEditor(props) {
           resp = await fetch(config.API_BASEURL + "outline/csv/" + RID)
           if(resp.status === 404) throw new Error(await resp.text()) //eslint-disable-line
           text = await resp.text()
-          const attr = resp.headers.get('x-outline-attribution')
-          if(attr) setAttrib(attr.replace(/^"|"$/g, ""))
+          const attr = resp.headers.get('x-outline-attribution')          
+          if(attr) setAttrib(decodeURIComponent(attr).replace(/(^")|("(@en)?$)/g, ""))
           const stat = resp.headers.get('x-status')
           if(stat) setStatus(stat.replace(/^<|>$/g, ""))
         } else {
