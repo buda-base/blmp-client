@@ -56,7 +56,8 @@ let styleSheet, globalHeaderRow, mayAddEmptyData
 
 const patchLine = (line:string) => {
   let patched = line.split(/\t/)
-  const numPosFrom = patched.findIndex(p => parts.includes(p)) - 1
+  let numPosFrom = patched.findIndex(p => parts.includes(p)) - 1
+  if(numPosFrom < 0) numPosFrom = 4 // eslint-disable-line
   const numPosTo = globalHeaderRow?.cells.filter(c => c.text.startsWith("pos.")).length 
   debug("b:", numPosFrom, numPosTo, patched)
   if(numPosFrom > numPosTo) {
@@ -77,10 +78,11 @@ const myHandlePaste = (text:string, state: State): State => {
   const activeSelectedRange = state.selectedRanges[state.activeSelectedRangeIdx]
   if (!activeSelectedRange) {
     return state;
-  }
+  }  
   let pastedRows: Compatible<Cell>[][] = [];
   pastedRows = text
     .split("\n")
+    .filter(l => l)
     .map((line: string) =>
       patchLine(line)
         .split("\t")
@@ -290,7 +292,7 @@ export default function OutlineCSVEditor(props) {
       for(let i = 0 ; i < numTo - numFrom ; i++) newData.push({ ...emptyData, position:[...emptyData.position] })
       if(insert) newData = newData.concat([ ...outlineData.slice(firstRowIdx) ])
       // now rewrite data using clipboard
-      const pasted = text.split("\n")
+      const pasted = text.split("\n").filter(l => l)
       for(let i = 0 ; i < pasted.length ; i++) {
         const rowIdx = reactgridRef.current.state.selectedRanges[0].first.row.rowId
         newData[rowIdx + i] = makeRow([newData[rowIdx + i].RID].concat(patchLine(pasted[i]).split("\t").slice(1)), headerRow, true)
