@@ -202,7 +202,7 @@ export default function OutlineCSVEditor(props) {
   //debug("ref:", reactgridRef, outlineData, headerRow)
 
   const [statusValues, setStatusValues] = useState()
-  const [status, setStatus] = useState(ns.BDA("StatusEditing").value)
+  const [status, setStatus] = useState(ns.BDA("StatusReleased").value)
   const [attrib, setAttrib] = useState("")
 
   useEffect(() => {
