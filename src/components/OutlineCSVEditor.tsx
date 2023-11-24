@@ -275,45 +275,49 @@ export default function OutlineCSVEditor(props) {
     }
   }
 
-  const addEmptyData = useCallback((numRows:number, text:string, insert = false, event?: ClipboardEvent) => {
-    const firstRowIdx = reactgridRef.current.state.selectedRanges[0].first.row.rowId
-    const numFrom = outlineData.length
-    const numTo = (insert ? numFrom : firstRowIdx) + numRows
-    debug("oD:", numFrom, numTo, event, reactgridRef.current.state)
-    // keep default behavior if not pasting full line (first cell of row)
-    if(!text.includes("\t")
-        || event && reactgridRef.current.state.selectedRanges.length && reactgridRef.current.state.selectedRanges[0].first.column.idx !== 0 
-      ) {
-      reactgridRef.current.updateState(state => state.currentBehavior.handlePaste(event, state)) 
-      setTimeout(() => window.dispatchEvent(new Event('resize')), 10)  // eslint-disable-line 
-      return
-    }
-    if(numTo > numFrom) {
-      let newData = insert ? [ ...outlineData.slice(0, firstRowIdx) ] : [ ...outlineData ]
-      for(let i = 0 ; i < numTo - numFrom ; i++) newData.push({ ...emptyData, position:[...emptyData.position] })
-      if(insert) newData = newData.concat([ ...outlineData.slice(firstRowIdx) ])
-      // now rewrite data using clipboard
-      const pasted = text.split("\n").filter(l => l)
-      for(let i = 0 ; i < pasted.length ; i++) {
-        const rowIdx = reactgridRef.current.state.selectedRanges[0].first.row.rowId
-        newData[rowIdx + i] = makeRow([newData[rowIdx + i].RID].concat(patchLine(pasted[i]).split("\t").slice(1)), headerRow, true)
+  const createGlobalChange = useCallback((prevData, nextData, n, at, columnsData?) => [{ 
+    type:"global", 
+    previousCell: { 
+      type: "global", 
+      "rows": prevData, 
+      ...columnsData ? { "columns": { emptyData, columns, headerRow } } : {} 
+    },
+    newCell: { 
+      type: "global", 
+      "rows": nextData, 
+      n, 
+      at, 
+      ...columnsData ?  { "columns": columnsData } : {} 
+    },
+  }], [columns, emptyData, headerRow])
+  
+  const [highlights, setHighlights] = useState<Highlight[]>([])  
+  const [errorData, setErrorData] = useState()
+
+  const updateErrorData = useCallback((n = 0, at = -1) => {
+    debug("uEd:", errorData, n,at) 
+    if(!errorData?.length) return
+    let modified = false
+    const data = []
+    for(const d of errorData) {
+      const e = { ...d }
+      if(e.row - 1 >= at) { 
+        e.row += n
+        modified = true
       }
-      setOutlineData(newData)                  
-    } else {
-      reactgridRef.current.updateState(state => myHandlePaste(text, state)) 
-    } 
-  }, [outlineData, emptyData, headerRow])
-  mayAddEmptyData = addEmptyData
-  
-  const [highlights, setHighlights] = useState<Highlight[]>([])
-  
+      data.push(e)
+    }
+    if(modified) setErrorData(data)
+  }, [errorData])
+
   const applyNewValue = useCallback((
     changes: CellChange[],
     prevEntry: OutlineEntry[],
+    callbacks:(()=>void)[],
     usePrevValue = false
   ): OutlineEntry[] => {
     
-    debug("changes:", changes, highlights)
+    debug("changes:", changes, highlights, errorData)
 
     let modified = false
     const hiMap = {}
@@ -337,7 +341,20 @@ export default function OutlineCSVEditor(props) {
 
       if(usePrevValue) {
         debug("undo",change.type)
-        if (change.type === 'checkbox') {
+        if (change.type === 'global') {
+          if(nextCell.rows) {
+            prevEntry = nextCell.rows
+          } 
+          if(nextCell.columns) {
+            callbacks.push(() => { 
+              setHeaderRow(nextCell.columns.headerRow)
+              setColumns(nextCell.columns.columns)
+              setEmptyData(nextCell.columns.emptyData)
+            })
+          } else {            
+            if(prevCell.n !== undefined && prevCell.at !== undefined) callbacks.push(() => updateErrorData(-prevCell.n, prevCell.at))
+          }
+        } else if (change.type === 'checkbox') {
           const n_pos = Number(fieldName.replace(/^[^0-9]+/g,""))  
           prevEntry[entryIndex].position[n_pos - 1] = nextCell.checked;
           if(!nextCell.checked && nextCell.n_pos) prevEntry[entryIndex].position[nextCell.n_pos - 1] = true
@@ -357,8 +374,21 @@ export default function OutlineCSVEditor(props) {
         debug("changes:RID")
         return
       }
-
-      if (change.type === 'checkbox') {
+      
+      if (change.type === 'global') {
+        if(nextCell.rows) {
+          prevEntry = nextCell.rows
+        } 
+        if(nextCell.columns) {
+          callbacks.push(() => { 
+            setHeaderRow(nextCell.columns.headerRow)
+            setColumns(nextCell.columns.columns)
+            setEmptyData(nextCell.columns.emptyData)
+          })
+        } else {          
+          if(nextCell.n !== undefined && nextCell.at !== undefined) callbacks.push(() => updateErrorData(nextCell.n, nextCell.at))
+        }
+      } else if (change.type === 'checkbox') {
         const numChecked = prevEntry[entryIndex].position.reduce((acc,e) => acc + (e ? 1 : 0), 0)
         const n_pos = Number(fieldName.replace(/^[^0-9]+/g,""))
         //debug("nC:", n_pos, numChecked, prevEntry[entryIndex])        
@@ -395,7 +425,7 @@ export default function OutlineCSVEditor(props) {
     if(modified) setHighlights(Object.values(hiMap))
 
     return [...prevEntry];
-  }, [ highlights ]);
+  }, [highlights, updateErrorData, errorData]);
   
   const [cellChangesIndex, setCellChangesIndex] = useState(() => -1);
   const [cellChanges, setCellChanges] = useState<CellChange[][]>(() => []);
@@ -404,16 +434,12 @@ export default function OutlineCSVEditor(props) {
     debug("index:", cellChanges, cellChangesIndex)
   }, [cellChanges, cellChangesIndex])
 
-  const applyChangesToOutlineData = (
+  const applyChangesToOutlineData = useCallback((
     changes: CellChange<TextCell>[],
     prevOutlineData: OutlineData[]
   ): OutlineData[] => {
-    const updated = applyNewValue(changes, prevOutlineData);
-
-    /*
-    setCellChanges([...cellChanges.slice(0, cellChangesIndex + 1), changes]);
-    setCellChangesIndex(cellChangesIndex + 1);
-    */
+    const callbacks = []
+    const updated = applyNewValue(changes, prevOutlineData, callbacks);
    
     const newChanges = changes.filter( // undo/redo dropdown change in one step
       (c, i) => c.type !== "dropdown" || c.previousCell.selectedValue !== c.newCell.selectedValue
@@ -447,27 +473,61 @@ export default function OutlineCSVEditor(props) {
       setCellChanges(previousChanges);
       setCellChangesIndex(previousChanges.length - 1);
     }
-
+    callbacks.map(c => setTimeout(c, 1)) // eslint-disable-line
     return updated;
-  };
+  }, [applyNewValue, cellChanges, cellChangesIndex, errorData]);
   
-  const redoChanges = (
+  const redoChanges = useCallback((
     changes: CellChange<TextCell>[],
     prevOutlineData: OutlineData[]
   ): OutlineData[] => {
-    const updated = applyNewValue(changes, prevOutlineData);
+    const callbacks = []
+    const updated = applyNewValue(changes, prevOutlineData, callbacks);
     setCellChangesIndex(cellChangesIndex + 1);
+    callbacks.map(c => setTimeout(c, 1)) // eslint-disable-line
     return updated;
-  };
+  }, [applyNewValue, cellChangesIndex, errorData, updateErrorData]);
 
-  const undoChanges = (
+  const undoChanges =  useCallback((
     changes: CellChange<TextCell>[],
     prevOutlineData: OutlineData[]
   ): OutlineData[] => {
-    const updated = applyNewValue(changes, prevOutlineData, true);
+    const callbacks = []
+    const updated = applyNewValue(changes, prevOutlineData, callbacks, true);
     setCellChangesIndex(cellChangesIndex - 1);
+    callbacks.map(c => setTimeout(c, 1)) // eslint-disable-line
     return updated;
-  };
+  }, [applyNewValue, cellChangesIndex, errorData, updateErrorData]);
+
+  const addEmptyData = useCallback((numRows:number, text:string, insert = false, event?: ClipboardEvent, n?:number, at?:number) => {
+    const firstRowIdx = reactgridRef.current.state.selectedRanges[0].first.row.rowId
+    const numFrom = outlineData.length
+    const numTo = (insert ? numFrom : firstRowIdx) + numRows
+    debug("oD:", numFrom, numTo, event, reactgridRef.current.state)
+    // keep default behavior if not pasting full line (first cell of row)
+    if(!text.includes("\t")
+        || event && reactgridRef.current.state.selectedRanges.length && reactgridRef.current.state.selectedRanges[0].first.column.idx !== 0 
+      ) {
+      reactgridRef.current.updateState(state => state.currentBehavior.handlePaste(event, state)) 
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 10)  // eslint-disable-line 
+      return
+    }
+    if(numTo > numFrom) {
+      let newData = insert ? [ ...outlineData.slice(0, firstRowIdx) ] : [ ...outlineData ]
+      for(let i = 0 ; i < numTo - numFrom ; i++) newData.push({ ...emptyData, position:[...emptyData.position] })
+      if(insert) newData = newData.concat([ ...outlineData.slice(firstRowIdx) ])
+      // now rewrite data using clipboard
+      const pasted = text.split("\n").filter(l => l)
+      for(let i = 0 ; i < pasted.length ; i++) {
+        const rowIdx = reactgridRef.current.state.selectedRanges[0].first.row.rowId
+        newData[rowIdx + i] = makeRow([newData[rowIdx + i].RID].concat(patchLine(pasted[i]).split("\t").slice(1)), headerRow, true)
+      }
+      setOutlineData(applyChangesToOutlineData(createGlobalChange(outlineData, newData, n, at), newData))      
+    } else {
+      reactgridRef.current.updateState(state => myHandlePaste(text, state)) 
+    } 
+  }, [outlineData, applyChangesToOutlineData, createGlobalChange, emptyData, headerRow])
+  mayAddEmptyData = addEmptyData
 
   const [focusVal, setFocusVal] = useState("")
 
@@ -482,7 +542,7 @@ export default function OutlineCSVEditor(props) {
         undoChanges(cellChanges[cellChangesIndex], prevOutlineData)
       );
     }
-  }, [cellChanges, cellChangesIndex, focusVal]);
+  }, [cellChanges, cellChangesIndex, focusVal, undoChanges]);
 
   const handleRedoChanges =  useCallback(() => {
     if(focusVal) setFocusVal("")
@@ -491,7 +551,7 @@ export default function OutlineCSVEditor(props) {
         redoChanges(cellChanges[cellChangesIndex + 1], prevOutlineData)
       );
     }
-  }, [cellChanges, cellChangesIndex, focusVal]);
+  }, [cellChanges, cellChangesIndex, focusVal, redoChanges]);
 
   const [ fontSize, setFontSize ] = useState<number>(20) // eslint-disable-line no-magic-numbers
   const [ rowHeight, setRowHeight ] = useState<number>(36) // eslint-disable-line no-magic-numbers
@@ -702,7 +762,6 @@ export default function OutlineCSVEditor(props) {
   const [message, setMessage] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [lang, setLang] = useState(uiLang)
-  const [errorData, setErrorData] = useState()
 
   const rowToCsv = useCallback((o) => {
     //debug("o:",o,columns)
@@ -747,13 +806,16 @@ export default function OutlineCSVEditor(props) {
     setHighlights([])
   }
   const updateHighlights = useCallback((oD = outlineData) => {
-    debug("uH:", errorData, highlights, oD)
+    debug("uH:", errorData, highlights, oD) 
 
+    /*
     // TODO: better than nothing (removes inconsistent highlighting) but can do better! --> updateErrorData or something
     if(highlights.some(h => h.rowId >= oD.length)) { 
       setHighlights([])
       return
     }
+    */
+   
     if(!errorData?.length) {      
       return
     }
@@ -775,22 +837,6 @@ export default function OutlineCSVEditor(props) {
   useEffect(() => {
     updateHighlights()
   }, [ errorData ])
-
-  const updateErrorData = useCallback((n = 0, at = -1) => {
-    if(!errorData?.length) return
-    debug("uEd:",n,at)
-    let modified = false
-    const data = []
-    for(const d of errorData) {
-      const e = { ...d }
-      if(e.row - 1 >= at) { 
-        e.row += n
-        modified = true
-      }
-      data.push(e)
-    }
-    if(modified) setErrorData(data)
-  }, [errorData])
 
   const save = useCallback(async () => {
     
@@ -883,8 +929,9 @@ export default function OutlineCSVEditor(props) {
             ...d.position.slice(colPos), 
           ] 
         }))
+
         let n_pos = 1
-        setColumns([
+        const newColumns = [
           ...columns.slice(0, lastPos), { 
             columnId: "position" + newColId,
             resizable:true,
@@ -894,9 +941,10 @@ export default function OutlineCSVEditor(props) {
         ].map(c => {
           if(c.columnId.startsWith("position")) return { ...c, columnId:"position"+n_pos++ }
           else return c
-        }))
+        })
+
         n_pos = 1
-        setHeaderRow({ 
+        const newHeaderRow = { 
           ...headerRow,  
           cells:[
             ...headerRow.cells.slice(0, m), { 
@@ -907,16 +955,23 @@ export default function OutlineCSVEditor(props) {
             if(c.text.startsWith("pos.")) return { ...c, text: "pos. "+ n_pos++ }
             else return c
           })
-        })
-        setEmptyData({ 
+        }
+
+        const newEmptyData = { 
           ...emptyData, 
           position:[...emptyData.position, false] 
-        })
+        }
 
-        // TODO: shift error cells to the left/right
-        //updateErrorData(0, 0, m, +1)
-
-        setOutlineData(newData)
+        setOutlineData(
+          applyChangesToOutlineData(
+            createGlobalChange(outlineData, newData, +1, m, { 
+              columns: newColumns, 
+              headerRow: newHeaderRow, 
+              emptyData: newEmptyData 
+            }), 
+            newData
+          )
+        )      
         // eslint-disable-next-line no-magic-numbers
         setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
       }
@@ -941,26 +996,27 @@ export default function OutlineCSVEditor(props) {
           ] 
         }))
                 
-        setEmptyData({ 
+        const newEmptyData = { 
           ...emptyData, 
           position:[
             ...emptyData.position.slice(0, minColPos-firstPos),
             ...emptyData.position.slice(maxColPos-firstPos+1)
           ] 
-        })
+        }
         
         //debug("ids:",posCols, minColPos, maxColPos, firstPos, newData, emptyData)   
 
         let n_pos = 1
-        setColumns([
+        const newColumns = [
           ...columns.slice(0, minColPos), 
           ...columns.slice(maxColPos+1)
         ].map(c => {
           if(c.columnId.startsWith("position")) return { ...c, columnId:"position"+n_pos++ }
           else return c
-        }))
+        })
+
         n_pos = 1
-        setHeaderRow({ 
+        const newHeaderRow = { 
           ...headerRow,  
           cells:[
             ...headerRow.cells.slice(0, minColPos), 
@@ -969,12 +1025,19 @@ export default function OutlineCSVEditor(props) {
             if(c.text.startsWith("pos.")) return { ...c, text: "pos. "+ n_pos++ }
             else return c
           })
-        })
+        }
 
-        // TODO: shift error cells to the left/right
-        //updateErrorData(0, 0, m, +1)
-
-        setOutlineData(newData)
+        setOutlineData(
+          applyChangesToOutlineData(
+            createGlobalChange(outlineData, newData, -(maxColPos-minColPos+1), minColPos, { 
+              columns: newColumns, 
+              headerRow: newHeaderRow, 
+              emptyData: newEmptyData 
+            }), 
+            newData
+          )
+        )      
+        
         // eslint-disable-next-line no-magic-numbers
         setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
 
@@ -982,7 +1045,7 @@ export default function OutlineCSVEditor(props) {
     })
 
     return menuOptions
-  }, [columns, emptyData, headerRow, outlineData])
+  }, [applyChangesToOutlineData, columns, createGlobalChange, emptyData, headerRow, outlineData])
 
   const rowMenu = useCallback((
     selectedRowIds: Id[],
@@ -990,7 +1053,7 @@ export default function OutlineCSVEditor(props) {
     selectionMode: SelectionMode,
     menuOptions: MenuOption[]
   ): MenuOption[] => { 
-    debug("opt:", menuOptions)        
+    debug("opt:", menuOptions, errorData)        
         
     const pasteMenu = menuOptions.find(m => m.id === "paste");     
     
@@ -1020,12 +1083,12 @@ export default function OutlineCSVEditor(props) {
         id: "pasteNewRows",
         label: "Paste as new rows",
         handler:async  () => {
+          debug("eD?", errorData)
           const m = Math.min(...selectedRowIds)
           const event = await createPasteEventFromClipboard()
           const text = event.clipboardData.getData("text/plain")
           const n = text.split("\n").filter(l => l).length
-          addEmptyData(n, text, true) 
-          updateErrorData(+n, m)
+          addEmptyData(n, text, true, undefined, +n, m) 
         }
       }, {
         id: "insertRowBefore",
@@ -1037,8 +1100,7 @@ export default function OutlineCSVEditor(props) {
             { ...emptyData, position:[...emptyData.position] }, 
             ...outlineData.slice(m)
           ]
-          updateErrorData(+1, m)
-          setOutlineData(newData)
+          setOutlineData(applyChangesToOutlineData(createGlobalChange(outlineData, newData, +1, m), newData))      
           // eslint-disable-next-line no-magic-numbers
           setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
         }
@@ -1052,8 +1114,7 @@ export default function OutlineCSVEditor(props) {
             { ...emptyData, position:[...emptyData.position] }, 
             ...outlineData.slice(m)
           ]
-          updateErrorData(+1, m)
-          setOutlineData(newData)
+          setOutlineData(applyChangesToOutlineData(createGlobalChange(outlineData, newData, +1, m), newData))      
           // eslint-disable-next-line no-magic-numbers
           setTimeout(() => reactgridRef.current?.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
         }
@@ -1063,8 +1124,7 @@ export default function OutlineCSVEditor(props) {
         handler: () => { 
           const m = Math.min(...selectedRowIds)
           const newData = outlineData.filter((row,i) => !selectedRowIds.includes(i))
-          updateErrorData(-selectedRowIds.length, m)
-          setOutlineData(newData)
+          setOutlineData(applyChangesToOutlineData(createGlobalChange(outlineData, newData, -selectedRowIds.length, m), newData))      
           // DONE: possible to deselect all after deleting
           // eslint-disable-next-line no-magic-numbers
           setTimeout(() => reactgridRef.current.updateState(() => ({ selectedIds:[], selectedIndexes:[], selectedRanges:[] })), 10) 
@@ -1072,7 +1132,7 @@ export default function OutlineCSVEditor(props) {
       }
     ];    
     return menuOptions;
-  },[addEmptyData, emptyData, outlineData, updateErrorData])
+  },[errorData, addEmptyData, outlineData, emptyData, applyChangesToOutlineData, createGlobalChange])
 
   const simpleHandleContextMenu = useCallback((
     selectedRowIds: Id[],
@@ -1141,9 +1201,9 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  //debug("hi:", highlights)
+  debug("hi:", highlights, errorData)
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
-  debug("data:", outlineData, headerRow, columns, rows, emptyData) 
+  //debug("data:", outlineData, headerRow, columns, rows, emptyData) 
 
   return <>
     <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex" }} >      

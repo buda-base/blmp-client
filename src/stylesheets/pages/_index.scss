@@ -1377,7 +1377,7 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
 
   .csv-container:not(.fullscreen) {
     overflow: auto; 
-    height: calc(100vh - 66px - 70px - 85px); // - 20px - 240px - 48px);
+    max-height: calc(100vh - 66px - 70px - 85px); // - 20px - 240px - 48px);
   }
 
   .fs-btn.fs-true {
