@@ -622,7 +622,7 @@ export default function OutlineCSVEditor(props) {
           setEmptyData(empty)
 
           if(!data?.length) { 
-            setOutlineData([empty])
+            setOutlineData([{ ...empty, position: [ ...empty.position ] }])
           }
           else {
             setOutlineData(data)
@@ -1201,9 +1201,9 @@ export default function OutlineCSVEditor(props) {
     }))
   ]
 
-  debug("hi:", highlights, errorData)
+  //debug("hi:", highlights, errorData)
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
-  //debug("data:", outlineData, headerRow, columns, rows, emptyData) 
+  debug("data:", outlineData, headerRow, columns, rows, emptyData) 
 
   return <>
     <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex" }} >      
