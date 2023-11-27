@@ -19,6 +19,7 @@ import { fetchToCurl } from "fetch-to-curl"
 
 import InstanceCSVSearch from "../components/InstanceCSVSearch"
 import { uiTabState, localCSVAtom, uiLangState } from "../atoms/common"
+import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../containers/EntitySelectorContainer"
 import config from "../config"
 import * as ns from "../helpers/rdf/ns" 
 import { langs } from "../helpers/lang"
@@ -574,6 +575,7 @@ export default function OutlineCSVEditor(props) {
   }, [fontSize])
 
   const [error, setError] = useState("")
+  const [entities, setEntities] = useRecoilState(entitiesAtom)
 
   const fetchCsv = useCallback(async () => {
     if (RID && !csv) {
@@ -593,6 +595,21 @@ export default function OutlineCSVEditor(props) {
           text = localCSV
         }
         if(text) text = text.replace(/\n$/m,"")
+
+        let index = entities.findIndex((e) => e.subjectQname === "bdr:O_"+RID)
+        const newEntities = [...entities]
+        if (index === -1) {
+          newEntities.push({
+            subjectQname: RID,
+            state: localCSV ? EditedEntityState.NeedsSaving : EditedEntityState.Saved,
+            shapeRef: "tmp:outline",
+            subject: null,
+            subjectLabelState: defaultEntityLabelAtom,
+            //alreadySaved: etag,
+          })
+          index = newEntities.length - 1
+        } 
+        setEntities(newEntities)
 
         setCsv(text)
         Papa.parse(text, { worker: true, delimiter:",", complete: (results) => {
@@ -641,6 +658,7 @@ export default function OutlineCSVEditor(props) {
               width: colWidths[results.data[0][i]] || 150 // eslint-disable-line no-magic-numbers
             }}) || []
           ) 
+
         } })
       } catch(e) {
         // TODO: error fetching csv (401/403, 404)          
@@ -648,7 +666,7 @@ export default function OutlineCSVEditor(props) {
         setError(e.message)
       }
     }
-  }, [RID, csv, localCSV, rowHeight])
+  }, [RID, csv, entities, localCSV, rowHeight])
 
   useEffect(() => {
     debug("localCSV?", RID, csv||"--", localCSV)

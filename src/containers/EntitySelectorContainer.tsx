@@ -176,6 +176,8 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
     return false
   }
 
+  debug("ent:",entities)
+
   return (
     <div
       className="tabs-select"

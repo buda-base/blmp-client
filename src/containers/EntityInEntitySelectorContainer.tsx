@@ -41,6 +41,7 @@ function a11yProps(index: number) {
 export const getIcon = (entity: Entity) => {
   if (!entity) return
   let icon
+  if(entity.shapeRef === "tmp:outline") return "outline"
   if (entity.subject) {
     const rdfType = ns.RDF("type") as rdf.NamedNode
     if (entity?.subject?.graph?.store?.statements)
@@ -91,7 +92,11 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
   //debug("sQn:", icon) //, index, tab, shapeQname, entity.shapeRef?.qname, entity.shapeRef, entity.subjectQname)
 
   const link =
-    icon && icon.startsWith("user") ? "/profile" : "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
+    entity.shapeRef === "tmp:outline" 
+    ? "/outline/" + entity.subjectQname
+    : icon && icon.startsWith("user") 
+      ? "/profile" 
+      : "/edit/" + entity.subjectQname + (shapeQname ? "/" + shapeQname : "")
 
   const allLoaded = entities.reduce((acc, e) => acc && e.state !== EditedEntityState.Loading, true)
 
