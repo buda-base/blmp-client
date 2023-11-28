@@ -57,7 +57,7 @@ function OutlineCSVEditorContainer(props) {
 
   if (props.match?.params?.rid && props.match?.params?.rid !== reset)
     return <div></div>
-  else if (props.match?.params?.rid === reset)
+  else if (props.match?.params?.rid && props.match?.params?.rid === reset)
     return (
       <div role="main" className="centered-ctn pt-4" style={{ textAlign: "center" }}>
         <div className={"header etextinstance"}>
