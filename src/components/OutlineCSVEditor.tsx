@@ -18,7 +18,7 @@ import { CircularProgress } from "@material-ui/core"
 import { fetchToCurl } from "fetch-to-curl"
 
 import InstanceCSVSearch from "../components/InstanceCSVSearch"
-import { uiTabState, localCSVAtom, uiLangState } from "../atoms/common"
+import { uiTabState, localCSVAtom, uiLangState, sessionLoadedState, uiDisabledTabsState } from "../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../containers/EntitySelectorContainer"
 import config from "../config"
 import * as ns from "../helpers/rdf/ns" 
@@ -576,13 +576,53 @@ export default function OutlineCSVEditor(props) {
 
   const [error, setError] = useState("")
   const [entities, setEntities] = useRecoilState(entitiesAtom)
+  const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
+  const [filename, setFilename] = useState("")
+  const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
+
+  useEffect(() => {
+    entities.map((e, i) => {
+      if (e.subjectQname === filename) {
+        setDisabled(false)
+        if (tab != i) {
+          debug("tab:",i,tab)
+          setTab(i)          
+          return
+        }
+      }
+    })
+  }, [entities, filename])  
+
+  const addEntryInSelector = useCallback(() => {
+    if(sessionLoaded && filename) {
+      let index = entities.findIndex((e) => e.subjectQname === filename)
+      const newEntities = [...entities]
+      if (index === -1) {
+        newEntities.push({
+          subjectQname: filename,
+          state: localCSV ? EditedEntityState.NeedsSaving : EditedEntityState.Saved,
+          shapeRef: "tmp:outline",
+          subject: null,
+          subjectLabelState: defaultEntityLabelAtom,
+          preloadedLabel:"(O) "+RID.replace(/^bdr:/,"")
+          //alreadySaved: etag,
+        })
+        index = newEntities.length - 1
+        setEntities(newEntities)
+      } 
+    }
+  }, [sessionLoaded, filename, entities, RID, localCSV, setEntities])
+
+  useEffect(() => {
+    addEntryInSelector()
+  }, [sessionLoaded, filename, localCSV])
 
   const fetchCsv = useCallback(async () => {
     if (RID && !csv) {
       setCsv(true)
       let resp
       try {
-        let text
+        let text, name
         if(!localCSV) {
           resp = await fetch(config.API_BASEURL + "outline/csv/" + RID)
           if(resp.status === 404) throw new Error(await resp.text()) //eslint-disable-line
@@ -591,26 +631,19 @@ export default function OutlineCSVEditor(props) {
           if(attr) setAttrib(decodeURIComponent(attr).replace(/(^")|("(@en)?$)/g, ""))
           const stat = resp.headers.get('x-status')
           if(stat) setStatus(stat.replace(/^<|>$/g, ""))
+          name =  resp.headers.get('content-disposition')          
+          if(name) name = name.split(";")[1]
+          if(name) name = name.split("=")[1]
+          if(name) name = name.split(".")[0]
+          if(name) name = "bdr:"+name.replace(/-/g,"_")
+          setFilename(name || RID+"_outline")
+          debug("name:",name,entities)
         } else {
           text = localCSV
+          setFilename(RID+"_outline")
         }
         if(text) text = text.replace(/\n$/m,"")
-
-        let index = entities.findIndex((e) => e.subjectQname === "bdr:O_"+RID)
-        const newEntities = [...entities]
-        if (index === -1) {
-          newEntities.push({
-            subjectQname: RID,
-            state: localCSV ? EditedEntityState.NeedsSaving : EditedEntityState.Saved,
-            shapeRef: "tmp:outline",
-            subject: null,
-            subjectLabelState: defaultEntityLabelAtom,
-            //alreadySaved: etag,
-          })
-          index = newEntities.length - 1
-        } 
-        setEntities(newEntities)
-
+        
         setCsv(text)
         Papa.parse(text, { worker: true, delimiter:",", complete: (results) => {
           let n_pos = 1
@@ -672,11 +705,6 @@ export default function OutlineCSVEditor(props) {
     debug("localCSV?", RID, csv||"--", localCSV)
     fetchCsv()
   }, [RID, csv, localCSV])
-
-  // TODO: add outline in left bar
-  useEffect(() => {
-    if (tab != -1) setTab(-1)
-  }, [tab])
 
   /* // check 
   useEffect(() => {
