@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useHistory } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import { connect } from "react-redux"
@@ -45,9 +45,19 @@ function OutlineCSVEditorContainer(props) {
   const auth = useAuth0()
   const routerHistory = useHistory()
 
+  const [reset, setReset] = useState("")
+
   debug("csv:", props)
 
-  if (props.match?.params?.rid)
+  useEffect(() => {
+    if(reset != props.match?.params?.rid) {
+      setReset(props.match?.params?.rid)  
+    }
+  }, [props.match?.params?.rid])
+
+  if (props.match?.params?.rid && props.match?.params?.rid !== reset)
+    return <div></div>
+  else if (props.match?.params?.rid === reset)
     return (
       <div role="main" className="centered-ctn pt-4" style={{ textAlign: "center" }}>
         <div className={"header etextinstance"}>
