@@ -636,11 +636,11 @@ export default function OutlineCSVEditor(props) {
           if(name) name = name.split("=")[1]
           if(name) name = name.split(".")[0]
           if(name) name = "bdr:"+name.replace(/-/g,"_")
-          setFilename(name || RID+"_outline")
+          setFilename(RID.replace(/^bdr:/,"bdr:O"))
           debug("name:",name,entities)
         } else {
           text = localCSV
-          setFilename(RID+"_outline")
+          setFilename(RID.replace(/^bdr:/,"bdr:O"))
         }
         if(text) text = text.replace(/\n$/m,"")
         
