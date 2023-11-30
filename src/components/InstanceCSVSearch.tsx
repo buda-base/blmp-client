@@ -1,12 +1,12 @@
 import TextField from "@material-ui/core/TextField"
 import Button from "@material-ui/core/Button"
-import React, { useMemo } from "react"
+import React, { useMemo, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import CircularProgress from "@material-ui/core/CircularProgress"
 import MuiAlert from "@material-ui/lab/Alert"
 import { isNil } from "ramda"
 import { useAuth0 } from "@auth0/auth0-react"
-import { Link, useHistory } from "react-router-dom"
+import { Link, useHistory, useParams } from "react-router-dom"
 import { useRecoilState } from "recoil"
 
 import { localCSVAtom } from "../atoms/common"
@@ -27,19 +27,21 @@ const InstanceCSVSearch = (props: { isFetching: any, forVolume?: any; fetchErr: 
   const [localCSV, setLocalCSV] = useRecoilState(localCSVAtom)
   
   const history = useHistory()
+  const params = useParams()
+  debug("lCsv:",localCSV,params)
 
-  const uploadCSV = (event) => {
+  const uploadCSV = useCallback((event) => {
     //debug("ev:", event, event.target.files)
     if(!event.target.files.length) return
     const reader = new FileReader()
     reader.onloadend = (data) => {
       //debug("read:",data,data.currentTarget.result)
-      setLocalCSV(data.currentTarget.result)
+      setLocalCSV({ ...localCSV, [params.rid || "bdr:"+RID]: { data: data.currentTarget.result } })
       if(!props.inNavBar) setTimeout(() => history.push("/outline/bdr:"+RID), 150) // eslint-disable-line
       else props.resetCSV()
     }
     reader.readAsText(event.target.files[0])
-  }
+  }, [RID, history, localCSV, props, setLocalCSV])
 
   return props.isFetching || loading ? (
     <CircularProgress />

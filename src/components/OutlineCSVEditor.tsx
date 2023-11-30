@@ -27,6 +27,21 @@ import ResourceSelector from "../routes/entity/containers/ResourceSelector"
 
 const debug = require("debug")("bdrc:csved")
 
+const useDebounce = (value, delay = 500) => { //eslint-disable-line
+  const [debouncedValue, setDebouncedValue] = useState("");
+  const timerRef = useRef();
+
+  useEffect(() => {
+    timerRef.current = setTimeout(() => setDebouncedValue(value), delay);
+
+    return () => {
+      clearTimeout(timerRef.current);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 interface OutlineEntry {
   RID:string,
   position:boolean[],
@@ -208,6 +223,51 @@ export default function OutlineCSVEditor(props) {
   const [status, setStatus] = useState(ns.BDA("StatusReleased").value)
   const [attrib, setAttrib] = useState("")
 
+  const rowToCsv = useCallback((o) => {
+    //debug("o:",o,columns)
+    let res = [], c = 0
+    // RID
+    res.push(o[columns[c].columnId])
+    // position
+    do {
+      c++
+    } while(columns[c].columnId.startsWith("pos"))    
+    res = res.concat(o.position.map(p => p ? "X" : ""))
+    // all other fields
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    res.push(o[columns[c++].columnId])
+    // img. / vol.
+    do {
+      res.push(o[columns[c++].columnId] || "")
+    } while(columns.length > c)
+    return res.map(r => JSON.stringify(r)).join(",") 
+  }, [columns])
+
+  const toCSV = useCallback(() => {
+    return headerRow.cells.map(c => '"'+c.text.replace(/pos\..*/, "Position")/*.replace(/im./,"img").replace(/vol./,"volume")*/+'"').join(",")
+              + "\n" + outlineData.map(rowToCsv).join("\n")+"\n"
+  }, [headerRow, outlineData, rowToCsv])
+
+  const keepLocalCSV = useCallback(() => {
+    const data = toCSV()
+    if(localCSV[RID]?.data !== data || localCSV[RID]?.attrib !== attrib || localCSV[RID]?.status !== status) { 
+      setLocalCSV({ ...localCSV, [RID]: { data, attrib, status } })
+      debug("saved:", data)
+    }
+  }, [RID, attrib, localCSV, setLocalCSV, status, toCSV])
+
+  const debouncedOutlineData = useDebounce(outlineData, 3000) // eslint-disable-line
+  const debouncedAttrib = useDebounce(attrib, 3000) // eslint-disable-line
+  const debouncedStatus = useDebounce(status, 3000) // eslint-disable-line
+
+  useEffect(() => {
+    if(debouncedOutlineData?.length) keepLocalCSV()
+  }, [keepLocalCSV, debouncedOutlineData, debouncedAttrib, debouncedStatus])
+  
   useEffect(() => {
     unmount = false 
 
@@ -600,7 +660,7 @@ export default function OutlineCSVEditor(props) {
       if (index === -1) {
         newEntities.push({
           subjectQname: filename,
-          state: localCSV ? EditedEntityState.NeedsSaving : EditedEntityState.Saved,
+          state: localCSV[RID] ? EditedEntityState.NeedsSaving : EditedEntityState.Saved,
           shapeRef: "tmp:outline",
           subject: null,
           subjectLabelState: defaultEntityLabelAtom,
@@ -623,7 +683,7 @@ export default function OutlineCSVEditor(props) {
       let resp
       try {
         let text, name
-        if(!localCSV) {
+        if(!localCSV[RID]?.data) {
           resp = await fetch(config.API_BASEURL + "outline/csv/" + RID)
           if(resp.status === 404) throw new Error(await resp.text()) //eslint-disable-line
           text = await resp.text()
@@ -639,8 +699,10 @@ export default function OutlineCSVEditor(props) {
           setFilename(RID.replace(/^bdr:/,"bdr:O"))
           debug("name:",name,entities)
         } else {
-          text = localCSV
+          text = localCSV[RID].data
           setFilename(RID.replace(/^bdr:/,"bdr:O"))
+          if(localCSV[RID].attrib) setAttrib(localCSV[RID].attrib)
+          if(localCSV[RID].status) setStatus(localCSV[RID].status)
         }
         if(text) text = text.replace(/\n$/m,"")
         
@@ -702,7 +764,7 @@ export default function OutlineCSVEditor(props) {
   }, [RID, csv, entities, localCSV, rowHeight])
 
   useEffect(() => {
-    debug("localCSV?", RID, csv||"--", localCSV)
+    //debug("localCSV?", RID, csv||"--", localCSV)
     fetchCsv()
   }, [RID, csv, localCSV])
 
@@ -808,35 +870,6 @@ export default function OutlineCSVEditor(props) {
   const [message, setMessage] = useState("")
   const [uiLang, setUiLang] = useRecoilState(uiLangState)
   const [lang, setLang] = useState(uiLang)
-
-  const rowToCsv = useCallback((o) => {
-    //debug("o:",o,columns)
-    let res = [], c = 0
-    // RID
-    res.push(o[columns[c].columnId])
-    // position
-    do {
-      c++
-    } while(columns[c].columnId.startsWith("pos"))    
-    res = res.concat(o.position.map(p => p ? "X" : ""))
-    // all other fields
-    res.push(o[columns[c++].columnId])
-    res.push(o[columns[c++].columnId])
-    res.push(o[columns[c++].columnId])
-    res.push(o[columns[c++].columnId])
-    res.push(o[columns[c++].columnId])
-    res.push(o[columns[c++].columnId])
-    // img. / vol.
-    do {
-      res.push(o[columns[c++].columnId] || "")
-    } while(columns.length > c)
-    return res.map(r => JSON.stringify(r)).join(",") 
-  }, [columns])
-
-  const toCSV = useCallback(() => {
-    return headerRow.cells.map(c => '"'+c.text.replace(/pos\..*/, "Position")/*.replace(/im./,"img").replace(/vol./,"volume")*/+'"').join(",")
-              + "\n" + outlineData.map(rowToCsv).join("\n")+"\n"
-  }, [headerRow, outlineData, rowToCsv])
 
   const resetPopup = () => {
     setPopupOn(false)

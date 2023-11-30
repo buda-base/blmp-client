@@ -380,7 +380,7 @@ export const demoAtom = atom<boolean>({
   default: false,
 })
 
-export const localCSVAtom = atom<string>({
+export const localCSVAtom = atom<Map<string, string>>({
   key: "localCSVAtom",
-  default: "",
+  default: {},
 })
