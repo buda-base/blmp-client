@@ -384,3 +384,8 @@ export const localCSVAtom = atom<Map<string, string>>({
   key: "localCSVAtom",
   default: {},
 })
+
+export const allCellChangesAtom = atom<Map<string, Map<string, number|CellChanges[][]>>>({
+  key: "allCellChangesAtom",
+  default: {},
+})

@@ -18,7 +18,7 @@ import { CircularProgress } from "@material-ui/core"
 import { fetchToCurl } from "fetch-to-curl"
 
 import InstanceCSVSearch from "../components/InstanceCSVSearch"
-import { uiTabState, localCSVAtom, uiLangState, sessionLoadedState, uiDisabledTabsState } from "../atoms/common"
+import { uiTabState, localCSVAtom, uiLangState, sessionLoadedState, uiDisabledTabsState, allCellChangesAtom } from "../atoms/common"
 import { entitiesAtom, EditedEntityState, defaultEntityLabelAtom } from "../containers/EntitySelectorContainer"
 import config from "../config"
 import * as ns from "../helpers/rdf/ns" 
@@ -260,9 +260,9 @@ export default function OutlineCSVEditor(props) {
     }
   }, [RID, attrib, localCSV, setLocalCSV, status, toCSV])
 
-  const debouncedOutlineData = useDebounce(outlineData, 3000) // eslint-disable-line
-  const debouncedAttrib = useDebounce(attrib, 3000) // eslint-disable-line
-  const debouncedStatus = useDebounce(status, 3000) // eslint-disable-line
+  const debouncedOutlineData = useDebounce(outlineData, 1000) // eslint-disable-line
+  const debouncedAttrib = useDebounce(attrib, 1000) // eslint-disable-line
+  const debouncedStatus = useDebounce(status, 1000) // eslint-disable-line
 
   useEffect(() => {
     if(debouncedOutlineData?.length) keepLocalCSV()
@@ -458,7 +458,9 @@ export default function OutlineCSVEditor(props) {
           if(nextCell.checked) {
             for(const i in prevEntry[entryIndex].position) {              
               if(Number(i) !== Number(n_pos - 1)) { 
-                if(prevEntry[entryIndex].position[i]) prevCell.n_pos = 1+Number(i)
+                if(prevEntry[entryIndex].position[i]) {
+                  change.previousCell = { ...change.previousCell, n_pos: 1+Number(i) }
+                }
                 prevEntry[entryIndex].position[i] = false 
               }
             }
@@ -488,11 +490,20 @@ export default function OutlineCSVEditor(props) {
     return [...prevEntry];
   }, [highlights, updateErrorData, errorData]);
   
-  const [cellChangesIndex, setCellChangesIndex] = useState(() => -1);
-  const [cellChanges, setCellChanges] = useState<CellChange[][]>(() => []);
+  const [allCellChanges, setAllCellChanges] = useRecoilState(allCellChangesAtom)
+  const [cellChangesIndex, setCellChangesIndex] = useState(() => allCellChanges[RID]?.index ?? -1);
+  const [cellChanges, setCellChanges] = useState<CellChange[][]>(() => allCellChanges[RID]?.data 
+    ? allCellChanges[RID].data.map(d => d.map(e => ({ ...e })))
+    : []
+  );
+
+  const keepAllCellChanges = useCallback(() => {
+    debug("index:", cellChanges, cellChangesIndex)
+    setAllCellChanges({ ...allCellChanges, [RID]:{ data: cellChanges.map(d => d.map(e => ({ ...e }))), index:cellChangesIndex } })
+  }, [cellChangesIndex, RID, cellChanges, setAllCellChanges, allCellChanges])
 
   useEffect(() => {
-    debug("index:", cellChanges, cellChangesIndex)
+    keepAllCellChanges()
   }, [cellChanges, cellChangesIndex])
 
   const applyChangesToOutlineData = useCallback((
@@ -660,7 +671,7 @@ export default function OutlineCSVEditor(props) {
       if (index === -1) {
         newEntities.push({
           subjectQname: filename,
-          state: localCSV[RID] ? EditedEntityState.NeedsSaving : EditedEntityState.Saved,
+          state: EditedEntityState.Saved, //localCSV[RID]?.data ? EditedEntityState.NeedsSaving : ,
           shapeRef: "tmp:outline",
           subject: null,
           subjectLabelState: defaultEntityLabelAtom,
@@ -740,8 +751,8 @@ export default function OutlineCSVEditor(props) {
             setOutlineData(data)
           }
 
-          setCellChangesIndex(-1);
-          setCellChanges([]);
+          //setCellChangesIndex(-1);
+          //setCellChanges([]);
           setFocusVal("")
 
           n_pos = 0
@@ -1282,7 +1293,8 @@ export default function OutlineCSVEditor(props) {
 
   //debug("hi:", highlights, errorData)
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
-  debug("data:", outlineData, headerRow, columns, rows, emptyData) 
+  //debug("data:", outlineData, headerRow, columns, rows, emptyData) 
+  debug("allC:", allCellChanges, cellChanges, cellChangesIndex)
 
   return <>
     <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex" }} >      
