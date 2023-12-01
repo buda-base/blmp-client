@@ -36,7 +36,7 @@ const InstanceCSVSearch = (props: { isFetching: any, forVolume?: any; fetchErr: 
     const reader = new FileReader()
     reader.onloadend = (data) => {
       //debug("read:",data,data.currentTarget.result)
-      setLocalCSV({ ...localCSV, [params.rid || "bdr:"+RID]: { data: data.currentTarget.result } })
+      setLocalCSV({ ...localCSV, [params.rid || "bdr:"+RID]: { data: data.currentTarget.result, uploaded:true } })
       if(!props.inNavBar) setTimeout(() => history.push("/outline/bdr:"+RID), 150) // eslint-disable-line
       else props.resetCSV()
     }
