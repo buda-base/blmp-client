@@ -256,7 +256,14 @@ export default function OutlineCSVEditor(props) {
     const data = toCSV()
     if(localCSV[RID]?.data !== data || localCSV[RID]?.attrib !== attrib || localCSV[RID]?.status !== status) { 
       const uploaded = localCSV[RID]?.uploaded
-      setLocalCSV({ ...localCSV, [RID]: { data, attrib, status, uploaded } })
+      let reset = localCSV[RID]?.reset
+      // DONE: we need to reset history when new upload 
+      if(uploaded && !reset) {
+        reset = true
+        setCellChangesIndex(-1);
+        setCellChanges([]);                
+      }
+      setLocalCSV({ ...localCSV, [RID]: { data, attrib, status, uploaded, reset } })
       debug("saved:", data)
     }
   }, [RID, attrib, localCSV, setLocalCSV, status, toCSV])
@@ -346,7 +353,7 @@ export default function OutlineCSVEditor(props) {
     },
     newCell: { 
       type: "global", 
-      "rows": nextData, 
+      "rows": nextData.length ? nextData : [{ ...emptyData, position:[...emptyData.position] }], 
       n, 
       at, 
       ...columnsData ?  { "columns": columnsData } : {} 
@@ -501,24 +508,44 @@ export default function OutlineCSVEditor(props) {
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [filename, setFilename] = useState("")
 
+  const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
+          
+  // DONE: fix state back to green when switch back to outline with undoable state
+  const updateEntryInSelector = useCallback(() => {
+    if(sessionLoaded && filename) {
+      const id = RID.replace(/^bdr:/,"bdr:O")
+      const index = entities.findIndex((e) => e.subjectQname === id)
+      const newEntities = [...entities]
+      const newState = highlights?.some(h => !h.modified)
+        ? EditedEntityState.Error 
+        : cellChangesIndex == -1 || !cellChangesIndex && !cellChanges.length  
+          ? localCSV[RID]?.uploaded 
+            ? EditedEntityState.NeedsSaving
+            : EditedEntityState.Saved
+          : EditedEntityState.NeedsSaving
+      const ent = {           
+        subjectQname: id,
+        state: newState,
+        shapeRef: "tmp:outline",
+        subject: null,
+        subjectLabelState: defaultEntityLabelAtom,
+        preloadedLabel:"(O) "+RID.replace(/^bdr:/,"")
+        //alreadySaved: etag,
+      }
+      if (index === -1) {
+        newEntities.push(ent)        
+        setEntities(newEntities)
+      } else {
+        newEntities[index] = ent     
+        setEntities(newEntities)
+      }
+    }
+  }, [sessionLoaded, filename, entities, RID, localCSV, setEntities, highlights, cellChanges, cellChangesIndex])
+  
   const keepAllCellChanges = useCallback(() => {
     setAllCellChanges({ ...allCellChanges, [RID]:{ data: cellChanges.map(d => d.map(e => ({ ...e }))), index:cellChangesIndex } })
-    const index = entities.findIndex((e) => e.subjectQname === filename)
-    const entity = entities[index]
-    const newState = errorData 
-      ? EditedEntityState.Error 
-      : cellChangesIndex == -1 || !cellChangesIndex && !cellChanges.length  
-        ? localCSV[RID]?.uploaded 
-          ? EditedEntityState.NeedsSaving
-          : EditedEntityState.Saved
-        : EditedEntityState.NeedsSaving
-    debug("index:", cellChanges.length, cellChangesIndex, newState, entity?.state)
-    if(entity?.state !== newState) {      
-      const newEntities = [...entities]
-      newEntities[index] = { ...entity, state: newState }
-      setEntities(newEntities)
-    }
-  }, [cellChanges, cellChangesIndex, setAllCellChanges, allCellChanges, RID, entities, filename, errorData, localCSV])
+    updateEntryInSelector()
+  }, [setAllCellChanges, allCellChanges, RID, cellChanges, cellChangesIndex, updateEntryInSelector])
 
   useEffect(() => {
     keepAllCellChanges()
@@ -664,7 +691,6 @@ export default function OutlineCSVEditor(props) {
   }, [fontSize])
 
   const [error, setError] = useState("")
-  const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
   const [disabled, setDisabled] = useRecoilState(uiDisabledTabsState)
 
   useEffect(() => {
@@ -680,31 +706,8 @@ export default function OutlineCSVEditor(props) {
     })
   }, [entities, filename])  
 
-  const addEntryInSelector = useCallback(() => {
-    if(sessionLoaded && filename) {
-      const index = entities.findIndex((e) => e.subjectQname === filename)
-      const newEntities = [...entities]
-      const ent = {           
-        subjectQname: filename,
-        state: localCSV[RID]?.uploaded ? EditedEntityState.NeedsSaving : EditedEntityState.Saved,
-        shapeRef: "tmp:outline",
-        subject: null,
-        subjectLabelState: defaultEntityLabelAtom,
-        preloadedLabel:"(O) "+RID.replace(/^bdr:/,"")
-        //alreadySaved: etag,
-      }
-      if (index === -1) {
-        newEntities.push(ent)        
-        setEntities(newEntities)
-      } else {
-        newEntities[index] = ent     
-        setEntities(newEntities)
-      }
-    }
-  }, [sessionLoaded, filename, entities, RID, localCSV, setEntities])
-  
   useEffect(() => {
-    addEntryInSelector()
+    updateEntryInSelector()
   }, [sessionLoaded, filename])  
 
   const fetchCsv = useCallback(async () => {
@@ -736,7 +739,7 @@ export default function OutlineCSVEditor(props) {
         }
         if(text) text = text.replace(/\n$/m,"")
         
-        addEntryInSelector()
+        updateEntryInSelector()
 
         setCsv(text)
         Papa.parse(text, { worker: true, delimiter:",", complete: (results) => {
@@ -771,10 +774,7 @@ export default function OutlineCSVEditor(props) {
           else {
             setOutlineData(data)
           }
-
-          // TODO: we need to reset history when new upload (but couldn't it trigger a CellChange instead?)
-          //       + fix state back to green when switch back to outline with undoable state
-
+          
           //setCellChangesIndex(-1);
           //setCellChanges([]);
           setFocusVal("")
@@ -923,7 +923,7 @@ export default function OutlineCSVEditor(props) {
     debug("uH:", errorData, highlights, oD) 
 
     /*
-    // TODO: better than nothing (removes inconsistent highlighting) but can do better! --> updateErrorData or something
+    // DONE: better than nothing (removes inconsistent highlighting) but can do better! --> updateErrorData or something
     if(highlights.some(h => h.rowId >= oD.length)) { 
       setHighlights([])
       return
@@ -947,6 +947,10 @@ export default function OutlineCSVEditor(props) {
     }
     setHighlights(data)
   }, [ errorData, columns, outlineData, highlights ])
+
+  useEffect(() => {
+    updateEntryInSelector()    
+  }, [highlights])
 
   useEffect(() => {
     updateHighlights()
@@ -994,7 +998,7 @@ export default function OutlineCSVEditor(props) {
       resetPopup()
     } catch(e) {
       debug(e)
-      // TODO: popup with commit/error message
+      // DONE: popup with commit/error message
       //setError(e.message.split("; ").map((m,i) => <div key={i}>{m}</div>) || "error when saving/clearing cache")
       if(code === 500) setError("error "+err.status+" when saving "+url) // eslint-disable-line
       else setError(e.message.split("; ").length + " errors were encountered, please check the cells highlighted in red") 
@@ -1318,7 +1322,7 @@ export default function OutlineCSVEditor(props) {
   //debug("hi:", highlights, errorData)
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, emptyData) 
-  debug("allC:", allCellChanges, cellChanges, cellChangesIndex)
+  //debug("allC:", allCellChanges, cellChanges, cellChangesIndex)
 
   return <>
     <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex" }} >      

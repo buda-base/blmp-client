@@ -176,7 +176,7 @@ const EntitySelector: FC<Record<string, unknown>> = (props: AppProps) => {
     return false
   }
 
-  debug("ent:",entities)
+  //debug("ent:",entities.map(e => e.subjectQname+"="+e.state))
 
   return (
     <div

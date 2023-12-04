@@ -1,6 +1,6 @@
 import TextField from "@material-ui/core/TextField"
 import Button from "@material-ui/core/Button"
-import React, { useMemo, useCallback } from "react"
+import React, { useMemo, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import CircularProgress from "@material-ui/core/CircularProgress"
 import MuiAlert from "@material-ui/lab/Alert"
@@ -30,18 +30,20 @@ const InstanceCSVSearch = (props: { isFetching: any, forVolume?: any; fetchErr: 
   const params = useParams()
   debug("lCsv:",localCSV,params)
 
+  const [val, setVal] = useState("")
+
   const uploadCSV = useCallback((event) => {
-    //debug("ev:", event, event.target.files)
+    debug("ev:", event, event.target.files)
     if(!event.target.files.length) return
     const reader = new FileReader()
     reader.onloadend = (data) => {
-      //debug("read:",data,data.currentTarget.result)
+      debug("read:",data,data.currentTarget.result)
       setLocalCSV({ ...localCSV, [params.rid || "bdr:"+RID]: { data: data.currentTarget.result, uploaded:true } })
       if(!props.inNavBar) setTimeout(() => history.push("/outline/bdr:"+RID), 150) // eslint-disable-line
       else props.resetCSV()
     }
     reader.readAsText(event.target.files[0])
-  }, [RID, history, localCSV, props, setLocalCSV])
+  }, [params, RID, history, localCSV, props, setLocalCSV])
 
   return props.isFetching || loading ? (
     <CircularProgress />
@@ -108,6 +110,8 @@ const InstanceCSVSearch = (props: { isFetching: any, forVolume?: any; fetchErr: 
             type="file"
             accept=".csv"
             onChange={uploadCSV}
+            value={val}
+            onClick={() => setVal("")}
           />
           <Button
             component="span"

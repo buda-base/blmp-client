@@ -152,7 +152,7 @@ export const EntityInEntitySelectorContainer: FC<{ entity: Entity; index: number
     return false
   }
 
-  debug("entity?", entity.alreadySaved, entity, tab, entities[tab], entities.map(e => e.subjectQname+":"+e.alreadySaved))
+  //debug("entity?", entity.alreadySaved, entity, tab, entities[tab], entities.map(e => e.subjectQname+":"+e.alreadySaved))
 
   // update user session
   setUserSession(
