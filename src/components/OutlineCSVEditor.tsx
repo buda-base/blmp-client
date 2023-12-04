@@ -439,8 +439,8 @@ export default function OutlineCSVEditor(props) {
       }
 
       // more than 2 change (duplicate when editing RID in a loaded csv) ==> copy/paste = don't paste RID in first column
-      if(changes.length > 2 && fieldName === "RID") { // eslint-disable-line
-        debug("changes:RID")
+      if(changes.length > 2 && fieldName === "RID" && changes.some(c => c.columnId != "RID" || c.newCell.text)) { // eslint-disable-line
+        debug("changes:RID")        
         return
       }
       
@@ -462,6 +462,7 @@ export default function OutlineCSVEditor(props) {
         const n_pos = Number(fieldName.replace(/^[^0-9]+/g,""))
         //debug("nC:", n_pos, numChecked, prevEntry[entryIndex])        
         if(numChecked !== 1 || nextCell.checked || changes.length > 1) { // && !changes[0].newCell.text) { 
+          prevEntry[entryIndex] = { ...prevEntry[entryIndex], position: [...prevEntry[entryIndex].position ] }
           prevEntry[entryIndex].position[n_pos - 1] = nextCell.checked;
           if(nextCell.checked) {
             for(const i in prevEntry[entryIndex].position) {              
@@ -511,18 +512,20 @@ export default function OutlineCSVEditor(props) {
   const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
           
   // DONE: fix state back to green when switch back to outline with undoable state
-  const updateEntryInSelector = useCallback(() => {
+  const updateEntryInSelector = useCallback((saved:false) => {
     if(sessionLoaded && filename) {
       const id = RID.replace(/^bdr:/,"bdr:O")
       const index = entities.findIndex((e) => e.subjectQname === id)
       const newEntities = [...entities]
-      const newState = highlights?.some(h => !h.modified)
-        ? EditedEntityState.Error 
-        : cellChangesIndex == -1 || !cellChangesIndex && !cellChanges.length  
-          ? localCSV[RID]?.uploaded 
-            ? EditedEntityState.NeedsSaving
-            : EditedEntityState.Saved
-          : EditedEntityState.NeedsSaving
+      const newState = saved 
+        ? EditedEntityState.Saved
+        : highlights?.some(h => !h.modified)
+          ? EditedEntityState.Error 
+          : cellChangesIndex == -1 || !cellChangesIndex && !cellChanges.length  
+            ? localCSV[RID]?.uploaded 
+              ? EditedEntityState.NeedsSaving
+              : EditedEntityState.Saved
+            : EditedEntityState.NeedsSaving
       const ent = {           
         subjectQname: id,
         state: newState,
@@ -539,8 +542,15 @@ export default function OutlineCSVEditor(props) {
         newEntities[index] = ent     
         setEntities(newEntities)
       }
+      if(saved) {
+        setLocalCSV({ ...localCSV, [RID]:{ ...localCSV[RID], uploaded: false } })        
+        setTimeout( () => {
+          setCellChangesIndex(-1);
+          setCellChanges([]);
+        }, 150) // eslint-disable-line
+      }
     }
-  }, [sessionLoaded, filename, entities, RID, localCSV, setEntities, highlights, cellChanges, cellChangesIndex])
+  }, [sessionLoaded, filename, RID, entities, highlights, cellChangesIndex, cellChanges.length, localCSV, setEntities, setLocalCSV])
   
   const keepAllCellChanges = useCallback(() => {
     setAllCellChanges({ ...allCellChanges, [RID]:{ data: cellChanges.map(d => d.map(e => ({ ...e }))), index:cellChangesIndex } })
@@ -996,6 +1006,7 @@ export default function OutlineCSVEditor(props) {
       } 
       await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
       resetPopup()
+      updateEntryInSelector(true)
     } catch(e) {
       debug(e)
       // DONE: popup with commit/error message
