@@ -135,7 +135,7 @@ class MyReactGrid extends ReactGrid {
   );
   componentDidUpdate(prevProps: ReactGridProps, prevState: State): void {
     super.componentDidUpdate(prevProps, prevState, this.state);
-    debug("cDu:", this.state, this.props,  this.state.focusedLocation?.row, this.props.focusedLocation?.row)
+    //debug("cDu:", this.state, this.props,  this.state.focusedLocation?.row, this.props.focusedLocation?.row)
     if(this.state.contextMenuPosition.top !== -1) { 
       const menu = document.querySelector(".rg-context-menu")
       if(!menu) return
@@ -187,12 +187,12 @@ class MyReactGrid extends ReactGrid {
           const row = firstRow + rowsMap[parseInt(c.style.top,10)+1] + 1
           let col = headerMap[parseInt(c.style.left, 10)] 
           if(col === undefined) col = headerMap[parseInt(c.style.left, 10)+1]
-          col = firstCol + col
+          col = /*firstCol +*/ col
           const htmlCell = document.querySelector(".rg-cell[data-cell-colidx='"+col+"'][data-cell-rowidx='"+row+"']")
           const msg = this.props.errorData.find(m => row === m.row && 
               (col === m.col-1 || !m.col && this.state.cellMatrix.columns[col]?.columnId?.startsWith("position")))?.msg
           if(htmlCell) htmlCell.setAttribute("title", msg)
-          //debug("c?", i, c.style.top, c.style.left, row+","+col, htmlCell, msg)              
+          //debug("c?", i, c.style.top, c.style.left, row+","+col, htmlCell, msg, rowsMap, firstCol, firstRow, headerMap)              
         })
         
         //debug("hC?",this.state.highlightLocations, headerMap, rowsMap, hiCells)
