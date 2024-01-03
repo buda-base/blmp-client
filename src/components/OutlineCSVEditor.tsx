@@ -16,6 +16,7 @@ import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import { CircularProgress } from "@material-ui/core"
 import { fetchToCurl } from "fetch-to-curl"
+import { gzip } from 'pako';
 
 import InstanceCSVSearch from "../components/InstanceCSVSearch"
 import { uiTabState, localCSVAtom, uiLangState, sessionLoadedState, uiDisabledTabsState, allCellChangesAtom } from "../atoms/common"
@@ -134,7 +135,7 @@ class MyReactGrid extends ReactGrid {
   );
   componentDidUpdate(prevProps: ReactGridProps, prevState: State): void {
     super.componentDidUpdate(prevProps, prevState, this.state);
-    //debug("cDu:", this.state, this.props,  this.state.focusedLocation?.row, this.props.focusedLocation?.row)
+    debug("cDu:", this.state, this.props,  this.state.focusedLocation?.row, this.props.focusedLocation?.row)
     if(this.state.contextMenuPosition.top !== -1) { 
       const menu = document.querySelector(".rg-context-menu")
       if(!menu) return
@@ -397,6 +398,9 @@ export default function OutlineCSVEditor(props) {
       const fieldName = change.columnId;
       const nextCell = usePrevValue ? change.previousCell : change.newCell;
       const prevCell = usePrevValue ? change.newCell : change.previousCell;
+      // prevent "read-only" error after moving undo data into recoil state
+      if(prevEntry[entryIndex])      
+        prevEntry[entryIndex] = { ...prevEntry[entryIndex], ...prevEntry[entryIndex].position?{ position: [...prevEntry[entryIndex].position ] }:{} }
       
       if(hiMap[entryIndex+","+fieldName]) {
         hiMap[entryIndex+","+fieldName].modified = !usePrevValue
@@ -462,7 +466,6 @@ export default function OutlineCSVEditor(props) {
         const n_pos = Number(fieldName.replace(/^[^0-9]+/g,""))
         //debug("nC:", n_pos, numChecked, prevEntry[entryIndex])        
         if(numChecked !== 1 || nextCell.checked || changes.length > 1) { // && !changes[0].newCell.text) { 
-          prevEntry[entryIndex] = { ...prevEntry[entryIndex], position: [...prevEntry[entryIndex].position ] }
           prevEntry[entryIndex].position[n_pos - 1] = nextCell.checked;
           if(nextCell.checked) {
             for(const i in prevEntry[entryIndex].position) {              
@@ -728,7 +731,7 @@ export default function OutlineCSVEditor(props) {
         let text, name
         if(!localCSV[RID]?.data) {
           resp = await fetch(config.API_BASEURL + "outline/csv/" + RID)
-          if(resp.status === 404) throw new Error(await resp.text()) //eslint-disable-line
+          if(resp.status === 404 || resp.status == 500) throw new Error(await resp.text()) //eslint-disable-line
           text = await resp.text()
           const attr = resp.headers.get('x-outline-attribution')          
           if(attr) setAttrib(decodeURIComponent(attr).replace(/(^")|("(@en)?$)/g, ""))
@@ -976,6 +979,7 @@ export default function OutlineCSVEditor(props) {
 
     const headers = new Headers()
     headers.set("Content-Type", "text/csv")
+    headers.set("Content-Encoding", "gzip")
     headers.set("Authorization", "Bearer " + idToken)
     headers.set("Accept","application/json")
     //if (previousEtag) headers.set("If-Match", previousEtag)
@@ -985,20 +989,21 @@ export default function OutlineCSVEditor(props) {
 
     const method = "PUT"
 
-    const body = toCSV()
+    let body = toCSV()    
     debug("body:", body)
-
+    
     const url = config.API_BASEURL + "outline/csv/" + RID
     let code = 1, curl, err
     
-    try {
-      curl =
-        fetchToCurl(url, { headers, method, body }).replace(
-          /--data-binary '((.|[\n\r])+)'$/gm,
-          (m, g1) => "--data-raw $'" + g1.replace(/(['"])/g, "\\$1") + "'"
+    try {      
+      curl = fetchToCurl(url, { headers, method, body }).replace(
+        /--data-binary '((.|[\n\r])+)'$/gm,
+        (m, g1) => "--data-raw $'" + g1.replace(/(['"])/g, "\\$1") + "'"
         ) + " --verbose"
-
+      
+      body = await gzip(body)
       const resp = await fetch(url, { headers, method, body  })        
+      debug("resp:",resp)
       if(![200, 201].includes(resp.status)) {  //eslint-disable-line
         code = resp.status
         err = await resp.json()
@@ -1008,11 +1013,14 @@ export default function OutlineCSVEditor(props) {
       resetPopup()
       updateEntryInSelector(true)
     } catch(e) {
-      debug(e)
+      debug(e)      
       // DONE: popup with commit/error message
       //setError(e.message.split("; ").map((m,i) => <div key={i}>{m}</div>) || "error when saving/clearing cache")
-      if(code === 500) setError("error "+err.status+" when saving "+url) // eslint-disable-line
-      else setError(e.message.split("; ").length + " errors were encountered, please check the cells highlighted in red") 
+      if(!err) setError("'"+e.message+"' when saving "+url) // eslint-disable-line
+      else if(code === 400) { // eslint-disable-line
+        const nerr = e.message.split("; ").length 
+        setError(nerr +" error"+(nerr>1?"s":"")+" were encountered, please check the cells highlighted in red") 
+      } else setError("error "+err.status+" when saving "+url) 
       setErrorCode(code)
       setErrorData(err)
       setCurl(curl)
@@ -1020,7 +1028,7 @@ export default function OutlineCSVEditor(props) {
 
     setSaving(false)
         
-  }, [status, attrib, message, lang, toCSV, RID])
+  }, [status, attrib, message, lang, toCSV, RID, updateEntryInSelector])
    
   const handleDownloadCSV = useCallback(() => {
     const link = document.createElement("a");
