@@ -22,6 +22,7 @@ import { NavBarContainer } from "../components/NavBar"
 import { EntityEditContainerMayUpdate, enTranslations, atoms, getHistoryStatus, history, EntitySelectorContainer, EntityEditContainer, NewEntityContainer, EntityCreationContainer, EntityShapeChooserContainer, BottomBarContainer, HistoryStatus, RDEConfig, BUDAResourceSelector } from "rdf-document-editor"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
 import ScanRequestContainer from "../containers/ScanRequestContainer"
+import LoginContainer from "../routes/account/containers/Login"
 import {
   userQnameState,
   RIDprefixState,
@@ -194,6 +195,8 @@ function App(props: RouteProps) {
           <div>
             {!location.pathname.startsWith("/bvmt") && <EntitySelectorContainer config={config_rde} />}
             <Routes>
+              <Route path="/login" element={<LoginContainer />} />                
+
               <Route path="/" element={<HomeContainer/>} />
               <Route
                 path="/profile"

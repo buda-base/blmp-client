@@ -5,7 +5,6 @@ import { RecoilRoot } from "recoil"
 import Auth0ProviderWithHistory from "./contexts/AuthProvider"
 
 import App from "./containers/AppContainer"
-import LoginContainer from "./routes/account/containers/Login"
 import { AuthContextWrapper } from "./contexts/AuthContext"
 import { undoRef, redoRef } from "./helpers/observer"
 
@@ -83,10 +82,7 @@ root.render(
         <Auth0ProviderWithHistory>
           <RecoilRoot>
             <AuthContextWrapper>
-              <Routes>
-                <Route path="/login" element={<LoginContainer />} />                
-              </Routes>
-              <App />                
+              <App />       
             </AuthContextWrapper>
           </RecoilRoot>
         </Auth0ProviderWithHistory>
