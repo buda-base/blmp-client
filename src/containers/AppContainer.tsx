@@ -147,7 +147,12 @@ function App(props: RouteProps) {
   }, [])
 
   if (isLoading) return <div>Loading...</div>
-  if (config.requireAuth && !isAuthenticated) return <AuthRequest />  
+  if (config.requireAuth && !isAuthenticated) return <>
+    <AuthRequest />  
+    <Routes>
+      <Route path="/login" element={<LoginContainer />} />    
+    </Routes>
+  </>
 
   debug("App:", entities, userQname)
 
@@ -195,8 +200,7 @@ function App(props: RouteProps) {
           <div>
             {!location.pathname.startsWith("/bvmt") && <EntitySelectorContainer config={config_rde} />}
             <Routes>
-              <Route path="/login" element={<LoginContainer />} />                
-
+              <Route path="/login" element={<LoginContainer />} />    
               <Route path="/" element={<HomeContainer/>} />
               <Route
                 path="/profile"
@@ -242,7 +246,7 @@ function App(props: RouteProps) {
               />
               <Route path="/bvmt" element={<BVMT auth={auth} history={location} />} />
               <Route path="/withdraw" element={<WithdrawingEditorContainer />} />
-              <Route path="/scanrequest" element={<ScanRequestContainer  config={config_rde}  />} />
+              <Route path="/scanrequest" element={<ScanRequestContainer  config={config_rde}  />} />          
             </Routes>
           </div>
         </main>

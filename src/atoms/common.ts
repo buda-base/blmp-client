@@ -10,6 +10,11 @@ export const userQnameState = atom<string|null>({
   default: "tmp:uri",
 })
 
+export const userIdState = atom<string|null>({
+  key: "userIdState",
+  default: "tmp:uri",
+})
+
 export const RIDprefixState = atom<string|null>({
   key: "RIDprefixState",
   default: null,

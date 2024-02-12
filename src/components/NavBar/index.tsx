@@ -1,5 +1,5 @@
 /* eslint-disable no-extra-parens */
-import React from "react"
+import React, { useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { FiPower as LogoutIcon } from "react-icons/fi"
 import {
@@ -32,6 +32,12 @@ export const NavBarContainer = () => {
     setUiLang(event.target.value as string)
   }
 
+  useEffect(() => {
+    if(Array.isArray(uiLang)) setUiLang(uiLang[0])
+  }, [uiLang])
+
+  debug("uiL:", uiLang)
+
   return (
     <nav className={"navbar navbar-dark navbar-expand-md "}>
       <a href="https://bdrc.io">
@@ -59,7 +65,7 @@ export const NavBarContainer = () => {
           </a>
         )}
         <FormControl style={{ marginLeft: "30px" }}>
-          <Select labelId="uilanglabel" id="select" value={uiLang.toLowerCase()} onChange={uiLangOnChange}>
+          <Select labelId="uilanglabel" id="select" value={(Array.isArray(uiLang)?uiLang[0]:uiLang).toLowerCase()} onChange={uiLangOnChange}>
             <MenuItem value="en">English</MenuItem>
             <MenuItem value="bo">བོད་ཡིག</MenuItem>
             <MenuItem value="zh-hans">中文</MenuItem>
