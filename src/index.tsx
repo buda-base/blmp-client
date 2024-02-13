@@ -1,6 +1,6 @@
 import React, { ErrorInfo } from "react"
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { BrowserRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
 import Auth0ProviderWithHistory from "./contexts/AuthProvider"
 

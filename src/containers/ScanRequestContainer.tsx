@@ -234,7 +234,9 @@ function ScanRequestContainer(props: RDEProps) {
         >
           {spinner ? <CircularProgress size="14px" color="primary" /> : "scan request"}
         </Button>
-        {errors.io?.error != false && <p style={{ color: "red", fontStyle: "italic", fontWeight: 500 }}>{errors.io}</p>}
+        {errors.io?.error != false && <p style={{ color: "red", fontStyle: "italic", fontWeight: 500 }}>
+          <>{errors.io}</>
+        </p>}
       </div>
     </div>
   )
