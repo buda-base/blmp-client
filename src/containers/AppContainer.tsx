@@ -89,12 +89,16 @@ function HomeContainer() {
         {/* <PreviewImage i={0 as never} iiif={iiif as never} /> */}
         <p className="menu">
           <Link className="menu-link" to="/scanrequest">
-            <img src="/icons/images.svg" style={{ height: "31px", marginRight: "15px", marginLeft: "7px" }} />
+            <img src="/icons/images.svg" style={{ height: "31px", marginRight: "13px", marginLeft: "7px" }} />
             Scan Request
           </Link>
           <Link className="menu-link iiif" to="/bvmt">
             <img src="/icons/iiif.png" />
             BUDA Volume Manifest Tool
+          </Link>
+          <Link className="menu-link" to="/etextrequest">
+            <img src="/icons/etext.svg" style={{ height: "31px", marginRight: "10px", marginLeft: "5px" }} />
+            Etext Request
           </Link>
           <Link className="menu-link" to="/outline">
             <img src="/icons/outline.svg" width="64" />
@@ -184,6 +188,9 @@ function App(props: RouteProps) {
     previewLiteral: rde_config.previewLiteral,
     putDocument: rde_config.putDocumentFactory(idToken||"", userQname, setUiLang, setUiLitLang, setRIDPrefix, setReloadProfile),
     getPreviewLink: rde_config.getPreviewLink,
+    gisPropertyGroup:rde_config.gisPropertyGroup,
+    latProp:rde_config.latProp,
+    lngProp:rde_config.lngProp
   }
 
   return (
@@ -246,7 +253,11 @@ function App(props: RouteProps) {
               />
               <Route path="/bvmt" element={<BVMT auth={auth} history={location} />} />
               <Route path="/withdraw" element={<WithdrawingEditorContainer />} />
-              <Route path="/scanrequest" element={<ScanRequestContainer  config={config_rde}  />} />          
+              <Route path="/scanrequest" element={<ScanRequestContainer  config={config_rde}  />} />  
+              <Route
+                path="/etextrequest"
+                element={<ScanRequestContainer config={config_rde}  isEtext={true} />}
+              />        
             </Routes>
           </div>
         </main>

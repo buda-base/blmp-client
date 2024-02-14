@@ -67,6 +67,10 @@ export const preferredUiLiteralLangs = BDOU("preferredUiLiteralLangs") as rdf.Na
 export const localNameDefaultPrefix = BDOU("localNameDefaultPrefix") as rdf.NamedNode
 export const userProfile = BDOU("User") as rdf.NamedNode
 
+export const gisPropertyGroup = BDS("GISPropertyGroup") as rdf.NamedNode
+export const latProp = BDO("placeLat") as rdf.NamedNode
+export const lngProp = BDO("placeLong") as rdf.NamedNode
+
 export const prefixMap = new ns.PrefixMap({
   rdfs: ns.RDFS_uri,
   rdf: ns.RDF_uri,
@@ -163,7 +167,7 @@ export const reserveLname = async (
   n = 1
 ): Promise<string> => {
   let url = config.API_BASEURL + "ID/" + prefix
-  if (proposedLname) url += "/" + proposedLname
+  if (proposedLname) url = config.API_BASEURL + "ID/full/" + proposedLname
   else if (n > 1) url += "?n=" + n
   const response = await fetch(url, {
     method: "PUT",
