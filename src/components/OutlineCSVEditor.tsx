@@ -591,16 +591,26 @@ export default function OutlineCSVEditor(props) {
 
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [filename, setFilename] = useState("")
+  const [etag, setEtag] = useState("")
 
   const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
 
   // DONE: fix state back to green when switch back to outline with undoable state
   const updateEntryInSelector = useCallback(
-    (saved: false) => {
+    (saved = false, newEtag? = "") => {
+      debug("ues:", saved, newEtag)
+      if (newEtag) {
+        setEtag(newEtag)
+        return
+      }
       if (sessionLoaded && filename) {
         const id = RID.replace(/^bdr:/, "bdr:O")
         const index = entities.findIndex((e) => e.subjectQname === id)
         const newEntities = [...entities]
+        if (!etag && entities[index]?.alreadySaved) {
+          setEtag(entities[index].alreadySaved)
+          return
+        }
         const newState = saved
           ? EditedEntityState.Saved
           : highlights?.some((h) => !h.modified)
@@ -617,13 +627,17 @@ export default function OutlineCSVEditor(props) {
           subject: null,
           subjectLabelState: defaultEntityLabelAtom,
           preloadedLabel: "(O) " + RID.replace(/^bdr:/, ""),
-          //alreadySaved: etag,
+          ...etag ? { alreadySaved: etag } : {},
         }
+        debug("wtf:", ent.alreadySaved, entities[index]?.alreadySaved)
         if (index === -1) {
           newEntities.push(ent)
           setEntities(newEntities)
         } else {
-          newEntities[index] = ent
+          newEntities[index] = {
+            ...newEntities[index],
+            ...ent,
+          }
           setEntities(newEntities)
         }
         if (saved) {
@@ -636,6 +650,7 @@ export default function OutlineCSVEditor(props) {
       }
     },
     [
+      etag,
       sessionLoaded,
       filename,
       RID,
@@ -654,6 +669,7 @@ export default function OutlineCSVEditor(props) {
       ...allCellChanges,
       [RID]: { data: cellChanges.map((d) => d.map((e) => ({ ...e }))), index: cellChangesIndex },
     })
+    debug("ues1")
     updateEntryInSelector()
   }, [setAllCellChanges, allCellChanges, RID, cellChanges, cellChangesIndex, updateEntryInSelector])
 
@@ -830,6 +846,7 @@ export default function OutlineCSVEditor(props) {
   }, [entities, filename])
 
   useEffect(() => {
+    debug("ues2")
     updateEntryInSelector()
   }, [sessionLoaded, filename])
 
@@ -838,9 +855,11 @@ export default function OutlineCSVEditor(props) {
       setCsv(true)
       let resp
       try {
-        let text, name
+        let text, name, etag
         if (!localCSV[RID]?.data) {
           resp = await fetch(config.API_BASEURL + "outline/csv/" + RID)
+          etag = resp.headers.get("etag")
+          etag?.replace(/^W\//, "")
           if (resp.status === 404 || resp.status == 500) throw new Error(await resp.text()) //eslint-disable-line
           text = await resp.text()
           const attr = resp.headers.get("x-outline-attribution")
@@ -853,7 +872,7 @@ export default function OutlineCSVEditor(props) {
           if (name) name = name.split(".")[0]
           if (name) name = "bdr:" + name.replace(/-/g, "_")
           setFilename(RID.replace(/^bdr:/, "bdr:O"))
-          debug("name:", name, entities)
+          debug("name:", name, etag, entities)
         } else {
           text = localCSV[RID].data
           setFilename(RID.replace(/^bdr:/, "bdr:O"))
@@ -862,7 +881,9 @@ export default function OutlineCSVEditor(props) {
         }
         if (text) text = text.replace(/\n$/m, "")
 
-        updateEntryInSelector()
+        debug("loaded:", etag)
+        debug("ues/false")
+        updateEntryInSelector(false, etag)
 
         setCsv(text)
         Papa.parse(text, {
@@ -1108,6 +1129,7 @@ export default function OutlineCSVEditor(props) {
   )
 
   useEffect(() => {
+    debug("ues3")
     updateEntryInSelector()
   }, [highlights])
 
@@ -1140,7 +1162,8 @@ export default function OutlineCSVEditor(props) {
     const url = config.API_BASEURL + "outline/csv/" + RID
     let code = 1,
       curl,
-      err
+      err,
+      etag
 
     try {
       curl =
@@ -1151,7 +1174,9 @@ export default function OutlineCSVEditor(props) {
 
       body = await gzip(body)
       const resp = await fetch(url, { headers, method, body })
-      debug("resp:", resp)
+      etag = resp.headers.get("etag")
+      etag?.replace(/^W\//, "")
+      debug("resp:", resp, etag)
       if (![200, 201].includes(resp.status)) {
         //eslint-disable-line
         code = resp.status
@@ -1162,7 +1187,8 @@ export default function OutlineCSVEditor(props) {
       }
       await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
       resetPopup()
-      updateEntryInSelector(true)
+      debug("ues/false")
+      updateEntryInSelector(true, etag)
     } catch (e) {
       debug(e)
       // DONE: popup with commit/error message
@@ -1613,6 +1639,7 @@ export default function OutlineCSVEditor(props) {
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, emptyData)
   //debug("allC:", allCellChanges, cellChanges, cellChangesIndex)
+  debug("etag:", etag)
 
   return (
     <>
