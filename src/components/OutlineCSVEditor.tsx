@@ -32,6 +32,7 @@ import DialogTitle from "@material-ui/core/DialogTitle"
 import { CircularProgress } from "@material-ui/core"
 import { fetchToCurl } from "fetch-to-curl"
 import { gzip } from "pako"
+import i18n from "i18next"
 
 import InstanceCSVSearch from "../components/InstanceCSVSearch"
 import {
@@ -243,7 +244,7 @@ class MyReactGrid extends ReactGrid {
   }
 }
 
-let unmount
+let unmount, etaging
 
 export default function OutlineCSVEditor(props) {
   const { RID } = props
@@ -591,26 +592,19 @@ export default function OutlineCSVEditor(props) {
 
   const [entities, setEntities] = useRecoilState(entitiesAtom)
   const [filename, setFilename] = useState("")
-  const [etag, setEtag] = useState("")
 
   const [sessionLoaded, setSessionLoaded] = useRecoilState(sessionLoadedState)
 
   // DONE: fix state back to green when switch back to outline with undoable state
   const updateEntryInSelector = useCallback(
-    (saved = false, newEtag? = "") => {
-      debug("ues:", saved, newEtag)
-      if (newEtag) {
-        setEtag(newEtag)
-        return
-      }
-      if (sessionLoaded && filename) {
+    (saved = false, newEtag? = "", name? = filename) => {
+      debug("ues:", [etaging, saved, newEtag, sessionLoaded, name])
+      if(etaging) return
+      if(newEtag) etaging = true
+      if (sessionLoaded && name) {
         const id = RID.replace(/^bdr:/, "bdr:O")
         const index = entities.findIndex((e) => e.subjectQname === id)
         const newEntities = [...entities]
-        if (!etag && entities[index]?.alreadySaved) {
-          setEtag(entities[index].alreadySaved)
-          return
-        }
         const newState = saved
           ? EditedEntityState.Saved
           : highlights?.some((h) => !h.modified)
@@ -627,7 +621,7 @@ export default function OutlineCSVEditor(props) {
           subject: null,
           subjectLabelState: defaultEntityLabelAtom,
           preloadedLabel: "(O) " + RID.replace(/^bdr:/, ""),
-          ...etag ? { alreadySaved: etag } : {},
+          ...newEtag ? { alreadySaved: newEtag } : {},
         }
         debug("wtf:", ent.alreadySaved, entities[index]?.alreadySaved)
         if (index === -1) {
@@ -640,6 +634,7 @@ export default function OutlineCSVEditor(props) {
           }
           setEntities(newEntities)
         }
+        
         if (saved) {
           setLocalCSV({ ...localCSV, [RID]: { ...localCSV[RID], uploaded: false } })
           setTimeout(() => {
@@ -648,9 +643,9 @@ export default function OutlineCSVEditor(props) {
           }, 150) // eslint-disable-line
         }
       }
+      if(etaging) etaging = false
     },
     [
-      etag,
       sessionLoaded,
       filename,
       RID,
@@ -669,7 +664,6 @@ export default function OutlineCSVEditor(props) {
       ...allCellChanges,
       [RID]: { data: cellChanges.map((d) => d.map((e) => ({ ...e }))), index: cellChangesIndex },
     })
-    debug("ues1")
     updateEntryInSelector()
   }, [setAllCellChanges, allCellChanges, RID, cellChanges, cellChangesIndex, updateEntryInSelector])
 
@@ -846,7 +840,6 @@ export default function OutlineCSVEditor(props) {
   }, [entities, filename])
 
   useEffect(() => {
-    debug("ues2")
     updateEntryInSelector()
   }, [sessionLoaded, filename])
 
@@ -871,7 +864,7 @@ export default function OutlineCSVEditor(props) {
           if (name) name = name.split("=")[1]
           if (name) name = name.split(".")[0]
           if (name) name = "bdr:" + name.replace(/-/g, "_")
-          setFilename(RID.replace(/^bdr:/, "bdr:O"))
+          setFilename(name = RID.replace(/^bdr:/, "bdr:O"))
           debug("name:", name, etag, entities)
         } else {
           text = localCSV[RID].data
@@ -882,8 +875,7 @@ export default function OutlineCSVEditor(props) {
         if (text) text = text.replace(/\n$/m, "")
 
         debug("loaded:", etag)
-        debug("ues/false")
-        updateEntryInSelector(false, etag)
+        updateEntryInSelector(false, etag, name)
 
         setCsv(text)
         Papa.parse(text, {
@@ -962,12 +954,12 @@ export default function OutlineCSVEditor(props) {
         setError(e.message)
       }
     }
-  }, [RID, csv, entities, localCSV, rowHeight])
+  }, [RID, csv, entities, localCSV, rowHeight, updateEntryInSelector])
 
   useEffect(() => {
     //debug("localCSV?", RID, csv||"--", localCSV)
-    fetchCsv()
-  }, [RID, csv, localCSV])
+    if(sessionLoaded) fetchCsv()
+  }, [RID, csv, localCSV, sessionLoaded, fetchCsv])
 
   /* // check 
   useEffect(() => {
@@ -1129,7 +1121,6 @@ export default function OutlineCSVEditor(props) {
   )
 
   useEffect(() => {
-    debug("ues3")
     updateEntryInSelector()
   }, [highlights])
 
@@ -1143,13 +1134,18 @@ export default function OutlineCSVEditor(props) {
     await new Promise((r) => setTimeout(r, 10)) // eslint-disable-line
 
     const idToken = localStorage.getItem("BLMPidToken")
+    
+    let previousEtag
+    const id = RID.replace(/^bdr:/, "bdr:O")
+    const index = entities.findIndex((e) => e.subjectQname === id)
+    if(entities[index]?.alreadySaved) previousEtag = entities[index].alreadySaved
 
     const headers = new Headers()
     headers.set("Content-Type", "text/csv")
     headers.set("Content-Encoding", "gzip")
     headers.set("Authorization", "Bearer " + idToken)
     headers.set("Accept", "application/json")
-    //if (previousEtag) headers.set("If-Match", previousEtag)
+    if (previousEtag) headers.set("If-Match", previousEtag)
     if (status) headers.set("X-Status", "<" + status + ">") //.split(":")[1]) // returns 415 "status must be (...)"
     if (attrib) headers.set("X-Outline-Attribution", encodeURIComponent('"' + attrib + '"@en'))
     if (message) headers.set("X-Change-Message", encodeURIComponent('"' + message + '"@' + lang))
@@ -1177,7 +1173,7 @@ export default function OutlineCSVEditor(props) {
       etag = resp.headers.get("etag")
       etag?.replace(/^W\//, "")
       debug("resp:", resp, etag)
-      if (![200, 201].includes(resp.status)) {
+      if (![200, 201, 202].includes(resp.status)) {
         //eslint-disable-line
         code = resp.status
         err = await resp.json()
@@ -1187,7 +1183,6 @@ export default function OutlineCSVEditor(props) {
       }
       await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
       resetPopup()
-      debug("ues/false")
       updateEntryInSelector(true, etag)
     } catch (e) {
       debug(e)
@@ -1208,7 +1203,7 @@ export default function OutlineCSVEditor(props) {
     }
 
     setSaving(false)
-  }, [status, attrib, message, lang, toCSV, RID, updateEntryInSelector])
+  }, [status, attrib, message, lang, toCSV, RID, updateEntryInSelector, entities])
 
   const handleDownloadCSV = useCallback(() => {
     const link = document.createElement("a")
@@ -1635,15 +1630,30 @@ export default function OutlineCSVEditor(props) {
     </div>
   ) : null
 
+  const id = RID.replace(/^bdr:/, "bdr:O")
+  const index = entities.findIndex((e) => e.subjectQname === id)
+  const etag = entities[index].alreadySaved ?? ""
+  const BUDAlink = config.LIBRARY_URL + "/show/" + RID + "?v=" + etag.replace(/^W\//,"")
+
   //debug("hi:", highlights, errorData)
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
   //debug("data:", outlineData, headerRow, columns, rows, emptyData)
   //debug("allC:", allCellChanges, cellChanges, cellChangesIndex)
-  debug("etag:", etag)
+  //debug("etag:", etag, BUDAlink)
 
   return (
     <>
-      <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex" }}>
+      <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex", alignItems:"flex-start" }}>
+        <div className="buda-link pl-3" style={{ position: "relative", width:"150px", flexShrink:0, paddingTop:"30px" }}>
+          <a
+            className={"btn-rouge" + (!etag ? " disabled" : "")}
+            target="_blank"
+            rel="noreferrer"
+            {...(!etag ? { title: i18n.t("error.preview") } : { href: BUDAlink })}
+          >
+            {i18n.t("general.preview")}
+          </a>
+        </div>
         <TextField
           select
           style={{ padding: "1px", width: "200px", flexShrink: 0 }}
