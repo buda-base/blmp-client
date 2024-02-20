@@ -873,6 +873,7 @@ export default function OutlineCSVEditor(props) {
           if (localCSV[RID].status) setStatus(localCSV[RID].status)
         }
         if (text) text = text.replace(/\n$/m, "")
+        if (text) text = text.replace(/\r/mg, "") // #57
 
         debug("loaded:", etag)
         updateEntryInSelector(false, etag, name)
