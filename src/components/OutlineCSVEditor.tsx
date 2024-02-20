@@ -1209,7 +1209,7 @@ export default function OutlineCSVEditor(props) {
 
   const handleDownloadCSV = useCallback(() => {
     const link = document.createElement("a")
-    const file = new Blob([toCSV()], { type: "text/plain" })
+    const file = new Blob(["\ufeff", toCSV()], { type: 'text/csv;charset=utf-8' });
     link.href = URL.createObjectURL(file)
     link.download = RID.replace(/^[^:]+:/, "") + ".csv"
     link.click()
