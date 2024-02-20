@@ -881,6 +881,7 @@ export default function OutlineCSVEditor(props) {
         Papa.parse(text, {
           worker: true,
           delimiter: ",",
+          newline:"\n",
           complete: (results) => {
             let n_pos = 1
             const head = {
