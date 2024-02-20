@@ -1373,7 +1373,11 @@ p.menu { display:flex; justify-content: space-between; padding-top:30px !importa
   .fs-btn:not(.fs-true) { 
     position: absolute; 
     top:-180px; // -75px
-    right:15px;
+    //right:15px;
+    right: auto;
+    left: 130px;
+    height: 32px;
+    width:32px;
   }
 
   .csv-container:not(.fullscreen) {

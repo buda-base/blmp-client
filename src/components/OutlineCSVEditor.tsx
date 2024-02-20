@@ -1644,7 +1644,7 @@ export default function OutlineCSVEditor(props) {
   return (
     <>
       <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex", alignItems:"flex-start" }}>
-        <div className="buda-link pl-3" style={{ position: "relative", width:"150px", flexShrink:0, paddingTop:"30px" }}>
+        <div className="buda-link pl-3" style={{ top:"-75px" }} >
           <a
             className={"btn-rouge" + (!etag ? " disabled" : "")}
             target="_blank"
@@ -1766,12 +1766,14 @@ export default function OutlineCSVEditor(props) {
             )}
           </div>
         }
-        <IconButton
-          className={"btn-rouge fs-btn " + (fullscreen ? "fs-true" : "")}
-          onClick={() => setFullscreen(!fullscreen)}
-        >
-          {fullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-        </IconButton>
+        <span title="Toggle fullscreen mode">
+          <IconButton
+            className={"btn-rouge fs-btn " + (fullscreen ? "fs-true" : "")}
+            onClick={() => setFullscreen(!fullscreen)}
+          >
+            {fullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+          </IconButton>
+        </span>
         <div
           onPaste={handlePaste}
           style={{ position: "relative" /*fontSize: fontSize + "px"*/ }}
