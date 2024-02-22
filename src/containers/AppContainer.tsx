@@ -116,8 +116,6 @@ function HomeContainer() {
   )
 }
 
-const undoTimer = 0
-
 function App(props: RouteProps) {
   const auth = useAuth0()
   const { isAuthenticated, isLoading } = auth
@@ -126,9 +124,6 @@ function App(props: RouteProps) {
   const [uiTab, setTab] = useRecoilState(atoms.uiTabState)
   const entity = entities.findIndex((e, i) => i === uiTab)
   const entityUri = entities[entity]?.subject?.uri || "tmp:uri"
-  const undo = undos[entityUri]
-  const setUndo = (s: atoms.undoPN) => setUndos({ ...undos, [entityUri]: s })
-  const [disabled, setDisabled] = useRecoilState(atoms.uiDisabledTabsState)
   const appEl = useRef<HTMLDivElement>(null)
   const [userQname, setUserQname] = useRecoilState(userQnameState)
   const [RIDPrefix, setRIDPrefix] = useRecoilState(RIDprefixState)
@@ -145,7 +140,6 @@ function App(props: RouteProps) {
     }
     window.addEventListener("message", updateUndoOnMsg)
     return () => {
-      if (undoTimer) clearInterval(undoTimer)
       window.removeEventListener("message", updateUndoOnMsg)
     }
   }, [])

@@ -6,7 +6,7 @@ import Auth0ProviderWithHistory from "./contexts/AuthProvider"
 
 import App from "./containers/AppContainer"
 import { AuthContextWrapper } from "./contexts/AuthContext"
-import { undoRef, redoRef } from "./helpers/observer"
+import { undoRef, redoRef } from "rdf-document-editor"
 
 import { Provider } from "react-redux"
 
