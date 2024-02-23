@@ -6,7 +6,6 @@ import Auth0ProviderWithHistory from "./contexts/AuthProvider"
 
 import App from "./containers/AppContainer"
 import { AuthContextWrapper } from "./contexts/AuthContext"
-import { undoRef, redoRef } from "rdf-document-editor"
 
 import { Provider } from "react-redux"
 
@@ -16,29 +15,6 @@ import { debug as debugfactory } from "debug"
 const debug = debugfactory("bdrc:index")
 
 const container = document.querySelector("#root")
-
-let ctrlDown = false
-
-document.onkeydown = (e: KeyboardEvent) => {
-  ctrlDown = e.metaKey || e.ctrlKey
-  const key = e.key.toLowerCase()
-  //debug("kD", e)
-  if (ctrlDown && (key === "z" || key === "y")) {
-    //debug("UNDO/REDO", undoRef, redoRef)
-
-    if (!e.shiftKey) {
-      if (key === "z" && undoRef && undoRef.current) undoRef.current.click()
-      else if (key === "y" && redoRef && redoRef.current) redoRef.current.click()
-    } else if (key === "z" && redoRef && redoRef.current) redoRef.current.click()
-
-    // DONE: fix conflict with chrome undo inside text input
-    const elem = document.activeElement as HTMLElement
-    if (elem) elem.blur()
-    e.preventDefault()
-    e.stopPropagation()
-    return false
-  }
-}
 
 // to fix hot reloading
 // (which was only happening on compilation error not text modification etc.)
