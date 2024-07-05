@@ -76,6 +76,7 @@ interface OutlineEntry {
   work: string
   notes: string
   colophon: string
+  authorshipStatement: string
   identifiers: string
   imgStart: number
   imgEnd: number
@@ -91,6 +92,7 @@ const colWidths = {
   titles: 500,
   work: 250,
   colophon: 500,
+  authorshipStatement: 250,
   identifiers: 250,
   "img start": 110,
   "img end": 110,
@@ -285,6 +287,7 @@ export default function OutlineCSVEditor(props) {
       res.push(o[columns[c++].columnId])
       res.push(o[columns[c++].columnId])
       res.push(o[columns[c++].columnId])
+      res.push(o[columns[c++].columnId])
       // img. / vol.
       do {
         res.push(o[columns[c++].columnId] || "")
@@ -399,12 +402,13 @@ export default function OutlineCSVEditor(props) {
       work: d[idx + 3],
       notes: d[idx + 4],
       colophon: d[idx + 5],
-      identifiers: d[idx + 6],
+      authorshipStatement: d[idx + 6],
+      identifiers: d[idx + 7],
       //eslint-disable-next-line no-magic-numbers
-      imgStart: Number(d[idx + 7]),
-      imgEnd: Number(d[idx + 8]),
-      imgGrpStart: Number(d[idx + 9]),
-      imgGrpEnd: Number(d[idx + 10]),
+      imgStart: Number(d[idx + 8]),
+      imgEnd: Number(d[idx + 9]),
+      imgGrpStart: Number(d[idx + 10]),
+      imgGrpEnd: Number(d[idx + 11]),
 
       isTypeOpen: false,
     }
@@ -916,6 +920,7 @@ export default function OutlineCSVEditor(props) {
               work: "",
               notes: "",
               colophon: "",
+              authorshipStatement: "",
               identifiers: "",
               imgStart: "",
               imgEnd: "",
@@ -1576,7 +1581,7 @@ export default function OutlineCSVEditor(props) {
           values: "T,S,V,C,E".split(",").map((v) => ({ value: v, label: v })), // removed TOC
           isOpen: d.isTypeOpen,
         },
-        ..."label,titles,work,notes,colophon,identifiers".split(",").map((p) => ({
+        ..."label,titles,work,notes,colophon,authorshipStatement,identifiers".split(",").map((p) => ({
           type: "text",
           text: d[p],
           renderer: p !== "work" ? (text: string) => <span style={{ fontSize }}>{text}</span> : undefined,
