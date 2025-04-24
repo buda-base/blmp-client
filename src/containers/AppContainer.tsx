@@ -27,6 +27,7 @@ import EntitySelector, {
 import DemoContainer from "../containers/DemoContainer"
 import OutlineCSVEditorContainer from "../containers/OutlineCSVEditorContainer"
 import WithdrawingEditorContainer from "../containers/WithdrawingEditorContainer"
+import SpecialAccessContainer from "../containers/SpecialAccessContainer"
 import ScanRequestContainer from "../containers/ScanRequestContainer"
 import Home from "../routes/home"
 import ProfileContainer from "../routes/account/containers/Profile"
@@ -226,6 +227,20 @@ function HomeContainer() {
                 <ShuffleIcon style={{ fontSize: "44px", color: "black" }} />
               </span>
               Withdrawing Editor
+            </Link>
+            <Link className="menu-link" to="/specialaccess">
+              <span
+                style={{
+                  width: "44px",
+                  marginLeft: "12px",
+                  marginRight: "5px",
+                  display: "inline-flex",
+                  justifyContent: "center",
+                }}
+              >
+                <img src="/icons/open.svg" style={{ height: "40px" }} />
+              </span>
+              Special Access
             </Link>
           </p>
         </div>
@@ -433,6 +448,7 @@ function App(props: AppProps) {
               <Route exact path="/outline/:rid" component={OutlineCSVEditorContainer} />
               <Route exact path="/withdraw" component={WithdrawingEditorContainer} />
               <Route exact path="/scanrequest" component={ScanRequestContainer} />
+              <Route exact path="/specialaccess" component={SpecialAccessContainer} />
               <Route
                 exact
                 path="/etextrequest"
