@@ -228,7 +228,7 @@ function HomeContainer() {
               </span>
               Withdrawing Editor
             </Link>
-            <Link className="menu-link" to="/specialaccess">
+            {/* <Link className="menu-link" to="/specialaccess">
               <span
                 style={{
                   width: "44px",
@@ -241,7 +241,7 @@ function HomeContainer() {
                 <img src="/icons/open.svg" style={{ height: "40px" }} />
               </span>
               Special Access
-            </Link>
+            </Link> */}
           </p>
         </div>
       </div>
@@ -448,7 +448,7 @@ function App(props: AppProps) {
               <Route exact path="/outline/:rid" component={OutlineCSVEditorContainer} />
               <Route exact path="/withdraw" component={WithdrawingEditorContainer} />
               <Route exact path="/scanrequest" component={ScanRequestContainer} />
-              {/* <Route exact path="/specialaccess" component={SpecialAccessContainer} /> */}
+              <Route exact path="/specialaccess" component={SpecialAccessContainer} />
               <Route
                 exact
                 path="/etextrequest"
