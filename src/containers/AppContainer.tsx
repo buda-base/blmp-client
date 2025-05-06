@@ -448,7 +448,7 @@ function App(props: AppProps) {
               <Route exact path="/outline/:rid" component={OutlineCSVEditorContainer} />
               <Route exact path="/withdraw" component={WithdrawingEditorContainer} />
               <Route exact path="/scanrequest" component={ScanRequestContainer} />
-              <Route exact path="/specialaccess" component={SpecialAccessContainer} />
+              {/* <Route exact path="/specialaccess" component={SpecialAccessContainer} /> */}
               <Route
                 exact
                 path="/etextrequest"
