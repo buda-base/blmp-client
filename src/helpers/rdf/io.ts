@@ -57,7 +57,7 @@ export const labelQueryUrlFromEntityQname = (entityQname: string): string => {
   if (entityQname == "bdr:PTEST") return "/examples/ptest-assocLabels.ttl"
   // TODO: a little approximative... but should work for now
   return (
-    "//ldspdi.bdrc.io/query/graph/getAssociatedLabels?R_GR=bdg:" +
+    config.LDSPDI_URL.replace(/^https?:/,"")+"/query/graph/getAssociatedLabels?R_GR=bdg:" +
     entityQname.substring(entityQname.indexOf(":") + 1) +
     "&format=ttl"
   )
@@ -195,7 +195,7 @@ export const putTtl = async (
       }
 
       try {
-        let clear = await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+        let clear = await fetch(config.LDSPDI_URL+"/clearcache", { method: "POST" })
         if (url.match(/[/]bdr:((MW)|(W[^A]))[^/]+[/]focusgraph$/)) {
           clear = await fetch("https://iiif.bdrc.io/cache/clear", { method: "POST" })
           clear = await fetch("https://iiifpres.bdrc.io/clearcache", { method: "POST" })

@@ -9,6 +9,7 @@ const config = {
   LIBRARY_URL: "http://library-dev.bdrc.io",
   //TEMPLATES_BASE: "http://localhost:8080/",
   TEMPLATES_BASE: "http://purl.bdrc.io/",
+  LDSPDI_URL: "https://ldspdi-dev.bdrc.io"
 }
 
 export default config

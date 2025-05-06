@@ -53,7 +53,7 @@ function WithdrawingEditorContainer() {
       debug("withdraw log:",json)
 
       try {
-        await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+        await fetch(config.LDSPDI_URL+"/clearcache", { method: "POST" })
       } catch(e) {
         setMessage("error when clearing cache")  
       }

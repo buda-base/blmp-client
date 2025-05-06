@@ -1188,7 +1188,7 @@ export default function OutlineCSVEditor(props) {
           err.map((e) => e.msg + (e.row ? " row " + e.row : "") + (e.col ? " col " + e.col : "")).join("; ")
         )
       }
-      await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+      await fetch(config.LDSPDI_URL+"/clearcache", { method: "POST" })
       resetPopup()
       updateEntryInSelector(true, etag)
     } catch (e) {

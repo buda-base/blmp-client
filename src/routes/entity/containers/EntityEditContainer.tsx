@@ -516,7 +516,7 @@ function EntityEditContainer(props: AppProps) {
                   className={"btn-rouge" + (!entityObj[0]?.alreadySaved ? " disabled" : "")}
                   target="_blank"
                   rel="noreferrer"
-                  {...(!entityObj[0]?.alreadySaved ? { title: i18n.t("error.preview") } : { href: BUDAlink })}
+                  {...(!entityObj[0]?.alreadySaved ? { title: i18n.t("error.preview") } : { href: BUDAlink.replace(/-dev/,"") })}
                 >
                   {i18n.t("general.preview")}
                 </a>

@@ -111,7 +111,7 @@ function ScanRequestContainer(props) {
           setErrors({ ...errors, io: false })
 
           try {
-            await fetch("https://ldspdi.bdrc.io/clearcache", { method: "POST" })
+            await fetch(config.LDSPDI_URL+"/clearcache", { method: "POST" })
           } catch (e) {
             debug("error when cleaning cache:", e)
           }
