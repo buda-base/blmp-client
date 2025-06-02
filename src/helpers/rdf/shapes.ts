@@ -453,9 +453,10 @@ export class PropertyShape extends RDFResourceWithLabel {
     const propertyShapeType = this.getPropResValue(bdsPropertyShapeType)
     if (!propertyShapeType) {
       const editor = this.getPropResValue(dashEditor)
-      if (!editor) return ObjectType.Literal
-      if (editor.value == dashEnumSelectEditor.value) {
-        if (this.datatype) return ObjectType.LitInList
+      const path = this.getPropResValue(shPath)
+      if (!editor && !path.value.endsWith("FilesAccess")) return ObjectType.Literal
+      if (path?.value?.endsWith("FilesAccess") || editor?.value == dashEnumSelectEditor.value) {
+        if (this.datatype || path?.value?.endsWith("FilesAccess")) return ObjectType.LitInList
         return ObjectType.ResInList
       }
       return ObjectType.Literal

@@ -1434,7 +1434,7 @@ const EditString: FC<{
     changeCallback(lit.value)
   }, [lit.value])
 
-  //debug("editstr:", lit, property, property.datatype)
+  debug("editstr:", lit, property, property.datatype ?? "NO DATATYPE")
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
