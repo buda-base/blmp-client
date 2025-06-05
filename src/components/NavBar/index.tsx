@@ -195,9 +195,10 @@ function BottomBar(props: AppProps) {
 
   const isUserProfile = userId === entities[entity]?.subjectQname
 
-  //const isIInstance = shapeQname === "bds:ImageInstanceShape"
   // TODO: this should be more straightforward...
   const isIInstance = (shapeQname + props.history?.location.pathname).toLowerCase().includes("bds:imageinstanceshape")
+  const isEInstance = (shapeQname + props.history?.location.pathname).toLowerCase().includes("bds:etextinstanceshape")
+  const shouldSendScanRequest = isIInstance || isEInstance
 
   const { isAuthenticated, getIdTokenClaims } = useAuth0()
   const [idToken, setIdToken] = useState("")
@@ -255,7 +256,8 @@ function BottomBar(props: AppProps) {
             responseType: "blob",
             timeout: 4000,
             baseURL: config.API_BASEURL,
-            url: "/scanrequest?IDPrefix=" + RIDprefix + "&iinstance=" + entityQname + (onlyNSync ? "&onlynonsync=true" : ""),
+            url: "/"+(isIInstance?"scan":"etext")+"request?IDPrefix=" + RIDprefix + "&"+(isIInstance?"i":"e")+"instance=" + entityQname 
+              + (onlyNSync ? "&onlynonsync=true" : ""),
             //url: "resource-nc/user/me", // to test file download
             headers: {
               Authorization: `Bearer ${idToken}`,
@@ -413,7 +415,7 @@ function BottomBar(props: AppProps) {
     history[entityUri].push({ "tmp:allValuesLoaded": true })
     newEntities[entity].subject.resetNoHisto()
 
-    if (!isIInstance) {
+    if (!shouldSendScanRequest) {
       closePopup()
     } else {
       if (!onlySave) {
@@ -460,13 +462,15 @@ function BottomBar(props: AppProps) {
     closePopup()
   }
 
+  const scanOrEtext = isIInstance ? "scan" : "etext"
+
   return (
     <nav className={"bottom navbar navbar-dark navbar-expand-md" + (demo ? "demo" : "")}>
       <HistoryHandler entityUri={entityUri} />
       <span />
       <div className={"popup " + (popupOn ? "on " : "") + (error ? "error " : "") + (isUserProfile ? "user " : "")}>
         <div>
-          {gen && isIInstance && (
+          {gen && shouldSendScanRequest && (
             <FormGroup>
               <FormControlLabel
                 label={"only non-synced volumes"}
@@ -556,7 +560,7 @@ function BottomBar(props: AppProps) {
         </div>
       </div>
       <div className="buttons">
-        {isIInstance && !saving && !gen && (
+        {shouldSendScanRequest && !saving && !gen && (
           <Button
             variant="outlined"
             onClick={() => save(true)}
@@ -567,29 +571,29 @@ function BottomBar(props: AppProps) {
           </Button>
         )}
         <Button
-          {...(demo && isIInstance ? { style: { pointerEvents: "none", opacity: 0.5 } } : {})}
+          {...(demo && shouldSendScanRequest ? { style: { pointerEvents: "none", opacity: 0.5 } } : {})}
           variant="outlined"
-          onClick={isIInstance ? (willGen || saved ? generate : () => save(!willGen)) : save}
+          onClick={shouldSendScanRequest ? (willGen || saved ? generate : () => save(!willGen)) : save}
           className="btn-rouge"
-          {...(spinner || (message === "" && saving && !isUserProfile) || (saved && !isIInstance) || errorCode
+          {...(spinner || (message === "" && saving && !isUserProfile) || (saved && !shouldSendScanRequest) || errorCode
             ? { disabled: true }
             : {})}
-          //{...(isIInstance && gen && !nbVolumes ? { disabled: true } : {})}
+          //{...(shouldSendScanRequest && gen && !nbVolumes ? { disabled: true } : {})}
         >
           {spinner ? (
             <CircularProgress size="14px" color="white" />
           ) : saving ? (
             "Ok"
-          ) : !isIInstance ? (
+          ) : !shouldSendScanRequest ? (
             "Save"
           ) : saved ? (
             gen ? (
-              "Generate scan request"
+              `Generate ${scanOrEtext} request`
             ) : (
-              "Scan Request"
+              `${scanOrEtext} Request`
             )
           ) : (
-            "Save & Scan Request"
+            `Save & ${scanOrEtext} Request`
           )}
         </Button>
         {(saving || gen) && (
