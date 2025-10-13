@@ -84,7 +84,7 @@ const ResourceSelector: FC<{
   globalError: string
   updateEntityState: (es: EditedEntityState) => void
   shape: Shape
-  placeholder?:string
+  placeholder?: string
 }> = ({
   value,
   onChange,
@@ -98,10 +98,10 @@ const ResourceSelector: FC<{
   globalError,
   updateEntityState,
   shape,
-  placeholder
+  placeholder,
 }) => {
   const classes = useStyles()
-  const [keyword, setKeyword] = useState(placeholder||"")
+  const [keyword, setKeyword] = useState(placeholder || "")
   const [language, setLanguage] = useState("bo-x-ewts") // TODO: default value should be from the user profile or based on the latest value used
   const [type, setType] = useState(property.expectedObjectTypes ? property.expectedObjectTypes[0].qname : "")
   const [libraryURL, setLibraryURL] = useState("")
@@ -320,9 +320,9 @@ const ResourceSelector: FC<{
         let lang = language
         if (newlang) lang = newlang
         else if (!lang) lang = "bo-x-ewts"
-        
+
         // #39
-        if(lang === "sa-x-iast") lang = "inc-x-ndia"
+        if (lang === "sa-x-iast") lang = "inc-x-ndia"
 
         let key = encodeURIComponent(keyword)
         key = '"' + key + '"'
@@ -466,14 +466,16 @@ const ResourceSelector: FC<{
       if (property.copyObjectsOfProperty?.length) {
         //debug("tC:",toCopy)
         for (const k of Object.keys(toCopy)) {
-          if (urlParams) urlParams += ";"
           let val = ""
           for (const l of toCopy[k]) {
             if (l.value) {
               val += "," + encodeURIComponent('"' + l.value + (l.language ? '"@' + l.language : ""))
             }
           }
-          if (val) urlParams += k + val
+          if (val) {
+            if (urlParams) urlParams += ";"
+            urlParams += k + val
+          }
         }
         if (urlParams) {
           url += "?copy=" + urlParams
