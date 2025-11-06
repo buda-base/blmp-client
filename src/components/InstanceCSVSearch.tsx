@@ -15,35 +15,46 @@ import config from "../config"
 
 const debug = require("debug")("bdrc:menu")
 
-const InstanceCSVSearch = (props: { isFetching: any, forVolume?: any; fetchErr: any; inNavBar: boolean; disabled:boolean; 
-    resetCSV:()=>void; downloadCSV:()=>void }) => {
+const InstanceCSVSearch = (props: {
+  isFetching: any
+  forVolume?: any
+  fetchErr: any
+  inNavBar: boolean
+  disabled: boolean
+  resetCSV: () => void
+  downloadCSV: () => void
+}) => {
   const { t } = useTranslation()
   const [volume, setVolume] = React.useState("")
   const { loading } = useAuth0()
 
-  const isRID = useMemo(() => volume.match(/^(bdr:)?w(\d|eap)/i), [volume])
+  const isRID = useMemo(() => volume.match(/^(bdr:)?(w|ie)(\d|eap)/i), [volume])
   const RID = useMemo(() => volume.replace(/^bdr:/i, "").toUpperCase(), [volume])
 
   const [localCSV, setLocalCSV] = useRecoilState(localCSVAtom)
-  
+
   const history = useHistory()
   const params = useParams()
-  debug("lCsv:",localCSV,params)
+  debug("lCsv:", localCSV, params)
 
   const [val, setVal] = useState("")
 
-  const uploadCSV = useCallback((event) => {
-    debug("ev:", event, event.target.files)
-    if(!event.target.files.length) return
-    const reader = new FileReader()
-    reader.onloadend = (data) => {
-      debug("read:",data,data.currentTarget.result)
-      setLocalCSV({ ...localCSV, [params.rid || "bdr:"+RID]: { data: data.currentTarget.result, uploaded:true } })
-      if(!props.inNavBar) setTimeout(() => history.push("/outline/bdr:"+RID), 150) // eslint-disable-line
-      else props.resetCSV()
-    }
-    reader.readAsText(event.target.files[0])
-  }, [params, RID, history, localCSV, props, setLocalCSV])
+  const uploadCSV = useCallback(
+    (event) => {
+      debug("ev:", event, event.target.files)
+      if (!event.target.files.length) return
+      const reader = new FileReader()
+      reader.onloadend = (data) => {
+        debug("read:", data, data.currentTarget.result)
+        setLocalCSV({ ...localCSV, [params.rid || "bdr:" + RID]: { data: data.currentTarget.result, uploaded: true } })
+        if (!props.inNavBar) setTimeout(() => history.push("/outline/bdr:" + RID), 150)
+        // eslint-disable-line
+        else props.resetCSV()
+      }
+      reader.readAsText(event.target.files[0])
+    },
+    [params, RID, history, localCSV, props, setLocalCSV]
+  )
 
   return props.isFetching || loading ? (
     <CircularProgress />
@@ -52,59 +63,65 @@ const InstanceCSVSearch = (props: { isFetching: any, forVolume?: any; fetchErr: 
       className="container mx-auto flex items-center justify-start flex-wrap pr-0"
       style={{ paddingLeft: 0, paddingTop: 0 }}
     >
-      <div className={props.inNavBar?"":"mt-10"}>
-        { !props.inNavBar && <TextField
-          //{...!user?{disabled:true}:{}}
-          placeholder={t("instance RID")}
-          margin="normal"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          value={props.forVolume ? props.forVolume : volume}
-          onChange={(e) => setVolume(e.target.value)}
-          className="w-2/3"
-          style={{
-            width: 250,
-            margin: "0 8px 0 0px",
-          }}
-        /> }
-        { !props.inNavBar &&<a download href={config.API_BASEURL + "outline/csv/bdr:" + RID} target="_blank" rel="noreferrer noopener">
-          <Button
-            disabled={!isRID}
-            className="btn-rouge"
-            variant="contained"
-            color="primary"
-            style={{ marginLeft: "1em" }}
-          >
-            {t("outline.dlCSV")}
-          </Button>
-        </a> }
-        { props.downloadCSV && 
+      <div className={props.inNavBar ? "" : "mt-10"}>
+        {!props.inNavBar && (
+          <TextField
+            //{...!user?{disabled:true}:{}}
+            placeholder={t("instance RID")}
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            value={props.forVolume ? props.forVolume : volume}
+            onChange={(e) => setVolume(e.target.value)}
+            className="w-2/3"
+            style={{
+              width: 250,
+              margin: "0 8px 0 0px",
+            }}
+          />
+        )}
+        {!props.inNavBar && (
+          <a download href={config.API_BASEURL + "outline/csv/bdr:" + RID} target="_blank" rel="noreferrer noopener">
             <Button
-              disabled={!isRID && !props.inNavBar || props.disabled}
+              disabled={!isRID}
               className="btn-rouge"
               variant="contained"
               color="primary"
               style={{ marginLeft: "1em" }}
-              onClick={props.downloadCSV}
             >
-            {t("outline.dlCSV")}
-          </Button>
-        }
-        { !props.inNavBar && <Link to={"/outline/bdr:" + RID}>
+              {t("outline.dlCSV")}
+            </Button>
+          </a>
+        )}
+        {props.downloadCSV && (
           <Button
-            disabled={!isRID}
+            disabled={!isRID && !props.inNavBar || props.disabled}
             className="btn-rouge"
             variant="contained"
             color="primary"
             style={{ marginLeft: "1em" }}
+            onClick={props.downloadCSV}
           >
-            {t("outline.editCSV")}
+            {t("outline.dlCSV")}
           </Button>
-        </Link> }
-        <label htmlFor="upload-csv" style={{ margin:0 }}>
+        )}
+        {!props.inNavBar && (
+          <Link to={"/outline/bdr:" + RID}>
+            <Button
+              disabled={!isRID}
+              className="btn-rouge"
+              variant="contained"
+              color="primary"
+              style={{ marginLeft: "1em" }}
+            >
+              {t("outline.editCSV")}
+            </Button>
+          </Link>
+        )}
+        <label htmlFor="upload-csv" style={{ margin: 0 }}>
           <input
-            style={{ display: 'none' }}
+            style={{ display: "none" }}
             id="upload-csv"
             name="upload-csv"
             type="file"
@@ -115,13 +132,13 @@ const InstanceCSVSearch = (props: { isFetching: any, forVolume?: any; fetchErr: 
           />
           <Button
             component="span"
-            disabled={!isRID  && !props.inNavBar || props.disabled}
+            disabled={!isRID && !props.inNavBar || props.disabled}
             className="btn-rouge"
             variant="contained"
             color="primary"
             style={{ marginLeft: "1em" }}
           >
-          {t("outline.ulCSV")}
+            {t("outline.ulCSV")}
           </Button>
         </label>
         {!isNil(props.fetchErr) && (

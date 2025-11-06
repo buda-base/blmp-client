@@ -98,6 +98,11 @@ const colWidths = {
   "img end": 110,
   "img grp start": 110,
   "img grp end": 110,
+  // #61
+  "etext start": 110,
+  "etext end": 110,
+  "vol start": 110,
+  "vol end": 110,
 }
 
 const colLabels = {} // "img start":"im. start", "img end": "im. end", "img grp start":"im.grp start", "img grp end": "im.grp end" }
@@ -603,8 +608,8 @@ export default function OutlineCSVEditor(props) {
   const updateEntryInSelector = useCallback(
     (saved = false, newEtag? = "", name? = filename) => {
       debug("ues:", [etaging, saved, newEtag, sessionLoaded, name])
-      if(etaging) return
-      if(newEtag) etaging = true
+      if (etaging) return
+      if (newEtag) etaging = true
       if (sessionLoaded && name) {
         const id = RID.replace(/^bdr:/, "bdr:O")
         const index = entities.findIndex((e) => e.subjectQname === id)
@@ -638,7 +643,7 @@ export default function OutlineCSVEditor(props) {
           }
           setEntities(newEntities)
         }
-        
+
         if (saved) {
           setLocalCSV({ ...localCSV, [RID]: { ...localCSV[RID], uploaded: false } })
           setTimeout(() => {
@@ -647,7 +652,7 @@ export default function OutlineCSVEditor(props) {
           }, 150) // eslint-disable-line
         }
       }
-      if(etaging) etaging = false
+      if (etaging) etaging = false
     },
     [
       sessionLoaded,
@@ -877,7 +882,7 @@ export default function OutlineCSVEditor(props) {
           if (localCSV[RID].status) setStatus(localCSV[RID].status)
         }
         if (text) text = text.replace(/\n$/m, "")
-        if (text) text = text.replace(/\r/mg, "") // #57
+        if (text) text = text.replace(/\r/gm, "") // #57
 
         debug("loaded:", etag)
         updateEntryInSelector(false, etag, name)
@@ -886,7 +891,7 @@ export default function OutlineCSVEditor(props) {
         Papa.parse(text, {
           worker: true,
           delimiter: ",",
-          newline:"\n",
+          newline: "\n",
           complete: (results) => {
             let n_pos = 1
             const head = {
@@ -965,7 +970,7 @@ export default function OutlineCSVEditor(props) {
 
   useEffect(() => {
     //debug("localCSV?", RID, csv||"--", localCSV)
-    if(sessionLoaded) fetchCsv()
+    if (sessionLoaded) fetchCsv()
   }, [RID, csv, localCSV, sessionLoaded, fetchCsv])
 
   /* // check 
@@ -1141,11 +1146,11 @@ export default function OutlineCSVEditor(props) {
     await new Promise((r) => setTimeout(r, 10)) // eslint-disable-line
 
     const idToken = localStorage.getItem("BLMPidToken")
-    
+
     let previousEtag
     const id = RID.replace(/^bdr:/, "bdr:O")
     const index = entities.findIndex((e) => e.subjectQname === id)
-    if(entities[index]?.alreadySaved) previousEtag = entities[index].alreadySaved
+    if (entities[index]?.alreadySaved) previousEtag = entities[index].alreadySaved
 
     const headers = new Headers()
     headers.set("Content-Type", "text/csv")
@@ -1188,7 +1193,7 @@ export default function OutlineCSVEditor(props) {
           err.map((e) => e.msg + (e.row ? " row " + e.row : "") + (e.col ? " col " + e.col : "")).join("; ")
         )
       }
-      await fetch(config.LDSPDI_URL+"/clearcache", { method: "POST" })
+      await fetch(config.LDSPDI_URL + "/clearcache", { method: "POST" })
       resetPopup()
       updateEntryInSelector(true, etag)
     } catch (e) {
@@ -1214,7 +1219,7 @@ export default function OutlineCSVEditor(props) {
 
   const handleDownloadCSV = useCallback(() => {
     const link = document.createElement("a")
-    const file = new Blob(["\ufeff", toCSV()], { type: 'text/csv;charset=utf-8' });
+    const file = new Blob(["\ufeff", toCSV()], { type: "text/csv;charset=utf-8" })
     link.href = URL.createObjectURL(file)
     link.download = RID.replace(/^[^:]+:/, "") + ".csv"
     link.click()
@@ -1639,8 +1644,8 @@ export default function OutlineCSVEditor(props) {
 
   const id = RID.replace(/^bdr:/, "bdr:O")
   const index = entities.findIndex((e) => e.subjectQname === id)
-  const etag = entities[index].alreadySaved ?? ""
-  const BUDAlink = config.LIBRARY_URL + "/show/" + RID + "?v=" + etag.replace(/^W\//,"")
+  const etag = entities[index]?.alreadySaved ?? ""
+  const BUDAlink = config.LIBRARY_URL + "/show/" + RID + "?v=" + etag.replace(/^W\//, "")
 
   //debug("hi:", highlights, errorData)
   //debug("rerendering", focusedLocation, focus, reactgridRef.current?.state)
@@ -1650,8 +1655,12 @@ export default function OutlineCSVEditor(props) {
 
   return (
     <>
-      <div id="outline-fields" className="pl-3 pb-5 pt-0" style={{ textAlign: "left", display: "flex", alignItems:"flex-start" }}>
-        <div className="buda-link pl-3" style={{ top:"-75px" }} >
+      <div
+        id="outline-fields"
+        className="pl-3 pb-5 pt-0"
+        style={{ textAlign: "left", display: "flex", alignItems: "flex-start" }}
+      >
+        <div className="buda-link pl-3" style={{ top: "-75px" }}>
           <a
             className={"btn-rouge" + (!etag ? " disabled" : "")}
             target="_blank"
