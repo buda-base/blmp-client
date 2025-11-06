@@ -82,6 +82,10 @@ interface OutlineEntry {
   imgEnd: number
   imgGrpStart: number
   imgGrpEnd: number
+  volStart: number
+  volEnd: number
+  etextStart: string
+  etextEnd: string
 }
 
 const colWidths = {
@@ -410,10 +414,17 @@ export default function OutlineCSVEditor(props) {
       authorshipStatement: d[idx + 6],
       identifiers: d[idx + 7],
       //eslint-disable-next-line no-magic-numbers
-      imgStart: Number(d[idx + 8]),
-      imgEnd: Number(d[idx + 9]),
-      imgGrpStart: Number(d[idx + 10]),
-      imgGrpEnd: Number(d[idx + 11]),
+      ...RID.startsWith("bdr:W")
+        ? {
+            imgStart: Number(d[idx + 8]),
+            imgEnd: Number(d[idx + 9]),
+          }
+        : {
+            etextStart: d[idx + 8],
+            etextEnd: d[idx + 9],
+          },
+      volStart: Number(d[idx + 10]),
+      volEnd: Number(d[idx + 11]),
 
       isTypeOpen: false,
     }
@@ -927,10 +938,17 @@ export default function OutlineCSVEditor(props) {
               colophon: "",
               authorshipStatement: "",
               identifiers: "",
-              imgStart: "",
-              imgEnd: "",
-              imgGrpStart: "",
-              imgGrpEnd: "",
+              volStart: "",
+              volEnd: "",
+              ...RID.startsWith("bdr:W")
+                ? {
+                    imgStart: "",
+                    imgEnd: "",
+                  }
+                : {
+                    etextStart: "",
+                    etextEnd: "",
+                  },
               isTypeOpen: false,
             }
             setEmptyData(empty)
@@ -948,7 +966,7 @@ export default function OutlineCSVEditor(props) {
             n_pos = 0
             setColumns(
               head.cells.map(({ text }, i) => {
-                debug("w:", text, i, colWidths)
+                //debug("w:", RID, text, i, colWidths)
                 return {
                   columnId: results.data[0][i]
                     .replace(/ (.)/g, (m, g1) => g1.toUpperCase())
@@ -1593,7 +1611,16 @@ export default function OutlineCSVEditor(props) {
           //className: p !== "work" ? "bo-text" : ""
           //renderer:(val) => <span title={"test"}>{val}</span>
         })),
-        ..."imgStart,imgEnd,imgGrpStart,imgGrpEnd".split(",").map((p) => ({
+        ...RID.startsWith("bdr:W")
+          ? "imgStart,imgEnd".split(",").map((p) => ({
+              type: "number",
+              value: Number(d[p]) || "",
+            }))
+          : "etextStart,etextEnd".split(",").map((p) => ({
+              type: "text",
+              text: d[p] || "",
+            })),
+        ..."volStart,volEnd".split(",").map((p) => ({
           type: "number",
           value: Number(d[p]) || "",
         })),
