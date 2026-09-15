@@ -237,25 +237,28 @@ export const EDTFtoOtherFieldsSelector = selectorFamily({
 export const orderedNewValSelector = selectorFamily({
   key: "orderedNewValSelector",
   get: ({ atom, propertyPath, order, shape }) => ({ get }) => {
-    let newVal = ""
-    if (atom) {
-      if (!order) order = "asc"
-      newVal = ""
+    if (!atom) return ""
+    if (!order) order = "asc"
 
-      //debug("nV")
-      const parentList = get(atom)
-      parentList.map((s, i) => {
-        if (i < parentList.length - 1 - 1) return // try to speed things as list is sorted
-        let k = get(s.getAtomForProperty(propertyPath))
-        if (Array.isArray(k) && k.length) k = Number(k[0].value)
-        //debug("k:",k)
-        if (newVal === "" || order === "asc" && k >= newVal || order === "desc" && k <= newVal) {
-          if (order === "asc") newVal = k + 1
-          else newVal = k - 1
-        }
-      })
-      //debug("newVal:", newVal) //, atom, propertyPath, parentList)
+    //debug("nV")
+    // the list is only sorted for display (see orderedByPropSelector), the atom itself keeps the
+    // order it was loaded in, so we must look at every value and not just the last ones
+    const parentList = get(atom)
+    let best = null
+    for (const s of parentList) {
+      let k = get(s.getAtomForProperty(propertyPath))
+      if (Array.isArray(k)) {
+        if (!k.length) continue
+        k = Number(k[0].value)
+      } else k = Number(k)
+      //debug("k:",k)
+      if (isNaN(k)) continue
+      if (best === null) best = k
+      else best = order === "asc" ? Math.max(best, k) : Math.min(best, k)
     }
+    if (best === null) return ""
+    const newVal = order === "asc" ? best + 1 : best - 1
+    //debug("newVal:", newVal) //, atom, propertyPath, parentList)
     return "" + newVal
   },
 })
@@ -385,7 +388,7 @@ export const localCSVAtom = atom<Map<string, string>>({
   default: {},
 })
 
-export const allCellChangesAtom = atom<Map<string, Map<string, number|CellChanges[][]>>>({
+export const allCellChangesAtom = atom<Map<string, Map<string, number | CellChanges[][]>>>({
   key: "allCellChangesAtom",
   default: {},
 })
